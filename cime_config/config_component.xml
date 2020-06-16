@@ -1,0 +1,832 @@
+<?xml version="1.0"?>
+
+<entry_id version="3.0">
+  <!-- modifier_mode allowed values are
+       '*' 0 or more modifiers (default)
+       '1' exactly 1 modifier
+       '?' 0 or 1 modifiers
+       '+' 1 or more modifiers
+
+       This file may have atm desc entries.
+  -->
+  <description modifier_mode="1">
+    <desc atm="DATM[%QIA][%WISOQIA][%CRU][%CRUv7][%GSWP3v1][%MOSARTTEST][%NLDAS2][%CPLHIST][%1PT][%NYF][%IAF][%JRA]"> Data driven ATM </desc>
+    <desc option="QIA"> QIAN data set </desc>
+    <desc option="WISOQIA">QIAN with water isotopes</desc>
+    <desc option="CRU"> CRUNCEP data set </desc>
+    <desc option="CRUv7"> CLM CRU NCEP v7 data set </desc>
+    <desc option="GSWP3v1"> GSWP3v1 data set </desc>
+    <desc option="MOSARTTEST"> MOSART test data set using older NLDAS data </desc>
+    <desc option="NLDAS2"> NLDAS2 regional 0.125 degree data set over the U.S. (25-53N, 235-293E). WARNING: Garbage data will be produced for runs extending beyond this regional domain. </desc>
+    <desc option="CPLHIST"> Coupler hist data set (in this mode, it is strongly recommended that the model domain and the coupler history forcing are on the same domain)</desc>
+    <desc option="1PT">single point tower site data set </desc>
+    <desc option="NYF">COREv2 normal year forcing</desc>
+    <desc option="IAF">COREv2 interannual forcing</desc>
+    <desc option="JRA">interannual JRA55 forcing</desc>
+
+    <!-- DICE -->
+
+    <desc ice="DICE[%SSMI][%IAF]">dice mode </desc>
+    <desc option="SSMI">is ssmi</desc>
+    <desc option="IAF"> is siaf</desc>
+
+    <!-- DLND -->
+
+    <desc lnd="DLND[%SCPL][%LCPL]">Data land model (DLND) </desc>
+    <desc option="SCPL">snow coupling mode </desc>
+    <desc option="LCPL">non-snow coupling </desc>
+
+    <!-- DOCN -->
+
+    <desc ocn="DOCN[%NULL][%DOM][%SOM][%SOMAQP][%IAF][%SST_AQUAP][%AQP1][%AQP2][%AQP3][%AQP4][%AQP5][%AQP6][%AQP7][%AQP8][%AQP9][%AQP10][%AQPFILE][%AQPCONST]">DOCN </desc>
+    <desc option="NULL">  null mode</desc>
+    <desc option="DOM">  prescribed ocean mode</desc>
+    <desc option="SOM">  slab ocean mode</desc>
+    <desc option="SOMAQP">  aquaplanet slab ocean mode</desc>
+    <desc option="IAF">  interannual mode</desc>
+    <desc option="SST_AQUAP">  aquaplanet mode:</desc>
+    <desc option="AQP1">  analytic aquaplanet sst - option 1</desc>
+    <desc option="AQP2">  analytic aquaplanet sst - option 2</desc>
+    <desc option="AQP3">  analytic aquaplanet sst - option 3</desc>
+    <desc option="AQP4">  analytic aquaplanet sst - option 4</desc>
+    <desc option="AQP5">  analytic aquaplanet sst - option 5</desc>
+    <desc option="AQP6">  analytic aquaplanet sst - option 6</desc>
+    <desc option="AQP7">  analytic aquaplanet sst - option 7</desc>
+    <desc option="AQP8">  analytic aquaplanet sst - option 8</desc>
+    <desc option="AQP9">  analytic aquaplanet sst - option 9</desc>
+    <desc option="AQP10">  analytic aquaplanet sst - option 10</desc>
+    <desc option="AQPFILE">  file input aquaplanet sst </desc>
+    <desc option="AQPCONST">  globally constant SST for idealized experiments, such as RCE </desc>
+    <!-- DROF -->
+    <desc rof="DROF[%NYF][%IAF][%IAFAIS00][%IAFAIS45][%IAFAIS55][%CPLHIST][%JRA]">Data runoff model</desc>
+    <desc option="NYF"      >COREv2 normal year forcing:</desc>
+    <desc option="IAF"      >COREv2 interannual year forcing:</desc>
+    <desc option="IAFAIS00" >COREv2 interannual year forcing:</desc>
+    <desc option="IAFAIS45" >COREv2 interannual year forcing:</desc>
+    <desc option="IAFAIS55" >COREv2 interannual year forcing:</desc>
+    <desc option="CPLHIST"  >CPLHIST mode:</desc>
+    <desc option="JRA"      >JRA55 interannual forcing</desc>
+
+    <!-- DWAV -->
+
+    <desc wav="DWAV[%CLIMO]">Data wave model (DWAV)</desc>
+    <desc option="CLIMO">climatological mode</desc>
+  </description>
+
+  <entry id="COMP_ATM">
+    <type>char</type>
+    <valid_values>datm</valid_values>
+    <default_value>datm</default_value>
+    <group>case_comp</group>
+    <file>env_case.xml</file>
+    <desc>Name of atmospheric component</desc>
+  </entry>
+
+  <entry id="DATM_MODE">
+    <type>char</type>
+    <valid_values>CORE2_NYF,CORE2_IAF,CLM_QIAN,CLM_QIAN_WISO,CLM1PT,CLMCRUNCEP,CLMCRUNCEPv7,CLMGSWP3v1,CLMMOSARTTEST,CLMNLDAS2,CPLHIST,CORE_IAF_JRA</valid_values>
+    <default_value>CORE2_NYF</default_value>
+    <group>run_component_datm</group>
+    <file>env_run.xml</file>
+    <desc>Mode for data atmosphere component.
+      CORE2_NYF (CORE2 normal year forcing) are modes used in forcing prognostic ocean/sea-ice components.
+      CLMCRUNCEPv7, CLMGSWP3v1, CLMMOSARTTEST, CLMNLDAS2 and CLM1PT are modes using observational data for forcing prognostic land components.
+      WARNING for CLMNLDAS2: This is a regional forcing dataset over the U.S. (25-53N, 235-293E). Garbage data will be produced for runs extending beyond this regional domain. </desc>
+    <values match="last">
+      <value compset="%NYF">CORE2_NYF</value>
+      <value compset="%IAF">CORE2_IAF</value>
+      <value compset="%JRA">CORE_IAF_JRA</value>
+      <value compset="%CRUv7">CLMCRUNCEPv7</value>
+      <value compset="%GSWP3v1">CLMGSWP3v1</value>
+      <value compset="%MOSARTTEST">CLMMOSARTTEST</value>
+      <value compset="%NLDAS2">CLMNLDAS2</value>
+      <value compset="%1PT">CLM1PT</value>
+      <value compset="%CPLHIST">CPLHIST</value>
+    </values>
+  </entry>
+
+  <entry id="DATM_PRESAERO">
+    <type>char</type>
+    <valid_values>none,clim_1850,clim_2000,clim_2010,trans_1850-2000,SSP1-1.9,SSP1-2.6,SSP2-4.5,SSP3-7.0,SSP4-3.4,SSP4-6.0,SSP5-3.4,SSP5-8.5,cplhist</valid_values>
+    <default_value>clim_2000</default_value>
+    <values match="last">
+      <value compset="^1850_"   >clim_1850</value>
+      <value compset="^2000_"   >clim_2000</value>
+      <value compset="^2010_"   >clim_2010</value>
+      <value compset="^SSP119_" >SSP1-1.9</value>
+      <value compset="^SSP126_" >SSP1-2.6</value>
+      <value compset="^SSP245_" >SSP2-4.5</value>
+      <value compset="^SSP370_" >SSP3-7.0</value>
+      <value compset="^SSP434_" >SSP4-3.4</value>
+      <value compset="^SSP460_" >SSP4-6.0</value>
+      <value compset="^SSP534_" >SSP5-3.4</value>
+      <value compset="^SSP585_" >SSP5-8.5</value>
+      <value compset="^HIST_"   >trans_1850-2000</value>
+      <value compset="^20TR_"   >trans_1850-2000</value>
+      <value compset="_DATM%CPLHIST">cplhist</value>
+      <value compset="_DATM.*_DICE.*_DOCN.*_DROF">none</value>
+    </values>
+    <group>run_component_datm</group>
+    <file>env_run.xml</file>
+    <desc>DATM prescribed aerosol forcing</desc>
+  </entry>
+
+  <entry id="DATM_TOPO">
+    <type>char</type>
+    <valid_values>none,observed,cplhist</valid_values>
+    <default_value>observed</default_value>
+    <values match="last">
+      <!-- Only needed for compsets with active land; for other compsets, turn it off -->
+      <value compset="_SLND">none</value>
+      <value compset="_DLND">none</value>
+      <value compset="_DATM%CPLHIST">cplhist</value>
+      <value compset="_DATM%MOSARTTEST">observed</value>
+    </values>
+    <group>run_component_datm</group>
+    <file>env_run.xml</file>
+    <desc>DATM surface topography forcing</desc>
+  </entry>
+
+  <entry id="DATM_CO2_TSERIES">
+    <type>char</type>
+    <valid_values>none,20tr,20tr.latbnd,SSP1-1.9,SSP1-2.6,SSP2-4.5,SSP3-7.0,SSP4-3.4,SSP4-6.0,SSP5-3.4,SSP5-8.5,SSP1-1.9.latbnd,SSP1-2.6.latbnd,SSP2-4.5.latbnd,SSP3-7.0.latbnd,SSP4-3.4.latbnd,SSP4-6.0.latbnd,SSP5-3.4.latbnd,SSP5-8.5.latbnd</valid_values>
+    <default_value>none</default_value>
+    <values match="last">
+      <value compset="^SSP119_">SSP1-1.9</value>
+      <value compset="^SSP126_">SSP1-2.6</value>
+      <value compset="^SSP245_">SSP2-4.5</value>
+      <value compset="^SSP370_">SSP3-7.0</value>
+      <value compset="^SSP434_">SSP4-3.4</value>
+      <value compset="^SSP460_">SSP4-6.0</value>
+      <value compset="^SSP534_">SSP5-3.4</value>
+      <value compset="^SSP585_">SSP5-8.5</value>
+      <value compset="^HIST"   >20tr</value>
+      <value compset="^20TR"   >20tr</value>
+    </values>
+    <group>run_component_datm</group>
+    <file>env_run.xml</file>
+    <desc>DATM CO2 time series</desc>
+  </entry>
+
+  <entry id="DATM_CPLHIST_DOMAIN_FILE">
+    <type>char</type>
+    <valid_values></valid_values>
+    <default_value>null</default_value>
+    <group>run_component_datm</group>
+    <file>env_run.xml</file>
+    <desc>
+      Full pathname for domain file for datm when DATM_MODE is
+      CPLHIST, NOTE: if this is set to 'null' (the default), then
+      domain information is read in from the first coupler history
+      file in the target stream and it is assumed that the first
+      coupler stream file that is pointed to contains the domain
+      information for that stream.
+    </desc>
+  </entry>
+
+  <entry id="DATM_CPLHIST_DIR">
+    <type>char</type>
+    <valid_values></valid_values>
+    <default_value>UNSET</default_value>
+    <group>run_component_datm</group>
+    <file>env_run.xml</file>
+    <desc>directory for coupler history data mode (only used for when DATM_MODE is CPLHIST)</desc>
+  </entry>
+
+  <entry id="DATM_CPLHIST_CASE">
+    <type>char</type>
+    <valid_values></valid_values>
+    <default_value>UNSET</default_value>
+    <group>run_component_datm</group>
+    <file>env_run.xml</file>
+    <desc>case name used to determine stream filenames when DATM_MODE is CPLHIST</desc>
+  </entry>
+
+  <entry id="DATM_CPLHIST_YR_ALIGN">
+    <type>integer</type>
+    <valid_values></valid_values>
+    <default_value>-999</default_value>
+    <group>run_component_datm</group>
+    <file>env_run.xml</file>
+    <desc>
+      Simulation year corresponding to DATM_CPLHIST_YR_START (only used
+      when DATM_MODE is CPLHIST). A common usage is to set this to
+      RUN_STARTDATE. With this setting, the forcing in the first year of
+      the run will be the forcing of year DATM_CPLHIST_YR_START. Another
+      use case is to align the calendar of transient forcing with the
+      model calendar. For example, setting
+      DATM_CPLHIST_YR_ALIGN=DATM_CPLHIST_YR_START will lead to the
+      forcing calendar being the same as the model calendar. The forcing
+      for a given model year would be the forcing of the same year. This
+      would be appropriate in transient runs where the model calendar is
+      setup to span the same year range as the forcing data.
+    </desc>
+  </entry>
+
+  <entry id="DATM_CPLHIST_YR_START">
+    <type>integer</type>
+    <valid_values></valid_values>
+    <default_value>-999</default_value>
+    <group>run_component_datm</group>
+    <file>env_run.xml</file>
+    <desc>starting year to loop data over (only used when DATM_MODE is CPLHIST)</desc>
+  </entry>
+
+  <entry id="DATM_CPLHIST_YR_END">
+    <type>integer</type>
+    <valid_values></valid_values>
+    <default_value>-999</default_value>
+    <group>run_component_datm</group>
+    <file>env_run.xml</file>
+    <desc>ending year to loop data over (only used when DATM_MODE is CPLHIST)</desc>
+  </entry>
+
+  <entry id="DATM_CLMNCEP_YR_ALIGN">
+    <type>integer</type>
+    <valid_values></valid_values>
+    <default_value>1</default_value>
+    <values match="last">
+      <value compset="1850.*_DATM%QIA">1</value>
+      <value compset="1850.*_DATM%CRU">1</value>
+      <value compset="1850.*_DATM%GSW">1</value>
+      <value compset="HIST.*_DATM%QIA">1895</value>
+      <value compset="HIST.*_DATM%CRU">1901</value>
+      <value compset="HIST.*_DATM%GSW">1901</value>
+      <value compset="HIST.*_DATM%NLDAS2">$DATM_CLMNCEP_YR_START</value>
+      <value compset="20TR.*_DATM%QIA">1895</value>
+      <value compset="20TR.*_DATM%CRU">1901</value>
+      <value compset="20TR.*_DATM%GSW">1901</value>
+      <value compset="SSP.*_DATM%QIA">$DATM_CLMNCEP_YR_START</value>
+      <value compset="SSP.*_DATM%CRU">$DATM_CLMNCEP_YR_START</value>
+      <value compset="SSP.*_DATM%GSW">$DATM_CLMNCEP_YR_START</value>
+      <value compset="1850.*_DATM%CRU">1</value>
+      <value compset="1850.*_DATM%GSW">1</value>
+      <value compset="2000.*_DATM">$DATM_CLMNCEP_YR_START</value>
+      <value compset="2003.*_DATM">$DATM_CLMNCEP_YR_START</value>
+      <value compset="2010.*_DATM">$DATM_CLMNCEP_YR_START</value>
+      <value compset="4804.*_DATM">$DATM_CLMNCEP_YR_START</value>
+    </values>
+    <group>run_component_datm</group>
+    <file>env_run.xml</file>
+    <desc>year align</desc>
+  </entry>
+
+  <entry id="DATM_CLMNCEP_YR_START">
+    <type>integer</type>
+    <valid_values></valid_values>
+    <default_value>2004</default_value>
+    <values match="last">
+      <value compset="2000.*_DATM%1PT">1972</value>
+      <value compset="1850.*_DATM%QIA">1948</value>
+      <value compset="1850.*_DATM%CRU">1901</value>
+      <value compset="1850.*_DATM%GSW">1901</value>
+      <value compset="1850.*_DATM%NLDAS2">0</value>  <!-- Unsupported -->
+      <value compset="2000.*_DATM%WISOQIA">2000</value>
+      <value compset="2000.*_DATM%QIA">1972</value>
+      <value compset="HIST.*_DATM%QIA">1948</value>
+      <value compset="HIST.*_DATM%CRU">1901</value>
+      <value compset="HIST.*_DATM%GSW">1901</value>
+      <value compset="HIST.*_DATM%NLDAS2">0</value>  <!-- Unsupported -->
+      <value compset="20TR.*_DATM%QIA">1948</value>
+      <value compset="20TR.*_DATM%CRU">1901</value>
+      <value compset="20TR.*_DATM%GSW">1901</value>
+      <value compset="20TR.*_DATM%NLDAS2">0</value>  <!-- Unsupported -->
+      <value compset="4804.*_DATM%QIA">1948</value>
+      <value compset="SSP.*_DATM%QIA" >1995</value>
+      <value compset="SSP.*_DATM%CRU" >2001</value>
+      <value compset="SSP.*_DATM%GSW" >2001</value>
+      <value compset="2003.*_DATM%QIA.*_TEST">2002</value>
+      <value compset="1850.*_DATM%CRU">1901</value>
+      <value compset="2000.*_DATM%CRU">1991</value>
+      <value compset="2003.*_DATM%CRU">2002</value>
+      <value compset="2010.*_DATM%CRU">2005</value>
+      <value compset="1850.*_DATM%GSW">1901</value>
+      <value compset="2000.*_DATM%GSW">1991</value>
+      <value compset="2010.*_DATM%GSW">2005</value>
+      <value compset="2003.*_DATM%GSW">2002</value>
+      <value compset="2000.*_DATM%NLDAS2">1980</value>
+      <value compset="2010.*_DATM%NLDAS2">2005</value>
+      <value compset="2003.*_DATM%NLDAS2">2002</value>
+    </values>
+    <group>run_component_datm</group>
+    <file>env_run.xml</file>
+    <desc>starting year to loop data over</desc>
+  </entry>
+
+  <entry id="DATM_CLMNCEP_YR_END">
+    <type>integer</type>
+    <valid_values></valid_values>
+    <default_value>2004</default_value>
+    <values match="last">
+      <value   compset="2000.*_DATM%1PT">2004</value>
+      <value   compset="1850.*_DATM%QIA">1972</value>
+      <value   compset="1850.*_DATM%CRU">1920</value>
+      <value   compset="1850.*_DATM%GSW">1920</value>
+      <value   compset="1850.*_DATM%NLDAS2">-1</value>  <!-- Unsupported -->
+      <value   compset="2000.*_DATM%WISOQIA">2004</value>
+      <value   compset="2000.*_DATM%QIA">2004</value>
+      <value   compset="HIST.*_DATM%QIA">1972</value>
+      <value   compset="HIST.*_DATM%CRU">1920</value>
+      <value   compset="HIST.*_DATM%GSW">1920</value>
+      <value   compset="HIST.*_DATM%NLDAS2">-1</value>  <!-- Unsupported -->
+      <value   compset="20TR.*_DATM%QIA">1972</value>
+      <value   compset="20TR.*_DATM%CRU">1920</value>
+      <value   compset="20TR.*_DATM%GSW">1920</value>
+      <value   compset="20TR.*_DATM%NLDAS2">-1</value>  <!-- Unsupported -->
+      <value   compset="4804.*_DATM%QIA">2004</value>
+      <value   compset="SSP.*_DATM%QIA">2004</value>
+      <value   compset="SSP.*_DATM%CRU">2016</value>
+      <value   compset="SSP.*_DATM%GSW">2014</value>
+      <value   compset="2003.*_DATM%QIA.*_TEST">2003</value>
+      <value   compset="1850.*_DATM%CRU">1920</value>
+      <value   compset="2000.*_DATM%CRU">2010</value>
+      <value   compset="2003.*_DATM%CRU">2003</value>
+      <value   compset="2010.*_DATM%CRU">2014</value>
+      <value   compset="1850.*_DATM%GSW">1920</value>
+      <value   compset="2000.*_DATM%GSW">2010</value>
+      <value   compset="2010.*_DATM%GSW">2014</value>
+      <value   compset="2003.*_DATM%GSW">2003</value>
+      <value   compset="2000.*_DATM%NLDAS2">2018</value>
+      <value   compset="2010.*_DATM%NLDAS2">2014</value>
+      <value   compset="2003.*_DATM%NLDAS2">2003</value>
+    </values>
+    <group>run_component_datm</group>
+    <file>env_run.xml</file>
+    <desc>ending year to loop data over</desc>
+  </entry>
+
+<!--  DICE  -->
+  <entry id="COMP_ICE">
+    <type>char</type>
+    <valid_values>dice</valid_values>
+    <default_value>dice</default_value>
+    <group>case_comp</group>
+    <file>env_case.xml</file>
+    <desc>Name of ice component</desc>
+  </entry>
+
+  <entry id="DICE_MODE">
+    <type>char</type>
+    <valid_values>ssmi,ssmi_iaf</valid_values>
+    <default_value>ssmi</default_value>
+    <values match="last">
+      <value compset="DICE%SSMI">ssmi</value>
+      <value compset="DICE%IAF">ssmi_iaf</value>
+    </values>
+    <group>run_component_dice</group>
+    <file>env_run.xml</file>
+    <desc>DICE mode. DICE is a combination of a data model and a prognostic model.
+      The data functionality reads in ice coverage. The prognostic functionality
+      calculates the ice/atmosphere and ice/ocean fluxes. DICE receives the same
+      atmospheric input from the coupler as the active CICE model (i.e., atmospheric
+      states, shortwave fluxes, and ocean ice melt flux).
+      This component is only used to drive POP in C compsets.
+      If DICE_MODE is set to ssmi or ssmi_iaf, it is a prognostic mode.
+      It requires data be sent to the ice model.
+      Ice fraction (extent) data is read from an input stream,
+      atmosphere state variables are received from the coupler, and then
+      an atmosphere-ice surface flux is computed and sent to the
+      coupler. Normally the ice fraction data is found in the same data files
+      that provide SST data to the data ocean model. They are normally found
+      in the same file because the SST and ice fraction data are derived from the
+      same observational data sets and are consistent with each other.</desc>
+  </entry>
+
+<!-- DLND -->
+
+  <entry id="COMP_LND">
+    <type>char</type>
+    <valid_values>dlnd</valid_values>
+    <default_value>dlnd</default_value>
+    <group>case_comp</group>
+    <file>env_case.xml</file>
+    <desc>Name of land component</desc>
+  </entry>
+
+  <entry id="DLND_MODE">
+    <type>char</type>
+    <valid_values>SCPL,LCPL</valid_values>
+    <default_value>SCPL</default_value>
+    <values match="last">
+      <value compset="DLND%SCPL">SCPL</value>
+      <value compset="DLND%LCPL">LCPL</value>
+    </values>
+    <group>run_component_dlnd</group>
+    <file>env_run.xml</file>
+    <desc>
+      model mode.
+      In SCPL, glc coupling data (produced by CISM) from a previous
+      model run is read in from a coupler history file.
+      In LCPL, land forcing data (produced by CLM) from a previous
+      model run is read in from a coupler history file.
+    </desc>
+  </entry>
+
+  <entry id="DLND_CPLHIST_DIR">
+    <type>char</type>
+    <default_value>UNSET</default_value>
+    <values match="last">
+      <value compset="1850.*_DLND%SCPL" grid="l%0.9x1.25">$DIN_LOC_ROOT/lnd/dlnd7/CPLHIST_SNO/i.e20.I1850Clm50Sp.f09_g17.001_c180502</value>
+    </values>
+    <group>run_component_dlnd</group>
+    <file>env_run.xml</file>
+    <desc>directory for coupler history data mode (only used for CPLHIST mode)</desc>
+  </entry>
+
+  <entry id="DLND_CPLHIST_CASE">
+    <type>char</type>
+    <default_value>UNSET</default_value>
+    <values match="last">
+      <value compset="1850.*_DLND%SCPL" grid="l%0.9x1.25">i.e20.I1850Clm50Sp.f09_g17.001</value>
+    </values>
+    <group>run_component_dlnd</group>
+    <file>env_run.xml</file>
+    <desc>case name for coupler history data mode (only used for CPLHIST mode)</desc>
+  </entry>
+
+  <entry id="DLND_CPLHIST_YR_ALIGN">
+    <type>integer</type>
+    <default_value>-999</default_value>
+    <values match="last">
+      <value compset="1850.*_DLND%SCPL" grid="l%0.9x1.25">1</value>
+    </values>
+    <group>run_component_dlnd</group>
+    <file>env_run.xml</file>
+    <desc>
+      Simulation year corresponding to DLND_CPLHIST_YR_START (only used
+      when DLND_MODE is CPLHIST or GLC_CPLHIST). A common usage is to
+      set this to RUN_STARTDATE. With this setting, the forcing in the
+      first year of the run will be the forcing of year
+      DLND_CPLHIST_YR_START. Another use case is to align the calendar
+      of transient forcing with the model calendar. For example, setting
+      DLND_CPLHIST_YR_ALIGN=DLND_CPLHIST_YR_START will lead to the
+      forcing calendar being the same as the model calendar. The forcing
+      for a given model year would be the forcing of the same year. This
+      would be appropriate in transient runs where the model calendar is
+      setup to span the same year range as the forcing data.
+    </desc>
+  </entry>
+
+  <entry id="DLND_CPLHIST_YR_START">
+    <type>integer</type>
+    <default_value>-999</default_value>
+    <values match="last">
+      <value compset="1850.*_DLND%SCPL" grid="l%0.9x1.25">1</value>
+    </values>
+    <group>run_component_dlnd</group>
+    <file>env_run.xml</file>
+    <desc>starting year to loop data over (only used when DLND_MODE is CPLHIST or GLC_CPLHIST)</desc>
+  </entry>
+
+  <entry id="DLND_CPLHIST_YR_END">
+    <type>integer</type>
+    <default_value>-999</default_value>
+    <values match="last">
+      <value compset="1850.*_DLND%SCPL" grid="l%0.9x1.25">30</value>
+    </values>
+    <group>run_component_dlnd</group>
+    <file>env_run.xml</file>
+    <desc>ending year to loop data over (only used when DLND_MODE is CPLHIST or GLC_CPLHIST)</desc>
+  </entry>
+
+  <!-- DOCN -->
+
+  <entry id="COMP_OCN">
+    <type>char</type>
+    <valid_values>docn</valid_values>
+    <default_value>docn</default_value>
+    <group>case_comp</group>
+    <file>env_case.xml</file>
+    <desc>Name of ocn component</desc>
+  </entry>
+
+  <entry id="DOCN_MODE">
+    <type>char</type>
+    <valid_values>prescribed,sst_aquap1,sst_aquap2,sst_aquap3,sst_aquap4,sst_aquap5,sst_aquap6,sst_aquap7,sst_aquap8,sst_aquap9,sst_aquap10,sst_aquapfile,som,som_aquap,sst_aquap_constant,interannual,null</valid_values>
+    <default_value>prescribed</default_value>
+    <values match="last">
+      <value compset="_DOCN%NULL_">null</value>
+      <value compset="_DOCN%DOM_" >prescribed</value>
+      <value compset="_DOCN%SOM_" >som</value>
+      <value compset="_DOCN%SOMAQP_">som_aquap</value>
+      <value compset="_DOCN%IAF_">interannual</value>
+      <value compset="_DOCN%AQP1_">sst_aquap1</value>
+      <value compset="_DOCN%AQP2_">sst_aquap2</value>
+      <value compset="_DOCN%AQP3_">sst_aquap3</value>
+      <value compset="_DOCN%AQP4_">sst_aquap4</value>
+      <value compset="_DOCN%AQP5_">sst_aquap5</value>
+      <value compset="_DOCN%AQP6_">sst_aquap6</value>
+      <value compset="_DOCN%AQP7_">sst_aquap7</value>
+      <value compset="_DOCN%AQP8_">sst_aquap8</value>
+      <value compset="_DOCN%AQP9_">sst_aquap9</value>
+      <value compset="_DOCN%AQP10_">sst_aquap10</value>
+      <value compset="_DOCN%AQPFILE_">sst_aquapfile</value>
+      <value compset="_DOCN%AQPCONST_">sst_aquap_constant</value>
+    </values>
+    <group>run_component_docn</group>
+    <file>env_run.xml</file>
+    <desc> DOCN mode. The data ocean component (DOCN) always returns SSTs to the
+    driver. The atmosphere/ocean fluxes are computed in the
+    coupler. Therefore, the data ocean model does not compute fluxes like
+    the data ice model. DOCN has two distinct modes of operation. It can
+    run as a pure data model, reading in ocean SSTs (normally
+    climatological) from input datasets, performing time/spatial
+    interpolations, and passing these to the coupler. Alternatively,
+    DOCN can compute updated SSTs by running as a slab ocean model where
+    bottom ocean heat flux convergence and boundary layer depths are read
+    in and used with the atmosphere/ocean and ice/ocean fluxes obtained
+    from the driver.
+    --- A setting of prescribed assumes the only field in the input stream is SST.
+    It also assumes the SST is in Celsius and must be converted to Kelvin.
+    All other fields are set to zero except for ocean salinity, which is set to a
+    constant reference salinity value. Normally the ice fraction data is found in
+    the same data files that provide SST data to the data ocean model. They are
+    normally found in the same file because the SST and ice fraction data are derived
+    from the same observational data sets and are consistent with each other.
+    --- Settings of som (slab ocean model) or  som_aquap (aquaplanet slab ocean) are
+    prognostic modes which compute a prognostic sea surface temperature and a
+    freeze/melt potential (surface Q-flux) used by the sea ice model.  This
+    calculation requires an external SOM forcing data file that includes
+    ocean mixed layer depths and bottom-of-the-slab Q-fluxes.
+    Scientifically appropriate bottom-of-the-slab Q-fluxes are normally
+    ocean resolution dependent and are derived from the ocean model output
+    of a fully coupled CCSM run.  Note that while this mode runs out of
+    the box, the default SOM forcing file is not scientifically
+    appropriate and is provided for testing and development purposes only.
+    Users must create scientifically appropriate data for their particular
+    application.  A tool is available to derive valid SOM forcing.
+    --- A setting of sst_aquapN (where "N" is an integer index value) is a
+    type of prescribed SST mode used specifically for an aquaplanet setup in
+    which global SSTs correspond to an analytic form set by the index value.
+    Currently, indices for 10 SST profiles are supported [e.g., index 3 corresponds
+    to the "QOBS" profile of Neale and Hoskins (2001, Atmos. Sci. Lett.)].
+    With source code modifications, it is possible for users to create their own
+    analytic SST distributions and match them to indices 11 or greater.
+    </desc>
+  </entry>
+
+   <entry id="DOCN_AQPCONST_VALUE">
+    <type>real</type>
+    <valid_values></valid_values>
+    <default_value>-1</default_value>
+    <values match="last">
+      <value compset="_DOCN%AQPCONST">300</value>
+    </values>
+    <group>run_component_docn</group>
+    <file>env_run.xml</file>
+    <desc>Sets globally constant SST value</desc>
+  </entry>
+
+  <entry id="SSTICE_STREAM">
+    <type>char</type>
+    <valid_values></valid_values>
+    <default_value>CAMDATA</default_value>
+    <group>run_component_docn</group>
+    <file>env_run.xml</file>
+    <desc>Prescribed SST and ice coverage stream name.
+    Sets SST and ice coverage stream name.
+    This is only used when DOCN_MODE=prescribed.</desc>
+  </entry>
+
+  <entry id="SSTICE_DATA_FILENAME">
+    <type>char</type>
+    <valid_values></valid_values>
+    <default_value>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_1x1_clim_c101029.nc</default_value>
+    <values match="last">
+      <value compset="DOCN%DOM" grid="a%T31.*_oi%T31"						>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_48x96_clim_c050526.nc</value>
+      <value compset="DOCN%DOM" grid="a%1.9x2.5.*_oi%1.9x2.5"					>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_1.9x2.5_clim_c061031.nc</value>
+      <value compset="DOCN%DOM" grid="a%0.9x1.25.*_oi%0.9x1.25"					>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_0.9x1.25_clim_c040926.nc</value>
+      <value compset="DOCN%DOM" grid="a%0.47x0.63.*_oi%0.47x0.63"				>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_0.47x0.63_clim_c061106.nc</value>
+      <value compset="DOCN%DOM" grid="a%0.23x0.31.*_oi%0.23x0.31"				>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_0.23x0.31_clim_c110526.nc</value>
+      <value compset="(AMIP_|HIST_|20TR_|5505_|PIPD_|%TSCH)" grid=".+"				>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_1x1_1850_2012_c130411.nc</value>
+      <value compset="(AMIP_|HIST_|20TR_|5505_|PIPD_|%TSCH)" grid="a%T31.*_oi%T31"		>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_48x96_1850_2012_c130411.nc</value>
+      <value compset="(AMIP_|HIST_|20TR_|5505_|PIPD_|%TSCH)" grid="a%1.9x2.5.*_oi%1.9x2.5"	>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_1.9x2.5_1850_2012_c130411.nc</value>
+      <value compset="(AMIP_|HIST_|20TR_|5505_|PIPD_|%TSCH)" grid="a%0.9x1.25.*_oi%0.9x1.25"	>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_0.9x1.25_1850_2012_c130411.nc</value>
+      <value compset="(AMIP_|HIST_|20TR_|5505_|PIPD_|%TSCH)" grid="a%0.47x0.63.*_oi%0.47x0.63"	>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_0.47x0.63_1850_2012_c130411.nc</value>
+      <value compset="(AMIP_|HIST_|20TR_|5505_|PIPD_|%TSCH)" grid="a%0.23x0.31.*_oi%0.23x0.31"	>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_0.23x0.31_1850_2012_c130411.nc</value>
+      <value compset="1850_" grid=".+"								>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_1x1_clim_pi_c101029.nc</value>
+      <value compset="1850S_" grid=".+"								>$DIN_LOC_ROOT/ocn/docn7/SSTDATA/sst_ice_CMIP6_DECK_E3SM_1x1_1850_clim_c20190125.nc</value>
+      <value compset="1850_" grid="a%T31.*_oi%T31"						>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_48x96_clim_pi_c101028.nc</value>
+      <value compset="1850_" grid="a%1.9x2.5.*_oi%1.9x2.5"					>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_1.9x2.5_clim_pi_c101028.nc</value>
+      <value compset="1850_" grid="a%0.9x1.25.*_oi%0.9x1.25"					>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_0.9x1.25_clim_pi_c101028.nc</value>
+      <value compset="1850_" grid="a%0.47x0.63.*_oi%0.47x0.63"					>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_0.47x0.63_clim_pi_c101028.nc</value>
+      <value compset="1850_" grid="a%0.23x0.31.*_oi%0.23x0.31"					>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_0.23x0.31_clim_pi_c101028.nc</value>
+      <value compset="1950_" grid=".+"								>$DIN_LOC_ROOT/ocn/docn7/SSTDATA/sst_ice_CMIP6_DECK_E3SM_1x1_1950_clim_c20180910.nc</value>
+      <value compset="2010S_" grid="a%ne30np4.*_oi%oEC60to30v3"					>$DIN_LOC_ROOT/ocn/docn7/SSTDATA/sst_ice_CMIP6_DECK_E3SM_1x1_2010_clim_c20190821.nc</value>
+    </values>
+    <group>run_component_docn</group>
+    <file>env_run.xml</file>
+    <desc>Prescribed SST and ice coverage data file name.
+    Sets SST and ice coverage data file name.
+    This is only used when DOCN_MODE=prescribed.</desc>
+  </entry>
+
+  <entry id="SSTICE_GRID_FILENAME">
+    <type>char</type>
+    <valid_values></valid_values>
+    <default_value>$DIN_LOC_ROOT/ocn/docn7/domain.ocn.1x1.111007.nc</default_value>
+    <values match="last">
+      <value compset="DOCN%DOM" grid="a%T31.*_oi%T31"							>$DIN_LOC_ROOT/atm/cam/ocnfrac/domain.camocn.48x96_gx3v7_100114.nc</value>
+      <value compset="(AMIP_|HIST_|20TR_|5505_|PIPD_|%TSCH)" grid="a%T31.*_oi%T31"			>$DIN_LOC_ROOT/atm/cam/ocnfrac/domain.camocn.48x96_gx3v7_100114.nc</value>
+      <value compset="1850" grid="a%T31.*_oi%T31"							>$DIN_LOC_ROOT/atm/cam/ocnfrac/domain.camocn.48x96_gx3v7_100114.nc</value>
+      <value compset="DOCN%DOM" grid="a%1.9x2.5.*_oi%1.9x2.5"						>$DIN_LOC_ROOT/atm/cam/ocnfrac/domain.camocn.1.9x2.5_gx1v6_090403.nc </value>
+      <value compset="DOCN%DOM" grid="a%0.9x1.25.*_oi%0.9x1.25.*_m%gx1v6"				>$DIN_LOC_ROOT/atm/cam/ocnfrac/domain.camocn.0.9x1.25_gx1v6_090403.nc</value>
+      <value compset="DOCN%DOM" grid="a%0.9x1.25.*_oi%0.9x1.25.*_m%gx1v7"				>$DIN_LOC_ROOT/share/domains/domain.ocn.fv0.9x1.25_gx1v7.151020.nc</value>
+      <value compset="DOCN%DOM" grid="a%0.47x0.63.*_oi%0.47x0.63"					>$DIN_LOC_ROOT/atm/cam/ocnfrac/domain.camocn.0.47x0.63_gx1v6_090408.nc</value>
+      <value compset="DOCN%DOM" grid="a%0.23x0.31.*_oi%0.23x0.31"					>$DIN_LOC_ROOT/atm/cam/ocnfrac/domain.camocn.0.23x0.31_gx1v6_101108.nc</value>
+      <value compset="(AMIP_|HIST_|20TR_|5505_|PIPD_|%TSCH)" grid=".+"					>$DIN_LOC_ROOT/ocn/docn7/domain.ocn.1x1.111007.nc</value>
+      <value compset="(AMIP_|HIST_|20TR_|5505_|PIPD_|%TSCH)" grid="a%1.9x2.5.*_oi%1.9x2.5"		>$DIN_LOC_ROOT/atm/cam/ocnfrac/domain.camocn.1.9x2.5_gx1v6_090403.nc</value>
+      <value compset="(AMIP_|HIST_|20TR_|5505_|PIPD_|%TSCH)" grid="a%0.9x1.25.*_oi%0.9x1.25.*_m%gx1v6"  >$DIN_LOC_ROOT/atm/cam/ocnfrac/domain.camocn.0.9x1.25_gx1v6_090403.nc</value>
+      <value compset="(AMIP_|HIST_|20TR_|5505_|PIPD_|%TSCH)" grid="a%0.9x1.25.*_oi%0.9x1.25.*_m%gx1v7"	>$DIN_LOC_ROOT/share/domains/domain.ocn.fv0.9x1.25_gx1v7.151020.nc</value>
+      <value compset="(AMIP_|HIST_|20TR_|5505_|PIPD_|%TSCH)" grid="a%0.47x0.63.*_oi%0.47x0.63"		>$DIN_LOC_ROOT/atm/cam/ocnfrac/domain.camocn.0.47x0.63_gx1v6_090408.nc</value>
+      <value compset="(AMIP_|HIST_|20TR_|5505_|PIPD_|%TSCH)" grid="a%0.23x0.31.*_oi%0.23x0.31"		>$DIN_LOC_ROOT/atm/cam/ocnfrac/domain.camocn.0.23x0.31_gx1v6_101108.nc</value>
+      <value compset="1850" grid=".+"									>$DIN_LOC_ROOT/ocn/docn7/domain.ocn.1x1.111007.nc</value>
+      <value compset="1850" grid="a%1.9x2.5.*_oi%1.9x2.5"						>$DIN_LOC_ROOT/atm/cam/ocnfrac/domain.camocn.1.9x2.5_gx1v6_090403.nc</value>
+      <value compset="1850" grid="a%0.9x1.25.*_oi%0.9x1.25.*_m%gx1v6"					>$DIN_LOC_ROOT/atm/cam/ocnfrac/domain.camocn.0.9x1.25_gx1v6_090403.nc</value>
+      <value compset="1850" grid="a%0.9x1.25.*_oi%0.9x1.25.*_m%gx1v7"					>$DIN_LOC_ROOT/share/domains/domain.ocn.fv0.9x1.25_gx1v7.151020.nc</value>
+      <value compset="1850" grid="a%0.47x0.63.*_oi%0.47x0.63"						>$DIN_LOC_ROOT/atm/cam/ocnfrac/domain.camocn.0.47x0.63_gx1v6_090408.nc</value>
+      <value compset="1850" grid="a%0.23x0.31.*_oi%0.23x0.31"						>$DIN_LOC_ROOT/atm/cam/ocnfrac/domain.camocn.0.23x0.31_gx1v6_101108.nc</value>
+      <value compset="DATM.*_DLND.*_DICE.*_DOCN.*_DROF"							>$DIN_LOC_ROOT/atm/cam/ocnfrac/domain.camocn.0.9x1.25_gx1v6_090403.nc</value>
+      <value compset="DATM.*_SLND.*_DICE.*_DOCN.*_DROF"							>$DIN_LOC_ROOT/atm/cam/ocnfrac/domain.camocn.0.9x1.25_gx1v6_090403.nc</value>
+      <value compset="DATM.*_DLND.*_DICE.*_DOCN.*_DROF" grid="a%4x5.*_m%gx3v7"				>$DIN_LOC_ROOT/atm/cam/ocnfrac/domain.camocn.4x5_gx3v7_100120.nc</value>
+      <value compset="DATM.*_SLND.*_DICE.*_DOCN.*_DROF" grid="a%4x5.*_m%gx3v7"				>$DIN_LOC_ROOT/atm/cam/ocnfrac/domain.camocn.4x5_gx3v7_100120.nc</value>
+    </values>
+    <group>run_component_cam_sstice</group>
+    <file>env_run.xml</file>
+    <desc>Prescribed SST and ice coverage grid file name.
+    Sets SST and ice coverage grid file name for prescribed runs.
+    This is only used when DOCN_MODE=prescribed.</desc>
+  </entry>
+
+  <entry id="SSTICE_YEAR_ALIGN">
+    <type>integer</type>
+    <valid_values></valid_values>
+    <default_value>1</default_value>
+    <values match="last">
+      <value compset="(AMIP_|20TR_|HIST_|5505_|PIPD_|%TSCH)">1850</value>
+    </values>
+    <group>run_component_cam_sstice</group>
+    <file>env_run.xml</file>
+    <desc>The model year that corresponds to SSTICE_YEAR_START on the data file.
+    Prescribed SST and ice coverage data will be aligned so that the first year of
+    data corresponds to SSTICE_YEAR_ALIGN in the model. For instance, if the first
+    year of prescribed data is the same as the first year of the model run, this
+    should be set to the year given in RUN_STARTDATE.
+    If SSTICE_YEAR_ALIGN is later than the model's starting year, or if the model is
+    run after the prescribed data ends (as determined by SSTICE_YEAR_END), the
+    default behavior is to assume that the data from SSTICE_YEAR_START to
+    SSTICE_YEAR_END cyclically repeats. This behavior is controlled by the
+    &quot;taxmode&quot; stream option; see the data model documentation for more details.
+    This is only used when DOCN_MODE=prescribed.</desc>
+  </entry>
+
+  <entry id="SSTICE_YEAR_START">
+    <type>integer</type>
+    <valid_values></valid_values>
+    <default_value>0</default_value>
+    <values match="last">
+      <value compset="(AMIP_|HIST_|20TR_|5505_|PIPD_|%TSCH)">1850</value>
+    </values>
+    <group>run_component_cam_sstice</group>
+    <file>env_run.xml</file>
+    <desc>The first year of data to use from SSTICE_DATA_FILENAME.
+    This is the first year of prescribed SST and ice coverage data to use. For
+    example, if a data file has data for years 0-99, and SSTICE_YEAR_START is 10,
+    years 0-9 in the file will not be used.
+    This is only used when DOCN_MODE=prescribed.</desc>
+  </entry>
+
+  <entry id="SSTICE_YEAR_END">
+    <type>integer</type>
+    <valid_values></valid_values>
+    <default_value>0</default_value>
+    <values match="last">
+      <value compset="(AMIP_|HIST_|20TR_|5505_|PIPD_|%TSCH)">2012</value>
+    </values>
+    <group>run_component_cam_sstice</group>
+    <file>env_run.xml</file>
+    <desc>The last year of data to use from SSTICE_DATA_FILENAME.
+    This is the last year of prescribed SST and ice coverage data to use. For
+    example, if a data file has data for years 0-99, and value is 49,
+    years 50-99 in the file will not be used.
+    This is only used when DOCN_MODE=prescribed.</desc>
+  </entry>
+
+  <!-- DROF -->
+
+  <entry id="COMP_ROF">
+    <type>char</type>
+    <valid_values>drof</valid_values>
+    <default_value>drof</default_value>
+    <group>case_comp</group>
+    <file>env_case.xml</file>
+    <desc>Name of rof component</desc>
+  </entry>
+
+  <entry id="DROF_MODE">
+    <type>char</type>
+    <valid_values>CPLHIST,DIATREN_ANN_RX1,DIATREN_IAF_RX1,DIATREN_IAF_AIS00_RX1,DIATREN_IAF_AIS45_RX1,DIATREN_IAF_AIS55_RX1,IAF_JRA,IAF_JRA_1p4_2018</valid_values>
+    <default_value>DIATREN_ANN_RX1</default_value>
+    <values match="last">
+      <value compset="_DROF%NYF" >DIATREN_ANN_RX1</value>
+      <value compset="_DROF%NYFAIS00" >DIATREN_ANN_AIS00_RX1</value>
+      <value compset="_DROF%NYFAIS45" >DIATREN_ANN_AIS45_RX1</value>
+      <value compset="_DROF%NYFAIS55" >DIATREN_ANN_AIS55_RX1</value>
+      <value compset="_DROF%IAF" >DIATREN_IAF_RX1</value>
+      <value compset="_DROF%IAFAIS00" >DIATREN_IAF_AIS00_RX1</value>
+      <value compset="_DROF%IAFAIS45" >DIATREN_IAF_AIS45_RX1</value>
+      <value compset="_DROF%IAFAIS55" >DIATREN_IAF_AIS55_RX1</value>
+      <value compset="_DROF%CPLHIST">CPLHIST</value>
+      <value compset="_DROF%JRA" >IAF_JRA</value>
+      <value compset="_DROF%JRA-1p4-2018" >IAF_JRA_1p4_2018</value>
+    </values>
+    <group>run_component_drof</group>
+    <file>env_run.xml</file>
+    <desc>DROF mode. Values are CPLHIST, *_RX1. In *_RX1 mode,
+    observational climatological or interannual
+    1-degree runoff data is used. In CPLHIST mode, runoff
+    data from a previous model run is read in.
+    In CPLHIST mode, runoff forcing data from a previous
+    model run is output by the coupler and read in by the data model.
+    default is DIATREN_ANN_RX1.</desc>
+  </entry>
+
+  <entry id="DROF_CPLHIST_CASE">
+    <type>char</type>
+    <valid_values></valid_values>
+    <default_value>UNSET</default_value>
+    <group>run_component_drof</group>
+    <file>env_run.xml</file>
+    <desc>case name for coupler history data mode (only used when DROF_MODE is CPLHIST mode)</desc>
+  </entry>
+
+  <entry id="DROF_CPLHIST_YR_ALIGN">
+    <type>integer</type>
+    <valid_values></valid_values>
+    <default_value>-999</default_value>
+    <group>run_component_drof</group>
+    <file>env_run.xml</file>
+    <desc>
+      Simulation year corresponding to DROF_CPLHIST_YR_START (only used
+      when DROF_MODE is CPLHIST). A common usage is to set this to
+      RUN_STARTDATE. With this setting, the forcing in the first year of
+      the run will be the forcing of year DROF_CPLHIST_YR_START. Another
+      use case is to align the calendar of transient forcing with the
+      model calendar. For example, setting
+      DROF_CPLHIST_YR_ALIGN=DROF_CPLHIST_YR_START will lead to the
+      forcing calendar being the same as the model calendar. The forcing
+      for a given model year would be the forcing of the same year. This
+      would be appropriate in transient runs where the model calendar is
+      setup to span the same year range as the forcing data.
+    </desc>
+  </entry>
+
+  <entry id="DROF_CPLHIST_YR_START">
+    <type>integer</type>
+    <valid_values></valid_values>
+    <default_value>-999</default_value>
+    <group>run_component_drof</group>
+    <file>env_run.xml</file>
+    <desc>starting year to loop data over (only used when DROF_MODE is CPLHIST)</desc>
+  </entry>
+
+  <entry id="DROF_CPLHIST_YR_END">
+    <type>integer</type>
+    <valid_values></valid_values>
+    <default_value>-999</default_value>
+    <group>run_component_drof</group>
+    <file>env_run.xml</file>
+    <desc>ending year to loop data over (only used when DROF_MODE is CPLHIST)</desc>
+  </entry>
+
+  <!-- DWAV -->
+
+  <entry id="COMP_WAV">
+    <type>char</type>
+    <valid_values>dwav</valid_values>
+    <default_value>dwav</default_value>
+    <group>case_comp</group>
+    <file>env_case.xml</file>
+    <desc>Name of wave component</desc>
+  </entry>
+
+  <entry id="DWAV_MODE">
+    <type>char</type>
+    <valid_values>CLIMO</valid_values>
+    <default_value>CLIMO</default_value>
+    <values match="last">
+      <value compset="_DWAV%CLIMO">CLIMO</value>
+    </values>
+    <group>run_component_dwav</group>
+    <file>env_run.xml</file>
+    <desc>DWAV mode</desc>
+  </entry>
+
+  <help>
+    =========================================
+    Community Datamodels for Earth System Prediction
+    naming conventions
+    =========================================
+  </help>
+
+</entry_id>

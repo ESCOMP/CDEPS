@@ -29,7 +29,7 @@ module dshr_strdata_mod
   use pio              , only : pio_seterrorhandling, pio_initdecomp, pio_freedecomp
   use pio              , only : pio_inquire, pio_inq_varid, pio_inq_varndims, pio_inq_vardimid
   use pio              , only : pio_inq_dimlen, pio_inq_vartype, pio_inq_dimname
-  use pio              , only : pio_double, pio_real, pio_int, pio_offset_kind
+  use pio              , only : pio_double, pio_real, pio_int, pio_offset_kind, pio_get_var
   use pio              , only : pio_read_darray, pio_setframe, pio_fill_double, pio_get_att
   use pio              , only : PIO_BCAST_ERROR, PIO_RETURN_ERROR, PIO_NOERR, PIO_INTERNAL_ERROR, PIO_SHORT
   use perf_mod         , only : t_startf, t_stopf, t_adj_detailf
@@ -394,15 +394,16 @@ contains
        ! TODO: add functionality if the stream mesh needs to be created from a grid
        call shr_stream_getMeshFileName (sdat%stream(ns), filename)
 
-       if (masterproc) then
+       if (filename /= 'none' .and. masterproc) then
           inquire(file=trim(filename),exist=fileExists)
           if (.not. fileExists) then
              write(sdat%logunit,F00) "ERROR: file does not exist: ", trim(fileName)
              call shr_sys_abort(subName//"ERROR: file does not exist: "//trim(fileName))
           end if
        endif
-
-       sdat%pstrm(ns)%stream_mesh = ESMF_MeshCreate(trim(filename), fileformat=ESMF_FILEFORMAT_ESMFMESH, rc=rc)
+       if(filename /= 'none') then
+          sdat%pstrm(ns)%stream_mesh = ESMF_MeshCreate(trim(filename), fileformat=ESMF_FILEFORMAT_ESMFMESH, rc=rc)
+       endif
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
        ! Determine field names for stream fields with both stream file names and data model names
@@ -455,9 +456,11 @@ contains
        ! create the source and destination fields needed to create the route handles
        ! assume that all fields in a stream share the same mesh and there is only a unique model mesh
        ! can do this outside of a stream loop by just using the first stream index
-       sdat%pstrm(ns)%field_stream = ESMF_FieldCreate(sdat%pstrm(ns)%stream_mesh, &
-            ESMF_TYPEKIND_r8, meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
+       if(ESMF_MeshIsCreated(sdat%pstrm(ns)%stream_mesh)) then
+          sdat%pstrm(ns)%field_stream = ESMF_FieldCreate(sdat%pstrm(ns)%stream_mesh, &
+               ESMF_TYPEKIND_r8, meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
+          if (chkerr(rc,__LINE__,u_FILE_u)) return
+       endif
        call dshr_fldbun_getFieldN(sdat%pstrm(ns)%fldbun_data(sdat%pstrm(ns)%stream_lb), 1, lfield_dst, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
 
@@ -477,6 +480,8 @@ contains
                routehandle=sdat%pstrm(ns)%routehandle, &
                ignoreUnmatchedIndices = .true., rc=rc)
           if (chkerr(rc,__LINE__,u_FILE_u)) return
+       else if (trim(sdat%stream(ns)%mapalgo) == 'nn') then
+          ! single point data, no action required.
        else
           call shr_sys_abort('ERROR: only bilinear regrid or redist is supported for now')
        end if
@@ -522,7 +527,6 @@ contains
        call shr_strdata_print(sdat,'sdat data ')
        write(sdat%logunit,*) ' successfully initialized sdat'
     endif
-
   end subroutine shr_strdata_init
 
   !===============================================================================
@@ -570,8 +574,9 @@ contains
          trim(fldname), sdat%pstrm(stream_index)%stream_mesh, pio_iodesc, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
+
     ! Now read in the data for fldname
-    call pio_seterrorhandling(pioid, PIO_BCAST_ERROR)
+!    call pio_seterrorhandling(pioid, PIO_BCAST_ERROR)
     lsize = size(flddata)
     rcode = pio_inq_varid(pioid, trim(fldname), varid)
     rcode = pio_inq_vartype(pioid, varid, pio_iovartype)
@@ -845,7 +850,6 @@ contains
 
              call t_startf(trim(lstr)//trim(timname)//'_coszen')
              allocate(coszen(sdat%model_lsize))
-             write(6,*)'DEBUG: model_size = ',sdat%model_lsize
 
              ! get coszen
              call t_startf(trim(lstr)//trim(timname)//'_coszenC')
@@ -1047,8 +1051,6 @@ contains
     character(CL)                       :: filename_ub
     character(CL)                       :: filename_next
     character(CL)                       :: filename_prev
-    real(r8), pointer                   :: dataptr_lb(:)
-    real(r8), pointer                   :: dataptr_ub(:)
     character(*), parameter             :: subname = '(shr_strdata_readLBUB) '
     character(*), parameter             :: F00   = "('(shr_strdata_readLBUB) ',8a)"
     character(*), parameter             :: F01   = "('(shr_strdata_readLBUB) ',a,5i8)"
@@ -1225,11 +1227,17 @@ contains
     ! Determine the pio io descriptor for the stream from the first data field in the stream
     ! ******************************************************************************
 
-    if (.not. pio_iodesc_set) then
-       call shr_strdata_set_stream_iodesc(sdat, pio_subsystem, pioid, &
-            trim(fldlist_stream(1)), stream_mesh, pio_iodesc, rc=rc)
+    if (ESMF_MeshIsCreated(stream_mesh)) then
+       if(.not. pio_iodesc_set) then
+          call shr_strdata_set_stream_iodesc(sdat, pio_subsystem, pioid, &
+               trim(fldlist_stream(1)), stream_mesh, pio_iodesc, rc=rc)
+          if (chkerr(rc,__LINE__,u_FILE_u)) return
+          pio_iodesc_set = .true.
+       endif
+       call dshr_field_getfldptr(sdat%pstrm(ns)%field_stream, fldptr1=dataptr, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
-       pio_iodesc_set = .true.
+    else
+       allocate(dataptr(1))
     end if
 
     ! ******************************************************************************
@@ -1242,8 +1250,6 @@ contains
        write(sdat%logunit,F02) 'file ' // trim(boundstr) //': ',trim(filename), nt
     endif
 
-    call dshr_field_getfldptr(sdat%pstrm(ns)%field_stream, fldptr1=dataptr, rc=rc)
-    if (chkerr(rc,__LINE__,u_FILE_u)) return
     if(sdat%pstrm(ns)%ucomp > 0 .and. sdat%pstrm(ns)%vcomp > 0) then
        call shr_string_listGetName(stream%stream_vectors,1,uname)
        call shr_string_listGetName(stream%stream_vectors,2,vname)
@@ -1292,7 +1298,11 @@ contains
        call pio_setframe(pioid, varid, int(nt,kind=Pio_Offset_Kind))
 
        if (pio_iovartype == PIO_REAL) then
-          call pio_read_darray(pioid, varid, pio_iodesc, data_real, rcode)
+          if (pio_iodesc_set) then
+             call pio_read_darray(pioid, varid, pio_iodesc, data_real, rcode)
+          else
+             rcode = pio_get_var(pioid, varid,start=(/1,1,nt/),count=(/1,1,1/), ival=data_real)
+          endif
           if ( rcode /= PIO_NOERR ) then
              call shr_sys_abort(' ERROR: reading in variable: '// trim(fldlist_stream(nf)))
           end if
@@ -1308,7 +1318,11 @@ contains
              dataptr(:) = real(data_real(:),kind=r8)
           endif
        else if (pio_iovartype == PIO_DOUBLE) then
-          call pio_read_darray(pioid, varid, pio_iodesc, dataptr, rcode)
+          if (pio_iodesc_set) then
+             call pio_read_darray(pioid, varid, pio_iodesc, dataptr, rcode)
+          else
+             rcode = pio_get_var(pioid, varid,start=(/1,1,nt/),count=(/1,1,1/), ival=dataptr)
+          endif
           if ( rcode /= PIO_NOERR ) then
              call shr_sys_abort(' ERROR: reading in variable: '// trim(fldlist_stream(nf)))
           end if
@@ -1320,7 +1334,11 @@ contains
              enddo
           endif
        elseif (pio_iovartype == PIO_SHORT) then
-          call pio_read_darray(pioid, varid, pio_iodesc, data_short, rcode)
+          if (pio_iodesc_set) then
+             call pio_read_darray(pioid, varid, pio_iodesc, data_short, rcode)
+          else
+             rcode = pio_get_var(pioid, varid,start=(/1,1,nt/),count=(/1,1,1/), ival=data_short)
+          endif
           if ( rcode /= PIO_NOERR ) then
              call shr_sys_abort(' ERROR: reading in variable: '// trim(fldlist_stream(nf)))
           end if
@@ -1345,9 +1363,13 @@ contains
           dataptr2d_src(1,:) = dataptr(:)
        elseif(associated(dataptr2d_src) .and. trim(fldlist_model(nf)) .eq. vname) then
           dataptr2d_src(2,:) = dataptr(:)
-       else
+       else if (pio_iodesc_set) then
           call ESMF_FieldRegrid(sdat%pstrm(ns)%field_stream, field_dst, routehandle=sdat%pstrm(ns)%routehandle, &
                termorderflag=ESMF_TERMORDER_SRCSEQ, checkflag=.false., zeroregion=ESMF_REGION_TOTAL, rc=rc)
+          if (chkerr(rc,__LINE__,u_FILE_u)) return
+       else
+          call ESMF_FieldFill(field_dst, dataFillScheme="const", const1=dataptr(1), rc=rc)
+          if (chkerr(rc,__LINE__,u_FILE_u)) return
        endif
     enddo
 
@@ -1405,6 +1427,9 @@ contains
     if (pio_iovartype == PIO_REAL) then
        deallocate(data_real)
     endif
+    if(.not. pio_iodesc_set) then
+       deallocate(dataptr)
+    endif
     call t_stopf(trim(istr)//'_readpio')
 
   end subroutine shr_strdata_readstrm
@@ -1432,7 +1457,7 @@ contains
     integer                       :: unlimdid
     type(ESMF_DistGrid)           :: distGrid
     integer                       :: lsize
-    integer, pointer              :: compdof(:)
+    integer, pointer              :: compdof(:) => null()
     character(CS)                 :: dimname
     integer                       :: rCode      ! pio return code (only used when pio error handling is PIO_BCAST_ERROR)
     character(*), parameter       :: subname = '(shr_strdata_set_stream_iodesc) '
@@ -1444,7 +1469,7 @@ contains
 
     rc = ESMF_SUCCESS
 
-    call pio_seterrorhandling(pioid, PIO_BCAST_ERROR, old_error_handle)
+!    call pio_seterrorhandling(pioid, PIO_BCAST_ERROR, old_error_handle)
 
     ! query the first field in the stream dataset
     rcode = pio_inq_varid(pioid, trim(fldname), varid)
@@ -1497,9 +1522,9 @@ contains
        end if
     else
        write(6,*)'ERROR: dimlens= ',dimlens
-       call shr_sys_abort(trim(subname)//' only dimlen of 2 and 3 are currently supported')
+       call shr_sys_abort(trim(subname)//' only ndims of 2 and 3 are currently supported')
     end if
-    call pio_seterrorhandling(pioid, old_error_handle)
+!    call pio_seterrorhandling(pioid, old_error_handle)
 
     deallocate(compdof)
     deallocate(dimids)
