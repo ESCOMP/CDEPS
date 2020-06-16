@@ -105,7 +105,7 @@
     CORE2_IAF.CORE2.ArcFactor
 
     ========================
-    datm_mode: CORE_IAF_JRA (DATM%JRA in env_run.xml) 
+    datm_mode: CORE_IAF_JRA (DATM%JRA in env_run.xml)
     ========================
     CORE_IAF_JRA.PREC
     CORE_IAF_JRA.LWDN
@@ -303,7 +303,7 @@
       <!-- meshes for datm_mode CLMNLDAS2-->
       <!-- ===================-->
       <value stream="CLMNLDAS2.Solar">
-        $DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.NLDAS2.0.125d.v1/Solar/ctsmforc.NLDAS2.0.125d.v1.Solr_ESMFmesh_120620.nc 
+        $DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.NLDAS2.0.125d.v1/Solar/ctsmforc.NLDAS2.0.125d.v1.Solr_ESMFmesh_120620.nc
       </value>
       <value stream="CLMNLDAS2.Precip">
         $DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.NLDAS2.0.125d.v1/Precip/ctsmforc.NLDAS2.0.125d.v1.Prec_ESMFmesh_120620.nc
@@ -1941,7 +1941,7 @@
         ZBOT     Sa_z
         TBOT     Sa_tbot
         RH       Sa_rh
-        WIND     Sa__wind
+        WIND     Sa_wind
         PSRF     Sa_pbot
         PRECTmms Faxa_precn
         FSDS     Faxa_swdn
@@ -2469,7 +2469,7 @@
     <group>streams_file</group>
     <valid_values>redist,bilinear,nn</valid_values>
     <desc>
-      array (up to 30 elements) of mapping algorithms associated with the array of streams. 
+      array (up to 30 elements) of mapping algorithms associated with the array of streams.
       valid values: redist,bilinear
     </desc>
     <values>
@@ -2658,7 +2658,7 @@
       general method that operates on the data.  this is generally
       implemented in the data models but is set in the strdata method for
       convenience.  valid options are dependent on the data model and will
-      be described elsewhere.  
+      be described elsewhere.
       datamode = "COPYALL"
       The default science mode of the data model is the COPYALL mode.
       COPYALL mode will examine the fields found in all input data streams,
