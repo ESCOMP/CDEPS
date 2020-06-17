@@ -67,7 +67,7 @@ module rof_comp_nuopc
   integer                      :: nx_global
   integer                      :: ny_global
 
-                                                                      ! constants
+  logical                      :: diagnose_data = .true.
   integer      , parameter     :: master_task=0                       ! task number of master task
   character(*) , parameter     :: rpfile = 'rpointer.rof'
   character(*) , parameter     :: modName =  "(rof_comp_nuopc)"
@@ -396,9 +396,9 @@ contains
 
     if (first_time) then
        ! Initialize dfields
-       call dshr_dfield_add(dfields, sdat, 'Forr_rofl', 'Forr_rofl', exportState, Forr_rofl, logunit, masterproc, rc=rc)
+       call dshr_dfield_add(dfields, sdat, 'Forr_rofl', 'Forr_rofl', exportState, logunit, masterproc, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call dshr_dfield_add(dfields, sdat, 'Forr_rofi', 'Forr_rofi', exportState, Forr_rofi, logunit, masterproc, rc=rc)
+       call dshr_dfield_add(dfields, sdat, 'Forr_rofi', 'Forr_rofi', exportState, logunit, masterproc, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
        ! Initialize module ponters
@@ -454,8 +454,10 @@ contains
     end if
 
     ! write diagnostics
-    call dshr_state_diagnose(exportState,subname//':ES',rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (diagnose_data) then
+       call dshr_state_diagnose(exportState, flds_scalar_name, subname//':ES',rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    end if
 
     call t_stopf('drof_datamode')
     call t_stopf('DROF_RUN')

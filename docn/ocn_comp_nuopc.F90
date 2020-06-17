@@ -98,6 +98,7 @@ module ocn_comp_nuopc
 
   ! constants
   logical                      :: aquaplanet = .false.
+  logical                      :: diagnose_data = .true.
   integer      , parameter     :: master_task = 0                 ! task number of master task
   character(*) , parameter     :: module_name = "(ocn_comp_nuopc)"
   character(*) , parameter     :: modelname = 'docn'
@@ -364,10 +365,6 @@ contains
     call dshr_state_SetScalar(dble(ny_global),flds_scalar_index_ny, exportState, flds_scalar_name, flds_scalar_num, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    ! Diagnostics
-    call dshr_state_diagnose(exportState,subname//':ES',rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
    end subroutine InitializeRealize
 
   !===============================================================================
@@ -561,8 +558,10 @@ contains
     call t_stopf('DOCN_RUN')
 
     ! write diagnostics
-    call dshr_state_diagnose(exportState,subname//':ES',rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (diagnose_data) then
+       call dshr_state_diagnose(exportState, flds_scalar_name, subname//':ES',rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    end if
 
   contains
 

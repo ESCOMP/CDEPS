@@ -236,23 +236,6 @@
     </values>
   </entry>
 
-  <entry id="mapmask" per_stream_entry="true">
-    <type>char(30)</type>
-    <category>streams</category>
-    <group>streams_file</group>
-    <valid_values>nomask,srcmask,dstmask,bothmask</valid_values>
-    <desc>
-      masking algorithms for mapping input data associated with the
-      array of streams.  valid options are map only from valid src
-      points, map only to valid destination points, ignore all masks,
-      map only from valid src points to valid destination points.
-      valid values: srcmask, dstmask, nomask,bothmask
-    </desc>
-    <values>
-      <value>nomask</value>
-    </values>
-  </entry>
-
   <entry id="tintalgo" per_stream_entry="true">
     <type>char(30)</type>
     <category>streams</category>

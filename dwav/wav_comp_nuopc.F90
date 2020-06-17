@@ -68,7 +68,9 @@ module wav_comp_nuopc
   character(CL)                :: restfilm = nullstr                  ! model restart file namelist
   integer                      :: nx_global
   integer                      :: ny_global
-                                                                      ! constants
+
+  ! constants
+  logical                      :: diagnose_data = .true.
   integer      , parameter     :: master_task=0                       ! task number of master task
   character(*) , parameter     :: rpfile = 'rpointer.wav'
   character(*) , parameter     :: modName =  "(wav_comp_nuopc)"
@@ -294,10 +296,6 @@ contains
     call dshr_state_SetScalar(dble(ny_global),flds_scalar_index_ny, exportState, flds_scalar_name, flds_scalar_num, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    ! Diagnostics
-    call dshr_state_diagnose(exportState,subname//':ES',rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
   end subroutine InitializeRealize
 
   !===============================================================================
@@ -362,13 +360,11 @@ contains
        call t_stopf('dwav_restart')
     endif
 
-    ! write diagnostics
-    call dshr_state_diagnose(exportState,subname//':ES',rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    if (my_task == master_task) then
-       call dshr_log_clock_advance(clock, 'DWAV', logunit, rc)
+    ! Write Diagnostics
+    if (diagnose_data) then
+       call dshr_state_diagnose(exportState, flds_scalar_name, subname//':ES',rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    endif
+    end if
 
     call t_stopf(subname)
 

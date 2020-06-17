@@ -59,13 +59,14 @@ contains
   end subroutine dshr_state_getfldptr
 
   !===============================================================================
-  subroutine dshr_state_diagnose(State, string, rc)
+  subroutine dshr_state_diagnose(State, flds_scalar_name, string, rc)
 
     ! ----------------------------------------------
     ! Diagnose status of State
     ! ----------------------------------------------
 
     type(ESMF_State), intent(in)  :: state
+    character(len=*), intent(in)  :: flds_scalar_name
     character(len=*), intent(in)  :: string
     integer         , intent(out) :: rc
 
@@ -82,40 +83,41 @@ contains
     call ESMF_StateGet(state, itemCount=fieldCount, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     allocate(lfieldnamelist(fieldCount))
-
     call ESMF_StateGet(state, itemNameList=lfieldnamelist, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
 
     do n = 1, fieldCount
-
        call ESMF_StateGet(state, itemName=lfieldnamelist(n), field=lfield, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
 
-       call dshr_field_getfldptr(lfield, fldptr1=dataPtr1d, fldptr2=dataPtr2d, rank=lrank, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
+       if (trim(lfieldnamelist(n)) /= trim(flds_scalar_name)) then
 
-       if (lrank == 0) then
-          ! no local data
-       elseif (lrank == 1) then
-          if (size(dataPtr1d) > 0) then
-             write(msgString,'(A,3g14.7,i8)') trim(string)//': '//trim(lfieldnamelist(n)), &
-                  minval(dataPtr1d), maxval(dataPtr1d), sum(dataPtr1d), size(dataPtr1d)
+          call dshr_field_getfldptr(lfield, fldptr1=dataPtr1d, fldptr2=dataPtr2d, rank=lrank, rc=rc)
+          if (chkerr(rc,__LINE__,u_FILE_u)) return
+
+          if (lrank == 0) then
+             ! no local data
+          elseif (lrank == 1) then
+             if (size(dataPtr1d) > 0) then
+                write(msgString,'(A,3g14.7,i8)') trim(string)//': '//trim(lfieldnamelist(n)), &
+                     minval(dataPtr1d), maxval(dataPtr1d), sum(dataPtr1d), size(dataPtr1d)
+             else
+                write(msgString,'(A,a)') trim(string)//': '//trim(lfieldnamelist(n))," no data"
+             endif
+          elseif (lrank == 2) then
+             if (size(dataPtr2d) > 0) then
+                write(msgString,'(A,3g14.7,i8)') trim(string)//': '//trim(lfieldnamelist(n)), &
+                     minval(dataPtr2d), maxval(dataPtr2d), sum(dataPtr2d), size(dataPtr2d)
+             else
+                write(msgString,'(A,a)') trim(string)//': '//trim(lfieldnamelist(n))," no data"
+             endif
           else
-             write(msgString,'(A,a)') trim(string)//': '//trim(lfieldnamelist(n))," no data"
+             call ESMF_LogWrite(trim(subname)//": ERROR rank not supported ", ESMF_LOGMSG_ERROR)
+             rc = ESMF_FAILURE
+             return
           endif
-       elseif (lrank == 2) then
-          if (size(dataPtr2d) > 0) then
-             write(msgString,'(A,3g14.7,i8)') trim(string)//': '//trim(lfieldnamelist(n)), &
-                  minval(dataPtr2d), maxval(dataPtr2d), sum(dataPtr2d), size(dataPtr2d)
-          else
-             write(msgString,'(A,a)') trim(string)//': '//trim(lfieldnamelist(n))," no data"
-          endif
-       else
-          call ESMF_LogWrite(trim(subname)//": ERROR rank not supported ", ESMF_LOGMSG_ERROR)
-          rc = ESMF_FAILURE
-          return
-       endif
-       call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
+          call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
+       end if
     enddo
 
     deallocate(lfieldnamelist)
@@ -488,7 +490,6 @@ contains
     integer           , intent(out)             :: rc
 
     ! local variables
-    type(ESMF_GeomType_Flag)    :: geomtype
     type(ESMF_FieldStatus_Flag) :: status
     type(ESMF_Mesh)             :: lmesh
     integer                     :: lrank, nnodes, nelements
@@ -520,26 +521,15 @@ contains
 
     else
 
-       call ESMF_FieldGet(field, geomtype=geomtype, rc=rc)
+       call ESMF_FieldGet(field, rank=lrank, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
-
-       if (geomtype == ESMF_GEOMTYPE_GRID) then
-          call ESMF_FieldGet(field, rank=lrank, rc=rc)
-          if (chkerr(rc,__LINE__,u_FILE_u)) return
-       elseif (geomtype == ESMF_GEOMTYPE_MESH) then
-          call ESMF_FieldGet(field, rank=lrank, rc=rc)
-          if (chkerr(rc,__LINE__,u_FILE_u)) return
-          call ESMF_FieldGet(field, mesh=lmesh, rc=rc)
-          if (chkerr(rc,__LINE__,u_FILE_u)) return
-          call ESMF_MeshGet(lmesh, numOwnedNodes=nnodes, numOwnedElements=nelements, rc=rc)
-          if (chkerr(rc,__LINE__,u_FILE_u)) return
-          if (nnodes == 0 .and. nelements == 0) lrank = 0
-       else
-          call ESMF_LogWrite(trim(subname)//": ERROR geomtype not supported ", &
-               ESMF_LOGMSG_INFO, rc=rc)
-          rc = ESMF_FAILURE
-          return
-       endif ! geomtype
+       call ESMF_FieldGet(field, mesh=lmesh, rc=rc)
+       if (chkerr(rc,__LINE__,u_FILE_u)) return
+       call ESMF_MeshGet(lmesh, numOwnedNodes=nnodes, numOwnedElements=nelements, rc=rc)
+       if (chkerr(rc,__LINE__,u_FILE_u)) return
+       if (nnodes == 0 .and. nelements == 0) then
+          lrank = 0
+       end if
 
        if (lrank == 0) then
           call ESMF_LogWrite(trim(subname)//": no local nodes or elements ", &

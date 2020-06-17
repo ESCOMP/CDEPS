@@ -83,6 +83,7 @@ module lnd_comp_nuopc
 
   ! module constants
   integer                      :: glc_nec
+  logical                      :: diagnose_data = .true.
   integer      , parameter     :: master_task=0                   ! task number of master task
   character(*) , parameter     :: rpfile = 'rpointer.lnd'
   character(*) , parameter     :: modName =  "(lnd_comp_nuopc)"
@@ -315,8 +316,10 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! diagnostics
-    call dshr_state_diagnose(exportState,subname//':ES',rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (diagnose_data) then
+       call dshr_state_diagnose(exportState, flds_scalar_name, subname//':ES',rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    end if
 
   end subroutine InitializeRealize
 
@@ -382,13 +385,10 @@ contains
     endif
 
     ! write diagnostics
-    call dshr_state_diagnose(exportState,subname//':ES',rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    if (my_task == master_task) then
-       call dshr_log_clock_advance(clock, 'DLND', logunit, rc)
+    if (diagnose_data) then
+       call dshr_state_diagnose(exportState, flds_scalar_name, subname//':ES',rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    endif
-    call ESMF_LogWrite(subname//' done', ESMF_LOGMSG_INFO)
+    end if
 
   end subroutine ModelAdvance
 

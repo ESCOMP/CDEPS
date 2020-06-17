@@ -86,6 +86,7 @@ module ice_comp_nuopc
   logical                      :: flds_i2o_per_cat                    ! .true. if select per ice thickness
   real(R8)                     :: dt                                  ! real model timestep
 
+  logical                      :: diagnose_data = .true.
   integer      , parameter     :: master_task=0                       ! task number of master task
   character(*) , parameter     :: modName =  "(ice_comp_nuopc)"
   character(*) , parameter     :: u_FILE_u = &
@@ -338,10 +339,6 @@ contains
     call dshr_state_SetScalar(dble(ny_global), flds_scalar_index_ny, exportState, flds_scalar_name, flds_scalar_num, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    ! Diagnostics
-    call dshr_state_diagnose(exportState,subname//':ES',rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
    end subroutine InitializeRealize
 
   !===============================================================================
@@ -516,8 +513,10 @@ contains
     end if
 
     ! Write diagnostics
-    call dshr_state_diagnose(exportState,subname//':ES',rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (diagnose_data) then
+       call dshr_state_diagnose(exportState, flds_scalar_name, subname//':ES',rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    end if
 
     call t_stopf('dice_datamode')
     call t_stopf('DICE_RUN')
