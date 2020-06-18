@@ -30,6 +30,7 @@ else ()
   set (CIMEROOT ${SOURCE_DIR})
   unset (SOURCE_DIR)
 endif ()
+set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/mod_files)
 
 if(BLD_STANDALONE)
   add_subdirectory(share)
