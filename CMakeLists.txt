@@ -44,5 +44,6 @@ add_subdirectory(dshr)
 foreach(COMP datm dice dlnd docn drof dwav)
   add_subdirectory("${COMP}")
 endforeach(COMP)
+
 install(TARGETS streams dshr
         LIBRARY DESTINATION lib)
