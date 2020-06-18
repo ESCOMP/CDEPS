@@ -42,9 +42,9 @@ def buildlib(bldroot, libroot, case, compname=None):
         symlink_force(os.path.join(bldroot,dlibname), os.path.join(libroot,libname))
     else:
         logger.info("Running cmake for CDEPS")
-        srcpath = os.path.join(case.get_value("CIMEROOT"),"src","components","CDEPS")
+        srcpath = os.path.join(case.get_value("CIMEROOT"),"src","components","cdeps")
 
-        cmake_flags = get_standard_cmake_args(case, os.path.join(sharedpath,"CDEPS"), shared_lib=True)
+        cmake_flags = get_standard_cmake_args(case, os.path.join(sharedpath,"cdeps"), shared_lib=True)
         cmake_flags += " -DCMAKE_INSTALL_PREFIX={} ".format(libroot)
         cmake_flags += " -DLIBROOT={} ".format(libroot) + srcpath
         logger.info("cmake_flags {}".format(cmake_flags))
