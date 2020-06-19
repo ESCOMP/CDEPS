@@ -672,7 +672,7 @@ contains
 
     ! Diagnostics
     if (diagnose_data) then
-       call dshr_state_diagnose(exportState, subname//':ES',rc=rc)
+       call dshr_state_diagnose(exportState, flds_scalar_name, subname//':ES', rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
