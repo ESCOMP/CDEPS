@@ -30,7 +30,7 @@ module dshr_stream_mod
   use pio              , only : file_desc_t, pio_inq_varid, iosystem_desc_t, pio_file_is_open
   use pio              , only : pio_nowrite, pio_inquire_dimension, pio_inquire_variable, pio_bcast_error
   use pio              , only : pio_get_att, pio_get_var
-
+  use shr_pio_mod      , only : shr_pio_getiosys, shr_pio_getiotype, shr_pio_getioformat
 
   implicit none
   private ! default private
@@ -103,7 +103,7 @@ module dshr_stream_mod
      logical           :: fileopen     = .false.                ! is current file open
      character(CL)     :: currfile     = ' '                    ! current filename
      integer           :: nvars                                 ! number of stream variables
-     character(CL)     :: stream_vectors                  ! stream vectors names
+     character(CL)     :: stream_vectors = 'null'               ! stream vectors names
      type(file_desc_t) :: currpioid                             ! current pio file desc
      type(shr_stream_file_type)    , allocatable :: file(:)     ! filenames of stream data files (full pathname)
      type(shr_stream_data_variable), allocatable :: varlist(:)  ! stream variable names (on file and in model)
@@ -126,7 +126,7 @@ contains
 
     use FoX_DOM
     use ESMF, only : ESMF_VM, ESMF_VMGetCurrent, ESMF_VMBroadCast, ESMF_SUCCESS
-    use shr_pio_mod, only : shr_pio_getiosys, shr_pio_getiotype, shr_pio_getioformat
+
     ! ---------------------------------------------------------------------
     ! The xml format of a stream txt file will look like the following
     ! <?xml version="1.0"?>
@@ -351,7 +351,7 @@ contains
 
   subroutine shr_stream_init_from_inline(streamdat, stream_meshfile, &
        stream_yearFirst, stream_yearLast, stream_yearAlign, stream_offset, stream_taxmode, &
-       stream_fldlistFile, stream_fldListModel, stream_fileNames, logunit)
+       stream_fldlistFile, stream_fldListModel, stream_fileNames, logunit, compid)
 
     ! --------------------------------------------------------
     ! set values of stream datatype independent of a reading in a stream text file
@@ -370,6 +370,7 @@ contains
     character(*)                ,intent(in)              :: stream_fldListModel(:) ! model field names, colon delim list
     character(*)                ,intent(in)              :: stream_filenames(:)    ! stream data filenames (full pathnamesa)
     integer                     ,intent(in)              :: logunit                ! stdout unit
+    integer                     ,intent(in)              :: compid                 ! component id (needed by pio)
 
     ! local variables
     integer                :: n
@@ -390,6 +391,9 @@ contains
     streamdat(1)%taxMode      = trim(stream_taxMode)
     streamdat(1)%meshFile     = trim(stream_meshFile)
 
+    streamdat(1)%pio_subsystem => shr_pio_getiosys(compid)
+    streamdat(1)%pio_iotype    =  shr_pio_getiotype(compid)
+    streamdat(1)%pio_ioformat  =  shr_pio_getioformat(compid)
     ! initialize stream filenames
     if (allocated(streamdat(1)%file)) then
        deallocate(streamdat(1)%file)

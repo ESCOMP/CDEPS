@@ -40,8 +40,6 @@ module dshr_strdata_mod
   public  :: shr_strdata_type
   public  :: shr_strdata_init_from_xml
   public  :: shr_strdata_init_from_inline
-!  public  :: shr_strdata_restRead
-!  public  :: shr_strdata_restWrite
   public  :: shr_strdata_setOrbs
   public  :: shr_strdata_advance
   public  :: shr_strdata_get_stream_domain  ! public since needed by dshr_mod
@@ -252,10 +250,9 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Initialize sdat stream - ASSUME only 1 stream
-    write(6,*)'DEBUG: stream_meshfile = ',stream_meshfile
     call shr_stream_init_from_inline(sdat%stream, stream_meshfile, &
        stream_yearFirst, stream_yearLast, stream_yearAlign, stream_offset, stream_taxmode, &
-       stream_fldlistFile, stream_fldListModel, stream_fileNames, logunit)
+       stream_fldlistFile, stream_fldListModel, stream_fileNames, logunit, compid)
 
     ! Now finish initializing sdat
     call shr_strdata_init(sdat, model_clock, rc)
@@ -487,27 +484,28 @@ contains
        end if
 
     end do ! end of loop over streams
-    !
-    ! Check for vector pairs in the stream - both ucomp and vcomp must be in the same stream
-    !
+
+    ! Check for vector pairs in the stream - BOTH ucomp and vcomp MUST BE IN THE SAME STREAM
     do m = 1,shr_strdata_get_stream_count(sdat)
        ! check that vector field list is a valid colon delimited string
-       if(trim(sdat%stream(m)%stream_vectors).eq.'null') cycle
-
-       if (.not. shr_string_listIsValid(sdat%stream(m)%stream_vectors)) then
-          write(sdat%logunit,*) trim(subname),' vec fldlist invalid m=',m,trim(sdat%stream(m)%stream_vectors)
-          call shr_sys_abort(subname//': vec fldlist invalid:'//trim(sdat%stream(m)%stream_vectors))
-       endif
-
-       ! check that only 2 fields are contained for any vector pairing
-       if (shr_string_listGetNum(sdat%stream(m)%stream_vectors) /= 2) then
-          write(sdat%logunit,*) trim(subname),' vec fldlist ne 2 m=',m,trim(sdat%stream(m)%stream_vectors)
-          call shr_sys_abort(subname//': vec fldlist ne 2:'//trim(sdat%stream(m)%stream_vectors))
-       endif
-
-       sdat%pstrm(m)%stream_vector = ESMF_FieldCreate(sdat%pstrm(m)%stream_mesh, ESMF_TYPEKIND_r8, name='stream_vector', &
-            ungriddedLbound=(/1/), ungriddedUbound=(/2/), gridToFieldMap=(/2/), meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
+       if (trim(sdat%stream(m)%stream_vectors) /= 'null') then
+          ! check that stream vector names are valid
+          if (.not. shr_string_listIsValid(sdat%stream(m)%stream_vectors)) then
+             write(sdat%logunit,*) trim(subname),' vec fldlist invalid m=',m,trim(sdat%stream(m)%stream_vectors)
+             call shr_sys_abort(subname//': vec fldlist invalid:'//trim(sdat%stream(m)%stream_vectors))
+          endif
+          ! check that only 2 fields are contained for any vector pairing
+          if (shr_string_listGetNum(sdat%stream(m)%stream_vectors) /= 2) then
+             write(sdat%logunit,*) trim(subname),' vec fldlist ne 2 m=',m,trim(sdat%stream(m)%stream_vectors)
+             call shr_sys_abort(subname//': vec fldlist ne 2:'//trim(sdat%stream(m)%stream_vectors))
+          endif
+          ! create stream vector field
+          sdat%pstrm(m)%stream_vector = ESMF_FieldCreate(sdat%pstrm(m)%stream_mesh, &
+               ESMF_TYPEKIND_r8, name='stream_vector', &
+               ungriddedLbound=(/1/), ungriddedUbound=(/2/), &
+               gridToFieldMap=(/2/), meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
+          if (chkerr(rc,__LINE__,u_FILE_u)) return
+       end if
     enddo
 
     ! initialize sdat model clock and calendar
