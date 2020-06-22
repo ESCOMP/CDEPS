@@ -25,7 +25,7 @@
        CLMCRUNCEPv7          = Run with the CLM CRU NCEP V7 forcing valid from 1900 to 2010 (force CLM)
        CLMGSWP3v1            = Run with the CLM GSWP3 V1 forcing (force CLM)
        CLMNLDAS2             = Run with the CLM NLDAS2 regional forcing valid from 1980 to 2018 (force CLM)
-       CLM1PT                = Run with supplied single point data (force CLM)
+       1PT                   = Run with supplied single point data (force CLM)
        CORE2_NYF             = CORE2 normal year forcing (for forcing POP and CICE)
        CORE2_IAF             = CORE2 intra-annual year forcing (for forcing POP and CICE)
        CORE_IAF_JRA          = JRA55 intra-annual year forcing (for forcing POP and CICE)
@@ -48,9 +48,7 @@
     ========================
     datm_mode CLM single point (DATM%1PT in env_run.xml)
     ========================
-    CLM1PT.1x1_mexicocityMEX
-    CLM1PT.1x1_vancouverCAN
-    CLM1PT.1x1_urbanc_alpha
+    1PT (currently 3 grids - 1x1_mexicocityMEX, 1x1_vancouverCAN, 1x1_urbanc_alpha)
 
     ========================
     datm_mode CLMNLDAS2: (DATM%GSWP3v1 in env_run.xml)
@@ -105,7 +103,7 @@
     CORE2_IAF.CORE2.ArcFactor
 
     ========================
-    datm_mode: CORE_IAF_JRA (DATM%JRA in env_run.xml) 
+    datm_mode: CORE_IAF_JRA (DATM%JRA in env_run.xml)
     ========================
     CORE_IAF_JRA.PREC
     CORE_IAF_JRA.LWDN
@@ -187,7 +185,7 @@
     IMPORTANT NOTE:
     ========================
     In the value matches below, regular expressions are used ****
-    If two matches are equivalent, the FIRST one will be used, so need to make sure
+    IF TWO MATCHES ARE EQUIVALENT, THE FIRST ONE WILL BE USED, so need to make sure
     that matches are not equivalent if possible
     As an example, say datm_mode=CLMCRUNCEPv7,
       the following order would result in an INCORRECT setting of streams for this datm_mode
@@ -223,8 +221,8 @@
       <value datm_mode="CLMNLDAS2">
 	CLMNLDAS2.Solar,CLMNLDAS2.Precip,CLMNLDAS2.TPQW
       </value>
-      <value datm_mode="CLM1PT">
-	CLM1PT.$ATM_GRID
+      <value datm_mode="1PT">
+	1PT
       </value>
       <value datm_mode="CORE2_NYF" >
 	CORE2_NYF.GISS,CORE2_NYF.GXGXS,CORE2_NYF.NCEP
@@ -251,75 +249,45 @@
     <group>streams_file</group>
     <desc>Stream domain file directory.</desc>
     <values>
-      <!-- ===================  -->
-      <!-- meshes for datm_mode CLM_QIAN   -->
-      <!-- ===================  -->
-      <value stream="CLM_QIAN.Solar">
-        $DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.Qian.T62.c080727/Solar6Hrly/clmforc.Qian.c2006.T62.Solr_ESMFmesh_120620.nc
+      <!-- ===================================  -->
+      <!-- meshes for datm_mode CLM_QIAN        -->
+      <!-- ===================================  -->
+      <value stream="CLM_QIAN\.">
+        $DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.Qian.T62.c080727/clmforc.Qian.c2006.T62.ESMFmesh_120620.nc
       </value>
-      <value stream="CLM_QIAN.Precip">
-        $DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.Qian.T62.c080727/Precip6Hrly/clmforc.Qian.c2006.T62.Prec_ESMFmesh_120620.nc
+      <!-- ==================================== -->
+      <!-- meshes for datm_mode CLM_QIAN_WISO   -->
+      <!-- ==================================== -->
+      <value stream="CLM_QIAN_WISO\.">
+        $DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.Qian.T62.c080727/clmforc.Qian.c2006.T62.ESMFmesh_120620.nc
       </value>
-      <value stream="CLM_QIAN.TPQW">
-        $DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.Qian.T62.c080727/TmpPrsHumWnd3Hrly/clmforc.Qian.c2006.T62.TPQW_ESMFmesh_120620.nc
+      <!-- ==================================== -->
+      <!-- meshes for datm_mode CLMCRUNCEPv7    -->
+      <!-- ==================================== -->
+      <value  stream="CLMCRUNCEPv7\.">
+        $DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.cruncep_qianFill.0.5d.v7.c160715/clmforc.cruncep.V7.c2016.0.5d.ESMFmesh_260520.nc
       </value>
-      <!-- ===================     -->
-      <!-- meshes for datm_mode CLM_QIAN_WISO -->
-      <!-- ===================     -->
-      <value stream="CLM_QIAN_WISO.Solar">
-        $DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.Qian.T62.c080727/Solar6Hrly/clmforc.Qian.c2006.T62.Solr_ESMFmesh_120620.nc
-      </value>
-      <value stream="CLM_QIAN_WISO.Precip">
-        $DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.Qian.T62.c080727/Precip6Hrly/clmforc.Qian.c2006.T62.Prec_ESMFmesh_120620.nc
-      </value>
-      <value stream="CLM_QIAN_WISO.TPQW">
-        $DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.Qian.T62.c080727/TmpPrsHumWnd3Hrly/clmforc.Qian.c2006.T62.TPQW_ESMFmesh_120620.nc
-      </value>
-      <value  stream="CLMGSWP3v1.Solar">
+      <!-- ==================================== -->
+      <!-- meshes for datm_mode CLMGSWP3v1      -->
+      <!-- ==================================== -->
+      <value  stream="CLMGSWP3v1\.">
 	$DIN_LOC_ROOT_CLMFORC/atm_forcing.datm7.GSWP3.0.5d.v1.c170516/clmforc.GSWP3.c2011.0.5x0.5.TPQWL.SCRIP.210520_ESMFmesh.nc
       </value>
-      <value  stream="CLMGSWP3v1.Precip">
-	$DIN_LOC_ROOT_CLMFORC/atm_forcing.datm7.GSWP3.0.5d.v1.c170516/clmforc.GSWP3.c2011.0.5x0.5.TPQWL.SCRIP.210520_ESMFmesh.nc
+      <!-- ==================================== -->
+      <!-- meshes for datm_mode CLMNLDAS2       -->
+      <!-- ==================================== -->
+      <value stream="CLMNLDAS2\.">
+        $DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.NLDAS2.0.125d.v1/Solar/ctsmforc.NLDAS2.0.125d.v1.Solr_ESMFmesh_120620.nc
       </value>
-      <value  stream="CLMGSWP3v1.TPQW">
-	$DIN_LOC_ROOT_CLMFORC/atm_forcing.datm7.GSWP3.0.5d.v1.c170516/clmforc.GSWP3.c2011.0.5x0.5.TPQWL.SCRIP.210520_ESMFmesh.nc
-      </value>
-      <!-- ===================    -->
-      <!-- meshes for datm_mode CLMCRUNCEPv7 -->
-      <!-- ===================    -->
-      <value  stream="CLMCRUNCEPv7.Solar">
-      </value>
-      <value  stream="CLMCRUNCEPv7.Precip">
-      </value>
-      <value  stream="CLMCRUNCEPv7.TPQW">
-      </value>
-      <value  stream="CLMGSWP3v1.Solar">
-      </value>
-      <value  stream="CLMGSWP3v1.Precip">
-      </value>
-      <value  stream="CLMGSWP3v1.TPQW">
-      </value>
-      <!-- ===================-->
-      <!-- meshes for datm_mode CLMNLDAS2-->
-      <!-- ===================-->
-      <value stream="CLMNLDAS2.Solar">
-        $DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.NLDAS2.0.125d.v1/Solar/ctsmforc.NLDAS2.0.125d.v1.Solr_ESMFmesh_120620.nc 
-      </value>
-      <value stream="CLMNLDAS2.Precip">
-        $DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.NLDAS2.0.125d.v1/Precip/ctsmforc.NLDAS2.0.125d.v1.Prec_ESMFmesh_120620.nc
-      </value>
-      <value stream="CLMNLDAS2.TPQW">
-        $DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.NLDAS2.0.125d.v1/TPQWL/ctsmforc.NLDAS2.0.125d.v1.TPQWL_ESMFmesh_120620.nc
-      </value>
-      <!-- ===================         -->
-      <!-- single point stream forcing -->
-      <!-- ===================         -->
-      <value stream="CLM1PT.1x1">
+      <!-- ==================================== -->
+      <!-- single point stream forcing          -->
+      <!-- ==================================== -->
+      <value stream="1PT">
         none
       </value>
-      <!-- ===================             -->
-      <!-- optional stream bias correction -->
-      <!-- ===================             -->
+      <!-- ==================================== -->
+      <!-- optional stream bias correction      -->
+      <!-- ==================================== -->
       <!-- <value stream="BC.QIAN.Precip"> -->
       <!--   $DIN_LOC_ROOT/atm/datm7/bias_correction/precip/gpcp/qian/bias_correction.Prec.%y.nc -->
       <!-- </value> -->
@@ -329,142 +297,49 @@
       <!-- <value stream="BC.CRUNCEP.CMAP.Precip"> -->
       <!--   $DIN_LOC_ROOT/atm/datm7/bias_correction/precip/cmap/cruncep/bias_correction.Prec.%y.nc -->
       <!-- </value> -->
-      <!-- =================== -->
-      <!-- meshes for datm_mode CORE2_NYF -->
-      <!-- =================== -->
-      <value  stream="CORE2_NYF.GISS">
+      <!-- ==================================== -->
+      <!-- meshes for datm_mode CORE2_NYF       -->
+      <!-- ==================================== -->
+      <value  stream="CORE2_NYF">
 	$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc
       </value>
-      <value  stream="CORE2_NYF.GXGXS">
-	$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc
-      </value>
-      <value  stream="CORE2_NYF.NCEP">
-	$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc
-      </value>
-      <!-- =================== -->
+      <!-- ==================================== -->
       <!-- meshes for datm_mode CORE2_IAF -->
-      <!-- =================== -->
-      <value  stream="CORE2_IAF.NCEP.DENS.SOFS">
-	$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc
-      </value>
-      <value  stream="CORE2_IAF.NCEP.PSLV.SOFS">
-	$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc
-      </value>
-      <value  stream="CORE2_IAF.PREC.SOFS.DAILY">
-	$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc
-      </value>
-      <value  stream="CORE2_IAF.LWDN.SOFS.DAILY">
-	$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc
-      </value>
-      <value  stream="CORE2_IAF.SWDN.SOFS.DAILY">
-	$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc
-      </value>
-      <value  stream="CORE2_IAF.SWUP.SOFS.DAILY">
-	$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc
-      </value>
-      <value  stream="CORE2_IAF.SHUM.SOFS.6HOUR">
-	$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc
-      </value>
-      <value  stream="CORE2_IAF.TBOT.SOFS.6HOUR">
-	$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc
-      </value>
-      <value  stream="CORE2_IAF.U.SOFS.6HOUR">
-	$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc
-      </value>
-      <value  stream="CORE2_IAF.V.SOFS.6HOUR">
-	$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc
-      </value>
-      <value  stream="CORE2_IAF.GCGCS.PREC">
-	$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc
-      </value>
-      <value  stream="CORE2_IAF.GISS.LWDN">
-	$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc
-      </value>
-      <value  stream="CORE2_IAF.GISS.SWDN">
-	$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc
-      </value>
-      <value  stream="CORE2_IAF.GISS.SWUP">
-	$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc
-      </value>
-      <value  stream="CORE2_IAF.NCEP.DN10">
-	$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc
-      </value>
-      <value  stream="CORE2_IAF.NCEP.Q_10">
-	$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc
-      </value>
-      <value  stream="CORE2_IAF.NCEP.SLP_">
-	$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc
-      </value>
-      <value  stream="CORE2_IAF.NCEP.T_10">
-	$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc
-      </value>
-      <value  stream="CORE2_IAF.NCEP.U_10">
-	$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc
-      </value>
-      <value  stream="CORE2_IAF.NCEP.V_10">
-	$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc
-      </value>
-      <value stream="CORE2_IAF.CORE2.ArcFactor">
+      <!-- ==================================== -->
+      <value  stream="CORE2_IAF\.">
 	$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc
       </value>
       <value datm_mode="CORE2_IAF" atm_grid="01col">
         none
       </value>
-      <!-- ===================    -->
+      <!-- ====================================                   -->
       <!-- meshes for datm_mode CORE_IAF_JRA or CORE_JRA_1p4)2018 -->
-      <!-- ===================    -->
-      <value stream="CORE_IAF_JRA.*.PREC">
-	$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc
-      </value>
-      <value  stream="CORE_IAF_JRA.*.LWDN">
-	$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc
-      </value>
-      <value  stream="CORE_IAF_JRA.*.SWDN">
-	$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc
-      </value>
-      <value  stream="CORE_IAF_JRA.*.Q_10">
-	$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc
-      </value>
-      <value  stream="CORE_IAF_JRA.*.SLP_">
-	$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc
-      </value>
-      <value  stream="CORE_IAF_JRA.*.T_10">
-	$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc
-      </value>
-      <value  stream="CORE_IAF_JRA.*.U_10">
-	$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc
-      </value>
-      <value  stream="CORE_IAF_JRA.*.V_10">
+      <!-- ====================================                   -->
+      <value stream="CORE_IAF_JRA\.">
 	$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc
       </value>
       <value stream="CORE_IAF_JRA.CORE2.ArcFactor">
         $DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc
       </value>
-      <!-- ===================-->
+      <!-- ==================================== -->
       <!-- optional stream co2tseries -->
       <!-- currently all co2 time series are single point and have no mesh -->
-      <!-- ===================-->
+      <!-- ==================================== -->
       <value stream="co2tseries.*">
         none
       </value>
-      <!-- ===================              -->
-      <!-- optional stream prescribed aero  -->
-      <!-- ===================              -->
-      <value stream="presaero.clim">
-	$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc
-      </value>
-      <value stream="presaero.trans">
-	$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc
-      </value>
-      <value stream="presaero.SSP">
-	$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc
-      </value>
+      <!-- ==================================== -->
+      <!-- optional stream prescribed aero      -->
+      <!-- ==================================== -->
       <value  stream="presaero.cplhist">
 	$DATM_DOMAIN_MESH
       </value>
-      <!-- ===================  -->
-      <!-- optional topo        -->
-      <!-- ===================  -->
+      <value stream="presaero\.">
+	$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc
+      </value>
+      <!-- ==================================== -->
+      <!-- optional topo                        -->
+      <!-- ==================================== -->
       <value stream="topo.cplhist">
 	$DATM_DOMAIN_MESH
       </value>
@@ -482,15 +357,15 @@
     <values match="first">
       <value>null</value>
       <!-- ===================  -->
-      <!-- stream data files for datm_mode CLM1PT     -->
+      <!-- stream data files for datm_mode 1PT     -->
       <!-- ===================  -->
-      <value  stream="CLM1PT.1x1_mexicocityMEX">
+      <value  stream="1PT" atm_grid="1x1_mexicocityMEX">
 	$DIN_LOC_ROOT/atm/datm7/CLM1PT_data/mexicocityMEX.c080124/clm1pt-1993-12.nc
       </value>
-      <value  stream="CLM1PT.1x1_vancouverCAN">
+      <value  stream="1PT" atm_grid="1x1_vancouverCAN">
 	$DIN_LOC_ROOT/atm/datm7/CLM1PT_data/vancouverCAN.c080124/clm1pt-1992-08.nc
       </value>
-      <value  stream="CLM1PT.1x1_urbanc_alpha">
+      <value  stream="1PT" atm_grid="1x1_urbanc_alpha">
 	$DIN_LOC_ROOT/atm/datm7/CLM1PT_data/urbanc_alpha.c080416/clm1pt-0001-08.nc
 	$DIN_LOC_ROOT/atm/datm7/CLM1PT_data/urbanc_alpha.c080416/clm1pt-0001-09.nc
 	$DIN_LOC_ROOT/atm/datm7/CLM1PT_data/urbanc_alpha.c080416/clm1pt-0001-10.nc
@@ -1929,36 +1804,12 @@
     <values>
       <value>null</value>
       <!-- ===================-->
-      <!-- stream variable names for datm_mode CLM1PT* -->
+      <!-- stream variable names for datm_mode 1PT* -->
       <!-- ===================-->
-      <value  stream="CLM1PT.1x1_mexicocityMEX">
+      <value  stream="1PT">
         ZBOT     Sa_z
         TBOT     Sa_tbot
         RH       Sa_rh
-        WIND     Sa_wind
-        PSRF     Sa_pbot
-        PRECTmms Faxa_precn
-        FSDS     Faxa_swdn
-        FSDSdir  Faxa_swdndr
-        FSDSdif  Faxa_swdndf
-        FLDS     Faxa_lwdn
-      </value>
-      <value  stream="CLM1PT.1x1_vancouverCAN">
-        ZBOT     Sa_z
-        TBOT     Sa_tbot
-        RH       Sa_rh
-        WIND     Sa_wind
-        PSRF     Sa_pbot
-        PRECTmms precn
-        FSDS     Faxa_swdn
-        FSDSdir  Faxa_swdndr
-        FSDSdif  Faxa_swdndf
-        FLDS     Faxa_lwdn
-      </value>
-      <value   stream="CLM1PT.1x1_urbanc_alpha">
-        ZBOT     Sa_z
-        TBOT     Sa_tbot
-        QBOT     Sa_shum
         WIND     Sa_wind
         PSRF     Sa_pbot
         PRECTmms Faxa_precn
@@ -2028,18 +1879,6 @@
         QBOT     Sa_shum
         PSRF     Sa_pbot
         FLDS     Faxa_lwdn
-      </value>
-      <!-- ===================-->
-      <!-- stream variable names for datm_mode CLMMOSARTTest-->
-      <!-- ===================-->
-      <value  stream="CLMMOSARTTEST">
-        TBOT     Sa_tbot
-        WIND     Sa_wind
-        QBOT     Sa_shum
-        PSRF     Sa_pbot
-        FLDS     Faxa_lwdn
-        PRECTmms Faxa_precn
-        FSDS     Faxa_swdn
       </value>
       <!-- ===================-->
       <!-- stream variable names for datm_mode CLMNLDAS2-->
@@ -2275,11 +2114,10 @@
     <desc>Simulation year to align stream to.</desc>
     <values>
       <value>-999</value>
-      <value stream="CLM1PT">$DATM_CLMNCEP_YR_ALIGN</value>
+      <value stream="1PT">$DATM_CLMNCEP_YR_ALIGN</value>
       <value stream="CPLHISTForcing">$DATM_CPLHIST_YR_ALIGN</value>
       <value stream="CLMCRUNCEP">$DATM_CLMNCEP_YR_ALIGN</value>
       <value stream="CLMGSWP3">$DATM_CLMNCEP_YR_ALIGN</value>
-      <value stream="CLMMOSARTTEST">$DATM_CLMNCEP_YR_ALIGN</value>
       <value stream="CLMNLDAS2">$DATM_CLMNCEP_YR_ALIGN</value>
       <value stream="CORE2_NYF">1</value>
       <value stream="CORE2_IAF.CORE2.ArcFactor">1</value>
@@ -2308,13 +2146,12 @@
     <desc>First year of stream.</desc>
     <values>
       <value>-999</value>
-      <value stream="CLM1PT.1x1_mexicocityMEX">1993</value>
-      <value stream="CLM1PT.1x1_vancouverCAN">1992</value>
-      <value stream="CLM1PT.1x1_urbanc_alpha">0001</value>
+      <value stream="1PT" atm_grid="1x1_mexicocityMEX">1993</value>
+      <value stream="1PT" atm_grid="1x1_vancouverCAN">1992</value>
+      <value stream="1PT" atm_grid="1x1_urbanc_alpha">0001</value>
       <value stream="CPLHISTForcing">$DATM_CPLHIST_YR_START</value>
       <value stream="CLMCRUNCEP">$DATM_CLMNCEP_YR_START</value>
       <value stream="CLMGSWP3">$DATM_CLMNCEP_YR_START</value>
-      <value stream="CLMMOSARTTEST">$DATM_CLMNCEP_YR_START</value>
       <value stream="CLMNLDAS2">$DATM_CLMNCEP_YR_START</value>
       <value stream="CORE2_NYF">1</value>
       <value stream="CORE2_IAF.NCEP.DENS.SOFS">2010</value>
@@ -2368,13 +2205,12 @@
     <desc>Last year of stream.</desc>
     <values>
       <value>-999</value>
-      <value stream="CLM1PT.1x1_mexicocityMEX">1993</value>
-      <value stream="CLM1PT.1x1_vancouverCAN">1992</value>
-      <value stream="CLM1PT.1x1_urbanc_alpha">0002</value>
+      <value stream="1PT" atm_grid=".1x1_mexicocityMEX">1993</value>
+      <value stream="1PT" atm_grid="1x1_vancouverCAN">1992</value>
+      <value stream="1PT" atm_grid="1x1_urbanc_alpha">0002</value>
       <value stream="CPLHISTForcing">$DATM_CPLHIST_YR_END</value>
       <value stream="CLMCRUNCEP">$DATM_CLMNCEP_YR_END  </value>
       <value stream="CLMGSWP3">$DATM_CLMNCEP_YR_END  </value>
-      <value stream="CLMMOSARTTEST">$DATM_CLMNCEP_YR_END  </value>
       <value stream="CLMNLDAS2">$DATM_CLMNCEP_YR_END  </value>
       <value stream="CORE2_NYF">1</value>
       <value stream="CORE2_IAF.NCEP.DENS.SOFS">2011</value>
@@ -2446,12 +2282,12 @@
     <group>streams_file</group>
     <valid_values>redist,bilinear,nn</valid_values>
     <desc>
-      array (up to 30 elements) of mapping algorithms associated with the array of streams. 
+      array (up to 30 elements) of mapping algorithms associated with the array of streams.
       valid values: redist,bilinear
     </desc>
     <values>
       <value>bilinear</value>
-      <value datm_mode="CLM1PT">nn</value>
+      <value datm_mode="1PT">nn</value>
       <value stream="CLMCRUNCEP" atm_grid="hcru">redist</value>
       <value stream="CLMGSWP3" atm_grid="hcru">redist</value>
       <value stream="CLMNLDAS2" atm_grid="0.125nldas2">redist</value>
@@ -2476,9 +2312,7 @@
     </desc>
     <values>
       <value>linear</value>
-      <value stream="CLM1PT.1x1_mexicocityMEX">nearest</value>
-      <value stream="CLM1PT.1x1_vancouverCAN">nearest</value>
-      <value stream="CLM1PT.1x1_urbanc_alpha">nearest</value>
+      <value stream="1PT">nearest</value>
       <value stream="CPLHISTForcing.Solar">nearest</value>
       <value stream="CPLHISTForcing.nonSolarFlux">nearest</value>
       <value stream="CPLHISTForcing.State3hr">linear</value>
@@ -2530,7 +2364,7 @@
       <value>cycle</value>
       <value stream="co2tseries.20tr">extend</value>
       <value stream="co2tseries.SSP">extend</value>
-      <value datm_mode="CLM1PT">extend</value>
+      <value stream="1PT">extend</value>
     </values>
   </entry>
 
@@ -2635,7 +2469,7 @@
       general method that operates on the data.  this is generally
       implemented in the data models but is set in the strdata method for
       convenience.  valid options are dependent on the data model and will
-      be described elsewhere.  
+      be described elsewhere.
       datamode = "COPYALL"
       The default science mode of the data model is the COPYALL mode.
       COPYALL mode will examine the fields found in all input data streams,
