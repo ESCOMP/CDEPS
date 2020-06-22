@@ -43,11 +43,11 @@ module atm_comp_nuopc
   use datm_datamode_clmncep_mod , only : datm_datamode_clmncep_advance
   use datm_datamode_clmncep_mod , only : datm_datamode_clmncep_restart_write
   use datm_datamode_clmncep_mod , only : datm_datamode_clmncep_restart_read
-  use datm_datamode_era5_mod   , only : datm_datamode_era5_advertise
-  use datm_datamode_era5_mod   , only : datm_datamode_era5_init_pointers
-  use datm_datamode_era5_mod   , only : datm_datamode_era5_advance
-  use datm_datamode_era5_mod   , only : datm_datamode_era5_restart_write
-  use datm_datamode_era5_mod   , only : datm_datamode_era5_restart_read
+  use datm_datamode_era5_mod    , only : datm_datamode_era5_advertise
+  use datm_datamode_era5_mod    , only : datm_datamode_era5_init_pointers
+  use datm_datamode_era5_mod    , only : datm_datamode_era5_advance
+  use datm_datamode_era5_mod    , only : datm_datamode_era5_restart_write
+  use datm_datamode_era5_mod    , only : datm_datamode_era5_restart_read
 
   implicit none
   private ! except
@@ -92,23 +92,21 @@ module atm_comp_nuopc
   integer                      :: iradsw = 0                          ! radiation interval (input namelist)
   character(CL)                :: factorFn_mesh = 'null'              ! file containing correction factors mesh
   character(CL)                :: factorFn_data = 'null'              ! file containing correction factors data
-  logical                      :: presaero = .false.                  ! true => send valid prescribe aero fields to coupler
+  logical                      :: flds_presaero = .false.             ! true => send valid prescribe aero fields to mediator
+  logical                      :: flds_co2 = .false.                  ! true => send prescribed co2 to mediator
+  logical                      :: flds_wiso = .false.                 ! true => send water isotopes to mediator
   character(CL)                :: bias_correct = nullstr              ! send bias correction fields to coupler (not used here)
   character(CL)                :: anomaly_forcing(8) = nullstr        ! send anomaly forcing fields to coupler (not used here)
-  logical                      :: force_prognostic_true = .false.     ! if true set prognostic true
-  logical                      :: wiso_datm = .false.                 ! expect isotopic forcing from file?
   character(CL)                :: restfilm = nullstr                  ! model restart file namelist
-  integer                      :: nx_global
-  integer                      :: ny_global
-                                                                      ! config attribute intput
+  integer                      :: nx_global                           ! global nx
+  integer                      :: ny_global                           ! global ny
+
   ! linked lists
   type(fldList_type) , pointer :: fldsImport => null()
   type(fldList_type) , pointer :: fldsExport => null()
   type(dfield_type)  , pointer :: dfields    => null()
 
   ! constants
-  logical                      :: flds_co2
-  logical                      :: flds_wiso
   integer                      :: idt                                 ! integer model timestep
   logical                      :: diagnose_data = .true.
   integer          , parameter :: master_task   = 0                   ! task number of master task
@@ -182,7 +180,6 @@ contains
     integer           :: nu         ! unit number
     integer           :: ierr       ! error code
     logical           :: exists     ! check for file existence
-    logical           :: flds_co2a, flds_co2b, flds_co2c 
     character(len=*),parameter :: subname='(atm_comp_nuopc):(InitializeAdvertise) '
     character(*)    ,parameter :: F00 = "('(atm_comp_nuopc) ',8a)"
     character(*)    ,parameter :: F01 = "('(atm_comp_nuopc) ',a,2x,i8)"
@@ -190,9 +187,8 @@ contains
     !-------------------------------------------------------------------------------
 
     namelist / datm_nml / datamode, model_meshfile, model_maskfile, model_createmesh_fromfile, &
-         nx_global, ny_global, restfilm, &
-         iradsw, factorFn_data, factorFn_mesh, presaero, bias_correct, &
-         anomaly_forcing, force_prognostic_true, wiso_datm
+         nx_global, ny_global, restfilm, iradsw, factorFn_data, factorFn_mesh, &
+         flds_presaero, flds_co2, flds_wiso, bias_correct, anomaly_forcing
 
     rc = ESMF_SUCCESS
 
@@ -231,9 +227,9 @@ contains
     call shr_mpi_bcast(factorFn_data             , mpicom, 'factorFn_data')
     call shr_mpi_bcast(factorFn_mesh             , mpicom, 'factorFn_mesh')
     call shr_mpi_bcast(restfilm                  , mpicom, 'restfilm')
-    call shr_mpi_bcast(presaero                  , mpicom, 'presaero')
-    call shr_mpi_bcast(wiso_datm                 , mpicom, 'wiso_datm')
-    call shr_mpi_bcast(force_prognostic_true     , mpicom, 'force_prognostic_true')
+    call shr_mpi_bcast(flds_presaero             , mpicom, 'flds_presaero')
+    call shr_mpi_bcast(flds_co2                  , mpicom, 'flds_co2')
+    call shr_mpi_bcast(flds_wiso                 , mpicom, 'flds_wiso')
 
     ! write namelist input to standard out
     if (my_task == master_task) then
@@ -244,16 +240,15 @@ contains
           write(logunit,F00)' model_meshfile = ',trim(model_meshfile)
           write(logunit,F00)' model_maskfile = ',trim(model_maskfile)
        end if
-       write(logunit,F01)' nx_global = ',nx_global
-       write(logunit,F01)' ny_global = ',ny_global
-       write(logunit,F00)' restfilm = ',trim(restfilm)
-       write(logunit,F02)' force_prognostic_true = ',force_prognostic_true
-       write(logunit,F01)' iradsw = ',iradsw
+       write(logunit,F01)' nx_global     = ',nx_global
+       write(logunit,F01)' ny_global     = ',ny_global
+       write(logunit,F00)' restfilm      = ',trim(restfilm)
+       write(logunit,F01)' iradsw        = ',iradsw
        write(logunit,F00)' factorFn_data = ',trim(factorFn_data)
        write(logunit,F00)' factorFn_mesh = ',trim(factorFn_mesh)
-       write(logunit,F00)' restfilm = ',trim(restfilm)
-       write(logunit,F02)' presaero  = ',presaero
-       write(logunit,F02)' wiso_datm = ',wiso_datm
+       write(logunit,F02)' flds_presaero = ',flds_presaero
+       write(logunit,F02)' flds_co2      = ',flds_co2
+       write(logunit,F02)' flds_wiso     = ',flds_wiso
     end if
 
     ! check that files exists
@@ -282,8 +277,7 @@ contains
 
     ! Validate sdat datamode
     if (masterproc) write(logunit,*) ' datm datamode = ',trim(datamode)
-    if ( trim(datamode) == 'NULL'         .or. &
-         trim(datamode) == 'CORE2_NYF'    .or. &
+    if ( trim(datamode) == 'CORE2_NYF'    .or. &
          trim(datamode) == 'CORE2_IAF'    .or. &
          trim(datamode) == 'CORE_IAF_JRA' .or. &
          trim(datamode) == 'CLMNCEP'      .or. &
@@ -292,52 +286,18 @@ contains
        call shr_sys_abort(' ERROR illegal datm datamode = '//trim(datamode))
     endif
 
-    if (datamode /= 'NULL') then
-       call NUOPC_CompAttributeGet(gcomp, name='flds_co2a', value=cvalue, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       read(cvalue,*) flds_co2a
-       call ESMF_LogWrite('flds_co2a = '// trim(cvalue), ESMF_LOGMSG_INFO)
-
-       call NUOPC_CompAttributeGet(gcomp, name='flds_co2b', value=cvalue, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       read(cvalue,*) flds_co2b
-       call ESMF_LogWrite('flds_co2b = '// trim(cvalue), ESMF_LOGMSG_INFO)
-
-       call NUOPC_CompAttributeGet(gcomp, name='flds_co2c', value=cvalue, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       read(cvalue,*) flds_co2c
-       call ESMF_LogWrite('flds_co2c = '// trim(cvalue), ESMF_LOGMSG_INFO)
-
-       if (flds_co2a .or. flds_co2b .or. flds_co2c) then
-          flds_co2 = .true.
-       else
-          flds_co2 = .false.
-       end if
-       
-       call NUOPC_CompAttributeGet(gcomp, name='flds_wiso', value=cvalue, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       read(cvalue,*) flds_wiso
-       call ESMF_LogWrite('flds_wiso = '// trim(cvalue), ESMF_LOGMSG_INFO)
-
-       ! check that flds_wiso matches wiso_datm
-       ! TODO: should not need wiso_datm for nuopc data models
-       if (wiso_datm /= flds_wiso) then
-          call shr_sys_abort(subName//': datm namelist wiso_datm must match nuopc attribute flds_wiso')
-       end if
-    end if
-
     ! Advertise datm fields
     select case (trim(datamode))
     case ('CORE2_NYF', 'CORE2_IAF')
        call datm_datamode_core2_advertise(exportState, fldsExport, flds_scalar_name, &
-            flds_co2, flds_wiso, presaero, rc)
+            flds_co2, flds_wiso, flds_presaero, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('CORE2_IAF_JRA')
-       call datm_datamode_jra_advertise(exportState, fldsExport, flds_scalar_name, rc)       
+       call datm_datamode_jra_advertise(exportState, fldsExport, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('CLMNCEP')
        call datm_datamode_clmncep_advertise(exportState, fldsExport, flds_scalar_name, &
-            flds_co2, flds_wiso, presaero, rc)
+            flds_co2, flds_wiso, flds_presaero, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('ERA5')
        call datm_datamode_era5_advertise(exportState, fldsExport, flds_scalar_name, rc)
@@ -374,8 +334,6 @@ contains
     logical                 :: isPresent, isSet
     character(len=*), parameter :: subname=trim(modName)//':(InitializeRealize) '
     !-------------------------------------------------------------------------------
-
-    if (datamode == 'NULL') RETURN
 
     rc = ESMF_SUCCESS
     call ESMF_LogWrite(subname//' called', ESMF_LOGMSG_INFO)
@@ -474,8 +432,6 @@ contains
     character(len=CL)       :: cvalue        ! temporary
     character(len=*),parameter  :: subname=trim(modName)//':(ModelAdvance) '
     !-------------------------------------------------------------------------------
-
-    if (datamode == 'NULL') RETURN
 
     rc = ESMF_SUCCESS
 
@@ -642,7 +598,7 @@ contains
     case('ERA5')
        call datm_datamode_era5_advance(exportstate, masterproc, logunit, mpicom, target_ymd, &
             target_tod, sdat%model_calendar, rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return       
     end select
 
     ! Write restarts if needed
@@ -663,7 +619,7 @@ contains
        case('ERA5')
           call datm_datamode_era5_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
                logunit, mpicom, my_task, sdat)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return       
        end select
     end if
 
@@ -685,10 +641,10 @@ contains
 
     subroutine datm_init_dfields(rc)
       ! -----------------------------
-      ! Initialize dfields arrays 
+      ! Initialize dfields arrays
       ! (for export fields that have a corresponding stream field)
       ! -----------------------------
-      
+
       ! input/output parameters
       integer, intent(out)   :: rc
 
