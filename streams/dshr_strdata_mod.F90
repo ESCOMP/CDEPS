@@ -208,7 +208,7 @@ contains
 
   !===============================================================================
   subroutine shr_strdata_init_from_inline(sdat, my_task, logunit, compid, model_clock, model_mesh,&
-       stream_meshfile, stream_filenames, stream_fldlistFile, stream_fldListModel, &
+       stream_meshfile, stream_mapalgo, stream_filenames, stream_fldlistFile, stream_fldListModel, &
        stream_yearFirst, stream_yearLast, stream_yearAlign, stream_offset, stream_taxmode, rc)
 
     ! input/output variables
@@ -219,6 +219,7 @@ contains
     type(ESMF_Clock)       , intent(in)    :: model_clock            ! model clock
     type(ESMF_Mesh)        , intent(in)    :: model_mesh             ! model mesh
     character(*)           , intent(in)    :: stream_meshFile        ! full pathname to stream mesh file
+    character(*)           , intent(in)    :: stream_mapalgo         ! stream mesh -> model mesh mapping type
     character(*)           , intent(in)    :: stream_filenames(:)    ! stream data filenames (full pathnamesa)
     character(*)           , intent(in)    :: stream_fldListFile(:)  ! file field names, colon delim list
     character(*)           , intent(in)    :: stream_fldListModel(:) ! model field names, colon delim list
@@ -250,7 +251,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Initialize sdat stream - ASSUME only 1 stream
-    call shr_stream_init_from_inline(sdat%stream, stream_meshfile, &
+    call shr_stream_init_from_inline(sdat%stream, stream_meshfile, stream_mapalgo, &
        stream_yearFirst, stream_yearLast, stream_yearAlign, stream_offset, stream_taxmode, &
        stream_fldlistFile, stream_fldListModel, stream_fileNames, logunit, compid)
 
@@ -461,7 +462,6 @@ contains
        call dshr_fldbun_getFieldN(sdat%pstrm(ns)%fldbun_data(sdat%pstrm(ns)%stream_lb), 1, lfield_dst, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
 
-       !sdat%stream(ns)%mapalgo = "redist"
        if (trim(sdat%stream(ns)%mapalgo) == "bilinear") then
           call ESMF_FieldRegridStore(sdat%pstrm(ns)%field_stream, lfield_dst, &
                routehandle=sdat%pstrm(ns)%routehandle, &
@@ -563,7 +563,6 @@ contains
     end if
     call ESMF_VMBroadCast(vm, filename, CL, 0, rc=rc)
 
-
     ! Open the file
     rcode = pio_openfile(sdat%pio_subsystem, pioid, sdat%io_type, trim(filename), pio_nowrite)
 
@@ -572,9 +571,7 @@ contains
          trim(fldname), sdat%pstrm(stream_index)%stream_mesh, pio_iodesc, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-
     ! Now read in the data for fldname
-!    call pio_seterrorhandling(pioid, PIO_BCAST_ERROR)
     lsize = size(flddata)
     rcode = pio_inq_varid(pioid, trim(fldname), varid)
     rcode = pio_inq_vartype(pioid, varid, pio_iovartype)
@@ -776,7 +773,7 @@ contains
           ! fldbun_stream_ub to fldbun_stream_lb and read in new fldbun_stream_ub data
           ! ---------------------------------------------------------
 
-!          call t_barrierf(trim(lstr)//trim(timname)//'_readLBUB_BARRIER',mpicom)
+          ! call t_barrierf(trim(lstr)//trim(timname)//'_readLBUB_BARRIER',mpicom)
           call t_startf(trim(lstr)//trim(timname)//'_readLBUB')
 
           select case(sdat%stream(ns)%readmode)
@@ -786,7 +783,6 @@ contains
                   newData(ns), trim(lstr)//'_readLBUB', rc=rc)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
           case ('full_file')
-
              ! TODO: need to put in capability to read all stream data at once
           case default
              write(logunit,F00) "ERROR: Unsupported readmode : ", trim(sdat%stream(ns)%readmode)
@@ -871,9 +867,11 @@ contains
 
              ! compute time interperpolate value - LB data normalized with this factor: cosz/tavCosz
              do nf = 1,size(sdat%pstrm(ns)%fldlist_model)
-                call dshr_fldbun_getfldptr(sdat%pstrm(ns)%fldbun_model   , sdat%pstrm(ns)%fldlist_model(nf), dataptr   , rc=rc)
+                call dshr_fldbun_getfldptr(sdat%pstrm(ns)%fldbun_model, &
+                     sdat%pstrm(ns)%fldlist_model(nf), dataptr   , rc=rc)
                 if (ChkErr(rc,__LINE__,u_FILE_u)) return
-                call dshr_fldbun_getfldptr(sdat%pstrm(ns)%fldbun_data(sdat%pstrm(ns)%stream_lb), sdat%pstrm(ns)%fldlist_model(nf), dataptr_lb, rc=rc)
+                call dshr_fldbun_getfldptr(sdat%pstrm(ns)%fldbun_data(sdat%pstrm(ns)%stream_lb), &
+                     sdat%pstrm(ns)%fldlist_model(nf), dataptr_lb, rc=rc)
                 if (ChkErr(rc,__LINE__,u_FILE_u)) return
                 do i = 1,size(dataptr)
                    if (coszen(i) > solZenMin) then
@@ -894,7 +892,8 @@ contains
              ! ------------------------------------------
 
              call t_startf(trim(lstr)//trim(timname)//'_tint')
-             call shr_tInterp_getFactors(sdat%pstrm(ns)%ymdlb, sdat%pstrm(ns)%todlb, sdat%pstrm(ns)%ymdub, sdat%pstrm(ns)%todub, &
+             call shr_tInterp_getFactors(sdat%pstrm(ns)%ymdlb, sdat%pstrm(ns)%todlb, &
+                  sdat%pstrm(ns)%ymdub, sdat%pstrm(ns)%todub, &
                   ymdmod(ns), todmod, flb, fub, calendar=sdat%stream(ns)%calendar, logunit=sdat%logunit, &
                   algo=trim(sdat%stream(ns)%tinterpalgo), rc=rc)
              if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -903,9 +902,10 @@ contains
              endif
 
              do nf = 1,size(sdat%pstrm(ns)%fldlist_model)
-                call dshr_fldbun_getfldptr(sdat%pstrm(ns)%fldbun_model   , sdat%pstrm(ns)%fldlist_model(nf), dataptr   , rc=rc)
+                call dshr_fldbun_getfldptr(sdat%pstrm(ns)%fldbun_model, sdat%pstrm(ns)%fldlist_model(nf), dataptr, rc=rc)
                 if (ChkErr(rc,__LINE__,u_FILE_u)) return
-                call dshr_fldbun_getfldptr(sdat%pstrm(ns)%fldbun_data(sdat%pstrm(ns)%stream_lb), sdat%pstrm(ns)%fldlist_model(nf), dataptr_lb, rc=rc)
+                call dshr_fldbun_getfldptr(sdat%pstrm(ns)%fldbun_data(sdat%pstrm(ns)%stream_lb), &
+                     sdat%pstrm(ns)%fldlist_model(nf), dataptr_lb, rc=rc)
                 if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
                 call dshr_fldbun_getfldptr(sdat%pstrm(ns)%fldbun_data(sdat%pstrm(ns)%stream_ub), sdat%pstrm(ns)%fldlist_model(nf), dataptr_ub, rc=rc)
@@ -1093,9 +1093,9 @@ contains
           i = sdat%pstrm(ns)%stream_ub
           sdat%pstrm(ns)%stream_ub = sdat%pstrm(ns)%stream_lb
           sdat%pstrm(ns)%stream_lb = i
-!          i = sdat%pstrm(ns)%n_ub
-!          sdat%pstrm(ns)%n_lb = sdat%pstrm(ns)%n_ub
-!          sdat%pstrm(ns)%n_ub = i
+          ! i = sdat%pstrm(ns)%n_ub
+          ! sdat%pstrm(ns)%n_lb = sdat%pstrm(ns)%n_ub
+          !sdat%pstrm(ns)%n_ub = i
        else
           ! read lower bound of data
           call shr_strdata_readstrm(sdat, ns, stream, stream_mesh, &
@@ -1118,7 +1118,6 @@ contains
     endif
 
     ! determine previous & next data files in list of files
-
     call t_startf(trim(istr)//'_filemgt')
     if (sdat%masterproc .and. newdata) then
        call shr_stream_getPrevFileName(stream, filename_lb, filename_prev)

@@ -349,7 +349,7 @@ contains
 
   !===============================================================================
 
-  subroutine shr_stream_init_from_inline(streamdat, stream_meshfile, &
+  subroutine shr_stream_init_from_inline(streamdat, stream_meshfile, stream_mapalgo, &
        stream_yearFirst, stream_yearLast, stream_yearAlign, stream_offset, stream_taxmode, &
        stream_fldlistFile, stream_fldListModel, stream_fileNames, logunit, compid)
 
@@ -361,6 +361,7 @@ contains
     ! input/output variables
     type(shr_stream_streamType) , pointer, intent(inout) :: streamdat(:)           ! data streams (assume 1 below)
     character(*)                ,intent(in)              :: stream_meshFile        ! full pathname to stream mesh file
+    character(*)                ,intent(in)              :: stream_mapalgo         ! stream mesh -> model mesh mapping type
     integer                     ,intent(in)              :: stream_yearFirst       ! first year to use
     integer                     ,intent(in)              :: stream_yearLast        ! last  year to use
     integer                     ,intent(in)              :: stream_yearAlign       ! align yearFirst with this model year
@@ -390,10 +391,12 @@ contains
     streamdat(1)%offset       = stream_offset
     streamdat(1)%taxMode      = trim(stream_taxMode)
     streamdat(1)%meshFile     = trim(stream_meshFile)
+    streamdat(1)%mapalgo      = trim(stream_mapalgo)
 
     streamdat(1)%pio_subsystem => shr_pio_getiosys(compid)
     streamdat(1)%pio_iotype    =  shr_pio_getiotype(compid)
     streamdat(1)%pio_ioformat  =  shr_pio_getioformat(compid)
+
     ! initialize stream filenames
     if (allocated(streamdat(1)%file)) then
        deallocate(streamdat(1)%file)
