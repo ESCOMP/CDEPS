@@ -36,10 +36,14 @@ def buildlib(bldroot, libroot, case, compname=None):
 
 
     if compname:
-        run_cmd("make d{}".format(compname), from_dir=bldroot, verbose=True)
+        s, o, e = run_cmd("make d{}".format(compname), from_dir=bldroot, verbose=True)
         libname = "lib{}.a".format(compname)
         dlibname = "libd{}.a".format(compname)
-        symlink_force(os.path.join(bldroot,dlibname), os.path.join(libroot,libname))
+        dlibpath = os.path.join(bldroot, dlibname)
+        if os.path.exists(dlibpath):
+            symlink_force(os.path.join(bldroot,dlibname), os.path.join(libroot,libname))
+        else:
+            expect(False, "ERROR in {} build {} {}".format(compname,o,e))
     else:
         logger.info("Running cmake for CDEPS")
         srcpath = os.path.join(case.get_value("CIMEROOT"),"src","components","cdeps")
