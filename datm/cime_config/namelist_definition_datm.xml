@@ -30,6 +30,7 @@
        CORE2_IAF             = CORE2 intra-annual year forcing (for forcing POP and CICE)
        CORE_IAF_JRA          = JRA55 intra-annual year forcing (for forcing POP and CICE)
        CORE_IAF_JRA_1p4_2018 = JRA55 intra-annual year forcing, v1.4, through 2018 (for forcing POP and CICE)
+       ERA5                  = ERA5 intra-annual year forcing
        CPLHIST               = Streams for lnd or ocn/ice forcing used for spinup
 
     Currently the following optional streams are supported
@@ -239,6 +240,9 @@
       <value datm_mode="CORE2_IAF" atm_grid="01col" >
 	CORE2_IAF.NCEP.DENS.SOFS,CORE2_IAF.NCEP.PSLV.SOFS,CORE2_IAF.PREC.SOFS.DAILY,CORE2_IAF.LWDN.SOFS.DAILY,CORE2_IAF.SWDN.SOFS.DAILY,CORE2_IAF.SWUP.SOFS.DAILY,CORE2_IAF.SHUM.SOFS.6HOUR,CORE2_IAF.TBOT.SOFS.6HOUR,CORE2_IAF.U.SOFS.6HOUR,CORE2_IAF.V.SOFS.6HOUR,CORE2_IAF.CORE2.ArcFactor
       </value>
+      <value datm_mode="ERA5">
+        ERA5_HOURLY
+      </value>
       <value datm_mode="CPLHIST">
 	CPLHISTForcing.Solar,CPLHISTForcing.nonSolarFlux,CPLHISTForcing.State3hr,CPLHISTForcing.State1hr
       </value>
@@ -439,6 +443,12 @@
       </value>
       <value stream="CORE_IAF_JRA.CORE2.ArcFactor">
         $DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc
+      </value>
+      <!-- ===================    -->
+      <!-- meshes for datm_mode ERA5 -->
+      <!-- ===================    -->
+      <value stream="ERA5_HOURLY">
+        $DIN_LOC_ROOT/share/meshes/TL639_200618_ESMFmesh.nc
       </value>
       <!-- ===================-->
       <!-- optional stream co2tseries -->
@@ -1763,6 +1773,23 @@
 	$DIN_LOC_ROOT/atm/datm7/CORE2/CORE2.t_10.ArcFactor.T62.1997-2004.nc
       </value>
       <!-- ===================-->
+      <!-- stream data for ERA5 stream -->
+      <!-- ===================-->
+      <value stream="ERA5_HOURLY">
+        $DIN_LOC_ROOT/atm/datm7/ERA5/ERA5.TL639.2019.01.200618.nc
+        $DIN_LOC_ROOT/atm/datm7/ERA5/ERA5.TL639.2019.02.200618.nc
+        $DIN_LOC_ROOT/atm/datm7/ERA5/ERA5.TL639.2019.03.200618.nc
+        $DIN_LOC_ROOT/atm/datm7/ERA5/ERA5.TL639.2019.04.200618.nc
+        $DIN_LOC_ROOT/atm/datm7/ERA5/ERA5.TL639.2019.05.200618.nc
+        $DIN_LOC_ROOT/atm/datm7/ERA5/ERA5.TL639.2019.06.200618.nc
+        $DIN_LOC_ROOT/atm/datm7/ERA5/ERA5.TL639.2019.07.200618.nc
+        $DIN_LOC_ROOT/atm/datm7/ERA5/ERA5.TL639.2019.08.200618.nc
+        $DIN_LOC_ROOT/atm/datm7/ERA5/ERA5.TL639.2019.09.200618.nc
+        $DIN_LOC_ROOT/atm/datm7/ERA5/ERA5.TL639.2019.10.200618.nc
+        $DIN_LOC_ROOT/atm/datm7/ERA5/ERA5.TL639.2019.11.200618.nc
+        $DIN_LOC_ROOT/atm/datm7/ERA5/ERA5.TL639.2019.12.200618.nc
+      </value> 
+      <!-- ===================-->
       <!-- stream data for optional stream co2tseries -->
       <!-- ===================-->
       <value stream="co2tseries.20tr" cime_model="cesm">
@@ -2172,6 +2199,32 @@
       <value  stream="CORE_IAF_JRA.CORE2.ArcFactor">
         TarcFactor tarcf
       </value>
+      <!-- ===================       -->
+      <!-- datamode ERA5_ERA5_HOURLY -->
+      <!-- ===================       -->
+      <value stream="ERA5_HOURLY">
+        u10   Sa_u
+        v10   Sa_v
+        t2m   Sa_tbot
+        d2m   Sa_tdew
+        msl   Sa_pslv
+        sp    Sa_pbot
+        tp    Faxa_rain
+        cp    Faxa_rainc
+        lsp   Faxa_rainl
+        csf   Faxa_snowc
+        lsf   Faxa_snowl
+        ssrd  Faxa_swdn
+        strd  Faxa_lwdn
+        aluvp Faxa_swvdr
+        aluvd Faxa_swvdf
+        alnip Faxa_swndr
+        alnid Faxa_swndf
+        sshf  Faxa_sen
+        slhf  Faxa_lat
+        ewss  Faxa_taux
+        nsss  Faxa_tauy
+      </value>
       <!-- ===================         -->
       <!-- stream variable names for optional stream co2tseries  -->
       <!-- ===================         -->
@@ -2285,6 +2338,7 @@
       <value stream="CORE2_IAF.CORE2.ArcFactor">1</value>
       <value stream="CORE2_IAF">1</value>
       <value stream="CORE_IAF_JRA">1</value>
+      <value stream="ERA5_HOURLY">1900</value>
       <value stream="co2tseries.20tr">1850</value>
       <value stream="co2tseries.SSP">2015</value>
       <value stream="BC.CRUNCEP.GPCP.Precip">1979</value>
@@ -2347,6 +2401,7 @@
       <value stream="CORE_IAF_JRA.U_10">1958</value>
       <value stream="CORE_IAF_JRA.V_10">1958</value>
       <value stream="CORE_IAF_JRA.CORE2.ArcFactor">1958</value>
+      <value stream="ERA5_HOURLY">2019</value>
       <value stream="co2tseries.20tr">1850</value>
       <value stream="co2tseries.SSP">2015</value>
       <value stream="Anomaly.Forcing">2006</value>
@@ -2407,6 +2462,7 @@
       <value stream="CORE_IAF_JRA.U_10">2016</value>
       <value stream="CORE_IAF_JRA.V_10">2016</value>
       <value stream="CORE_IAF_JRA.CORE2.ArcFactor">2016</value>
+      <value stream="ERA5_HOURLY">2019</value>
       <value stream="co2tseries.20tr">2014</value>
       <value stream="co2tseries.SSP">2500</value>
       <value stream="BC.CRUNCEP.GPCP.Precip">2012</value>
@@ -2600,6 +2656,7 @@
       <value datm_mode="CORE2_NYF">u:v</value>
       <value datm_mode="CORE2_IAF">u:v</value>
       <value datm_mode="CORE_IAF_JRA">u:v</value>
+      <value datm_mode="ERA5">u:v,taux:tauy</value>
     </values>
   </entry>
 
@@ -2630,7 +2687,7 @@
     <type>char</type>
     <category>datm</category>
     <group>datm_nml</group>
-    <valid_values>CLMNCEP,COPYALL,CORE2_NYF,CORE2_IAF,CORE_IAF_JRA</valid_values>
+    <valid_values>CLMNCEP,COPYALL,CORE2_NYF,CORE2_IAF,CORE_IAF_JRA,ERA5</valid_values>
     <desc>
       general method that operates on the data.  this is generally
       implemented in the data models but is set in the strdata method for
@@ -2669,6 +2726,8 @@
       mode replicates code previously found in CLM (circa 2005), before the
       LMWG started using the CCSM flux coupler and data models to do
       active-land-only simulations.
+      datamode = "ERA5"
+      Fifth generation ECMWF atmospheric reanalysis of the global climate
     </desc>
     <values>
       <value>COPYALL</value>
@@ -2676,6 +2735,7 @@
       <value datm_mode="CORE2_NYF">CORE2_NYF</value>
       <value datm_mode="CORE2_IAF">CORE2_IAF</value>
       <value datm_mode="CORE_IAF_JRA">CORE_IAF_JRA</value>
+      <value datm_mode="ERA5">ERA5</value>
       <value datm_mode="CPLHIST">COPYALL</value>
     </values>
   </entry>
