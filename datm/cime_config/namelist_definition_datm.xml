@@ -1850,6 +1850,33 @@
         a2x1h_Sa_v  Sa_v
       </value>
       <!-- ===================-->
+      <!-- stream variable names for datm_mode CLM_QIAN -->
+      <!-- ===================-->
+      <value  stream="CLM_QIAN.Solar">
+        FSDS     Faxa_swdn
+      </value>
+      <value  stream="CLM_QIAN.Precip">
+        PRECTmms Faxa_precn
+      </value>
+      <value  stream="CLM_QIAN.TPQW">
+        TBOT     Sa_tbot
+        WIND     Sa_wind
+        QBOT     Sa_shum
+        PSRF     Sa_pbot
+      </value>
+      <value  stream="CLM_QIAN_WISO.Solar">
+        FSDS     Faxaswdn
+      </value>
+      <value  stream="CLM_QIAN_WISO.Precip">
+        PRECTmms Faxa_precn
+      </value>
+      <value  stream="CLM_QIAN_WISO.TPQW">
+        TBOT     Sa_tbot
+        WIND     Sa_wind
+        QBOT     Sa_shum
+        PSRF     Sa_pbot
+      </value>
+      <!-- ===================-->
       <!-- stream variable names for datm_mode CLMCRUNCEPv7-->
       <!-- ===================-->
       <value  stream="CLMCRUNCEPv7.Solar">
@@ -2116,6 +2143,8 @@
       <value>-999</value>
       <value stream="1PT">$DATM_CLMNCEP_YR_ALIGN</value>
       <value stream="CPLHISTForcing">$DATM_CPLHIST_YR_ALIGN</value>
+      <value stream="CLM_QIAN_WISO">$DATM_CLMNCEP_YR_ALIGN</value>
+      <value stream="CLM_QIAN">$DATM_CLMNCEP_YR_ALIGN</value>
       <value stream="CLMCRUNCEP">$DATM_CLMNCEP_YR_ALIGN</value>
       <value stream="CLMGSWP3">$DATM_CLMNCEP_YR_ALIGN</value>
       <value stream="CLMNLDAS2">$DATM_CLMNCEP_YR_ALIGN</value>
@@ -2150,6 +2179,8 @@
       <value stream="1PT" atm_grid="1x1_vancouverCAN">1992</value>
       <value stream="1PT" atm_grid="1x1_urbanc_alpha">0001</value>
       <value stream="CPLHISTForcing">$DATM_CPLHIST_YR_START</value>
+      <value stream="CLM_QIAN_WISO">2000</value>
+      <value stream="CLM_QIAN">$DATM_CLMNCEP_YR_START</value>
       <value stream="CLMCRUNCEP">$DATM_CLMNCEP_YR_START</value>
       <value stream="CLMGSWP3">$DATM_CLMNCEP_YR_START</value>
       <value stream="CLMNLDAS2">$DATM_CLMNCEP_YR_START</value>
@@ -2209,6 +2240,8 @@
       <value stream="1PT" atm_grid="1x1_vancouverCAN">1992</value>
       <value stream="1PT" atm_grid="1x1_urbanc_alpha">0002</value>
       <value stream="CPLHISTForcing">$DATM_CPLHIST_YR_END</value>
+      <value stream="CLM_QIAN_WISO">2004  </value>
+      <value stream="CLM_QIAN">$DATM_CLMNCEP_YR_END  </value>
       <value stream="CLMCRUNCEP">$DATM_CLMNCEP_YR_END  </value>
       <value stream="CLMGSWP3">$DATM_CLMNCEP_YR_END  </value>
       <value stream="CLMNLDAS2">$DATM_CLMNCEP_YR_END  </value>
