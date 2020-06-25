@@ -66,7 +66,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     logger.debug("DATM topo mode is {}".format(datm_topo))
 
     #----------------------------------------------------
-    # Initialize namelist defaults and write out namelist file
+    # Initialize namelist defaults and write out namelist file datm_in
     #----------------------------------------------------
     config = {}
     config['grid'] = grid
@@ -91,13 +91,10 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     nmlgen.write_output_file(namelist_file, data_list_path, groups=['datm_nml','shr_strdata_nml'])
 
     #----------------------------------------------------
-    # Create stream xml files - first construct the list of streams
+    # Create stream xml file - datm.streams.xml  
     #----------------------------------------------------
+    # first construct the list of streams
     streams = nmlgen.get_streams()
-
-    # This disable is required because nmlgen.get_streams
-    # may return a string or a list.  See issue #877 in ESMCI/cime
-    #pylint: disable=no-member
     if datm_presaero != "none":
         streams.append("presaero.{}".format(datm_presaero))
     if datm_topo != "none":
@@ -108,6 +105,8 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     streams.append(bias_correct)
     anomaly_forcing = nmlgen.get_value("anomaly_forcing")
     streams += anomaly_forcing
+
+    # create stream file
     stream_path = os.path.join(confdir, "datm.streams"+inst_string+".xml" )
     nmlgen.create_nuopc_stream_files(config, caseroot, streams, stream_path, data_list_path)
 

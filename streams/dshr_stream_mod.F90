@@ -110,11 +110,9 @@ module dshr_stream_mod
   end type shr_stream_streamType
 
   !----- parameters -----
-  integer          , save      :: debug = 0            ! edit/turn-on for debug write statements
-  real(R8)         , parameter :: spd = shr_const_cday ! seconds per day
-  character(len=*) , parameter :: sourcefile = &
-       __FILE__
-  character(*)     ,parameter :: u_FILE_u = &
+  integer      , save      :: debug = 0            ! edit/turn-on for debug write statements
+  real(R8)     , parameter :: spd = shr_const_cday ! seconds per day
+  character(*) , parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -432,10 +430,16 @@ contains
   !===============================================================================
   subroutine shr_stream_findBounds(strm, mDateIn, secIn, &
        mDateLB, dDateLB, secLB, n_lb, fileLB,  mDateUB, dDateUB, secUB, n_ub, fileUB)
+
+    !-------------------------------------------------------------------------------
     ! Given a stream and a model date, find time coordinates of the upper and
     ! lower time bounds surrounding the models date.  Returns the model date,
     ! data date, elasped seconds, time index, and file names associated with
     ! these upper and lower time bounds.
+    !   1) take the model date, map it into the data date range
+    !   2) find the upper and lower bounding data dates
+    !   3) return the bounding data and model dates, file names, & t-coord indicies
+    !-------------------------------------------------------------------------------
 
     ! input/output parameters:
     type(shr_stream_streamType) ,intent(inout):: strm    ! data stream to query
@@ -481,11 +485,6 @@ contains
     character(*),parameter :: F03   = "('(shr_stream_findBounds) ',a,i4)"
     character(*),parameter :: F04   = "('(shr_stream_findBounds) ',2a,i4)"
     !-------------------------------------------------------------------------------
-    ! Purpose:
-    !   1) take the model date, map it into the data date range
-    !   2) find the upper and lower bounding data dates
-    !   3) return the bounding data and model dates, file names, & t-coord indicies
-    !-------------------------------------------------------------------------------
 
     if (debug>0) write(strm%logunit,F02) "DEBUG: ---------- enter ------------------"
 
@@ -511,12 +510,12 @@ contains
     ! convert/map the model year/date into a data year/date
     ! note: these values will be needed later to convert data year to model year
     !----------------------------------------------------------------------------
-    mYear   = mDateIn/10000                      ! assumes/require F90 truncation
-    yrFirst = strm%yearFirst                     ! first year in data sequence
-    yrLast  = strm%yearLast                      ! last year in data sequence
-    yrAlign = strm%yearAlign                     ! model year corresponding to yearFirst
-    nYears  = yrLast - yrFirst + 1               ! number of years in data sequence
-    dDateF  = yrFirst * 10000 + 101 ! first date in valid range
+    mYear   = mDateIn/10000             ! assumes/require F90 truncation
+    yrFirst = strm%yearFirst            ! first year in data sequence
+    yrLast  = strm%yearLast             ! last year in data sequence
+    yrAlign = strm%yearAlign            ! model year corresponding to yearFirst
+    nYears  = yrLast - yrFirst + 1      ! number of years in data sequence
+    dDateF  = yrFirst * 10000 + 101     ! first date in valid range
     dDateL  = (yrLast+1)  * 10000 + 101 ! last date in valid range
 
     if (cycle) then
@@ -630,7 +629,7 @@ contains
           !--- find greatest valid date (GVD) ---
           if (.not. strm%found_gvd) then
              !--- start search at last file & move toward first file ---
-             B:          do k=strm%nFiles,1,-1
+             B: do k=strm%nFiles,1,-1
                 !--- read data for file number k ---
                 if (.not. strm%file(k)%haveData) then
                    call shr_stream_readtCoord(strm, k, rCode)
@@ -645,7 +644,9 @@ contains
                       strm%n_gvd = n
                       strm%found_gvd = .true.
                       rDategvd = strm%file(k)%date(n) + strm%file(k)%secs(n)/spd ! GVD date + frac day
-                      if (debug>1 ) write(strm%logunit,F01) "DEBUG: found GVD ",strm%file(k)%date(n)
+                      if (debug>1) then
+                         write(strm%logunit,F01) "DEBUG: found GVD ",strm%file(k)%date(n)
+                      end if
                       exit B
                    end if
                 end do
@@ -674,6 +675,7 @@ contains
           call shr_cal_ymd2date(yy,mm,dd,mDateUB)
           secUB   = strm%file(k_ub)%secs(n_ub)
           fileUB  = strm%file(k_ub)%name
+
           return
        endif
 

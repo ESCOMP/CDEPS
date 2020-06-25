@@ -272,7 +272,8 @@ contains
 
     ! Validate sdat datamode
     if (masterproc) write(logunit,*) ' datm datamode = ',trim(datamode)
-    if ( trim(datamode) == 'CORE2_NYF'    .or. &
+    if ( trim(datamode) == 'COPYALL'      .or. &
+         trim(datamode) == 'CORE2_NYF'    .or. &
          trim(datamode) == 'CORE2_IAF'    .or. &
          trim(datamode) == 'CORE_IAF_JRA' .or. &
          trim(datamode) == 'CLMNCEP') then
@@ -286,7 +287,8 @@ contains
        call datm_datamode_core2_advertise(exportState, fldsExport, flds_scalar_name, &
             flds_co2, flds_wiso, flds_presaero, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    case ('CORE2_IAF_JRA')
+    case ('CORE_IAF_JRA')
+       write(6,*)'DEBUG: calling datm_datamode_jra_advertise'
        call datm_datamode_jra_advertise(exportState, fldsExport, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('CLMNCEP')

@@ -277,7 +277,7 @@
       <!-- meshes for datm_mode CLMNLDAS2       -->
       <!-- ==================================== -->
       <value stream="CLMNLDAS2\.">
-        $DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.NLDAS2.0.125d.v1/Solar/ctsmforc.NLDAS2.0.125d.v1.Solr_ESMFmesh_120620.nc
+        $DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.NLDAS2.0.125d.v1/ctsmforc.NLDAS2.0.125d.v1.ESMFmesh_120620.nc
       </value>
       <!-- ==================================== -->
       <!-- single point stream forcing          -->
@@ -315,11 +315,11 @@
       <!-- ====================================                   -->
       <!-- meshes for datm_mode CORE_IAF_JRA or CORE_JRA_1p4)2018 -->
       <!-- ====================================                   -->
-      <value stream="CORE_IAF_JRA\.">
-	$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc
-      </value>
       <value stream="CORE_IAF_JRA.CORE2.ArcFactor">
         $DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc
+      </value>
+      <value stream="CORE_IAF_JRA\.">
+	$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc
       </value>
       <!-- ==================================== -->
       <!-- optional stream co2tseries -->
@@ -359,13 +359,13 @@
       <!-- ===================  -->
       <!-- stream data files for datm_mode 1PT     -->
       <!-- ===================  -->
-      <value  stream="1PT" atm_grid="1x1_mexicocityMEX">
+      <value stream="1PT" atm_grid="1x1_mexicocityMEX">
 	$DIN_LOC_ROOT/atm/datm7/CLM1PT_data/mexicocityMEX.c080124/clm1pt-1993-12.nc
       </value>
-      <value  stream="1PT" atm_grid="1x1_vancouverCAN">
+      <value stream="1PT" atm_grid="1x1_vancouverCAN">
 	$DIN_LOC_ROOT/atm/datm7/CLM1PT_data/vancouverCAN.c080124/clm1pt-1992-08.nc
       </value>
-      <value  stream="1PT" atm_grid="1x1_urbanc_alpha">
+      <value stream="1PT" atm_grid="1x1_urbanc_alpha">
 	$DIN_LOC_ROOT/atm/datm7/CLM1PT_data/urbanc_alpha.c080416/clm1pt-0001-08.nc
 	$DIN_LOC_ROOT/atm/datm7/CLM1PT_data/urbanc_alpha.c080416/clm1pt-0001-09.nc
 	$DIN_LOC_ROOT/atm/datm7/CLM1PT_data/urbanc_alpha.c080416/clm1pt-0001-10.nc
@@ -2236,11 +2236,11 @@
     <desc>Last year of stream.</desc>
     <values>
       <value>-999</value>
-      <value stream="1PT" atm_grid=".1x1_mexicocityMEX">1993</value>
+      <value stream="1PT" atm_grid="1x1_mexicocityMEX">1993</value>
       <value stream="1PT" atm_grid="1x1_vancouverCAN">1992</value>
       <value stream="1PT" atm_grid="1x1_urbanc_alpha">0002</value>
       <value stream="CPLHISTForcing">$DATM_CPLHIST_YR_END</value>
-      <value stream="CLM_QIAN_WISO">2004  </value>
+      <value stream="CLM_QIAN_WISO">2004</value>
       <value stream="CLM_QIAN">$DATM_CLMNCEP_YR_END  </value>
       <value stream="CLMCRUNCEP">$DATM_CLMNCEP_YR_END  </value>
       <value stream="CLMGSWP3">$DATM_CLMNCEP_YR_END  </value>
@@ -2543,7 +2543,6 @@
       <value datm_mode="CORE2_NYF">CORE2_NYF</value>
       <value datm_mode="CORE2_IAF">CORE2_IAF</value>
       <value datm_mode="CORE_IAF_JRA">CORE_IAF_JRA</value>
-      <value datm_mode="CPLHIST">COPYALL</value>
     </values>
   </entry>
 
