@@ -477,9 +477,17 @@ contains
                ignoreUnmatchedIndices = .true., rc=rc)
           if (chkerr(rc,__LINE__,u_FILE_u)) return
        else if (trim(sdat%stream(ns)%mapalgo) == 'nn') then
-          ! single point data, no action required.
+          call ESMF_FieldReGridStore(sdat%pstrm(ns)%field_stream, lfield_dst, &
+               routehandle=sdat%pstrm(ns)%routehandle, &
+               regridmethod=ESMF_REGRIDMETHOD_NEAREST_STOD, &
+               dstMaskValues = (/0/), &  ! ignore destination points where the mask is 0
+               srcMaskValues = (/0/), &  ! ignore source points where the mask is 0
+               srcTermProcessing=srcTermProcessing_Value, ignoreDegenerate=.true., &
+               unmappedaction=ESMF_UNMAPPEDACTION_IGNORE, rc=rc)
+       else if (trim(sdat%stream(ns)%mapalgo) == 'none') then
+          ! single point stream data, no action required.
        else
-          call shr_sys_abort('ERROR: only bilinear regrid or redist is supported for now')
+          call shr_sys_abort('ERROR: map algo '//trim(sdat%stream(ns)%mapalgo)//' is not supported')
        end if
 
     end do ! end of loop over streams
@@ -910,7 +918,6 @@ contains
                      sdat%pstrm(ns)%fldlist_model(nf), dataptr_ub, rc=rc)
                 if (ChkErr(rc,__LINE__,u_FILE_u)) return
                 dataptr(:) = dataptr_lb(:) * flb + dataptr_ub(:) * fub
-
              end do
              call t_stopf(trim(lstr)//trim(timname)//'_tint')
 
@@ -1359,6 +1366,7 @@ contains
        else
           call shr_sys_abort(subName//"ERROR: only double, real and short types are supported for stream read")
        end if
+
        if(associated(dataptr2d_src) .and. trim(fldlist_model(nf)) .eq. uname) then
           ! save in dataptr2d_src
           dataptr2d_src(1,:) = dataptr(:)

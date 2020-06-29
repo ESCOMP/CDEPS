@@ -282,7 +282,8 @@ contains
 
        ! TODO: verify that are only running on one processor here
 
-       call dshr_mesh_create_from_grid(trim(model_createmesh_fromfile), compid, model_mesh, rc=rc)
+       call dshr_mesh_create_from_grid(trim(model_createmesh_fromfile), compid, model_mesh, &
+            my_task, master_task, logunit, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     else if (scmMode) then
@@ -302,9 +303,6 @@ contains
        if (my_task == master_task) then
           write(logunit,*) ' scm mode, lon lat = ',scmmode, scmlon,scmlat
        end if
-       ! Read in the input mesh
-       mesh_global = ESMF_MeshCreate(trim(model_meshfile), fileformat=ESMF_FILEFORMAT_ESMFMESH, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
        ! Now create a single column mesh using the single column lats and lons and the global mesh
        call  dshr_mesh_create_from_scol(scmlon, scmlat, logunit, mesh_global, model_mesh, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -364,12 +362,15 @@ contains
   end subroutine dshr_mesh_init
 
   !===============================================================================
-  subroutine dshr_mesh_create_from_grid(filename, compid, mesh, rc)
+  subroutine dshr_mesh_create_from_grid(filename, compid, mesh, my_task, master_task, logunit, rc)
 
     ! input/output variables
     character(len=*), intent(in)  :: filename
     integer         , intent(in)  :: compid
     type(ESMF_Mesh) , intent(out) :: mesh
+    integer         , intent(in)  :: my_task
+    integer         , intent(in)  :: master_task
+    integer         , intent(in)  :: logunit
     integer         , intent(out) :: rc
 
     ! local variables
@@ -386,6 +387,12 @@ contains
     real(r8)                       :: mincornerCoord(2)
     real(r8)                       :: maxcornerCoord(2)
     type(ESMF_Grid)                :: lgrid
+    integer                        :: spatialDim         ! number of dimension in mesh
+    integer                        :: numOwnedElements   ! number of elements owned by this PET
+    real(r8), pointer              :: ownedElemCoords(:) ! mesh element coordinates owned by this PET
+    real(r8), pointer              :: lat(:), lon(:)     ! mesh lats and lons owned by this PET
+    integer                        :: n
+    character(len=*), parameter    :: subname='(dshr_mesh_create_from_grid)'
     ! ----------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -449,6 +456,26 @@ contains
     ! create the mesh from the grid
     mesh =  ESMF_MeshCreate(lgrid, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    call ESMF_MeshGet(mesh, numOwnedElements=numOwnedElements, spatialDim=spatialDim, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    allocate(ownedElemCoords(spatialDim*numOwnedElements))
+    call ESMF_MeshGet(mesh, ownedElemCoords=ownedElemCoords)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    allocate(lon(numOwnedElements))
+    allocate(lat(numOwnedElements))
+    do n = 1, numOwnedElements
+       lon(n) = ownedElemCoords(2*n-1)
+       lat(n) = ownedElemCoords(2*n)
+    end do
+    if (my_task == master_task) then
+       write(logunit,*)' Mesh created from file ',trim(filename)
+       write(logunit,*)' mesh element lons = ',lon(:)
+       write(logunit,*)' mesh element lats = ',lat(:)
+    end if
+    deallocate(ownedElemCoords)
+    deallocate(lon)
+    deallocate(lat)
 
   contains
 

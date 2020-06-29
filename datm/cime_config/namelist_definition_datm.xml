@@ -2376,11 +2376,12 @@
     </desc>
     <values>
       <value>bilinear</value>
-      <value datm_mode="1PT">nn</value>
+      <value stream="1PT">none</value>
       <value stream="CLMCRUNCEP" atm_grid="hcru">redist</value>
       <value stream="CLMGSWP3" atm_grid="hcru">redist</value>
       <value stream="CLMNLDAS2" atm_grid="0.125nldas2">redist</value>
-      <value stream="co2tseries">nn</value>
+      <value stream="co2tseries">none</value>
+      <value atm_grid="1x1">nn</value>
     </values>
   </entry>
 
@@ -2453,7 +2454,7 @@
       <value>cycle</value>
       <value stream="co2tseries.20tr">extend</value>
       <value stream="co2tseries.SSP">extend</value>
-      <value stream="1PT">extend</value>
+      <value datm_mode="1PT">extend</value>
     </values>
   </entry>
 
@@ -2554,23 +2555,16 @@
     <type>char</type>
     <category>datm</category>
     <group>datm_nml</group>
-    <valid_values>CLMNCEP,COPYALL,CORE2_NYF,CORE2_IAF,CORE_IAF_JRA,ERA5</valid_values>
+    <valid_values>CLMNCEP,CORE2_NYF,CORE2_IAF,CORE_IAF_JRA,ERA5,CPLHIST</valid_values>
     <desc>
-      general method that operates on the data.  this is generally
-      implemented in the data models but is set in the strdata method for
-      convenience.  valid options are dependent on the data model and will
-      be described elsewhere.
-      datamode = "COPYALL"
-      The default science mode of the data model is the COPYALL mode.
-      COPYALL mode will examine the fields found in all input data streams,
+      general method that operates on the data.
+      datamode = "CPLHIST"
+      CPLHIST mode will examine the fields found in all input data streams,
       if any input field names match the field names used internally, they
       are copied into the export array and passed directly to the coupler
       without any special user code.  Any required fields not found on an
       input stream will be set to zero except for aerosol deposition fields
-      which will be set to a special value.  There are several other
-      scientific modes supported by the model, they are listed below.  The
-      mode is selected by a character string set in the strdata namelist
-      variable dataMode.
+      which will be set to a special value.  
       datamode = "CORE2_NYF"
       Coordinated Ocean-ice Reference Experiments (CORE) Version 2 Normal Year Forcing.
       datamode = "CORE2_IAF"
@@ -2597,13 +2591,27 @@
       Fifth generation ECMWF atmospheric reanalysis of the global climate
     </desc>
     <values>
-      <value>COPYALL</value>
-      <value datm_mode="CLM">CLMNCEP</value>
-      <value datm_mode="CORE2_NYF">CORE2_NYF</value>
-      <value datm_mode="CORE2_IAF">CORE2_IAF</value>
-      <value datm_mode="CORE_IAF_JRA">CORE_IAF_JRA</value>
-      <value datm_mode="ERA5">ERA5</value>
-      <value datm_mode="CPLHIST">COPYALL</value>
+      <value datm_mode="CLM">
+        CLMNCEP
+      </value>
+      <value datm_mode="1PT">
+        CLMNCEP
+      </value>
+      <value datm_mode="CORE2_NYF">
+        CORE2_NYF
+      </value>
+      <value datm_mode="CORE2_IAF">
+        CORE2_IAF
+      </value>
+      <value datm_mode="CORE_IAF_JRA" >
+        CORE_IAF_JRA
+      </value>
+      <value datm_mode="ERA5">
+        ERA5
+      </value>
+      <value datm_mode="CPLHIST">
+        CPLHIST
+      </value>
     </values>
   </entry>
 

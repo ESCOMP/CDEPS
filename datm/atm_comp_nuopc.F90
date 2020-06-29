@@ -277,8 +277,7 @@ contains
 
     ! Validate sdat datamode
     if (masterproc) write(logunit,*) ' datm datamode = ',trim(datamode)
-    if ( trim(datamode) == 'COPYALL'      .or. &
-         trim(datamode) == 'CORE2_NYF'    .or. &
+    if ( trim(datamode) == 'CORE2_NYF'    .or. &
          trim(datamode) == 'CORE2_IAF'    .or. &
          trim(datamode) == 'CORE_IAF_JRA' .or. &
          trim(datamode) == 'CLMNCEP'      .or. &
