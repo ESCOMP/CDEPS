@@ -598,7 +598,7 @@ contains
     case('ERA5')
        call datm_datamode_era5_advance(exportstate, masterproc, logunit, mpicom, target_ymd, &
             target_tod, sdat%model_calendar, rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return       
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end select
 
     ! Write restarts if needed
@@ -619,7 +619,7 @@ contains
        case('ERA5')
           call datm_datamode_era5_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
                logunit, mpicom, my_task, sdat)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return       
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end select
     end if
 
