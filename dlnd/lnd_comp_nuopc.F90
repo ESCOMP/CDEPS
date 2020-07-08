@@ -50,15 +50,15 @@ module lnd_comp_nuopc
   integer                  :: flds_scalar_num = 0
   integer                  :: flds_scalar_index_nx = 0
   integer                  :: flds_scalar_index_ny = 0
-  integer                  :: compid                              ! mct comp id
   integer                  :: mpicom                              ! mpi communicator
   integer                  :: my_task                             ! my task in mpi communicator mpicom
   logical                  :: masterproc                          ! true of my_task == master_task
   integer                  :: inst_index                          ! number of current instance (ie. 1)
   character(len=16)        :: inst_suffix = ""                    ! char string associated with instance (ie. "_0001" or "")
   integer                  :: logunit                             ! logging unit number
-  logical                  :: read_restart                        ! start from restart
-  character(*) , parameter :: nullstr = 'undefined'
+  logical                  :: restart_read                        ! start from restart
+  character(CL)            :: case_name                           ! case name
+  character(*) , parameter :: nullstr = 'null'
 
   ! dlnd_in namelist input
   character(CL)            :: dataMode = nullstr                  ! flags physics options wrt input data
@@ -71,12 +71,15 @@ module lnd_comp_nuopc
   character(CL)            :: restfilm = nullstr                  ! model restart file namelist
   integer                  :: nx_global                           ! global nx dimension of model mesh
   integer                  :: ny_global                           ! global ny dimension of model mesh
-  character(CL)            :: stream_fracname = nullstr           ! name of fraction field in first stream file
 
   ! linked lists
   type(fldList_type) , pointer :: fldsImport => null()
   type(fldList_type) , pointer :: fldsExport => null()
   type(dfield_type)  , pointer :: dfields    => null()
+
+  ! model mask and model fraction
+  real(r8), pointer            :: model_frac(:) => null()
+  integer , pointer            :: model_mask(:) => null()
 
   ! module pointer arrays
   real(r8), pointer            :: lfrac(:)
@@ -87,7 +90,6 @@ module lnd_comp_nuopc
   integer      , parameter     :: master_task=0                   ! task number of master task
   character(*) , parameter     :: rpfile = 'rpointer.lnd'
   character(*) , parameter     :: modName =  "(lnd_comp_nuopc)"
-
   character(*) , parameter     :: u_FILE_u = &
        __FILE__
 
@@ -160,9 +162,12 @@ contains
     !-------------------------------------------------------------------------------
 
     namelist / dlnd_nml / datamode, model_meshfile, model_maskfile, model_createmesh_fromfile, &
-         nx_global, ny_global, restfilm, force_prognostic_true, stream_fracname
+         nx_global, ny_global, restfilm, force_prognostic_true
 
     rc = ESMF_SUCCESS
+
+    call NUOPC_CompAttributeGet(gcomp, name='case_name', value=case_name, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Obtain flds_scalar values, mpi values, multi-instance values and
     ! set logunit and set shr logging to my log file
@@ -193,7 +198,6 @@ contains
     call shr_mpi_bcast(ny_global                 , mpicom, 'ny_global')
     call shr_mpi_bcast(restfilm                  , mpicom, 'restfilm')
     call shr_mpi_bcast(force_prognostic_true     , mpicom, 'force_prognostic_true')
-    call shr_mpi_bcast(stream_fracname           , mpicom, 'stream_fracname')
 
     ! write namelist input to standard out
     if (my_task == master_task) then
@@ -205,7 +209,6 @@ contains
        end if
        write(logunit ,*)' datamode              = ',datamode
        write(logunit ,*)' model_meshfile        = ',trim(model_meshfile)
-       write(logunit ,*)' stream_fracname       = ',trim(stream_fracname)
        write(logunit ,*)' nx_global             = ',nx_global
        write(logunit ,*)' ny_global             = ',ny_global
        write(logunit ,*)' restfilm              = ',trim(restfilm)
@@ -275,16 +278,15 @@ contains
 
     rc = ESMF_SUCCESS
 
-    if (datamode == 'NULL') RETURN
-
     ! Initialize sdat
     call t_startf('dlnd_strdata_init')
-    call dshr_mesh_init(gcomp, compid, logunit, 'lnd', nx_global, ny_global, &
-         model_meshfile, model_maskfile, model_createmesh_fromfile, model_mesh, read_restart, rc=rc)
+    call dshr_mesh_init(gcomp, nullstr, logunit, 'LND', nx_global, ny_global, &
+         model_meshfile, model_maskfile, model_createmesh_fromfile, model_mesh, &
+         model_mask, model_frac, restart_read, rc=rc)
 
     ! Initialize stream data type
     xmlfilename = 'dlnd.streams'//trim(inst_suffix)//'.xml'
-    call shr_strdata_init_from_xml(sdat, xmlfilename, model_mesh, clock, compid, logunit, rc=rc)
+    call shr_strdata_init_from_xml(sdat, xmlfilename, model_mesh, clock, 'LND', logunit, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call t_stopf('dlnd_strdata_init')
 
@@ -294,7 +296,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Read restart if necessary
-    if (read_restart) then
+    if (restart_read) then
        call dshr_restart_read(restfilm, rpfile, inst_suffix, nullstr, logunit, my_task, mpicom, sdat)
     end if
 
@@ -341,7 +343,6 @@ contains
     integer                 :: yr            ! year
     integer                 :: mon           ! month
     integer                 :: day           ! day in month
-    character(CL)           :: case_name     ! case name
     character(len=*),parameter :: subname=trim(modName)//':(ModelAdvance) '
     !-------------------------------------------------------------------------------
 
@@ -376,9 +377,6 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
        call t_startf('dlnd_restart')
-       call NUOPC_CompAttributeGet(gcomp, name='case_name', value=case_name, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
        call dshr_restart_write(rpfile, case_name, 'dlnd', inst_suffix, next_ymd, next_tod, &
             logunit, mpicom, my_task, sdat)
        call t_stopf('dlnd_restart')
@@ -525,10 +523,7 @@ contains
        ! Set fractional land pointer in export state
        call dshr_state_getfldptr(exportState, fldname='Sl_lfrin', fldptr1=lfrac, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
-
-       ! Obtain fractional land from first stream
-       call shr_strdata_get_stream_domain(sdat, 1, stream_fracname, lfrac, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
+       lfrac(:) = model_frac(:)
 
        ! Create stream-> export state mapping
        ! Note that strm_flds is the model name for the stream field

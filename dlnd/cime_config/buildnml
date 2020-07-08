@@ -35,49 +35,40 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     in which output files will be placed.
     """
     #----------------------------------------------------
-    # Get a bunch of information from the case.
+    # Write out dlnd_in and dlnd.streams.xml
     #----------------------------------------------------
-    dlnd_mode = case.get_value("DLND_MODE")
-    lnd_mesh = case.get_value("LND_DOMAIN_MESH")
-    glc_nec = case.get_value("GLC_NEC")
     caseroot = case.get_value("CASEROOT")
+    dlnd_mode = case.get_value("DLND_MODE")
+    lnd_grid = case.get_value("LND_GRID")
+    glc_nec = case.get_value("GLC_NEC")
 
-    #----------------------------------------------------
     # Check for incompatible options.
-    #----------------------------------------------------
-    expect(dlnd_mode != "NULL",
-           "xml variable DLND_MODE cannot be NULL")
-    expect(lnd_mesh != "NULL",
-           "xml variable LND_DOMAIN_MESH cannot be NULL")
+    expect(dlnd_grid != "null",
+           "DLND_GRID cannot be null")
 
-    #----------------------------------------------------
     # Log some settings.
-    #----------------------------------------------------
     logger.debug("DLND mode is {}".format(dlnd_mode))
-    logger.debug("DLND mesh is {}".format(lnd_mesh))
     logger.debug("DLND glc_nec is {}".format(glc_nec))
 
-    #----------------------------------------------------
-    # Initialize namelist defaults and write out namelist file
-    #----------------------------------------------------
+    # Initialize namelist defaults
+    # Note: always use model mesh file to set mask for drof
     config = {}
     config['dlnd_mode'] = dlnd_mode
+    config['create_mesh'] = 'true' if case.get_value("LND_DOMAIN_MESH") == 'create_mesh' else 'false'
+
+    # Do not allow single column mode for drof
+    scol_mode = True if case.get_value('PTS_MODE') else False
+    expect(not scol_mode, 
+           "for DLND, single column mode is not allowed")
+
+    # initialize nmlgen
     nmlgen.init_defaults(infile, config)
 
-    # Set model mesh to the xml variable
-    model_meshfile = case.get_value("ATM_DOMAIN_MESH")
-    if model_meshfile == 'create_mesh':
-        atm_domain_path = case.get_value("ATM_DOMAIN_PATH")
-        atm_domain_file = case.get_value("ATM_DOMAIN_FILE")
-        nmlgen.set_value("model_createmesh_fromfile",os.path.join(atm_domain_path,atm_domain_file))
-
+    # Generate dlnd_in
     namelist_file = os.path.join(confdir, "dlnd_in")
     nmlgen.write_output_file(namelist_file, data_list_path, groups=['dlnd_nml'])
 
-    #----------------------------------------------------
-    # Create stream xml files - first construct the list of streams
-    #----------------------------------------------------
-
+    # Generate dlnd.stream.xml
     streams = nmlgen.get_streams()
     stream_path = os.path.join(confdir, "dlnd.streams"+inst_string+".xml" )
     nmlgen.create_nuopc_stream_files(config, caseroot, streams, stream_path, data_list_path)

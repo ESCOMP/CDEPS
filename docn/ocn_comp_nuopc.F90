@@ -6,7 +6,7 @@ module ocn_comp_nuopc
 
   use ESMF
   use NUOPC            , only : NUOPC_CompDerive, NUOPC_CompSetEntryPoint, NUOPC_CompSpecialize
-  use NUOPC            , only : NUOPC_CompAttributeGet, NUOPC_Advertise
+  use NUOPC            , only : NUOPC_Advertise, NUOPC_CompAttributeGet
   use NUOPC_Model      , only : model_routine_SS        => SetServices
   use NUOPC_Model      , only : model_label_Advance     => label_Advance
   use NUOPC_Model      , only : model_label_SetRunClock => label_SetRunClock
@@ -26,7 +26,6 @@ module ocn_comp_nuopc
   use pio
 
   ! Datamode specialized modules
-  use docn_set_ofrac_mod           , only : docn_set_ofrac
   use docn_datamode_copyall_mod    , only : docn_datamode_copyall_advertise
   use docn_datamode_copyall_mod    , only : docn_datamode_copyall_init_pointers
   use docn_datamode_copyall_mod    , only : docn_datamode_copyall_advance
@@ -68,7 +67,6 @@ module ocn_comp_nuopc
   integer                      :: flds_scalar_num = 0
   integer                      :: flds_scalar_index_nx = 0
   integer                      :: flds_scalar_index_ny = 0
-  integer                      :: compid           ! mct comp id
   integer                      :: mpicom           ! mpi communicator
   integer                      :: my_task          ! my task in mpi communicator mpicom
   logical                      :: masterproc       ! true of my_task == master_task
@@ -76,7 +74,7 @@ module ocn_comp_nuopc
   integer                      :: logunit          ! logging unit number
   logical                      :: restart_read     ! start from restart
   character(CL)                :: case_name
-  character(*) , parameter     :: nullstr = 'undefined'
+  character(*) , parameter     :: nullstr = 'null'
 
   ! docn_in namelist input
   character(CL)                :: xmlfilename = nullstr               ! filename to obtain namelist info from
@@ -96,16 +94,16 @@ module ocn_comp_nuopc
   type(fldList_type) , pointer :: fldsExport => null()
   type(dfield_type)  , pointer :: dfields    => null()
 
+  ! model mask and model fraction
+  real(r8), pointer            :: model_frac(:) => null()
+  integer , pointer            :: model_mask(:) => null()
+
   ! constants
   logical                      :: aquaplanet = .false.
   logical                      :: diagnose_data = .true.
   integer      , parameter     :: master_task = 0                 ! task number of master task
   character(*) , parameter     :: module_name = "(ocn_comp_nuopc)"
   character(*) , parameter     :: modelname = 'docn'
-
-  ! ocean fraction
-  real(r8), allocatable        :: ocn_fraction(:)
-
   character(*) , parameter     :: u_FILE_u = &
        __FILE__
 
@@ -177,10 +175,12 @@ contains
     character(*)    ,parameter :: F00 = "('(ocn_comp_nuopc) ',8a)"
     character(*)    ,parameter :: F01 = "('(ocn_comp_nuopc) ',a,2x,i8)"
     character(*)    ,parameter :: F02 = "('(ocn_comp_nuopc) ',a,l6)"
+    character(*)    ,parameter :: F03 = "('(ocn_comp_nuopc) ',a,f8.5,2x,f8.5)"
     !-------------------------------------------------------------------------------
 
-    namelist / docn_nml / datamode, model_meshfile, model_maskfile, model_createmesh_fromfile, &
-         restfilm,  sst_constant_value, nx_global, ny_global
+    namelist / docn_nml / datamode, &
+         model_meshfile, model_maskfile, model_createmesh_fromfile, &
+         restfilm,  nx_global, ny_global, sst_constant_value
 
     rc = ESMF_SUCCESS
 
@@ -190,15 +190,15 @@ contains
     ! Obtain flds_scalar values, mpi values, multi-instance values and
     ! set logunit and set shr logging to my log file
     call dshr_init(gcomp, mpicom, my_task, inst_index, inst_suffix, &
-         flds_scalar_name, flds_scalar_num, flds_scalar_index_nx, flds_scalar_index_ny, &
-         logunit, rc=rc)
+         flds_scalar_name, flds_scalar_num, flds_scalar_index_nx, flds_scalar_index_ny, logunit, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Determine logical masterproc
     masterproc = (my_task == master_task)
 
-    ! Read docn_nml from nlfilename
     if (my_task == master_task) then
+
+       ! Read docn_nml from nlfilename
        nlfilename = "docn_in"//trim(inst_suffix)
        open (newunit=nu,file=trim(nlfilename),status="old",action="read")
        read (nu,nml=docn_nml,iostat=ierr)
@@ -209,7 +209,8 @@ contains
        end if
 
        ! write namelist input to standard out
-       write(logunit,F00)' datamode = ',trim(datamode)
+       write(logunit,F00)' case_name = ',trim(case_name)
+       write(logunit,F00)' datamode  = ',trim(datamode)
        if (model_createmesh_fromfile /= nullstr) then
           write(logunit,F00)' model_create_meshfile_fromfile = ',trim(model_createmesh_fromfile)
        else
@@ -250,6 +251,7 @@ contains
     call shr_mpi_bcast(model_createmesh_fromfile , mpicom, 'model_createmesh_fromfile')
     call shr_mpi_bcast(nx_global                 , mpicom, 'nx_global')
     call shr_mpi_bcast(ny_global                 , mpicom, 'ny_global')
+    call shr_mpi_bcast(restfilm                  , mpicom, 'restfilm')
     call shr_mpi_bcast(sst_constant_value        , mpicom, 'sst_constant_value')
 
     ! Special logic for prescribed aquaplanet
@@ -265,8 +267,7 @@ contains
     end if
 
     ! Validate datamode
-    if ( trim(datamode) == 'null'               .or. & ! does nothing
-         trim(datamode) == 'sstdata'            .or. & ! read stream, no import data
+    if ( trim(datamode) == 'sstdata'            .or. & ! read stream, no import data
          trim(datamode) == 'iaf'                .or. & ! read stream, needs import data?
          trim(datamode) == 'sst_aquap_file'     .or. & ! read stream, no import data
          trim(datamode) == 'som'                .or. & ! read stream, needs import data
@@ -279,21 +280,19 @@ contains
     endif
 
     ! Advertise docn fields
-    if (trim(datamode) /= 'NULL') then
-       if (trim(datamode)=='sst_aquap_analytic' .or. trim(datamode)=='sst_aquap_constant') then
-          aquaplanet = .true.
-          call docn_datamode_aquaplanet_advertise(exportState, fldsExport, flds_scalar_name, rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       else if (trim(datamode(1:3)) == 'som') then
-          call docn_datamode_som_advertise(importState, exportState, fldsImport, fldsExport, flds_scalar_name, rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       else if (trim(datamode) == 'sstdata' .or. trim(datamode) == 'sst_aquap_file') then
-          call docn_datamode_copyall_advertise(exportState, fldsExport, flds_scalar_name, rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       else if (trim(datamode) == 'iaf') then
-          call docn_datamode_iaf_advertise(importState, exportState, fldsImport, fldsExport, flds_scalar_name, rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       end if
+    if (trim(datamode)=='sst_aquap_analytic' .or. trim(datamode)=='sst_aquap_constant') then
+       aquaplanet = .true.
+       call docn_datamode_aquaplanet_advertise(exportState, fldsExport, flds_scalar_name, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    else if (trim(datamode(1:3)) == 'som') then
+       call docn_datamode_som_advertise(importState, exportState, fldsImport, fldsExport, flds_scalar_name, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    else if (trim(datamode) == 'sstdata' .or. trim(datamode) == 'sst_aquap_file') then
+       call docn_datamode_copyall_advertise(exportState, fldsExport, flds_scalar_name, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    else if (trim(datamode) == 'iaf') then
+       call docn_datamode_iaf_advertise(importState, exportState, fldsImport, fldsExport, flds_scalar_name, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
   end subroutine InitializeAdvertise
@@ -324,16 +323,17 @@ contains
 
     rc = ESMF_SUCCESS
 
-    ! Initialize model mesh, restart flag, compid, and logunit
+    ! Initialize model mesh, restart flag, logunit, model_mask and model_frac
     call t_startf('docn_strdata_init')
-    call dshr_mesh_init(gcomp, compid, logunit, trim(modelname), nx_global, ny_global, &
-         model_meshfile, model_maskfile, model_createmesh_fromfile, model_mesh, restart_read, rc=rc)
+    call dshr_mesh_init(gcomp, nullstr, logunit, 'OCN', nx_global, ny_global, &
+         model_meshfile, model_maskfile, model_createmesh_fromfile, model_mesh, &
+         model_mask, model_frac, restart_read, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Initialize stream data type if not aqua planet
     if (.not. aquaplanet) then
        xmlfilename = trim(modelname)//'.streams'//trim(inst_suffix)//'.xml'
-       call shr_strdata_init_from_xml(sdat, xmlfilename, model_mesh, clock, compid, logunit, rc=rc)
+       call shr_strdata_init_from_xml(sdat, xmlfilename, model_mesh, clock, 'OCN', logunit, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
     call t_stopf('docn_strdata_init')
@@ -442,7 +442,6 @@ contains
 
     ! local variables
     logical :: first_time = .true.
-    integer :: numOwnedElements
     character(*), parameter :: subName = "(docn_comp_run) "
     !-------------------------------------------------------------------------------
 
@@ -456,14 +455,6 @@ contains
 
     if (first_time) then
 
-       ! Determine ocn fraction
-       call ESMF_MeshGet(model_mesh, numOwnedElements=numOwnedElements,  rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       allocate(ocn_fraction(numOwnedElements))
-       call docn_set_ofrac(exportState, model_mesh, model_meshfile, model_maskfile, &
-            nx_global, ny_global, compid, ocn_fraction, rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    
        ! Initialize dfields
        call docn_init_dfields(importState, exportState, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -471,16 +462,16 @@ contains
        ! Initialize datamode module ponters
        select case (trim(datamode))
        case('sstdata', 'sst_aquap_file')
-          call docn_datamode_copyall_init_pointers(exportState, ocn_fraction, rc)
+          call docn_datamode_copyall_init_pointers(exportState, model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('iaf')
-          call docn_datamode_iaf_init_pointers(importState, exportState, ocn_fraction, rc)
+          call docn_datamode_iaf_init_pointers(importState, exportState, model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('som', 'som_aquap')
-          call docn_datamode_som_init_pointers(importState, exportState, sdat, ocn_fraction, rc)
+          call docn_datamode_som_init_pointers(importState, exportState, sdat, model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('sst_aquap_analytic', 'sst_aquap_constant')
-          call  docn_datamode_aquaplanet_init_pointers(exportState, ocn_fraction, rc)
+          call  docn_datamode_aquaplanet_init_pointers(exportState, model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end select
 

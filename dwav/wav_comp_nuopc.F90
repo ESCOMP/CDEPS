@@ -49,14 +49,14 @@ module wav_comp_nuopc
   integer                      :: flds_scalar_num = 0
   integer                      :: flds_scalar_index_nx = 0
   integer                      :: flds_scalar_index_ny = 0
-  integer                      :: compid                              ! mct comp id
   integer                      :: mpicom                              ! mpi communicator
   integer                      :: my_task                             ! my task in mpi communicator mpicom
   logical                      :: masterproc                          ! true of my_task == master_task
   character(len=16)            :: inst_suffix = ""                    ! char string associated with instance (ie. "_0001" or "")
   integer                      :: logunit                             ! logging unit number
-  logical                      :: read_restart
-  character(*) , parameter     :: nullstr = 'undefined'
+  logical                      :: restart_read
+  character(CL)                :: case_name                           ! case name
+  character(*) , parameter     :: nullstr = 'null'
 
   ! dwav_in namelist input
   character(CL)                :: xmlfilename = nullstr               ! filename to obtain namelist info from
@@ -79,6 +79,10 @@ module wav_comp_nuopc
   type(fldList_type) , pointer :: fldsImport => null()
   type(fldList_type) , pointer :: fldsExport => null()
   type(dfield_type)  , pointer :: dfields    => null()
+
+  ! model mask and model fraction
+  real(r8), pointer            :: model_frac(:) => null()
+  integer , pointer            :: model_mask(:) => null()
 
   character(*) , parameter     :: u_FILE_u = &
        __FILE__
@@ -157,6 +161,9 @@ contains
          restfilm, nx_global, ny_global
 
     rc = ESMF_SUCCESS
+
+    call NUOPC_CompAttributeGet(gcomp, name='case_name', value=case_name, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Obtain flds_scalar values, mpi values, multi-instance values and
     ! set logunit and set shr logging to my log file
@@ -258,13 +265,14 @@ contains
 
     ! Initialize sdat - create the model domain mesh and intialize the sdat clock
     call t_startf('dwav_strdata_init')
-    call dshr_mesh_init(gcomp, compid, logunit, 'wav', nx_global, ny_global, &
-         model_meshfile, model_maskfile, model_createmesh_fromfile, model_mesh, read_restart, rc=rc)
+    call dshr_mesh_init(gcomp, nullstr, logunit, 'WAV', nx_global, ny_global, &
+         model_meshfile, model_maskfile, model_createmesh_fromfile, model_mesh, &
+         model_mask, model_frac, restart_read, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Initialize stream data type if not aqua planet
     xmlfilename = 'dwav.streams'//trim(inst_suffix)//'.xml'
-    call shr_strdata_init_from_xml(sdat, xmlfilename, model_mesh, clock, compid, logunit, rc=rc)
+    call shr_strdata_init_from_xml(sdat, xmlfilename, model_mesh, clock, 'WAV', logunit, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call t_stopf('dwav_strdata_init')
 
@@ -274,9 +282,8 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Read restart if necessary
-    if (read_restart) then
-       call dshr_restart_read(restfilm, rpfile, inst_suffix, nullstr, &
-            logunit, my_task, mpicom, sdat)
+    if (restart_read) then
+       call dshr_restart_read(restfilm, rpfile, inst_suffix, nullstr, logunit, my_task, mpicom, sdat)
     end if
 
     ! Get the time to interpolate the stream data to
@@ -316,7 +323,6 @@ contains
     integer                 :: day           ! day in month
     integer                 :: next_ymd      ! model date
     integer                 :: next_tod      ! model sec into model date
-    character(CL)           :: case_name     ! case name
     character(len=*),parameter :: subname=trim(modName)//':(ModelAdvance) '
     !-------------------------------------------------------------------------------
 

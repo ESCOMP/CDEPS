@@ -151,14 +151,14 @@ contains
   end function shr_strdata_get_stream_fieldbundle
 
   !===============================================================================
-  subroutine shr_strdata_init_from_xml(sdat, xmlfilename, model_mesh, clock, compid, logunit, rc)
+  subroutine shr_strdata_init_from_xml(sdat, xmlfilename, model_mesh, clock, compname, logunit, rc)
 
     ! input/output variables
     type(shr_strdata_type)     , intent(inout) :: sdat
     character(len=*)           , intent(in)    :: xmlfilename
     type(ESMF_Mesh)            , intent(in)    :: model_mesh
     type(ESMF_Clock)           , intent(in)    :: clock
-    integer                    , intent(in)    :: compid
+    character(len=*)           , intent(in)    :: compname
     integer                    , intent(in)    :: logunit
     integer                    , intent(out)   :: rc
 
@@ -176,9 +176,9 @@ contains
     sdat%logunit = logunit
 
     ! Initialize sdat  pio
-    sdat%pio_subsystem => shr_pio_getiosys(compid)
-    sdat%io_type       =  shr_pio_getiotype(compid)
-    sdat%io_format     =  shr_pio_getioformat(compid)
+    sdat%pio_subsystem => shr_pio_getiosys(trim(compname))
+    sdat%io_type       =  shr_pio_getiotype(trim(compname))
+    sdat%io_format     =  shr_pio_getioformat(trim(compname))
 
     call ESMF_VMGetCurrent(vm, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -188,8 +188,7 @@ contains
     ! Initialize sdat streams (read xml file for streams)
     sdat%masterproc = (localPet == master_task)
 
-    call shr_stream_init_from_xml(xmlfilename, sdat%stream, sdat%masterproc, &
-         sdat%logunit, compid, rc=rc)
+    call shr_stream_init_from_xml(xmlfilename, sdat%stream, sdat%masterproc, sdat%logunit, trim(compname), rc=rc)
 
     allocate(sdat%pstrm(shr_strdata_get_stream_count(sdat)))
 
@@ -206,7 +205,7 @@ contains
 
 
   !===============================================================================
-  subroutine shr_strdata_init_from_inline(sdat, my_task, logunit, compid, model_clock, model_mesh,&
+  subroutine shr_strdata_init_from_inline(sdat, my_task, logunit, compname, model_clock, model_mesh,&
        stream_meshfile, stream_mapalgo, stream_filenames, stream_fldlistFile, stream_fldListModel, &
        stream_yearFirst, stream_yearLast, stream_yearAlign, stream_offset, stream_taxmode, rc)
 
@@ -214,7 +213,7 @@ contains
     type(shr_strdata_type) , intent(inout) :: sdat                   ! stream data type
     integer                , intent(in)    :: my_task                ! my mpi task
     integer                , intent(in)    :: logunit                ! stdout logunit
-    integer                , intent(in)    :: compid                 ! component id (needed by pio)
+    character(len=*)       , intent(in)    :: compname               ! component name (e.g. ATM, OCN, ...) 
     type(ESMF_Clock)       , intent(in)    :: model_clock            ! model clock
     type(ESMF_Mesh)        , intent(in)    :: model_mesh             ! model mesh
     character(*)           , intent(in)    :: stream_meshFile        ! full pathname to stream mesh file
@@ -237,9 +236,9 @@ contains
     sdat%masterproc = (my_task == master_task)
 
     ! Initialize sdat pio
-    sdat%pio_subsystem => shr_pio_getiosys(compid)
-    sdat%io_type       =  shr_pio_getiotype(compid)
-    sdat%io_format     =  shr_pio_getioformat(compid)
+    sdat%pio_subsystem => shr_pio_getiosys(trim(compname))
+    sdat%io_type       =  shr_pio_getiotype(trim(compname))
+    sdat%io_format     =  shr_pio_getioformat(trim(compname))
 
     ! Initialize sdat%pstrm - ASSUME only 1 stream
     allocate(sdat%pstrm(1))
@@ -252,7 +251,7 @@ contains
     ! Initialize sdat stream - ASSUME only 1 stream
     call shr_stream_init_from_inline(sdat%stream, stream_meshfile, stream_mapalgo, &
        stream_yearFirst, stream_yearLast, stream_yearAlign, stream_offset, stream_taxmode, &
-       stream_fldlistFile, stream_fldListModel, stream_fileNames, logunit, compid)
+       stream_fldlistFile, stream_fldListModel, stream_fileNames, logunit, trim(compname))
 
     ! Now finish initializing sdat
     call shr_strdata_init(sdat, model_clock, rc)
@@ -261,7 +260,6 @@ contains
   end subroutine shr_strdata_init_from_inline
 
   !===============================================================================
-
   subroutine shr_strdata_init_model_domain( sdat, rc)
 
     ! ----------------------------------------------

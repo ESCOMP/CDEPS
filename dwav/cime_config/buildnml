@@ -35,8 +35,9 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     """
 
     #----------------------------------------------------
-    # Initialize namelist defaults and write out model namelist file
+    # Write out dwav_in and dwav.streams.xml
     #----------------------------------------------------
+
     caseroot = case.get_value("CASEROOT")
     dwav_mode = case.get_value("DWAV_MODE")
     wav_grid = case.get_value("WAV_GRID")
@@ -53,15 +54,19 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     config = {}
     config['wav_grid'] = wav_grid
     config['dwav_mode'] = dwav_mode
+
+    # do not allow single column mode for dwav
+    scol_mode = True if case.get_value('PTS_MODE') else False
+    expect(not scol_mode, 
+           "for, DWAV single column mode is not allowed")
+
     nmlgen.init_defaults(infile, config)
 
-    # Write out namelist file
+    # Generate dwav_in
     namelist_file = os.path.join(confdir, "dwav_in")
     nmlgen.write_output_file(namelist_file, data_list_path, groups=['dwav_nml'])
 
-    #----------------------------------------------------
-    # Construct the list of streams.
-    #----------------------------------------------------
+    # Generate dwav.streams.xml
     streams = nmlgen.get_streams()
     stream_path = os.path.join(confdir, "dwav.streams"+inst_string+".xml" )
     nmlgen.create_nuopc_stream_files(config, caseroot, streams, stream_path, data_list_path)

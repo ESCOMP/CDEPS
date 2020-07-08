@@ -52,7 +52,6 @@ module ice_comp_nuopc
   integer                      :: flds_scalar_num = 0
   integer                      :: flds_scalar_index_nx = 0
   integer                      :: flds_scalar_index_ny = 0
-  integer                      :: compid                              ! mct comp id
   integer                      :: mpicom                              ! mpi communicator
   integer                      :: my_task                             ! my task in mpi communicator mpicom
   logical                      :: masterproc                          ! true of my_task == master_task
@@ -60,7 +59,7 @@ module ice_comp_nuopc
   integer                      :: logunit                             ! logging unit number
   logical                      :: restart_read                        ! start from restart
   character(CL)                :: case_name     ! case name
-  character(*) , parameter     :: nullstr = 'undefined'
+  character(*) , parameter     :: nullstr = 'null'
 
   ! dice_in namelist input
   character(CL)                :: xmlfilename = nullstr               ! filename to obtain namelist info from
@@ -81,6 +80,10 @@ module ice_comp_nuopc
   type(fldList_type) , pointer :: fldsImport => null()
   type(fldList_type) , pointer :: fldsExport => null()
   type(dfield_type)  , pointer :: dfields    => null()
+
+  ! model mask and model fraction
+  real(r8), pointer            :: model_frac(:) => null()
+  integer , pointer            :: model_mask(:) => null()
 
   ! constants
   logical                      :: flds_i2o_per_cat                    ! .true. if select per ice thickness
@@ -160,7 +163,8 @@ contains
     character(*)    ,parameter :: F03 = "('(ice_comp_nuopc) ',a,d13.5)"
     !-------------------------------------------------------------------------------
 
-    namelist / dice_nml / datamode, model_meshfile, model_maskfile, model_createmesh_fromfile, &
+    namelist / dice_nml / case_name, datamode, &
+         model_meshfile, model_maskfile, model_createmesh_fromfile, &
          restfilm, nx_global, ny_global, flux_swpf, flux_Qmin, flux_Qacc, flux_Qacc0
 
     rc = ESMF_SUCCESS
@@ -291,15 +295,16 @@ contains
 
     rc = ESMF_SUCCESS
 
-    ! Initialize mesh, restart flag, compid, and logunit
+    ! Initialize mesh, restart flag, logunit
     call t_startf('dice_strdata_init')
-    call dshr_mesh_init(gcomp, compid, logunit, 'ice', nx_global, ny_global, &
-         model_meshfile, model_maskfile, model_createmesh_fromfile, model_mesh, restart_read, rc=rc)
+    call dshr_mesh_init(gcomp, nullstr, logunit, 'ICE', nx_global, ny_global, &
+         model_meshfile, model_maskfile, model_createmesh_fromfile, model_mesh, &
+         model_mask, model_frac, restart_read, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Initialize stream data type
     xmlfilename = 'dice.streams'//trim(inst_suffix)//'.xml'
-    call shr_strdata_init_from_xml(sdat, xmlfilename, model_mesh, clock, compid, logunit, rc=rc)
+    call shr_strdata_init_from_xml(sdat, xmlfilename, model_mesh, clock, 'ICE', logunit, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call t_stopf('dice_strdata_init')
 

@@ -119,8 +119,7 @@ module dshr_stream_mod
 contains
 !===============================================================================
 
-  subroutine shr_stream_init_from_xml(xmlfilename, streamdat, mastertask, logunit, &
-       compid, rc)
+  subroutine shr_stream_init_from_xml(xmlfilename, streamdat, mastertask, logunit, compname, rc)
 
     use FoX_DOM
     use ESMF, only : ESMF_VM, ESMF_VMGetCurrent, ESMF_VMBroadCast, ESMF_SUCCESS
@@ -152,7 +151,7 @@ contains
     character(len=*)            , intent(in)             :: xmlfilename
     logical                     , intent(in)             :: mastertask
     integer                     , intent(in)             :: logunit
-    integer                     , intent(in)             :: compid
+    character(len=*)            , intent(in)             :: compname
     integer                     , intent(out)            :: rc
 
     ! local variables
@@ -329,9 +328,9 @@ contains
        call ESMF_VMBroadCast(vm, rtmp, 1, 0, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        streamdat(i)%dtlimit = rtmp(1)
-       streamdat(i)%pio_subsystem => shr_pio_getiosys(compid)
-       streamdat(i)%pio_iotype = shr_pio_getiotype(compid)
-       streamdat(i)%pio_ioformat = shr_pio_getioformat(compid)
+       streamdat(i)%pio_subsystem => shr_pio_getiosys(trim(compname))
+       streamdat(i)%pio_iotype = shr_pio_getiotype(trim(compname))
+       streamdat(i)%pio_ioformat = shr_pio_getioformat(trim(compname))
        call shr_stream_getCalendar(streamdat(i), 1, streamdat(i)%calendar)
     enddo
 
@@ -349,7 +348,7 @@ contains
 
   subroutine shr_stream_init_from_inline(streamdat, stream_meshfile, stream_mapalgo, &
        stream_yearFirst, stream_yearLast, stream_yearAlign, stream_offset, stream_taxmode, &
-       stream_fldlistFile, stream_fldListModel, stream_fileNames, logunit, compid)
+       stream_fldlistFile, stream_fldListModel, stream_fileNames, logunit, compname)
 
     ! --------------------------------------------------------
     ! set values of stream datatype independent of a reading in a stream text file
@@ -369,7 +368,7 @@ contains
     character(*)                ,intent(in)              :: stream_fldListModel(:) ! model field names, colon delim list
     character(*)                ,intent(in)              :: stream_filenames(:)    ! stream data filenames (full pathnamesa)
     integer                     ,intent(in)              :: logunit                ! stdout unit
-    integer                     ,intent(in)              :: compid                 ! component id (needed by pio)
+    character(len=*)            ,intent(in)              :: compname               ! component name (e.g. ATM, OCN...)
 
     ! local variables
     integer                :: n
@@ -391,9 +390,9 @@ contains
     streamdat(1)%meshFile     = trim(stream_meshFile)
     streamdat(1)%mapalgo      = trim(stream_mapalgo)
 
-    streamdat(1)%pio_subsystem => shr_pio_getiosys(compid)
-    streamdat(1)%pio_iotype    =  shr_pio_getiotype(compid)
-    streamdat(1)%pio_ioformat  =  shr_pio_getioformat(compid)
+    streamdat(1)%pio_subsystem => shr_pio_getiosys(trim(compname))
+    streamdat(1)%pio_iotype    =  shr_pio_getiotype(trim(compname))
+    streamdat(1)%pio_ioformat  =  shr_pio_getioformat(trim(compname))
 
     ! initialize stream filenames
     if (allocated(streamdat(1)%file)) then

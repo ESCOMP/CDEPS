@@ -71,7 +71,6 @@ module atm_comp_nuopc
   integer                      :: flds_scalar_index_nx = 0
   integer                      :: flds_scalar_index_ny = 0
   integer                      :: flds_scalar_index_nextsw_cday = 0
-  integer                      :: compid                    ! component id (needed by pio)
   integer                      :: mpicom                    ! mpi communicator
   integer                      :: my_task                   ! my task in mpi communicator mpicom
   logical                      :: masterproc                ! true of my_task == master_task
@@ -79,12 +78,12 @@ module atm_comp_nuopc
   character(len=16)            :: inst_suffix = ""          ! char string associated with instance (ie. "_0001" or "")
   integer                      :: logunit                   ! logging unit number
   logical                      :: restart_read              ! start from restart
-  character(CL)                :: case_name     ! case name
-  character(len=*) , parameter :: nullstr = 'undefined'
+  character(CL)                :: case_name                 ! case name
+  character(len=*) , parameter :: nullstr = 'null'
 
   ! datm_in namelist input
   character(CL)                :: nlfilename = nullstr                ! filename to obtain namelist info from
-  character(CL)                :: xmlfilename = nullstr                ! filename to obtain namelist info from
+  character(CL)                :: xmlfilename = nullstr               ! filename to obtain namelist info from
   character(CL)                :: dataMode = nullstr                  ! flags physics options wrt input data
   character(CL)                :: model_meshfile = nullstr            ! full pathname to model meshfile
   character(CL)                :: model_maskfile = nullstr            ! full pathname to obtain mask from
@@ -105,6 +104,10 @@ module atm_comp_nuopc
   type(fldList_type) , pointer :: fldsImport => null()
   type(fldList_type) , pointer :: fldsExport => null()
   type(dfield_type)  , pointer :: dfields    => null()
+
+  ! model mask and model fraction
+  real(r8), pointer            :: model_frac(:) => null()
+  integer , pointer            :: model_mask(:) => null()
 
   ! constants
   integer                      :: idt                                 ! integer model timestep
@@ -186,7 +189,8 @@ contains
     character(*)    ,parameter :: F02 = "('(atm_comp_nuopc) ',a,l6)"
     !-------------------------------------------------------------------------------
 
-    namelist / datm_nml / datamode, model_meshfile, model_maskfile, model_createmesh_fromfile, &
+    namelist / datm_nml / datamode, &
+         model_meshfile, model_maskfile, model_createmesh_fromfile, &
          nx_global, ny_global, restfilm, iradsw, factorFn_data, factorFn_mesh, &
          flds_presaero, flds_co2, flds_wiso, bias_correct, anomaly_forcing
 
@@ -233,6 +237,7 @@ contains
 
     ! write namelist input to standard out
     if (my_task == master_task) then
+       write(logunit,F00)' case_name = ',trim(case_name)
        write(logunit,F00)' datamode = ',trim(datamode)
        if (model_createmesh_fromfile /= nullstr) then
           write(logunit,F00)' model_create_meshfile_fromfile = ',trim(model_createmesh_fromfile)
@@ -341,14 +346,14 @@ contains
 
     ! Initialize mesh, restart flag, compid, and logunit
     call t_startf('datm_strdata_init')
-
-    call dshr_mesh_init(gcomp, compid, logunit, 'atm', nx_global, ny_global, &
-         model_meshfile, model_maskfile, model_createmesh_fromfile, model_mesh, restart_read, rc=rc)
+    call dshr_mesh_init(gcomp, nullstr, logunit, 'ATM', nx_global, ny_global, &
+         model_meshfile, model_maskfile, model_createmesh_fromfile, model_mesh, &
+         model_mask, model_frac, restart_read, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Initialize stream data type
     xmlfilename = 'datm.streams'//trim(inst_suffix)//'.xml'
-    call shr_strdata_init_from_xml(sdat, xmlfilename, model_mesh, clock, compid, logunit, rc=rc)
+    call shr_strdata_init_from_xml(sdat, xmlfilename, model_mesh, clock, 'ATM', logunit, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call t_stopf('datm_strdata_init')
 
@@ -599,7 +604,7 @@ contains
     case('ERA5')
        call datm_datamode_era5_advance(exportstate, masterproc, logunit, mpicom, target_ymd, &
             target_tod, sdat%model_calendar, rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return       
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end select
 
     ! Write restarts if needed
@@ -620,7 +625,7 @@ contains
        case('ERA5')
           call datm_datamode_era5_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
                logunit, mpicom, my_task, sdat)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return       
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end select
     end if
 
