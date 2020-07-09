@@ -735,9 +735,7 @@ contains
 
     if (.not.ltimers) call t_adj_detailf(tadj)
 
-!    call t_barrierf(trim(lstr)//trim(timname)//'_total_BARRIER',mpicom)
     call t_startf(trim(lstr)//trim(timname)//'_total')
-
 
     sdat%ymd = ymd
     sdat%tod = tod
@@ -778,7 +776,6 @@ contains
           ! fldbun_stream_ub to fldbun_stream_lb and read in new fldbun_stream_ub data
           ! ---------------------------------------------------------
 
-          ! call t_barrierf(trim(lstr)//trim(timname)//'_readLBUB_BARRIER',mpicom)
           call t_startf(trim(lstr)//trim(timname)//'_readLBUB')
 
           select case(sdat%stream(ns)%readmode)
@@ -1203,7 +1200,6 @@ contains
     rc = ESMF_SUCCESS
 
     ! Set up file to read from
-    ! call t_barrierf(trim(istr)//'_BARRIER', mpicom)
     if (sdat%masterproc) then
        inquire(file=trim(fileName),exist=fileExists)
        if (.not. fileExists) then

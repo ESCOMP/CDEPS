@@ -30,12 +30,12 @@ module dshr_mod
   use ESMF             , only : ESMF_RouteHandle, ESMF_FieldRegrid
   use ESMF             , only : ESMF_TERMORDER_SRCSEQ, ESMF_FieldRegridStore, ESMF_SparseMatrixWrite
   use ESMF             , only : ESMF_Region_Flag, ESMF_REGION_TOTAL, ESMF_MAXSTR, ESMF_RC_NOT_VALID
-  use shr_kind_mod     , only : r8=>shr_kind_r8, cs=>shr_kind_cs, cl=>shr_kind_cl, cxx=>shr_kind_cxx
+  use shr_kind_mod     , only : r8=>shr_kind_r8, cs=>shr_kind_cs, cl=>shr_kind_cl, cxx=>shr_kind_cxx, i8=>shr_kind_i8
   use shr_sys_mod      , only : shr_sys_abort
   use shr_mpi_mod      , only : shr_mpi_bcast
   use shr_cal_mod      , only : shr_cal_noleap, shr_cal_gregorian, shr_cal_calendarname
-  use shr_cal_mod      , only : shr_cal_datetod2string
-  use shr_const_mod    , only : shr_const_spval
+  use shr_cal_mod      , only : shr_cal_datetod2string, shr_cal_date2julian
+  use shr_const_mod    , only : shr_const_spval, shr_const_cday
   use shr_orb_mod      , only : shr_orb_params, SHR_ORB_UNDEF_INT, SHR_ORB_UNDEF_REAL
   use shr_pio_mod      , only : shr_pio_getiosys, shr_pio_getiotype, shr_pio_getioformat
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_init_from_xml, SHR_STRDATA_GET_STREAM_COUNT
@@ -247,6 +247,7 @@ contains
     integer                        :: io_format               ! pio info
     integer                        :: rcode
     logical                        :: isPresent, isSet
+    logical                        :: masterproc
     character(len=*), parameter    :: subname='(dshr_mod:dshr_mesh_init)'
     character(*)    , parameter    :: F00 ="('(dshr_mesh_init) ',a)"
     ! ----------------------------------------------
@@ -269,6 +270,8 @@ contains
        call shr_sys_abort(subname//' ERROR: read restart flag must be present')
     end if
 
+    masterproc == (my_task == master_task)
+
     ! Obtain the data model mesh
     ! (1) if asked to create the mesh
     !     - create mesh from input file given by model_createmesh_fromfile
@@ -285,14 +288,14 @@ contains
           if (scol_mode) then
              ! verify that ROF, WAV and LND are not trying to use single column mode
              if (trim(compname) == 'ROF' .or. trim(compname) == 'LND' .or. trim(compname) == 'WAV') then
-                if (my_task == master_task) then
+                if (masterproc) then
                    write(logunit,*) subname,' ERROR: '//trim(compname)//' does not support single column mode '
                 end if
                 call shr_sys_abort(subname//' ERROR: '//trim(compname)//' does not support single column mode ')
              end if
              ! verify that are only using 1 pe
              if (my_task > 0) then
-                if (my_task == master_task) then
+                if (masterproc) then
                    write(logunit,*) subname,' ERROR: single column mode must be run on one pe'
                 end if
              endif
@@ -309,18 +312,18 @@ contains
                 write(logunit,*) ' single column mode, lon lat = ',scol_mode, scol_lon, scol_lat
              end if
           else
-             scol_lon  = 1.e36_r8
-             scol_lat  = 1.e36_r8
+             scol_lon  = shr_const_spval
+             scol_lat  = shr_const_spval
           end if
        else
           scol_mode = .false.
-          scol_lon  = 1.e36_r8
-          scol_lat  = 1.e36_r8
+          scol_lon  = shr_const_spval
+          scol_lat  = shr_const_spval
        end if
 
        ! Now create the model meshfile using the model_maskfile as the input file
        call dshr_mesh_create(trim(model_createmesh_fromfile), scol_mode, scol_lon, scol_lat, &
-            trim(compname), my_task, master_task, logunit, model_mesh, model_mask, model_frac, rc=rc)
+            trim(compname), my_task, logunit, model_mesh, model_mask, model_frac, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     else
@@ -410,7 +413,7 @@ contains
 
     end if
 
-    if (my_task == master_task) then
+    if (masterproc) then
        write(logunit,F00) trim(subname)// " obtaining "//trim(compname)//" mesh from "// trim(model_meshfile)
     end if
 
@@ -418,7 +421,7 @@ contains
 
   !===============================================================================
   subroutine dshr_mesh_create(filename, scol_mode, scol_lon, scol_lat, &
-       compname, my_task, master_task, logunit, model_mesh, model_mask, model_frac, rc)
+       compname, my_task, logunit, model_mesh, model_mask, model_frac, rc)
 
     ! Create the model mesh from the domain file - for either single column mode
     ! or for a regional grid
@@ -429,8 +432,7 @@ contains
     real(r8)          , intent(inout) :: scol_lon
     real(r8)          , intent(inout) :: scol_lat
     character(len=*)  , intent(in)    :: compname
-    integer           , intent(in)    :: my_task
-    integer           , intent(in)    :: master_task
+    logical           , intent(in)    :: my_task
     integer           , intent(in)    :: logunit
     type(ESMF_Mesh)   , intent(out)   :: model_mesh
     integer , pointer , intent(out)   :: model_mask(:)
@@ -1577,10 +1579,6 @@ contains
 
     !  Return the calendar day of the next radiation time-step.
     !  General Usage: nextswday = getNextRadCDay(curr_date)
-
-    use shr_kind_mod   , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cs=>shr_kind_cs, cl=>shr_kind_cl
-    use shr_cal_mod    , only : shr_cal_date2julian
-    use shr_const_mod  , only : shr_const_cday
 
     ! input/output variables
     integer    , intent(in)    :: ymd
