@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <testlist version="2.0">
 
-  <test compset="2000_DATM%QIA_SLND_DICE%SSMI_DOCN%DOM_SROF_SGLC_SWAV" grid="T42_T42" name="SMS_Ln9" testmods="scam">
+  <test compset="2000_DATM%QIA_SLND_DICE%SSMI_DOCN%DOM_SROF_SGLC_SWAV" grid="T42_T42" name="SMS_Ln9" testmods="datm/scam">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_cdeps"/>
     </machines>
