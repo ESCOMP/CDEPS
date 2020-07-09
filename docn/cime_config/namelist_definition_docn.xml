@@ -135,9 +135,6 @@
     <group>streams_file</group>
     <desc>Stream mesh files</desc>
     <values>
-      <value stream="prescribed">
-	$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_1x1_clim_c101029_ESMFmesh_120520.nc
-      </value>
       <value stream="prescribed" grid="_oi%T31">
 	$DIN_LOC_ROOT/share/meshes/T31_040122_ESMFmesh.nc
       </value>
@@ -155,6 +152,9 @@
       </value>
       <value stream="prescribed" grid="oi%4x5">
 	$DIN_LOC_ROOT/share/meshes/fv4x5_050615_polemod_ESMFmesh.nc
+      </value>
+      <value stream="prescribed">
+	$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_1x1_clim_c101029_ESMFmesh_120520.nc
       </value>
       <value stream="som">
 	$DIN_LOC_ROOT/ocn/docn7/SOM/pop_frc.1x1d.SCRIP.030620_ESMFmesh.nc 

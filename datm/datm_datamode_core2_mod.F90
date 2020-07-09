@@ -70,7 +70,7 @@ module datm_datamode_core2_mod
   data   dTarc      / 0.49_R8, 0.06_R8,-0.73_R8,  -0.89_R8,-0.77_R8,-1.02_R8, &
                      -1.99_R8,-0.91_R8, 1.72_R8,   2.30_R8, 1.81_R8, 1.06_R8/
 
-  character(*), parameter :: nullstr = 'undefined'
+  character(*), parameter :: nullstr = 'null'
   character(*), parameter :: rpfile  = 'rpointer.atm'
   character(*), parameter :: u_FILE_u = &
        __FILE__

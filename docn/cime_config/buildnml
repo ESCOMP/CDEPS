@@ -64,9 +64,10 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     config['ocn_grid'] = ocn_grid
     config['docn_mode'] = docn_mode
     config['create_mesh'] = 'true' if case.get_value("OCN_DOMAIN_MESH") == 'create_mesh' else 'false'
-    aquaplanet_mode = True if 'AQ' in case.get_value('DOCN_MODE') else False
+    aquaplanet_mode = True if 'AQ' in case.get_value('COMPSET') else False
+    print "DEBUG: aquaplanet_mode = ",aquaplanet_mode
     scol_mode = True if case.get_value('PTS_MODE') else False
-    config['set_model_maskfile'] = 'true' if scol_mode or (ocn_nx==atm_nx and ocn_ny==atm_ny and not aquaplanet_mode) else False
+    config['set_model_maskfile'] = 'true' if scol_mode or (ocn_nx==atm_nx and ocn_ny==atm_ny and not aquaplanet_mode) else 'false'
 
     nmlgen.init_defaults(infile, config)
 

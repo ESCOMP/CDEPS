@@ -288,7 +288,8 @@ contains
                 if (my_task == master_task) then
                    write(logunit,*) subname,' ERROR: '//trim(compname)//' does not support single column mode '
                 end if
-             call shr_sys_abort(subname//' ERROR: '//trim(compname)//' does not support single column mode '
+                call shr_sys_abort(subname//' ERROR: '//trim(compname)//' does not support single column mode ')
+             end if
              ! verify that are only using 1 pe
              if (my_task > 0) then
                 if (my_task == master_task) then

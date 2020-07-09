@@ -101,7 +101,7 @@ module dice_datamode_ssmi_mod
   real(r8) , parameter :: latice   = shr_const_latice ! latent heat of fusion
   real(r8) , parameter :: waterMax = 1000.0_r8        ! wrt iFrac comp & frazil ice (kg/m^2)
 
-  character(*) , parameter :: nullstr = 'undefined'
+  character(*) , parameter :: nullstr = 'null'
   character(*) , parameter :: rpfile  = 'rpointer.ice'
   character(*) , parameter :: u_FILE_u = &
        __FILE__
