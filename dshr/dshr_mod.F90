@@ -270,7 +270,7 @@ contains
        call shr_sys_abort(subname//' ERROR: read restart flag must be present')
     end if
 
-    masterproc == (my_task == master_task)
+    masterproc = (my_task == master_task)
 
     ! Obtain the data model mesh
     ! (1) if asked to create the mesh
@@ -432,7 +432,7 @@ contains
     real(r8)          , intent(inout) :: scol_lon
     real(r8)          , intent(inout) :: scol_lat
     character(len=*)  , intent(in)    :: compname
-    logical           , intent(in)    :: my_task
+    integer           , intent(in)    :: my_task
     integer           , intent(in)    :: logunit
     type(ESMF_Mesh)   , intent(out)   :: model_mesh
     integer , pointer , intent(out)   :: model_mask(:)
