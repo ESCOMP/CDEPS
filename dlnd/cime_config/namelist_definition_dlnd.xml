@@ -276,6 +276,7 @@
     </desc>
     <values>
       <value>$LND_DOMAIN_MESH</value>
+      <value set_model_maskfile='true'>$LND_DOMAIN_PATH/$LND_DOMAIN_FILE</value>
     </values>
   </entry>
 
