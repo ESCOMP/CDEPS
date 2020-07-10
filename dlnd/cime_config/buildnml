@@ -43,7 +43,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     glc_nec = case.get_value("GLC_NEC")
 
     # Check for incompatible options.
-    expect(dlnd_grid != "null",
+    expect(lnd_grid != "null",
            "DLND_GRID cannot be null")
 
     # Log some settings.
