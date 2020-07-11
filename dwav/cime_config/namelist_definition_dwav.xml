@@ -254,7 +254,7 @@
   <!--- dwav_nml -->
   <!-- =========================================  -->
 
-  <entry id="model_meshfile" modify_via_xml="WAV_DOMAIN_MESH">
+  <entry id="model_meshfile"> 
     <type>char</type>
     <category>streams</category>
     <input_pathname>abs</input_pathname>
@@ -264,6 +264,7 @@
     </desc>
     <values>
       <value>$WAV_DOMAIN_MESH</value>
+      <value create_mesh='true'>null</value>
     </values>
   </entry>
 
@@ -280,7 +281,7 @@
     </values>
   </entry>
 
-  <entry id="model_createmesh_fromfile" skip_default_entry="true">
+  <entry id="model_createmesh_fromfile">
     <type>char</type>
     <category>streams</category>
     <input_pathname>abs</input_pathname>
@@ -289,7 +290,8 @@
       file specifying model mesh
     </desc>
     <values>
-      <value>$WAV_DOMAIN_MESH</value>
+      <value>null</value>
+      <value create_mesh='true'>$WAV_DOMAIN_PATH/$WAV_DOMAIN_FILE</value>
     </values>
   </entry>
 

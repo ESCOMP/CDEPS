@@ -26,7 +26,7 @@
     <type>char</type>
     <category>docn</category>
     <group>docn_nml</group>
-    <valid_values>sstdata,sst_aquap1,sst_aquap2,sst_aquap3,sst_aquap4,sst_aquap5,sst_aquap6,sst_aquap7,sst_aquap8,sst_aquap9,sst_aquap10,sst_aquapfile,sst_aquap_constant,som,som_aquap,iaf,null</valid_values>
+    <valid_values>sstdata,sst_aquap1,sst_aquap2,sst_aquap3,sst_aquap4,sst_aquap5,sst_aquap6,sst_aquap7,sst_aquap8,sst_aquap9,sst_aquap10,sst_aquapfile,sst_aquap_constant,som,som_aquap,iaf</valid_values>
     <desc>
       General method that operates on the data.
       ==> dataMode = "sstdata"
@@ -59,7 +59,6 @@
       application.  A tool is available to derive valid SOM forcing.
 
       (1) map the xml variable DOCN_MODE => config variable docn_mode => namelist variable datamode
-        compset="_DOCN%NULL_"     => docn_mode=null                => datamode=null              
         compset="_DOCN%DOM_"      => docn_mode=prescribed          => datamode=prescribed        
         compset="_DOCN%IAF_"      => docn_mode=interannual         => datamode=interannual       
         compset="_DOCN%SOM_"      => docn_mode=som                 => datamode=som               
@@ -136,9 +135,6 @@
     <group>streams_file</group>
     <desc>Stream mesh files</desc>
     <values>
-      <value stream="prescribed">
-	$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_1x1_clim_c101029_ESMFmesh_120520.nc
-      </value>
       <value stream="prescribed" grid="_oi%T31">
 	$DIN_LOC_ROOT/share/meshes/T31_040122_ESMFmesh.nc
       </value>
@@ -156,6 +152,9 @@
       </value>
       <value stream="prescribed" grid="oi%4x5">
 	$DIN_LOC_ROOT/share/meshes/fv4x5_050615_polemod_ESMFmesh.nc
+      </value>
+      <value stream="prescribed">
+	$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_1x1_clim_c101029_ESMFmesh_120520.nc
       </value>
       <value stream="som">
 	$DIN_LOC_ROOT/ocn/docn7/SOM/pop_frc.1x1d.SCRIP.030620_ESMFmesh.nc 
@@ -401,7 +400,7 @@
   <!--- docn_nml other variables                  -->
   <!-- =========================================  -->
 
-  <entry id="model_meshfile" modify_via_xml="OCN_DOMAIN_MESH">
+  <entry id="model_meshfile"> 
     <type>char</type>
     <category>streams</category>
     <input_pathname>abs</input_pathname>
@@ -411,6 +410,8 @@
     </desc>
     <values>
       <value>$OCN_DOMAIN_MESH</value>
+      <value scol_mode='true'>null</value>
+      <value create_mesh='true'>null</value>
     </values>
   </entry>
 
@@ -424,10 +425,13 @@
     </desc>
     <values>
       <value>$OCN_DOMAIN_MESH</value>
+      <value scol_mode='true'>$OCN_DOMAIN_PATH/$OCN_DOMAIN_FILE</value>
+      <value create_mesh='true'>$OCN_DOMAIN_PATH/$OCN_DOMAIN_FILE</value>
+      <value set_model_maskfile='true'>$OCN_DOMAIN_PATH/$OCN_DOMAIN_FILE</value>
     </values>
   </entry>
 
-  <entry id="model_createmesh_fromfile" skip_default_entry="true">
+  <entry id="model_createmesh_fromfile">
     <type>char</type>
     <category>streams</category>
     <input_pathname>abs</input_pathname>
@@ -436,7 +440,9 @@
       file specifying model mesh
     </desc>
     <values>
-      <value>$OCN_DOMAIN_MESH</value>
+      <value>null</value>
+      <value scol_mode='true'>$OCN_DOMAIN_PATH/$OCN_DOMAIN_FILE</value>
+      <value create_mesh='true'>$OCN_DOMAIN_PATH/$OCN_DOMAIN_FILE</value>
     </values>
   </entry>
 
@@ -472,11 +478,11 @@
       Master restart file name for docn model
     </desc>
     <values>
-      <value>undefined</value>
+      <value>null</value>
     </values>
   </entry>
 
-  <entry id="sst_constant_value" per_stream_entry="true">
+  <entry id="sst_constant_value">
     <type>real(30)</type>
     <category>docn</category>
     <group>docn_nml</group>
@@ -486,6 +492,7 @@
     </desc>
     <values>
       <value>-1.0</value>
+      <value docn_mode='docn_aquap_constant'>$DOCN_AQPCONST_VALUE</value>
     </values>
   </entry>
 

@@ -36,7 +36,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     """
 
     #----------------------------------------------------
-    # Initialize namelist defaults and write out model namelist file
+    # Write out drof_in and drof.streams.xml
     #----------------------------------------------------
 
     caseroot = case.get_value("CASEROOT")
@@ -49,22 +49,26 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
 
     # Log some settings.
     logger.debug("DROF mode is {}".format(drof_mode))
-    logger.debug("DROF grid is {}".format(rof_grid))
 
     # Initialize namelist defaults
+    # Note: always use model mesh file to set mask for drof
     config = {}
-    config['rof_grid'] = rof_grid
     config['drof_mode'] = drof_mode
+    config['create_mesh'] = 'true' if case.get_value("ROF_DOMAIN_MESH") == 'create_mesh' else 'false'
+
+    # do not allow single column mode for drof
+    scol_mode = True if case.get_value('PTS_MODE') else False
+    expect(not scol_mode, 
+           "for, DROF single column mode is not allowed")
+
+    # initialize nmlgen
     nmlgen.init_defaults(infile, config)
 
-    # Write out namelist file
+    # Generate drof_in
     namelist_file = os.path.join(confdir, "drof_in")
     nmlgen.write_output_file(namelist_file, data_list_path, groups=['drof_nml'])
 
-    #----------------------------------------------------
-    # Create stream xml files - first construct the list of streams
-    #----------------------------------------------------
-
+    # Generate drof.streams.xml
     streams = nmlgen.get_streams()
     stream_path = os.path.join(confdir, "drof.streams"+inst_string+".xml" )
     nmlgen.create_nuopc_stream_files(config, caseroot, streams, stream_path, data_list_path)

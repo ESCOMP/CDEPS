@@ -47,7 +47,6 @@ module rof_comp_nuopc
   integer                      :: flds_scalar_num = 0
   integer                      :: flds_scalar_index_nx = 0
   integer                      :: flds_scalar_index_ny = 0
-  integer                      :: compid                              ! mct comp id
   integer                      :: mpicom                              ! mpi communicator
   integer                      :: my_task                             ! my task in mpi communicator mpicom
   logical                      :: masterproc                          ! true of my_task == master_task
@@ -55,7 +54,7 @@ module rof_comp_nuopc
   integer                      :: logunit                             ! logging unit number
   logical                      :: restart_read
   character(CL)                :: case_name                           ! case name
-  character(*) , parameter     :: nullstr = 'undefined'
+  character(*) , parameter     :: nullstr = 'null'
                                                                       ! drof_in namelist input
   character(CL)                :: xmlfilename = nullstr               ! filename to obtain namelist info from
   character(CL)                :: nlfilename = nullstr                ! filename to obtain namelist info from
@@ -76,6 +75,10 @@ module rof_comp_nuopc
   type(fldList_type) , pointer :: fldsImport => null()
   type(fldList_type) , pointer :: fldsExport => null()
   type(dfield_type)  , pointer :: dfields    => null()
+
+  ! model mask and model fraction
+  real(r8), pointer            :: model_frac(:) => null()
+  integer , pointer            :: model_mask(:) => null()
 
   ! module pointer arrays
   real(r8), pointer            :: Forr_rofl(:) => null()
@@ -273,15 +276,16 @@ contains
 
     rc = ESMF_SUCCESS
 
-    ! Initialize mesh, restart flag, compid, and logunit
+    ! Initialize mesh, restart flag, logunit
     call t_startf('drof_strdata_init')
-    call dshr_mesh_init(gcomp, compid, logunit, 'rof', nx_global, ny_global, &
-         model_meshfile, model_maskfile, model_createmesh_fromfile,  model_mesh, restart_read, rc=rc)
+    call dshr_mesh_init(gcomp, nullstr, logunit, 'ROF', nx_global, ny_global, &
+         model_meshfile, model_maskfile, model_createmesh_fromfile, model_mesh, &
+         model_mask, model_frac, restart_read, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Initialize stream data type
     xmlfilename = 'drof.streams'//trim(inst_suffix)//'.xml'
-    call shr_strdata_init_from_xml(sdat, xmlfilename, model_mesh, clock, compid, logunit, rc=rc)
+    call shr_strdata_init_from_xml(sdat, xmlfilename, model_mesh, clock, 'ROF', logunit, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call t_stopf('drof_strdata_init')
 
@@ -379,11 +383,11 @@ contains
     type(ESMF_State) , intent(inout) :: exportState
     integer          , intent(in)    :: target_ymd       ! model date
     integer          , intent(in)    :: target_tod       ! model sec into model date
-    logical          , intent(in)    :: restart_write 
+    logical          , intent(in)    :: restart_write
     integer          , intent(out)   :: rc
 
     ! local variables
-    logical :: first_time = .true. 
+    logical :: first_time = .true.
     integer :: n
     character(*), parameter :: subName = "(drof_comp_run) "
     !-------------------------------------------------------------------------------

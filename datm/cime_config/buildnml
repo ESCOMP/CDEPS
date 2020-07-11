@@ -36,8 +36,9 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     """
 
     #----------------------------------------------------
-    # Get a bunch of information from the case.
+    # Write out datm_in and datm.streams.xml
     #----------------------------------------------------
+
     caseroot = case.get_value("CASEROOT")
     datm_mode = case.get_value("DATM_MODE")
     datm_topo = case.get_value("DATM_TOPO")
@@ -47,27 +48,20 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     grid = case.get_value("GRID")
     comp_lnd = case.get_value("COMP_LND")
 
-    #----------------------------------------------------
     # Check for incompatible options.
-    #----------------------------------------------------
-
     if "CLM" in datm_mode and comp_lnd == "clm":
         expect(datm_presaero != "none",
                "A DATM_MODE for CLM is incompatible with DATM_PRESAERO=none.")
         expect(datm_topo != "none",
                "A DATM_MODE for CLM is incompatible with DATM_TOPO=none.")
 
-    #----------------------------------------------------
     # Log some settings.
-    #----------------------------------------------------
     logger.debug("DATM mode is {}".format(datm_mode))
     logger.debug("DATM grid is {}".format(atm_grid))
     logger.debug("DATM presaero mode is {}".format(datm_presaero))
     logger.debug("DATM topo mode is {}".format(datm_topo))
 
-    #----------------------------------------------------
-    # Initialize namelist defaults and write out namelist file
-    #----------------------------------------------------
+    # Initialize namelist defaults
     config = {}
     config['grid'] = grid
     config['atm_grid'] = atm_grid
@@ -75,29 +69,17 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     config['datm_co2_tseries'] = datm_co2_tseries
     config['datm_presaero'] = datm_presaero
     config['cime_model'] = get_model()
+    config['scol_mode'] = 'true' if case.get_value('PTS_MODE') else 'false'
+    config['create_mesh'] = 'true' if case.get_value("ATM_DOMAIN_MESH") == 'create_mesh' else 'false'
 
     nmlgen.init_defaults(infile, config)
 
-    # Determine if will create mesh by reading in a domain file
-    model_meshfile = case.get_value("ATM_DOMAIN_MESH")
-    if model_meshfile == 'create_mesh':
-        atm_domain_path = case.get_value("ATM_DOMAIN_PATH")
-        atm_domain_file = case.get_value("ATM_DOMAIN_FILE")
-        nmlgen.set_value("model_createmesh_fromfile",os.path.join(atm_domain_path,atm_domain_file))
-        nmlgen.set_value("model_meshfile","undefined")
-        nmlgen.set_value("model_maskfile","undefined")
-
+    # Generate datm_in
     namelist_file = os.path.join(confdir, "datm_in")
-    nmlgen.write_output_file(namelist_file, data_list_path, groups=['datm_nml','shr_strdata_nml'])
+    nmlgen.write_output_file(namelist_file, data_list_path, groups=['datm_nml'])
 
-    #----------------------------------------------------
-    # Create stream xml files - first construct the list of streams
-    #----------------------------------------------------
+    # Generate datm.streams.xml
     streams = nmlgen.get_streams()
-
-    # This disable is required because nmlgen.get_streams
-    # may return a string or a list.  See issue #877 in ESMCI/cime
-    #pylint: disable=no-member
     if datm_presaero != "none":
         streams.append("presaero.{}".format(datm_presaero))
     if datm_topo != "none":

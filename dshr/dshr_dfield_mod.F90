@@ -117,6 +117,7 @@ contains
     dfield_new%state_data1d = 0.0_r8
     if (masterproc) then
        write(logunit,110)'(dshr_addfield_add) setting pointer for export state '//trim(state_fld)
+110    format(a)
     end if
 
     ! write output
@@ -125,11 +126,7 @@ contains
           write(logunit,100)'(dshr_addfield_add) set pointer to stream field strm_'//trim(strm_fld)//&
                ' stream index = ',ns,' field bundle index= ',nf
 100       format(a,i6,2x,a,i6)
-       else
-          write(logunit,110)'(dshr_addfield_add) no pointer set for for stream field strm_'//trim(strm_fld)
-110       format(a)
        end if
-       write(logunit,*)
     end if
 
   end subroutine dshr_dfield_add_1d
@@ -207,6 +204,7 @@ contains
     dfield_new%state_data1d = 0.0_r8
     if (masterproc) then
        write(logunit,110)'(dshr_addfield_add) setting pointer for export state '//trim(state_fld)
+110    format(a)
     end if
 
     ! Return array pointer if argument is present
@@ -218,9 +216,6 @@ contains
           write(logunit,100)'(dshr_addfield_add) set pointer to stream field strm_'//trim(strm_fld)//&
                ' stream index = ',ns,' field bundle index= ',nf
 100       format(a,i6,2x,a,i6)
-       else
-          write(logunit,110)'(dshr_addfield_add) no pointer set for for stream field strm_'//trim(strm_fld)
-110       format(a)
        end if
        write(logunit,*)
     end if

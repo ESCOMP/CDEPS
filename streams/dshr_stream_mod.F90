@@ -30,7 +30,7 @@ module dshr_stream_mod
   use pio              , only : file_desc_t, pio_inq_varid, iosystem_desc_t, pio_file_is_open
   use pio              , only : pio_nowrite, pio_inquire_dimension, pio_inquire_variable, pio_bcast_error
   use pio              , only : pio_get_att, pio_get_var
-
+  use shr_pio_mod      , only : shr_pio_getiosys, shr_pio_getiotype, shr_pio_getioformat
 
   implicit none
   private ! default private
@@ -103,30 +103,27 @@ module dshr_stream_mod
      logical           :: fileopen     = .false.                ! is current file open
      character(CL)     :: currfile     = ' '                    ! current filename
      integer           :: nvars                                 ! number of stream variables
-     character(CL)     :: stream_vectors                  ! stream vectors names
+     character(CL)     :: stream_vectors = 'null'               ! stream vectors names
      type(file_desc_t) :: currpioid                             ! current pio file desc
      type(shr_stream_file_type)    , allocatable :: file(:)     ! filenames of stream data files (full pathname)
      type(shr_stream_data_variable), allocatable :: varlist(:)  ! stream variable names (on file and in model)
   end type shr_stream_streamType
 
   !----- parameters -----
-  integer          , save      :: debug = 0            ! edit/turn-on for debug write statements
-  real(R8)         , parameter :: spd = shr_const_cday ! seconds per day
-  character(len=*) , parameter :: sourcefile = &
-       __FILE__
-  character(*)     ,parameter :: u_FILE_u = &
+  integer      , save      :: debug = 0            ! edit/turn-on for debug write statements
+  real(R8)     , parameter :: spd = shr_const_cday ! seconds per day
+  character(*) , parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
 contains
 !===============================================================================
 
-  subroutine shr_stream_init_from_xml(xmlfilename, streamdat, mastertask, logunit, &
-       compid, rc)
+  subroutine shr_stream_init_from_xml(xmlfilename, streamdat, mastertask, logunit, compname, rc)
 
     use FoX_DOM
     use ESMF, only : ESMF_VM, ESMF_VMGetCurrent, ESMF_VMBroadCast, ESMF_SUCCESS
-    use shr_pio_mod, only : shr_pio_getiosys, shr_pio_getiotype, shr_pio_getioformat
+
     ! ---------------------------------------------------------------------
     ! The xml format of a stream txt file will look like the following
     ! <?xml version="1.0"?>
@@ -154,7 +151,7 @@ contains
     character(len=*)            , intent(in)             :: xmlfilename
     logical                     , intent(in)             :: mastertask
     integer                     , intent(in)             :: logunit
-    integer                     , intent(in)             :: compid
+    character(len=*)            , intent(in)             :: compname
     integer                     , intent(out)            :: rc
 
     ! local variables
@@ -331,9 +328,9 @@ contains
        call ESMF_VMBroadCast(vm, rtmp, 1, 0, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        streamdat(i)%dtlimit = rtmp(1)
-       streamdat(i)%pio_subsystem => shr_pio_getiosys(compid)
-       streamdat(i)%pio_iotype = shr_pio_getiotype(compid)
-       streamdat(i)%pio_ioformat = shr_pio_getioformat(compid)
+       streamdat(i)%pio_subsystem => shr_pio_getiosys(trim(compname))
+       streamdat(i)%pio_iotype = shr_pio_getiotype(trim(compname))
+       streamdat(i)%pio_ioformat = shr_pio_getioformat(trim(compname))
        call shr_stream_getCalendar(streamdat(i), 1, streamdat(i)%calendar)
     enddo
 
@@ -349,9 +346,9 @@ contains
 
   !===============================================================================
 
-  subroutine shr_stream_init_from_inline(streamdat, stream_meshfile, &
+  subroutine shr_stream_init_from_inline(streamdat, stream_meshfile, stream_mapalgo, &
        stream_yearFirst, stream_yearLast, stream_yearAlign, stream_offset, stream_taxmode, &
-       stream_fldlistFile, stream_fldListModel, stream_fileNames, logunit)
+       stream_fldlistFile, stream_fldListModel, stream_fileNames, logunit, compname)
 
     ! --------------------------------------------------------
     ! set values of stream datatype independent of a reading in a stream text file
@@ -361,6 +358,7 @@ contains
     ! input/output variables
     type(shr_stream_streamType) , pointer, intent(inout) :: streamdat(:)           ! data streams (assume 1 below)
     character(*)                ,intent(in)              :: stream_meshFile        ! full pathname to stream mesh file
+    character(*)                ,intent(in)              :: stream_mapalgo         ! stream mesh -> model mesh mapping type
     integer                     ,intent(in)              :: stream_yearFirst       ! first year to use
     integer                     ,intent(in)              :: stream_yearLast        ! last  year to use
     integer                     ,intent(in)              :: stream_yearAlign       ! align yearFirst with this model year
@@ -370,6 +368,7 @@ contains
     character(*)                ,intent(in)              :: stream_fldListModel(:) ! model field names, colon delim list
     character(*)                ,intent(in)              :: stream_filenames(:)    ! stream data filenames (full pathnamesa)
     integer                     ,intent(in)              :: logunit                ! stdout unit
+    character(len=*)            ,intent(in)              :: compname               ! component name (e.g. ATM, OCN...)
 
     ! local variables
     integer                :: n
@@ -389,6 +388,11 @@ contains
     streamdat(1)%offset       = stream_offset
     streamdat(1)%taxMode      = trim(stream_taxMode)
     streamdat(1)%meshFile     = trim(stream_meshFile)
+    streamdat(1)%mapalgo      = trim(stream_mapalgo)
+
+    streamdat(1)%pio_subsystem => shr_pio_getiosys(trim(compname))
+    streamdat(1)%pio_iotype    =  shr_pio_getiotype(trim(compname))
+    streamdat(1)%pio_ioformat  =  shr_pio_getioformat(trim(compname))
 
     ! initialize stream filenames
     if (allocated(streamdat(1)%file)) then
@@ -425,10 +429,16 @@ contains
   !===============================================================================
   subroutine shr_stream_findBounds(strm, mDateIn, secIn, &
        mDateLB, dDateLB, secLB, n_lb, fileLB,  mDateUB, dDateUB, secUB, n_ub, fileUB)
+
+    !-------------------------------------------------------------------------------
     ! Given a stream and a model date, find time coordinates of the upper and
     ! lower time bounds surrounding the models date.  Returns the model date,
     ! data date, elasped seconds, time index, and file names associated with
     ! these upper and lower time bounds.
+    !   1) take the model date, map it into the data date range
+    !   2) find the upper and lower bounding data dates
+    !   3) return the bounding data and model dates, file names, & t-coord indicies
+    !-------------------------------------------------------------------------------
 
     ! input/output parameters:
     type(shr_stream_streamType) ,intent(inout):: strm    ! data stream to query
@@ -474,11 +484,6 @@ contains
     character(*),parameter :: F03   = "('(shr_stream_findBounds) ',a,i4)"
     character(*),parameter :: F04   = "('(shr_stream_findBounds) ',2a,i4)"
     !-------------------------------------------------------------------------------
-    ! Purpose:
-    !   1) take the model date, map it into the data date range
-    !   2) find the upper and lower bounding data dates
-    !   3) return the bounding data and model dates, file names, & t-coord indicies
-    !-------------------------------------------------------------------------------
 
     if (debug>0) write(strm%logunit,F02) "DEBUG: ---------- enter ------------------"
 
@@ -504,12 +509,12 @@ contains
     ! convert/map the model year/date into a data year/date
     ! note: these values will be needed later to convert data year to model year
     !----------------------------------------------------------------------------
-    mYear   = mDateIn/10000                      ! assumes/require F90 truncation
-    yrFirst = strm%yearFirst                     ! first year in data sequence
-    yrLast  = strm%yearLast                      ! last year in data sequence
-    yrAlign = strm%yearAlign                     ! model year corresponding to yearFirst
-    nYears  = yrLast - yrFirst + 1               ! number of years in data sequence
-    dDateF  = yrFirst * 10000 + 101 ! first date in valid range
+    mYear   = mDateIn/10000             ! assumes/require F90 truncation
+    yrFirst = strm%yearFirst            ! first year in data sequence
+    yrLast  = strm%yearLast             ! last year in data sequence
+    yrAlign = strm%yearAlign            ! model year corresponding to yearFirst
+    nYears  = yrLast - yrFirst + 1      ! number of years in data sequence
+    dDateF  = yrFirst * 10000 + 101     ! first date in valid range
     dDateL  = (yrLast+1)  * 10000 + 101 ! last date in valid range
 
     if (cycle) then
@@ -623,7 +628,7 @@ contains
           !--- find greatest valid date (GVD) ---
           if (.not. strm%found_gvd) then
              !--- start search at last file & move toward first file ---
-             B:          do k=strm%nFiles,1,-1
+             B: do k=strm%nFiles,1,-1
                 !--- read data for file number k ---
                 if (.not. strm%file(k)%haveData) then
                    call shr_stream_readtCoord(strm, k, rCode)
@@ -638,7 +643,9 @@ contains
                       strm%n_gvd = n
                       strm%found_gvd = .true.
                       rDategvd = strm%file(k)%date(n) + strm%file(k)%secs(n)/spd ! GVD date + frac day
-                      if (debug>1 ) write(strm%logunit,F01) "DEBUG: found GVD ",strm%file(k)%date(n)
+                      if (debug>1) then
+                         write(strm%logunit,F01) "DEBUG: found GVD ",strm%file(k)%date(n)
+                      end if
                       exit B
                    end if
                 end do
@@ -667,6 +674,7 @@ contains
           call shr_cal_ymd2date(yy,mm,dd,mDateUB)
           secUB   = strm%file(k_ub)%secs(n_ub)
           fileUB  = strm%file(k_ub)%name
+
           return
        endif
 
