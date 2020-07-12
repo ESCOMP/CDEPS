@@ -519,7 +519,7 @@
     <group>drof_nml</group>
     <desc>Master restart file name for drof model</desc>
     <values>
-      <value>undefined</value>
+      <value>null</value>
     </values>
   </entry>
 

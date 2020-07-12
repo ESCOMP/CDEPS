@@ -326,7 +326,7 @@
       Master restart file name for dlnd model
     </desc>
     <values>
-      <value>undefined</value>
+      <value>null</value>
     </values>
   </entry>
 

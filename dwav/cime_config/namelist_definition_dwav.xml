@@ -327,7 +327,7 @@
       Master restart file name for dwav model
     </desc>
     <values>
-      <value>undefined</value>
+      <value>null</value>
     </values>
   </entry>
 
