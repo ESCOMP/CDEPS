@@ -12,8 +12,10 @@ sys.path.append(os.path.join(_CIMEROOT, "scripts", "Tools"))
 from standard_script_setup import *
 from CIME.buildlib import parse_input
 from CIME.case import Case
-from CIME.utils import run_cmd, symlink_force
+from CIME.utils import run_cmd, symlink_force, expect
 from CIME.build import get_standard_cmake_args
+from CIME.XML.machines import Machines
+from CIME.XML.compilers import Compilers
 
 logger = logging.getLogger(__name__)
 
@@ -49,8 +51,12 @@ def buildlib(bldroot, libroot, case, compname=None):
         srcpath = os.path.join(case.get_value("CIMEROOT"),"src","components","cdeps")
 
         cmake_flags = get_standard_cmake_args(case, os.path.join(sharedpath,"cdeps"), shared_lib=True)
+        ccomp, cxxcomp, fcomp = get_compiler_names(case)
+        cmake_flags += " -DCMAKE_C_COMPILER={} -DCMAKE_CXX_COMPILER={} -DCMAKE_Fortran_COMPILER={}".format(ccomp, cxxcomp, fcomp)
         cmake_flags += " -DCMAKE_INSTALL_PREFIX={} ".format(libroot)
         cmake_flags += " -DLIBROOT={} ".format(libroot) + srcpath
+        
+
         logger.info("cmake_flags {}".format(cmake_flags))
         s,o,e = run_cmd("cmake {} ".format(cmake_flags), from_dir=bldroot, verbose=True)
         expect(not s,"ERROR from cmake output={}, error={}".format(o,e))
@@ -67,6 +73,17 @@ def buildlib(bldroot, libroot, case, compname=None):
                 if not os.path.islink(comppath):
                     os.rmdir(comppath)
                 symlink_force(os.path.join(bldroot,compname), comppath)
+
+                
+def get_compiler_names(case):
+    machobj = Machines(machine=case.get_value("MACH"))
+    compobj = Compilers(machobj)
+    ccomp = compobj.get_value("MPICC").strip()
+    cxxcomp = compobj.get_value("MPICXX").strip()
+    fcomp = compobj.get_value("MPIFC").strip()
+
+    return ccomp, cxxcomp, fcomp
+
 
 def _main_func(args):
     caseroot, libroot, bldroot = parse_input(args)
