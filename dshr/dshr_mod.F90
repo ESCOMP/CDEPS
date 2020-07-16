@@ -40,7 +40,6 @@ module dshr_mod
   use shr_pio_mod      , only : shr_pio_getiosys, shr_pio_getiotype, shr_pio_getioformat
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_init_from_xml, SHR_STRDATA_GET_STREAM_COUNT
   use dshr_methods_mod , only : chkerr
-  use perf_mod         , only : t_startf, t_stopf
   use pio
 
   implicit none

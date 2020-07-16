@@ -26,8 +26,6 @@ module atm_comp_nuopc
   use dshr_mod         , only : dshr_orbital_init, dshr_orbital_update
   use dshr_dfield_mod  , only : dfield_type, dshr_dfield_add, dshr_dfield_copy
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add, dshr_fldlist_realize
-  use perf_mod         , only : t_startf, t_stopf, t_barrierf
-
   use datm_datamode_core2_mod   , only : datm_datamode_core2_advertise
   use datm_datamode_core2_mod   , only : datm_datamode_core2_init_pointers
   use datm_datamode_core2_mod   , only : datm_datamode_core2_advance
@@ -344,7 +342,7 @@ contains
     call ESMF_LogWrite(subname//' called', ESMF_LOGMSG_INFO)
 
     ! Initialize mesh, restart flag, compid, and logunit
-    call t_startf('datm_strdata_init')
+    call ESMF_TraceRegionEnter('datm_strdata_init')
     call dshr_mesh_init(gcomp, nullstr, logunit, 'ATM', nx_global, ny_global, &
          model_meshfile, model_maskfile, model_createmesh_fromfile, model_mesh, &
          model_mask, model_frac, restart_read, rc=rc)
@@ -354,7 +352,7 @@ contains
     xmlfilename = 'datm.streams'//trim(inst_suffix)//'.xml'
     call shr_strdata_init_from_xml(sdat, xmlfilename, model_mesh, clock, 'ATM', logunit, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call t_stopf('datm_strdata_init')
+    call ESMF_TraceRegionExit('datm_strdata_init')
 
     ! NUOPC_Realize "realizes" a previously advertised field in the importState and exportState
     ! by replacing the advertised fields with the newly created fields of the same name.
@@ -440,7 +438,7 @@ contains
 
     rc = ESMF_SUCCESS
 
-    call t_startf(subname)
+    call ESMF_TraceRegionEnter(subname)
     call memcheck(subname, 5, my_task==master_task)
 
     ! Query the Component for its clock, importState and exportState
@@ -475,11 +473,11 @@ contains
     endif
 
     ! Run datm
-    call t_startf('datm_run')
+    call ESMF_TraceRegionEnter('datm_run')
     call datm_comp_run(importstate, exportstate, next_ymd, next_tod, mon, &
          orbEccen, orbMvelpp, orbLambm0, orbObliqr, restart_write,  rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call t_stopf('datm_run')
+    call ESMF_TraceRegionExit('datm_run')
 
     ! Update nextsw_cday for scalar data
     ! Use nextYMD and nextTOD here since since the component - clock is advance at the END of the time interval
@@ -487,7 +485,7 @@ contains
     call dshr_state_SetScalar(nextsw_cday, flds_scalar_index_nextsw_cday, exportState, flds_scalar_name, flds_scalar_num, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    call t_stopf(subname)
+    call ESMF_TraceRegionExit(subname)
 
   end subroutine ModelAdvance
 
@@ -519,7 +517,7 @@ contains
 
     rc = ESMF_SUCCESS
 
-    call t_startf('DATM_RUN')
+    call ESMF_TraceRegionEnter('DATM_RUN')
 
     !--------------------
     ! First time initialization
@@ -574,21 +572,21 @@ contains
 
     ! time and spatially interpolate to model time and grid
     call t_barrierf('datm_BARRIER',mpicom)
-    call t_startf('datm_strdata_advance')
+    call ESMF_TraceRegionEnter('datm_strdata_advance')
     call shr_strdata_advance(sdat, target_ymd, target_tod, logunit, 'datm', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call t_stopf('datm_strdata_advance')
+    call ESMF_TraceRegionExit('datm_strdata_advance')
 
     ! copy all fields from streams to export state as default
     ! This automatically will update the fields in the export state
     call t_barrierf('datm_comp_dfield_copy_BARRIER', mpicom)
-    call t_startf('datm_dfield_copy')
+    call ESMF_TraceRegionEnter('datm_dfield_copy')
     call dshr_dfield_copy(dfields, sdat, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call t_stopf('datm_dfield_copy')
+    call ESMF_TraceRegionExit('datm_dfield_copy')
 
     ! Determine data model behavior based on the mode
-    call t_startf('datm_datamode')
+    call ESMF_TraceRegionEnter('datm_datamode')
     select case (trim(datamode))
     case('CORE2_NYF','CORE2_IAF')
        call datm_datamode_core2_advance(exportstate, datamode, target_ymd, target_tod, target_mon, &
@@ -637,8 +635,8 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
-    call t_stopf('datm_datamode')
-    call t_stopf('DATM_RUN')
+    call ESMF_TraceRegionExit('datm_datamode')
+    call ESMF_TraceRegionExit('DATM_RUN')
 
   !--------
   contains

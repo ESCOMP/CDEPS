@@ -24,7 +24,6 @@ module wav_comp_nuopc
   use dshr_mod         , only : dshr_restart_read, dshr_restart_write, dshr_mesh_init
   use dshr_dfield_mod  , only : dfield_type, dshr_dfield_add, dshr_dfield_copy
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add, dshr_fldlist_realize
-  use perf_mod         , only : t_startf, t_stopf, t_adj_detailf, t_barrierf
 
   implicit none
   private ! except
@@ -264,7 +263,7 @@ contains
     rc = ESMF_SUCCESS
 
     ! Initialize sdat - create the model domain mesh and intialize the sdat clock
-    call t_startf('dwav_strdata_init')
+    call ESMF_TraceRegionEnter('dwav_strdata_init')
     call dshr_mesh_init(gcomp, nullstr, logunit, 'WAV', nx_global, ny_global, &
          model_meshfile, model_maskfile, model_createmesh_fromfile, model_mesh, &
          model_mask, model_frac, restart_read, rc=rc)
@@ -274,7 +273,7 @@ contains
     xmlfilename = 'dwav.streams'//trim(inst_suffix)//'.xml'
     call shr_strdata_init_from_xml(sdat, xmlfilename, model_mesh, clock, 'WAV', logunit, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call t_stopf('dwav_strdata_init')
+    call ESMF_TraceRegionExit('dwav_strdata_init')
 
     ! Realize the actively coupled fields, now that a mesh is established and
     ! initialize dfields data type (to map streams to export state fields)
@@ -328,7 +327,7 @@ contains
 
     rc = ESMF_SUCCESS
 
-    call t_startf(subname)
+    call ESMF_TraceRegionEnter(subname)
     call memcheck(subname, 5, my_task == master_task)
 
     ! query the Component for its clock, importState and exportState
@@ -357,13 +356,13 @@ contains
        call ESMF_AlarmRingerOff( alarm, rc=rc )
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-       call t_startf('dwav_restart')
+       call ESMF_TraceRegionEnter('dwav_restart')
        call NUOPC_CompAttributeGet(gcomp, name='case_name', value=case_name, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
        call dshr_restart_write(rpfile, case_name, 'dwav', inst_suffix, next_ymd, next_tod, &
             logunit, mpicom, my_task, sdat)
-       call t_stopf('dwav_restart')
+       call ESMF_TraceRegionExit('dwav_restart')
     endif
 
     ! Write Diagnostics
@@ -372,7 +371,7 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
-    call t_stopf(subname)
+    call ESMF_TraceRegionExit(subname)
 
   end subroutine ModelAdvance
 
@@ -484,7 +483,7 @@ contains
     integer                , intent(out)   :: rc
     !-------------------------------------------------------------------------------
 
-    call t_startf('DWAV_RUN')
+    call ESMF_TraceRegionEnter('DWAV_RUN')
 
     !--------------------
     ! advance dwav streams
@@ -492,9 +491,9 @@ contains
 
     ! time and spatially interpolate to model time and grid
     call t_barrierf('dwav_BARRIER',mpicom)
-    call t_startf('dwav_strdata_advance')
+    call ESMF_TraceRegionEnter('dwav_strdata_advance')
     call shr_strdata_advance(sdat, target_ymd, target_tod, logunit, 'dwav', rc=rc)
-    call t_stopf('dwav_strdata_advance')
+    call ESMF_TraceRegionExit('dwav_strdata_advance')
 
     !--------------------
     ! copy all fields from streams to export state as default
@@ -502,23 +501,23 @@ contains
 
     ! This automatically will update the fields in the export state
     call t_barrierf('dwav_comp_strdata_copy_BARRIER', mpicom)
-    call t_startf('dwav_strdata_copy')
+    call ESMF_TraceRegionEnter('dwav_strdata_copy')
     call dshr_dfield_copy(dfields, sdat, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call t_stopf('dwav_strdata_copy')
+    call ESMF_TraceRegionExit('dwav_strdata_copy')
 
     !-------------------------------------------------
     ! determine data model behavior based on the mode
     !-------------------------------------------------
 
-    call t_startf('dwav_datamode')
+    call ESMF_TraceRegionEnter('dwav_datamode')
     select case (trim(datamode))
     case('copyall')
        ! do nothing
     end select
-    call t_stopf('dwav_datamode')
+    call ESMF_TraceRegionExit('dwav_datamode')
 
-    call t_stopf('DWAV_RUN')
+    call ESMF_TraceRegionExit('DWAV_RUN')
 
   end subroutine dwav_comp_run
 

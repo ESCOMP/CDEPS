@@ -4,7 +4,6 @@ module dshr_methods_mod
 
   use ESMF
   use shr_kind_mod , only : r8=>shr_kind_r8, cs=>shr_kind_cs, cl=>shr_kind_cl
-  use perf_mod     , only : t_startf, t_stopf, t_adj_detailf, t_barrierf
 
   implicit none
   public
@@ -192,7 +191,7 @@ contains
 
     rc = ESMF_SUCCESS
 
-    call t_startf(subname)
+    call ESMF_TraceRegionEnter(subname)
 
     localzr = ESMF_REGION_TOTAL
     if (present(zeroregion)) then
@@ -235,7 +234,7 @@ contains
     deallocate(lfieldnamelist_src)
     deallocate(lfieldnamelist_dst)
 
-    call t_stopf(subname)
+    call ESMF_TraceRegionExit(subname)
 
   end subroutine dshr_fldbun_regrid
 
