@@ -1457,7 +1457,7 @@ contains
        rcode = pio_get_var(pioid, varid, tmp)
        do k=1,size(streams)
           if (streams(k)%nFiles /= tmp(k)) then
-             call shr_sys_abort('somethin is wrong')
+             call shr_sys_abort('something is wrong')
           endif
        enddo
 
@@ -1465,7 +1465,7 @@ contains
        rcode = pio_get_var(pioid, varid, tmp)
        do k=1,size(streams)
           if (streams(k)%offset /= tmp(k)) then
-             call shr_sys_abort('somethin is wrong')
+             call shr_sys_abort('something is wrong')
           endif
        enddo
 
@@ -1474,7 +1474,7 @@ contains
        do k=1,size(streams)
           streams(k)%k_lvd = tmp(k)
           if (streams(k)%k_lvd /= tmp(k)) then
-             call shr_sys_abort('somethin is wrong')
+             call shr_sys_abort('something is wrong')
           endif
        enddo
 
@@ -1483,7 +1483,7 @@ contains
        do k=1,size(streams)
           streams(k)%n_lvd = tmp(k)
           if (streams(k)%n_lvd /= tmp(k)) then
-             call shr_sys_abort('somethin is wrong')
+             call shr_sys_abort('something is wrong')
           endif
        enddo
 
@@ -1492,7 +1492,7 @@ contains
        do k=1,size(streams)
           streams(k)%k_gvd = tmp(k)
           if (streams(k)%k_gvd /= tmp(k)) then
-             call shr_sys_abort('somethin is wrong')
+             call shr_sys_abort('something is wrong')
           endif
        enddo
 
@@ -1501,7 +1501,7 @@ contains
        do k=1,size(streams)
           streams(k)%n_gvd = tmp(k)
           if (streams(k)%n_gvd /= tmp(k)) then
-             call shr_sys_abort('somethin is wrong')
+             call shr_sys_abort('something is wrong')
           endif
        enddo
        deallocate(tmp)
@@ -1515,36 +1515,37 @@ contains
           do n=1,streams(k)%nfiles
              rcode = pio_get_var(pioid, varid, (/1,n,k/), fname)
              if(fname .ne. streams(k)%file(n)%name) Then
-                call shr_sys_abort('somethin is wrong')
+                call shr_sys_abort('something is wrong')
              endif
              allocate(tmp(1))
              rcode = pio_get_var(pioid, ntvarid, (/n,k/), tmp(1))
              streams(k)%file(n)%nt = tmp(1)
              if(tmp(1) /= streams(k)%file(n)%nt) then
-                call shr_sys_abort('somethin is wrong')
+                call shr_sys_abort('something is wrong')
              endif
              deallocate(tmp)
-             allocate(tmp(streams(k)%file(n)%nt))
-             rcode = pio_get_var(pioid, dvarid, (/1,n,k/), (/streams(k)%file(n)%nt,1,1/),tmp)
-             streams(k)%file(n)%date = tmp
-             if (.not. allocated(streams(k)%file(n)%date) .or. &
-                  any(tmp .ne. streams(k)%file(n)%date) ) then
-                   call shr_sys_abort('somethin is wrong')
+             if (streams(k)%file(n)%nt > 0) then
+                allocate(tmp(streams(k)%file(n)%nt))
+                rcode = pio_get_var(pioid, dvarid, (/1,n,k/), (/streams(k)%file(n)%nt,1,1/),tmp)
+                streams(k)%file(n)%date = tmp
+                if (.not. allocated(streams(k)%file(n)%date) .or. &
+                     any(tmp .ne. streams(k)%file(n)%date) ) then
+                   call shr_sys_abort('something is wrong')
+                endif
+                rcode = pio_get_var(pioid, tvarid, (/1,n,k/), (/streams(k)%file(n)%nt,1,1/),tmp)
+                streams(k)%file(n)%secs = tmp
+                if (.not. allocated(streams(k)%file(n)%secs) .or. &
+                     any(tmp .ne. streams(k)%file(n)%secs) ) then
+                   call shr_sys_abort('something is wrong')
+                endif
+                rcode = pio_get_var(pioid, hdvarid, (/n,k/), tmp(1))
+                if(tmp(1)==1) then
+                   streams(k)%file(n)%havedata = .true.
+                else
+                   streams(k)%file(n)%havedata = .false.
+                endif
+                deallocate(tmp)
              endif
-             rcode = pio_get_var(pioid, tvarid, (/1,n,k/), (/streams(k)%file(n)%nt,1,1/),tmp)
-             streams(k)%file(n)%secs = tmp
-             if (.not. allocated(streams(k)%file(n)%secs) .or. &
-                  any(tmp .ne. streams(k)%file(n)%secs) ) then
-                   call shr_sys_abort('somethin is wrong')
-             endif
-             rcode = pio_get_var(pioid, hdvarid, (/n,k/), tmp(1))
-             if(tmp(1)==1) then
-                streams(k)%file(n)%havedata = .true.
-             else
-                streams(k)%file(n)%havedata = .false.
-             endif
-
-             deallocate(tmp)
           enddo
        enddo
     endif
