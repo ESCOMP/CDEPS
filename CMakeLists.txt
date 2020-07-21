@@ -25,7 +25,7 @@ endif()
 if(BLD_STANDALONE)
   add_subdirectory(share)
   list(APPEND EXTRA_LIBS cdeps_share)
-  list(APPEND EXTRA_INCLUDES "${PIO_INCDIR}" "${CMAKE_BINARY_DIR}/share" )
+  list(APPEND EXTRA_INCLUDES "${CMAKE_BINARY_DIR}/share" )
 endif()
 
 
