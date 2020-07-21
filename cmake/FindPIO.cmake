@@ -1,8 +1,8 @@
-# - Try to find PIO 
+# - Try to find PIO
 #
-# This can be controled by setting PIO_PATH or PIO_<lang>_PATH Cmake variables, 
-# where <lang> is the COMPONENT language one needs. 
-# 
+# This can be controled by setting PIO_PATH or PIO_<lang>_PATH Cmake variables,
+# where <lang> is the COMPONENT language one needs.
+#
 # Once done, this will define:
 #
 #  PIO_<lang>_FOUND   (BOOL) - system has PIO
@@ -23,14 +23,15 @@ define_package_component(PIO DEFAULT
                          LIBRARY_NAMES pioc)
 
 # Define PIO Fortran Component
-define_package_component(PIO 
-                         Component Fortran
+define_package_component(PIO
+                         COMPONENT Fortran
                          INCLUDE_NAMES pio.mod pio.inc
                          LIBRARY_NAMES piof)
 
 # Search for list of valid components requested
 find_valid_components(PIO)
 
+message("This is ${PIO_FIND_COMPONENTS}")
 #==============================================================================
 # SEARCH FOR VALIDATED COMPONENTS
 foreach (pcomp IN LISTS PIO_FIND_VALID_COMPONENTS)
@@ -100,4 +101,4 @@ foreach (pcomp IN LISTS PIO_FIND_VALID_COMPONENTS)
 endforeach ()
 message("PIO_C_FOUND ${PIO_C_FOUND}")
 message("PIO_Fortran_FOUND ${PIO_Fortran_FOUND}")
-message("PIO_INCLUDE_DIR ${PIO_INCLUDE_DIR}")
+message("PIO_Fortran_INCLUDE_DIR ${PIO_Fortran_INCLUDE_DIR}")

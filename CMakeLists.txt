@@ -4,7 +4,7 @@ project(NUOPC_DATA_MODELS LANGUAGES Fortran VERSION 0.1)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 include(ExternalProject)
 find_package(ESMF REQUIRED)
-find_package(PIO REQUIRED)
+find_package(PIO REQUIRED COMPONENT C Fortran)
 find_package(FoX REQUIRED)
 
 if (DEFINED CIMEROOT)

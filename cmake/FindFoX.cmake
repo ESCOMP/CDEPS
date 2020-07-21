@@ -1,8 +1,8 @@
-# - Try to find FoX 
+# - Try to find FoX
 #
-# This can be controled by setting FoX_PATH or FoX_<lang>_PATH Cmake variables, 
-# where <lang> is the COMPONENT language one needs. 
-# 
+# This can be controled by setting FoX_PATH or FoX_<lang>_PATH Cmake variables,
+# where <lang> is the COMPONENT language one needs.
+#
 # Once done, this will define:
 #
 #  FoX_<lang>_FOUND   (BOOL) - system has FoX
@@ -36,5 +36,5 @@ foreach (pcomp IN LISTS FoX_FIND_VALID_COMPONENTS)
     find_package_component(FoX COMPONENT ${pcomp})
 endforeach ()
 if(FoX_Fortran_FOUND)
-message(" Found FoX:")
+message(" Found FoX: ${FoX_Fortran_INCLUDE_DIR}")
 endif()
