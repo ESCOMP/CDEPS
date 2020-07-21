@@ -3,8 +3,6 @@ cmake_minimum_required(VERSION 3.10)
 project(NUOPC_DATA_MODELS LANGUAGES Fortran VERSION 0.1)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 include(ExternalProject)
-
-find_package(MPI REQUIRED)
 find_package(ESMF REQUIRED)
 
 if (DEFINED CIMEROOT)
@@ -16,20 +14,11 @@ if (DEFINED CIMEROOT)
   set(FOX ${LIBROOT})
   set(CMAKE_Fortran_FLAGS "${FFLAGS} -I${LIBROOT}/include -I${LIBROOT}/finclude -I${LIBROOT}/nuopc/esmf/${NINST_VALUE}/include")
 else ()
-  message("CIMEROOT not found, downloading cime")
-  ExternalProject_Add (cime
-    PREFIX ${CMAKE_CURRENT_BINARY_DIR}/cime
-    GIT_REPOSITORY https://github.com/ESMCI/cime
-    GIT_TAG cd1238247e71f0336fd790bc9716ac6f0bf91c21
-    GIT_PROGRESS TRUE
-    UPDATE_COMMAND ""
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND ""
-    INSTALL_COMMAND "")
-  ExternalProject_Get_Property (cime SOURCE_DIR)
-  set (CIMEROOT ${SOURCE_DIR})
-  unset (SOURCE_DIR)
+  set(BLD_STANDALONE TRUE)
 endif ()
+if (NOT DEFINED MPILIB OR NOT ${MPILIB} STREQUAL "mpi-serial")
+  find_package(MPI REQUIRED)
+endif()
 
 if(BLD_STANDALONE)
   add_subdirectory(share)
