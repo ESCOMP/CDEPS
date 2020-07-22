@@ -32,9 +32,10 @@ def buildlib(bldroot, libroot, case, compname=None):
         strthread = "threads"
     else:
         strthread = "nothreads"
+    mpilib = case.get_value("MPILIB")
 
-    sharedpath = os.path.join(case.get_value("COMPILER"),
-                              case.get_value("MPILIB"), strdebug, strthread, "nuopc")
+    sharedpath = os.path.join(case.get_value("COMPILER"),mpilib,
+                              strdebug, strthread, "nuopc")
 
 
     if compname:
@@ -52,10 +53,11 @@ def buildlib(bldroot, libroot, case, compname=None):
 
         cmake_flags = get_standard_cmake_args(case, os.path.join(sharedpath,"cdeps"), shared_lib=True)
         ccomp, cxxcomp, fcomp = get_compiler_names(case)
+
         cmake_flags += " -DCMAKE_C_COMPILER={} -DCMAKE_CXX_COMPILER={} -DCMAKE_Fortran_COMPILER={}".format(ccomp, cxxcomp, fcomp)
         cmake_flags += " -DCMAKE_INSTALL_PREFIX={} ".format(libroot)
         cmake_flags += " -DLIBROOT={} ".format(libroot) + srcpath
-        
+        cmake_flags += " -DMPILIB={} ".format(mpilib)
 
         logger.info("cmake_flags {}".format(cmake_flags))
         s,o,e = run_cmd("cmake {} ".format(cmake_flags), from_dir=bldroot, verbose=True)
@@ -74,13 +76,18 @@ def buildlib(bldroot, libroot, case, compname=None):
                     os.rmdir(comppath)
                 symlink_force(os.path.join(bldroot,compname), comppath)
 
-                
+
 def get_compiler_names(case):
     machobj = Machines(machine=case.get_value("MACH"))
     compobj = Compilers(machobj)
-    ccomp = compobj.get_value("MPICC").strip()
-    cxxcomp = compobj.get_value("MPICXX").strip()
-    fcomp = compobj.get_value("MPIFC").strip()
+    if case.get_value("MPILIB") == 'mpi-serial':
+        ccomp = compobj.get_value("SCC").strip()
+        cxxcomp = compobj.get_value("SCXX").strip()
+        fcomp = compobj.get_value("SFC").strip()
+    else:
+        ccomp = compobj.get_value("MPICC").strip()
+        cxxcomp = compobj.get_value("MPICXX").strip()
+        fcomp = compobj.get_value("MPIFC").strip()
 
     return ccomp, cxxcomp, fcomp
 
