@@ -238,6 +238,7 @@ contains
     real(r8)                       :: scol_lat
     character(CL)                  :: cvalue
     integer                        :: lsize                   ! local size of mesh
+    integer                        :: petcount
     type(ESMF_Array)               :: elemMaskArray
     type(file_desc_t)              :: pioid
     type(var_desc_t)               :: varid
@@ -257,7 +258,7 @@ contains
     ! generate local mpi comm
     call ESMF_GridCompGet(gcomp, vm=vm, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_VMGet(vm, mpiCommunicator=mpicom, localPet=my_task, rc=rc)
+    call ESMF_VMGet(vm, mpiCommunicator=mpicom, localPet=my_task, petcount=petcount, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Set restart flag
@@ -293,13 +294,14 @@ contains
                 end if
                 call shr_sys_abort(subname//' ERROR: '//trim(compname)//' does not support single column mode ')
              end if
+
              ! verify that are only using 1 pe
-             if (my_task > 0) then
+             if (petcount > 1) then
                 if (masterproc) then
-                   write(logunit,*) subname,' ERROR: single column mode must be run on one pe'
+                   write(logunit,*) subname,' ERROR: single column mode must be run on one pe, petcount= ',petcount
                 end if
+                call shr_sys_abort(subname//' ERROR: single column mode must be run on 1 pe')
              endif
-             call shr_sys_abort(subname//' ERROR: single column mode must be run on 1 pe')
 
              ! obtain the single column lon and lat
              call NUOPC_CompAttributeGet(gcomp, name='scmlon', value=cvalue, rc=rc)
@@ -535,6 +537,8 @@ contains
        start(1) = (MINLOC(abs(pos_lons - pos_scol_lon), dim=1))
        start(2) = (MINLOC(abs(lats      -scol_lat    ), dim=1))
        count(:) = 1
+       deallocate(lons)
+       deallocate(lats)
 
        ! read in value of nearest neighbor lon and RESET scol_lat
        rcode = pio_inq_varid(pioid, 'xc' , varid)
