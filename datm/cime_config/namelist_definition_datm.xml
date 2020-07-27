@@ -2072,6 +2072,7 @@
         u10   Sa_u
         v10   Sa_v
         t2m   Sa_tbot
+        skt   Sa_tskn
         d2m   Sa_tdew
         msl   Sa_pslv
         sp    Sa_pbot
@@ -2081,7 +2082,9 @@
         csf   Faxa_snowc
         lsf   Faxa_snowl
         ssrd  Faxa_swdn
+        ssr   Faxa_swnet
         strd  Faxa_lwdn
+        str   Faxa_lwnet
         aluvp Faxa_swvdr
         aluvd Faxa_swvdf
         alnip Faxa_swndr
