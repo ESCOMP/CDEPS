@@ -6,7 +6,7 @@ module dshr_strdata_mod
   use ESMF
 
   use shr_kind_mod     , only : r8=>shr_kind_r8, r4=>shr_kind_r4, i2=>shr_kind_I2
-  use shr_kind_mod     , only : cs=>shr_kind_cs, cl=>shr_kind_cl, cxx=>shr_kind_cxx 
+  use shr_kind_mod     , only : cs=>shr_kind_cs, cl=>shr_kind_cl, cxx=>shr_kind_cxx
   use shr_sys_mod      , only : shr_sys_abort
   use shr_const_mod    , only : shr_const_pi, shr_const_cDay, shr_const_spval
   use shr_cal_mod      , only : shr_cal_calendarname, shr_cal_timeSet
@@ -212,7 +212,7 @@ contains
     type(shr_strdata_type) , intent(inout) :: sdat                   ! stream data type
     integer                , intent(in)    :: my_task                ! my mpi task
     integer                , intent(in)    :: logunit                ! stdout logunit
-    character(len=*)       , intent(in)    :: compname               ! component name (e.g. ATM, OCN, ...) 
+    character(len=*)       , intent(in)    :: compname               ! component name (e.g. ATM, OCN, ...)
     type(ESMF_Clock)       , intent(in)    :: model_clock            ! model clock
     type(ESMF_Mesh)        , intent(in)    :: model_mesh             ! model mesh
     character(*)           , intent(in)    :: stream_meshFile        ! full pathname to stream mesh file
@@ -732,8 +732,6 @@ contains
        ltimers = timers
     endif
 
-    if (.not.ltimers) call t_adj_detailf(tadj)
-
     call ESMF_TraceRegionEnter(trim(lstr)//trim(timname)//'_total')
 
     sdat%ymd = ymd
@@ -939,7 +937,6 @@ contains
     endif  ! nstreams > 0
 
     call ESMF_TraceRegionExit(trim(lstr)//trim(timname)//'_total')
-    if (.not.ltimers) call t_adj_detailf(-tadj)
 
   end subroutine shr_strdata_advance
 

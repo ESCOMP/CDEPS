@@ -31,7 +31,6 @@ define_package_component(PIO
 # Search for list of valid components requested
 find_valid_components(PIO)
 
-message("This is ${PIO_FIND_COMPONENTS}")
 #==============================================================================
 # SEARCH FOR VALIDATED COMPONENTS
 foreach (pcomp IN LISTS PIO_FIND_VALID_COMPONENTS)

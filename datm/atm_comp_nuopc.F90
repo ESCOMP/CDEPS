@@ -330,8 +330,8 @@ contains
     integer(i8)             :: stepno        ! step number
     real(r8)                :: nextsw_cday   ! calendar of next atm sw
     character(CL)           :: cvalue        ! character string for input config
-    real(R8)                :: orbEccen      ! orb eccentricity (unit-less)
-    real(R8)                :: orbMvelpp     ! orb moving vernal eq (radians)
+    real(R8)                :: orbEccen      ! orb eccentricity (unist-less)
+    real(R8)                :: orbMvelpp     ! orb moving vernal eqa (radians)
     real(R8)                :: orbLambm0     ! orb mean long of perhelion (radians)
     real(R8)                :: orbObliqr     ! orb obliquity (radians)
     logical                 :: isPresent, isSet
@@ -571,7 +571,6 @@ contains
     call shr_strdata_setOrbs(sdat, orbEccen, orbMvelpp, orbLambm0, orbObliqr, idt)
 
     ! time and spatially interpolate to model time and grid
-    call t_barrierf('datm_BARRIER',mpicom)
     call ESMF_TraceRegionEnter('datm_strdata_advance')
     call shr_strdata_advance(sdat, target_ymd, target_tod, logunit, 'datm', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -579,7 +578,6 @@ contains
 
     ! copy all fields from streams to export state as default
     ! This automatically will update the fields in the export state
-    call t_barrierf('datm_comp_dfield_copy_BARRIER', mpicom)
     call ESMF_TraceRegionEnter('datm_dfield_copy')
     call dshr_dfield_copy(dfields, sdat, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
