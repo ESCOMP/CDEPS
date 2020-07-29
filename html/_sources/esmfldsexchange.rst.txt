@@ -1,0 +1,12 @@
+.. _api-for-esmfldsexchange:
+
+API for emsFldsExchange_xxx module
+==================================
+
+The application specific module, ``esmFldsExchange_xxx.F90`` contains
+all of the information that determines how the mediator performs the
+exchange of fields between components. In particular, this module
+determines how each sourc field is mapped from their source mesh to
+the destinatinon mesh and then then subsequently how a collection of
+source fields is merged to the target destination field. This section describes
+the API for the calls that determine this information.

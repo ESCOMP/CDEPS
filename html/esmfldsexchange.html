@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Search &mdash; CDEPS master documentation</title>
+  <title>3. API for emsFldsExchange_xxx module &mdash; CMEPS master documentation</title>
   
 
   
@@ -28,7 +28,9 @@
     <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="#" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="4. Fractions" href="fractions.html" />
+    <link rel="prev" title="2. Application Specific Field Exchange Specification" href="field_naming_convention.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -47,7 +49,7 @@
           
 
           
-            <a href="index.html" class="icon icon-home"> CDEPS
+            <a href="index.html" class="icon icon-home"> CMEPS
           
 
           
@@ -64,7 +66,7 @@
 
           
 <div role="search">
-  <form id="rtd-search-form" class="wy-form" action="#" method="get">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
@@ -81,10 +83,11 @@
               
             
             
-              <ul>
+              <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">1. Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="streams.html">2. Input Streams</a></li>
-<li class="toctree-l1"><a class="reference internal" href="design_details.html">3. Design Details</a></li>
+<li class="toctree-l1"><a class="reference internal" href="field_naming_convention.html">2. Application Specific Field Exchange Specification</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">3. API for emsFldsExchange_xxx module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fractions.html">4. Fractions</a></li>
 </ul>
 
             
@@ -99,7 +102,7 @@
       <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">CDEPS</a>
+          <a href="index.html">CMEPS</a>
         
       </nav>
 
@@ -130,12 +133,14 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>Search</li>
+      <li>3. API for emsFldsExchange_xxx module</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
+            <a href="_sources/esmfldsexchange.rst.txt" rel="nofollow"> View page source</a>
+          
         
       </li>
     
@@ -147,24 +152,31 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <noscript>
-  <div id="fallback" class="admonition warning">
-    <p class="last">
-      Please activate JavaScript to enable the search
-      functionality.
-    </p>
-  </div>
-  </noscript>
+  <div class="section" id="api-for-emsfldsexchange-xxx-module">
+<span id="api-for-esmfldsexchange"></span><h1>3. API for emsFldsExchange_xxx module<a class="headerlink" href="#api-for-emsfldsexchange-xxx-module" title="Permalink to this headline">¶</a></h1>
+<p>The application specific module, <code class="docutils literal notranslate"><span class="pre">esmFldsExchange_xxx.F90</span></code> contains
+all of the information that determines how the mediator performs the
+exchange of fields between components. In particular, this module
+determines how each sourc field is mapped from their source mesh to
+the destinatinon mesh and then then subsequently how a collection of
+source fields is merged to the target destination field. This section describes
+the API for the calls that determine this information.</p>
+</div>
 
-  
-  <div id="search-results">
-  
-  </div>
 
            </div>
            
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="fractions.html" class="btn btn-neutral float-right" title="4. Fractions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="field_naming_convention.html" class="btn btn-neutral" title="2. Application Specific Field Exchange Specification" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>
@@ -208,7 +220,6 @@
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
       <script type="text/javascript" src="_static/language_data.js"></script>
-      <script type="text/javascript" src="_static/searchtools.js"></script>
       <script type="text/javascript" src="_static/pop_ver.js"></script>
 
   
@@ -222,14 +233,7 @@
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-  <script type="text/javascript">
-    jQuery(function() { Search.loadIndex("searchindex.js"); });
-  </script>
-  
-  <script type="text/javascript" id="searchindexloader"></script>
-   
-
+  </script> 
 
 </body>
 </html>

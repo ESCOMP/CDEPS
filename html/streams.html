@@ -1,0 +1,500 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>2. Input Streams &mdash; CDEPS master documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="3. Design Details" href="design_details.html" />
+    <link rel="prev" title="1. Introduction" href="introduction.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> CDEPS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                master
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">1. Introduction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">2. Input Streams</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">2.1. Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#data-model-stream-xml-input">2.2. Data Model Stream XML Input</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#data-model-namelist-input">2.3. Data Model Namelist Input</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#details-on-year-align">2.4. Details on year_align</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="design_details.html">3. Design Details</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">CDEPS</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>2. Input Streams</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/streams.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="input-streams">
+<span id="id1"></span><h1>2. Input Streams<a class="headerlink" href="#input-streams" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="overview">
+<h2>2.1. Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>An <em>input data stream</em> is a time-series of input data files where all
+the fields in the stream are located in the same data file and all
+share the same spatial and temporal coordinates (ie. are all on the
+same grid and share the same time axis). Normally a time axis has a
+uniform dt, but this is not a requirement.</p>
+<p>The data models can have multiple input streams.</p>
+<p>The data for one stream may be all in one file or may be spread over
+several files. For example, 50 years of monthly average data might be
+contained all in one data file or it might be spread over 50 files,
+each containing one year of data.</p>
+<p>The data models can <em>loop</em> over stream data – i.e., repeatedly cycle
+over some subset of an input stream’s time axis. When looping, the
+models can only loop over whole years. For example, an input stream
+might have SST data for years 1950 through 2000, but a model could
+loop over the data for years 1960 through 1980. A model <em>cannot</em> loop
+over partial years, for example, from 1950-Feb-10 through 1980-Mar-15.</p>
+<p>The input data must be in a netcdf file and the time axis in that file
+must be CF-1.0 compliant.</p>
+<p>There are two main categories of information that the data models need
+to know about a stream:</p>
+<ul class="simple">
+<li>data that describes what a user wants – what streams to use and how
+to use them – things that can be changed by a user.</li>
+<li>data that describes the stream data – meta-data about the inherent
+properties of the data itself – things that cannot be changed by a
+user.</li>
+</ul>
+<p>Generally, information about what streams a user wants to use and how
+to use them is input via the strdata (“stream data”) Fortran namelist,
+while meta-data that describes the stream data itself is found in an
+xml-like text file called a “stream description file.”</p>
+</div>
+<div class="section" id="data-model-stream-xml-input">
+<span id="stream-description-file"></span><h2>2.2. Data Model Stream XML Input<a class="headerlink" href="#data-model-stream-xml-input" title="Permalink to this headline">¶</a></h2>
+<p>The data models advance in time discretely.  At a given time, the
+stream code is called to advance the data model by readind in fields
+from input files.  Those input files have data on a discrete time axis
+as well.  Each data point in the input files is associated with a
+discrete time (as opposed to a time interval).  Depending on whether
+you pick lower, upper, nearest, linear, or coszen, the data in the
+input file will be “interpolated” to the time in the model.</p>
+<p>The offset shifts the time axis of the input data the given number of
+seconds.  So if the input data is at 0, 3600, 7200, 10800 seconds
+(hourly) and you set an offset of 1800, then the input data will be
+set at times 1800, 5400, 9000, and 12600.  So a model at time 3600
+using linear interpolation would have data at “n=2” with offset of 0
+will have data at “n=(2+3)/2” with an offset of 1800.  n=2 is the 2nd
+data in the time list 0, 3600, 7200, 10800 in this example.  n=(2+3)/2
+is the average of the 2nd and 3rd data in the time list 0, 3600,
+7200, 10800.  offset can be positive or negative.</p>
+<p>Stream-dependent input is contained in the input xml file
+<code class="docutils literal notranslate"><span class="pre">d{model_name}.streams.xml</span></code>, where <code class="docutils literal notranslate"><span class="pre">model_name</span></code> can be <code class="docutils literal notranslate"><span class="pre">atm</span></code>,
+<code class="docutils literal notranslate"><span class="pre">ice</span></code>, <code class="docutils literal notranslate"><span class="pre">lnd</span></code>, <code class="docutils literal notranslate"><span class="pre">ocn</span></code>, <code class="docutils literal notranslate"><span class="pre">rof</span></code> or <code class="docutils literal notranslate"><span class="pre">wav</span></code>.  Multiple streams can
+be specified in the this xml file (see <a class="reference internal" href="#input-streams"><span class="std std-ref">streams</span></a>).</p>
+<p>The schema for this xml file is as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;?xml version=&quot;1.0&quot;?&gt;
+&lt;file id=&quot;stream&quot; version=&quot;1.0&quot;&gt;
+  &lt;stream_info&gt;
+    &lt;taxmode&gt;&lt;/taxmode&gt;
+    &lt;tInterpAlgo&gt;&lt;/tInterpAlgo&gt;
+    &lt;readMode&gt;&lt;/readMode&gt;
+    &lt;mapalgo&gt;&lt;/mapalgo&gt;
+    &lt;dtlimit&gt;&lt;/dtlimit&gt;
+    &lt;yearFirst&gt;&lt;/yearFirst&gt;
+    &lt;yearLast&gt;&lt;/yearLast&gt;
+    &lt;yearAlign&gt;&lt;/yearAlign&gt;
+    &lt;stream_vectors&gt;&lt;/stream_vectors&gt;
+    &lt;stream_mesh_file&gt;&lt;/stream_mesh_file&gt;
+    &lt;stream_data_files&gt;
+      &lt;file&gt;&lt;/file&gt;
+    &lt;/stream_data_files&gt;
+    &lt;stream_data_variables&gt;
+      &lt;var&gt;&lt;/var&gt;
+    &lt;/stream_data_variables&gt;
+    &lt;stream_offset&gt;&lt;/stream_offset&gt;
+  &lt;/stream_info&gt;
+&lt;/file&gt;
+</pre></div>
+</div>
+<p>where:</p>
+<dl class="docutils">
+<dt><strong>taxMode</strong></dt>
+<dd><p class="first">How to handle data outside the specified stream time axis.
+Valid options are to cycle the data based on the first, last, and align
+settings associated with the stream dataset, to extend the first and last
+valid value indefinitely, or to limit the interpolated data to fall only between
+the least and greatest valid value of the time array. Valid values are:</p>
+<p>extend = extrapolate before and after the period by using the first or last value.</p>
+<p>cycle  = cycle between the range of data</p>
+<p class="last">limit  = restrict to the period for which the data is valid</p>
+</dd>
+<dt><strong>tInterpAlgo</strong></dt>
+<dd><p class="first">time interpolation algorithm option. Valid values are:</p>
+<p>lower   = Use lower time-value</p>
+<p>upper   = Use upper time-value</p>
+<p>nearest = Use the nearest time-value</p>
+<p>linear  = Linearly interpolate between the two time-values</p>
+<p>coszen  = Scale according to the cosine of the solar zenith angle (for solar)</p>
+<p class="last">CIME-CCS default = linear</p>
+</dd>
+<dt><strong>dtlimit</strong></dt>
+<dd><p class="first">Specifies delta time ratio limits placed on the time interpolation
+associated with the array of streams.  Causes the model to stop if
+the ratio of the running maximum delta time divided by the minimum delta time
+is greater than the dtlimit for that stream.</p>
+<p>For instance, with daily data, the delta time should be exactly one
+day throughout the dataset and the computed maximum divided by
+minimum delta time should always be 1.0.  For monthly data, the
+delta time should be between 28 and 31 days and the maximum ratio
+should be about 1.1.  The running value of the delta time is
+computed as data is read and any wraparound or cycling is also
+included.  this input helps trap missing data or errors in cycling.
+to turn off trapping, set the value to 1.0e30 or something similar.</p>
+<p class="last">CIME-CCS default=1.5</p>
+</dd>
+<dt><strong>stream_mapalgo</strong></dt>
+<dd><p class="first">spatial interpolation algorithms to map stream data on stream mesh
+to stream data on model mesh. Valid values are:</p>
+<p class="last">redist, bilinear consf</p>
+</dd>
+<dt><strong>stream_vectors</strong></dt>
+<dd>paired vector field names</dd>
+<dt><strong>yearFirst</strong></dt>
+<dd>the first year of data that will be used</dd>
+<dt><strong>yearLast</strong></dt>
+<dd>the last year of data that will be used</dd>
+<dt><strong>yearAlign</strong></dt>
+<dd>a model year that will be aligned with data for year_first</dd>
+<dt><strong>stream_data_files</strong></dt>
+<dd>Each &lt;file&gt;&lt;/file&gt; entry contains a data files to use. If there is
+more than one file, the files must be in chronological order, that
+is, the dates in time axis of the first file are before the dates
+in the time axis of the second file.</dd>
+<dt><strong>stream_data_variables</strong></dt>
+<dd>Each &lt;var&gt;&lt;/var&gt; entry contains a paired list with the name of the
+variable in the netCDF file on the left and the name of the
+corresponding model variable on the right.</dd>
+<dt><strong>stream_offset</strong></dt>
+<dd>The offset allows a user to shift the time axis of a data stream by
+a fixed and constant number of seconds. For instance, if a data set
+contains daily average data with timestamps for the data at the end
+of the day, it might be appropriate to shift the time axis by 12
+hours so the data is taken to be at the middle of the day instead of
+the end of the day. This feature supports only simple shifts in
+seconds as a way of correcting input data time axes without having
+to modify the input data time axis manually. This feature does not
+support more complex shifts such as end of month to mid-month. But
+in conjunction with the time interpolation methods in the strdata
+input, hopefully most user needs can be accommodated with the two
+settings. Note that a positive offset advances the input data time
+axis forward by that number of seconds.</dd>
+</dl>
+</div>
+<div class="section" id="data-model-namelist-input">
+<h2>2.3. Data Model Namelist Input<a class="headerlink" href="#data-model-namelist-input" title="Permalink to this headline">¶</a></h2>
+<p>Each data model has an associated input namelist file, <code class="docutils literal notranslate"><span class="pre">xxx_in</span></code>,
+where <code class="docutils literal notranslate"><span class="pre">xxx=[datm,dlnd,dice,docn,drof,dwav]</span></code>.</p>
+<dl class="docutils">
+<dt><strong>dataMode</strong></dt>
+<dd><p class="first">component specific mode.</p>
+<p>Each CIME data model has its own datamode values as described below:</p>
+<p><span class="xref std std-ref">datm dataMode</span></p>
+<p><span class="xref std std-ref">dice dataMode</span></p>
+<p><span class="xref std std-ref">dlnd dataMode</span></p>
+<p><span class="xref std std-ref">docn dataMode</span></p>
+<p><span class="xref std std-ref">drof dataMode</span></p>
+<p class="last"><span class="xref std std-ref">dwav dataMode</span></p>
+</dd>
+</dl>
+</div>
+<div class="section" id="details-on-year-align">
+<h2>2.4. Details on year_align<a class="headerlink" href="#details-on-year-align" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">year_align</span></code> value gives the simulation year corresponding to
+<code class="docutils literal notranslate"><span class="pre">year_first</span></code>. A common usage is to set this to the year of
+<code class="docutils literal notranslate"><span class="pre">RUN_STARTDATE</span></code>. With this setting, the forcing in the first year of
+the run will be the forcing of year <code class="docutils literal notranslate"><span class="pre">year_first</span></code>. Another use case is
+to align the calendar of transient forcing with the model calendar. For
+example, setting <code class="docutils literal notranslate"><span class="pre">year_align</span></code> = <code class="docutils literal notranslate"><span class="pre">year_first</span></code> will lead to the
+forcing calendar being the same as the model calendar. The forcing for a
+given model year would be the forcing of the same year. This would be
+appropriate in transient runs where the model calendar is setup to span
+the same year range as the forcing data.</p>
+<p>For some data model modes, <code class="docutils literal notranslate"><span class="pre">year_align</span></code> can be set via an xml variable
+whose name ends with <code class="docutils literal notranslate"><span class="pre">YR_ALIGN</span></code> (there are a few such xml variables,
+each pertaining to a particular data model mode).</p>
+<p>An example of this is land-only historical simulations in which we run
+the model for 1850 to 2010 using atmospheric forcing data that is only
+available for 1901 to 2010. In this case, we want to run the model for
+years 1850 (so <code class="docutils literal notranslate"><span class="pre">RUN_STARTDATE</span></code> has year 1850) through 1900 by looping
+over the forcing data for 1901-1920, and then run the model for years
+1901-2010 using the forcing data from 1901-2010. To do this, we
+initially set:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">xmlchange</span> <span class="n">DATM_CLMNCEP_YR_ALIGN</span><span class="o">=</span><span class="mi">1901</span>
+<span class="o">./</span><span class="n">xmlchange</span> <span class="n">DATM_CLMNCEP_YR_START</span><span class="o">=</span><span class="mi">1901</span>
+<span class="o">./</span><span class="n">xmlchange</span> <span class="n">DATM_CLMNCEP_YR_END</span><span class="o">=</span><span class="mi">1920</span>
+</pre></div>
+</div>
+<p>When the model has completed year 1900, then we set:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">xmlchange</span> <span class="n">DATM_CLMNCEP_YR_ALIGN</span><span class="o">=</span><span class="mi">1901</span>
+<span class="o">./</span><span class="n">xmlchange</span> <span class="n">DATM_CLMNCEP_YR_START</span><span class="o">=</span><span class="mi">1901</span>
+<span class="o">./</span><span class="n">xmlchange</span> <span class="n">DATM_CLMNCEP_YR_END</span><span class="o">=</span><span class="mi">2010</span>
+</pre></div>
+</div>
+<p>With this setup, the correlation between model run year and forcing year
+looks like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">RUN</span>   <span class="n">Year</span> <span class="p">:</span> <span class="mi">1850</span> <span class="o">...</span> <span class="mi">1860</span> <span class="mi">1861</span> <span class="o">...</span> <span class="mi">1870</span> <span class="o">...</span> <span class="mi">1880</span> <span class="mi">1881</span> <span class="o">...</span> <span class="mi">1890</span> <span class="o">...</span> <span class="mi">1900</span> <span class="mi">1901</span> <span class="o">...</span> <span class="mi">2010</span>
+<span class="n">FORCE</span> <span class="n">Year</span> <span class="p">:</span> <span class="mi">1910</span> <span class="o">...</span> <span class="mi">1920</span> <span class="mi">1901</span> <span class="o">...</span> <span class="mi">1910</span> <span class="o">...</span> <span class="mi">1920</span> <span class="mi">1901</span> <span class="o">...</span> <span class="mi">1910</span> <span class="o">...</span> <span class="mi">1920</span> <span class="mi">1901</span> <span class="o">...</span> <span class="mi">2010</span>
+</pre></div>
+</div>
+<p>Setting <code class="docutils literal notranslate"><span class="pre">DATM_CLMNCEP_YR_ALIGN</span></code> to 1901 tells the code that you want
+to align model year 1901 with forcing data year 1901, and then it
+calculates what the forcing year should be if the model starts in
+year 1850.</p>
+<p>Each data model’s <strong>cime-config/buildnml</strong> utility automatically
+generates the required stream description files for the case.  The
+directory contents of each data model will look like the following
+(using DATM as an example)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$CIMEROOT/components/data_comps/datm/cime_config/buildnml
+$CIMEROOT/components/data_comps/datm/cime_config/namelist_definition_datm.xml
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">namelist_definition_datm.xml</span></code> file defines and sets default
+values for all the namelist variables and associated groups and also
+provides out-of-the box settings for the target data model and target
+stream.  <strong>buildnml</strong> utilizes these two files to construct the stream
+files for the given compset settings. You can modify the generated
+stream files for your particular needs by doing the following:</p>
+<ol class="arabic">
+<li><p class="first">Copy the relevant description file from <code class="docutils literal notranslate"><span class="pre">$CASEROOT/CaseDocs</span></code> to
+<code class="docutils literal notranslate"><span class="pre">$CASEROOT</span></code>. Change the permission of the file to write. For
+example, assuming you are in <strong>$CASEROOT</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>cp $CASEROOT/CaseDocs/datm.streams.txt.CLM_QIAN.Solar  $CASEROOT/streams.txt.CLM_QIAN.Solar
+chmod u+w $CASEROOT/datm.streams.txt.CLM_QIAN.Solar
+</pre></div>
+</div>
+</li>
+<li><p class="first">Edit <code class="docutils literal notranslate"><span class="pre">$CASEROOT/datm.streams.txt.CLM_QIAN.Solar</span></code> with your desired changes.</p>
+<ul class="simple">
+<li><em>Be sure not to put any tab characters in the file: use spaces
+instead</em>.</li>
+<li>In contrast to other user_nl_xxx files, be sure to set all
+relevant data model settings in the xml files, issue the
+<strong>preview_namelist</strong> command and THEN edit the <code class="docutils literal notranslate"><span class="pre">$CASEROOT</span></code>
+<code class="docutils literal notranslate"><span class="pre">datm.streams.txt.CLM_QIAN.Solar</span></code> file.</li>
+<li><strong>Once you have created a $CASEROOT xxx.streams.txt.* file, further
+modifications to the relevant data model settings in the xml
+files will be ignored.</strong></li>
+<li>If you later realize that you need to change some settings in an
+xml file, you should remove the xxx.streams.txt.* file(s),
+make the modifications in the xml file, rerun
+<strong>preview_namelists</strong>, and then reintroduce your modifications
+into a new xxx.streams.txt.* stream file(s).</li>
+</ul>
+</li>
+<li><p class="first">Call <strong>preview_namelists</strong> and verify that your changes do indeed
+appear in the resultant stream description file appear in
+<code class="docutils literal notranslate"><span class="pre">CaseDocs/datm.streams.txt.CLM_QIAN.Solar</span></code>. These changes will
+also appear in <code class="docutils literal notranslate"><span class="pre">$RUNDIR/datm.streams.txt.CLM_QIAN.Solar</span></code>.</p>
+</li>
+</ol>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="design_details.html" class="btn btn-neutral float-right" title="3. Design Details" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="introduction.html" class="btn btn-neutral" title="1. Introduction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, U.S. National Science Foundation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+     
+<script>var version_json_loc = "../../versions.json";</script>
+
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'master',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="_static/language_data.js"></script>
+      <script type="text/javascript" src="_static/pop_ver.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

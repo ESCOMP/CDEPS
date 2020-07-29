@@ -29,6 +29,7 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="2. Input Streams" href="streams.html" />
     <link rel="prev" title="CDEPS documentation" href="index.html" /> 
 
   
@@ -83,7 +84,15 @@
             
             
               <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">1. Introduction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">1. Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">1.1. Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#code-tree">1.2. Code Tree</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#design">1.3. Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cdeps-and-cime-control-system-ccs">1.4. CDEPS and CIME Control System (CCS)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="streams.html">2. Input Streams</a></li>
+<li class="toctree-l1"><a class="reference internal" href="design_details.html">3. Design Details</a></li>
 </ul>
 
             
@@ -149,8 +158,150 @@
            <div itemprop="articleBody">
             
   <div class="section" id="introduction">
-<h1>1. Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
-<p>Content to go here:</p>
+<span id="data-model-introduction"></span><h1>1. Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="overview">
+<h2>1.1. Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>The Community Data Models for Earth Predictive Systems (CDEPS)
+contains a set of NUOPC-compliant data components along with
+ESMF-based “stream” code that enables new capabilities in selectively
+removing feedbacks in coupled model systems.  The CDEPS data
+models perform the basic function of reading external data files,
+modifying those data, and then sending the data back to the CMEPS
+mediator.  The fields sent to the mediator are the same as those that
+would be sent by an active component.  This takes advantage of the
+fact that the mediator and other CMEPS-compliant model components have
+no fundamental knowledge of whether another component is fully active
+or just a data component.</p>
+<p>CDEPS is completely ESMF based. As a result, regridding between the
+stream resolution and the model resolution can occur at run time for
+any regridding option that ESMF supports. In addition, the PIO library
+is used so that all of the stream data is read in parallel by the
+CDEPS stream code.</p>
+<p>The CDEPS data models typically read gridded data from a variety of sources
+including observations, reanalysis products or output data from a
+previous model simulation.  Out of the box, they often provide a few
+possible data sources and/or time periods that you can choose from
+when setting up a case.</p>
+<p>In some cases, data models have prognostic functionality, that is,
+they also receive and use data sent by the mediator.  However, in most
+cases, the data models are not running prognostically and have no need
+to receive any data from the mediator.</p>
+<p>The CIME data models have parallel capability and share significant
+amounts of source code.  Methods for reading and interpolating data
+have been established and can easily be reused: The data model calls
+strdata (“stream data”) methods which then call stream methods.  The
+stream methods are responsible for managing lists of input data files
+and their time axes.  The information is then passed up to the strdata
+methods where the data is read and interpolated in space and time.
+The interpolated data is passed up to the data model where final
+fields are derived, packed, and returned to the mediator.</p>
+</div>
+<div class="section" id="code-tree">
+<h2>1.2. Code Tree<a class="headerlink" href="#code-tree" title="Permalink to this headline">¶</a></h2>
+<p>CDEPS contains the following code tree:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="27%" />
+<col width="73%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Directory</th>
+<th class="head">Function</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>cime_config</td>
+<td>CIME Case Control System</td>
+</tr>
+<tr class="row-odd"><td>cmake</td>
+<td>Build (can be used with or without CIME)</td>
+</tr>
+<tr class="row-even"><td>datm</td>
+<td>data atmosphere component</td>
+</tr>
+<tr class="row-odd"><td>dice</td>
+<td>data sea-ice component</td>
+</tr>
+<tr class="row-even"><td>dlnd</td>
+<td>data land component</td>
+</tr>
+<tr class="row-odd"><td>docn</td>
+<td>data ocean component</td>
+</tr>
+<tr class="row-even"><td>drof</td>
+<td>data river component</td>
+</tr>
+<tr class="row-odd"><td>dwav</td>
+<td>data wave component</td>
+</tr>
+<tr class="row-even"><td>dshr</td>
+<td>shared NUOPC cap code</td>
+</tr>
+<tr class="row-odd"><td>share</td>
+<td>shared utility code</td>
+</tr>
+<tr class="row-even"><td>streams</td>
+<td>code to handle streams</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="design">
+<h2>1.3. Design<a class="headerlink" href="#design" title="Permalink to this headline">¶</a></h2>
+<p>Data models function by reading in different <code class="docutils literal notranslate"><span class="pre">streams</span></code> of input
+data. A <code class="docutils literal notranslate"><span class="pre">stream</span></code> is defined as a set of data files containing a set
+of fields, where all the fields are on the same stream mesh and have
+the same time coordinates. Data models input falls into two
+categories: stream-independent and stream-dependent data.</p>
+<dl class="docutils">
+<dt><strong>stream-dependent-data</strong></dt>
+<dd>Stream-dependent input is contained in the input xml file
+<code class="docutils literal notranslate"><span class="pre">d{model_name}.streams.xml</span></code>, where <code class="docutils literal notranslate"><span class="pre">model_name</span></code> can be <code class="docutils literal notranslate"><span class="pre">atm</span></code>,
+<code class="docutils literal notranslate"><span class="pre">ice</span></code>, <code class="docutils literal notranslate"><span class="pre">lnd</span></code>, <code class="docutils literal notranslate"><span class="pre">ocn</span></code>, <code class="docutils literal notranslate"><span class="pre">rof</span></code> or <code class="docutils literal notranslate"><span class="pre">wav</span></code>.  Multiple streams can
+be specified in the this xml file (see
+<a class="reference internal" href="streams.html#input-streams"><span class="std std-ref">streams</span></a>). In turn, each stream in the xml file
+can be associated with multiple stream input files.  The data across
+all the stream input files must all be on the same stream mesh and
+share the same time coordinates.</dd>
+<dt><strong>stream-independent-data</strong></dt>
+<dd>Stream-independent input is contained in the input namelist file
+file <code class="docutils literal notranslate"><span class="pre">d{model_name}_in</span></code>. This file specifies a data model mesh
+file, a data model mask file along with other stream-independent
+data model specific configuration variables. In addition, each
+<code class="docutils literal notranslate"><span class="pre">d{model_name}_in</span></code> namelist file contains a namelist variable
+<code class="docutils literal notranslate"><span class="pre">datamode</span></code> which specifies the additional operations that need to
+be performed on the input streams to create the data model export
+state.</dd>
+</dl>
+<p>Data models leverage the CDEPS stream code to spatially interpolate the
+stream data to the model resolution and temporarlly interpolate the
+data to the model time.  The CDEPS stream code carries this out as
+follows:</p>
+<ul class="simple">
+<li>The two timestamps of input data that bracket the present model time are read first.
+These are called the lower and upper bounds of data and will change as the model advances.</li>
+<li>The lower and upper bound data are then spatially mapped to the
+model grid based upon the in the <code class="docutils literal notranslate"><span class="pre">d{model_name}.streams.xml</span></code> node
+<code class="docutils literal notranslate"><span class="pre">mapalgo</span></code>.  Spatial interpolation only occurs if the input data
+grid and model grid are not identical, and this is determined in the
+strdata module automatically.</li>
+<li>Time interpolation is the final step and is done using a time
+interpolation method specified in the <code class="docutils literal notranslate"><span class="pre">d{model_name}.streams.xml</span></code>
+node <code class="docutils literal notranslate"><span class="pre">tintalgo</span></code>.</li>
+<li>A final set of fields is then available to the data model on the
+model grid and for the current model time.</li>
+<li>Each data model component communicates with the NUOPC mediator and
+exchanges fields on only the data model mesh.</li>
+</ul>
+</div>
+<div class="section" id="cdeps-and-cime-control-system-ccs">
+<h2>1.4. CDEPS and CIME Control System (CCS)<a class="headerlink" href="#cdeps-and-cime-control-system-ccs" title="Permalink to this headline">¶</a></h2>
+<p>If the CDEPS data models are used in conjunction with the CIME Case Control System (CCS) then the following will also hold:
+Each data model has an xml variable in <code class="docutils literal notranslate"><span class="pre">env_run.xml</span></code> that specifies the data model mode.
+These are: <code class="docutils literal notranslate"><span class="pre">DATM_MODE</span></code>, <code class="docutils literal notranslate"><span class="pre">DICE_MODE</span></code>, <code class="docutils literal notranslate"><span class="pre">DLND_MODE</span></code>, <code class="docutils literal notranslate"><span class="pre">DOCN_MODE</span></code>, <code class="docutils literal notranslate"><span class="pre">DROF_MODE</span></code>, <code class="docutils literal notranslate"><span class="pre">DWAV_MODE</span></code>.
+Each data model mode specifies the streams that are associated with that data model.</p>
+<p>More details of the data model design are covered in <a class="reference internal" href="design_details.html#design-details"><span class="std std-ref">design details</span></a>.</p>
+</div>
 </div>
 
 
@@ -160,6 +311,8 @@
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="streams.html" class="btn btn-neutral float-right" title="2. Input Streams" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="index.html" class="btn btn-neutral" title="CDEPS documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

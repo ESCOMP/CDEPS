@@ -84,6 +84,8 @@
             
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="streams.html">2. Input Streams</a></li>
+<li class="toctree-l1"><a class="reference internal" href="design_details.html">3. Design Details</a></li>
 </ul>
 
             
@@ -150,16 +152,40 @@
             
   <div class="section" id="cdeps-documentation">
 <h1>CDEPS documentation<a class="headerlink" href="#cdeps-documentation" title="Permalink to this headline">¶</a></h1>
-<p>The Community Data Models for Earth Prediction Systems (CMEPS) is a
-NUOPC-compliant Mediator component used for coupling Earth system
-model components. It is currently being used in NCAR’s Community
-Earth System Model (CESM) and NOAA’s subseasonal-to-seasonal
-coupled system.</p>
+<p>The Community Data Models for Earth Predictive Systems (CDEPS)
+contains a set of NUOPC-compliant data components along with
+ESMF-based share code that enables new capabilities in selectively
+removing feedbacks in coupled model systems.  The CDEPS data
+models perform the basic function of reading external data files,
+modifying those data, and then sending the data back to the CMEPS
+mediator.</p>
 <div class="section" id="table-of-contents">
 <h2>Table of contents<a class="headerlink" href="#table-of-contents" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="introduction.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">1. Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#overview">1.1. Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#code-tree">1.2. Code Tree</a></li>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#design">1.3. Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#cdeps-and-cime-control-system-ccs">1.4. CDEPS and CIME Control System (CCS)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="streams.html">2. Input Streams</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="streams.html#overview">2.1. Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="streams.html#data-model-stream-xml-input">2.2. Data Model Stream XML Input</a></li>
+<li class="toctree-l2"><a class="reference internal" href="streams.html#data-model-namelist-input">2.3. Data Model Namelist Input</a></li>
+<li class="toctree-l2"><a class="reference internal" href="streams.html#details-on-year-align">2.4. Details on year_align</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="design_details.html">3. Design Details</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="design_details.html#data-model-performance">3.1. Data Model Performance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="design_details.html#io-through-data-models">3.2. IO Through Data Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="design_details.html#io-through-data-models-in-cime-ccs">3.3. IO Through Data Models In CIME-CCS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="design_details.html#restart-files">3.4. Restart Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="design_details.html#stream-modules">3.5. Stream Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="design_details.html#stream-datatypes">3.6. Stream Datatypes</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
