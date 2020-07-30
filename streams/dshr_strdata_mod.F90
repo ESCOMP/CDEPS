@@ -6,7 +6,7 @@ module dshr_strdata_mod
   use ESMF
 
   use shr_kind_mod     , only : r8=>shr_kind_r8, r4=>shr_kind_r4, i2=>shr_kind_I2
-  use shr_kind_mod     , only : cs=>shr_kind_cs, cl=>shr_kind_cl, cxx=>shr_kind_cxx 
+  use shr_kind_mod     , only : cs=>shr_kind_cs, cl=>shr_kind_cl, cxx=>shr_kind_cxx
   use shr_sys_mod      , only : shr_sys_abort
   use shr_const_mod    , only : shr_const_pi, shr_const_cDay, shr_const_spval
   use shr_cal_mod      , only : shr_cal_calendarname, shr_cal_timeSet
@@ -213,7 +213,7 @@ contains
     type(shr_strdata_type) , intent(inout) :: sdat                   ! stream data type
     integer                , intent(in)    :: my_task                ! my mpi task
     integer                , intent(in)    :: logunit                ! stdout logunit
-    character(len=*)       , intent(in)    :: compname               ! component name (e.g. ATM, OCN, ...) 
+    character(len=*)       , intent(in)    :: compname               ! component name (e.g. ATM, OCN, ...)
     type(ESMF_Clock)       , intent(in)    :: model_clock            ! model clock
     type(ESMF_Mesh)        , intent(in)    :: model_mesh             ! model mesh
     character(*)           , intent(in)    :: stream_meshFile        ! full pathname to stream mesh file
@@ -699,15 +699,13 @@ contains
     logical                             :: checkflag = .false.
     integer                             :: npes
     integer                             :: my_task
+    integer                             :: nstreams
     real(r8)         ,parameter         :: solZenMin = 0.001_r8 ! minimum solar zenith angle
     integer          ,parameter         :: tadj = 2
     character(len=*) ,parameter         :: timname = "_strd_adv"
     character(*)     ,parameter         :: subname = "(shr_strdata_advance) "
     character(*)     ,parameter         :: F00  = "('(shr_strdata_advance) ',a)"
     character(*)     ,parameter         :: F01  = "('(shr_strdata_advance) ',a,a,i4,2(f10.5,2x))"
-    real(r8), pointer :: dataptr_temp1(:)
-    real(r8), pointer :: dataptr_temp2(:)
-    integer :: nstreams
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -809,21 +807,27 @@ contains
              call shr_cal_timeSet(timeUB,sdat%pstrm(ns)%ymdUB,0,sdat%stream(ns)%calendar,rc=rc)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
              timeint = timeUB-timeLB
-             call ESMF_TimeIntervalGet(timeint,StartTimeIn=timeLB,d=dday)
+             call ESMF_TimeIntervalGet(timeint, StartTimeIn=timeLB, d=dday)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
              dtime = abs(real(dday,r8) + real(sdat%pstrm(ns)%todUB-sdat%pstrm(ns)%todLB,r8)/shr_const_cDay)
 
              sdat%pstrm(ns)%dtmin = min(sdat%pstrm(ns)%dtmin,dtime)
              sdat%pstrm(ns)%dtmax = max(sdat%pstrm(ns)%dtmax,dtime)
+
              if ((sdat%pstrm(ns)%dtmax/sdat%pstrm(ns)%dtmin) > sdat%stream(ns)%dtlimit) then
                 if (sdat%masterproc) then
-                   write(sdat%logunit,*) trim(subname),' ERROR: for stream ',n
-                   write(sdat%logunit,*) trim(subName),' ERROR: dt limit1 ',&
-                        sdat%pstrm(ns)%dtmax, sdat%pstrm(ns)%dtmin, sdat%stream(ns)%dtlimit
-                   write(sdat%logunit,*) trim(subName),' ERROR: dt limit2 ',&
+                   write(sdat%logunit,*) trim(subname),' ERROR: for stream ',ns
+                   write(sdat%logunit,*) trim(subName),' ERROR: dtime, dtmax, dtmin, dtlimit = ',&
+                        dtime, sdat%pstrm(ns)%dtmax, sdat%pstrm(ns)%dtmin, sdat%stream(ns)%dtlimit
+                   write(sdat%logunit,*) trim(subName),' ERROR: ymdLB, todLB, ymdUB, todUB = ', &
                         sdat%pstrm(ns)%ymdLB, sdat%pstrm(ns)%todLB, sdat%pstrm(ns)%ymdUB, sdat%pstrm(ns)%todUB
                 end if
-                call shr_sys_abort(trim(subName)//' ERROR dt limit for stream')
+                write(6,*) trim(subname),' ERROR: for stream ',ns
+                write(6,*) trim(subName),' ERROR: dtime, dtmax, dtmin, dtlimit = ',&
+                     dtime, sdat%pstrm(ns)%dtmax, sdat%pstrm(ns)%dtmin, sdat%stream(ns)%dtlimit
+                write(6,*) trim(subName),' ERROR: ymdLB, todLB, ymdUB, todUB = ', &
+                     sdat%pstrm(ns)%ymdLB, sdat%pstrm(ns)%todLB, sdat%pstrm(ns)%ymdUB, sdat%pstrm(ns)%todUB
+                call shr_sys_abort(trim(subName)//' ERROR dt limit for stream, see atm.log output')
              endif
           endif
 

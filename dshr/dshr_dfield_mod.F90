@@ -120,15 +120,6 @@ contains
 110    format(a)
     end if
 
-    ! write output
-    if (masterproc) then
-       if (found) then
-          write(logunit,100)'(dshr_addfield_add) set pointer to stream field strm_'//trim(strm_fld)//&
-               ' stream index = ',ns,' field bundle index= ',nf
-100       format(a,i6,2x,a,i6)
-       end if
-    end if
-
   end subroutine dshr_dfield_add_1d
  
   !===============================================================================
