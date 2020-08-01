@@ -86,6 +86,7 @@ module dshr_stream_mod
      integer           :: yearFirst    = -1                     ! first year to use in t-axis (yyyymmdd)
      integer           :: yearLast     = -1                     ! last  year to use in t-axis (yyyymmdd)
      integer           :: yearAlign    = -1                     ! align yearFirst with this model year
+     character(CS)     :: lev_dimname  = 'null'                 ! name of vertical dimension if any
      character(CS)     :: taxMode      = shr_stream_taxis_cycle ! cycling option for time axis
      character(CS)     :: tInterpAlgo  = 'linear'               ! algorithm to use for time interpolation
      character(CS)     :: mapalgo      = 'bilinear'             ! type of mapping - default is 'bilinear'
@@ -110,7 +111,7 @@ module dshr_stream_mod
   end type shr_stream_streamType
 
   !----- parameters -----
-  integer      , save      :: debug = 0            ! edit/turn-on for debug write statements
+  integer                  :: debug = 0            ! edit/turn-on for debug write statements
   real(R8)     , parameter :: spd = shr_const_cday ! seconds per day
   character(*) , parameter :: u_FILE_u = &
        __FILE__
@@ -129,19 +130,24 @@ contains
     ! <?xml version="1.0"?>
     ! <file id="stream" version="1.0">
     !   <stream_info>
-    !    <meshfile>
-    !      mesh_filename
-    !    </meshfile>
-    !    <data_files>
-    !       /glade/p/cesmdata/cseg/inputdata/atm/datm7/NYF/nyf.ncep.T62.050923.nc
-    !       .....
-    !    <data_files>
-    !    <data_variables>
-    !       u_10  u
-    !    </data_variables>
-    !    <stream_offset>
-    !       0
-    !    </stream_offset>
+    !    <taxmode></taxmode>
+    !    <tInterpAlgo></tInterpAlgo>
+    !    <readMode></readMode>
+    !    <mapalgo></mapalgo>
+    !    <dtlimit></dtlimit>
+    !    <yearFirst></yearFirst>
+    !    <yearLast></yearLast>
+    !    <yearAlign></yearAlign>
+    !    <stream_vectors></stream_vectors>
+    !    <stream_mesh_file></stream_mesh_file>
+    !    <stream_lev_dimname></stream_lev_dimname> 
+    !    <stream_data_files>
+    !      <file></file>
+    !    </stream_data_files>
+    !    <stream_data_variables>
+    !      <var></var>
+    !    </stream_data_variables>
+    !    <stream_offset></stream_offset>
     !  </stream_info>
     ! </file>
     ! ---------------------------------------------------------------------
@@ -163,6 +169,7 @@ contains
     integer                  :: status
     integer                  :: tmp(6)
     real(r8)                 :: rtmp(1)
+    character(*),parameter   :: subName = '(shr_stream_init_from_xml) '
     ! --------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -241,6 +248,13 @@ contains
              call shr_sys_abort("stream vectors must be provided")
           endif
 
+          p => item(getElementsByTagname(streamnode, "stream_lev_dimname"), 0)
+          if (associated(p)) then
+             call extractDataContent(p, streamdat(i)%lev_dimname)
+          else
+             call shr_sys_abort("stream vertical level dimension name must be provided")
+          endif
+
           p => item(getElementsByTagname(streamnode, "stream_data_files"), 0)
           if (.not. associated(p)) then
              call shr_sys_abort("stream data files must be provided")
@@ -313,6 +327,8 @@ contains
        enddo
        call ESMF_VMBroadCast(vm, streamdat(i)%meshfile,     CL, 0, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call ESMF_VMBroadCast(vm, streamdat(i)%lev_dimname,  CS, 0, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call ESMF_VMBroadCast(vm, streamdat(i)%taxmode,      CS, 0, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call ESMF_VMBroadCast(vm, streamdat(i)%readmode,     CS, 0, rc=rc)
@@ -332,15 +348,18 @@ contains
        streamdat(i)%pio_iotype = shr_pio_getiotype(trim(compname))
        streamdat(i)%pio_ioformat = shr_pio_getioformat(trim(compname))
        call shr_stream_getCalendar(streamdat(i), 1, streamdat(i)%calendar)
-    enddo
 
+       ! Error check
+       if (trim(streamdat(i)%taxmode) == shr_stream_taxis_extend .and. streamdat(i)%dtlimit < 1.e10) then
+          call shr_sys_abort(trim(subName)//" ERROR: if taxmode value is extend set dtlimit to 1.e30")
+       end if
+    enddo
 
     ! Set logunit
     streamdat(:)%logunit = logunit
 
     ! initialize flag that stream has been set
     streamdat(:)%init = .true.
-
 
   end subroutine shr_stream_init_from_xml
 
