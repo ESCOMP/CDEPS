@@ -45,12 +45,13 @@ module dshr_strdata_mod
   public  :: shr_strdata_advance
   public  :: shr_strdata_get_stream_domain  ! public since needed by dshr_mod
   public  :: shr_strdata_get_stream_pointer ! get a pointer into a stream's fldbun_model field bundle
-  public  :: shr_strdata_print
   public  :: shr_strdata_get_stream_count
   public  :: shr_strdata_get_stream_fieldbundle
+  public  :: shr_strdata_print
+
   private :: shr_strdata_init_model_domain
+  private :: shr_strdata_get_stream_nlev
   private :: shr_strdata_readLBUB
-  private :: shr_strdata_get_stream_nlevs
 
   ! public data members:
   integer                              :: debug = 0  ! local debug flag
@@ -205,7 +206,6 @@ contains
 
   end subroutine shr_strdata_init_from_xml
 
-
   !===============================================================================
   subroutine shr_strdata_init_from_inline(sdat, my_task, logunit, compname, model_clock, model_mesh,&
        stream_meshfile, stream_mapalgo, stream_filenames, stream_fldlistFile, stream_fldListModel, &
@@ -342,6 +342,7 @@ contains
     type(ESMF_DistGrid)          :: distgrid
     type(ESMF_RegridMethod_Flag) :: regridmethod
     type(ESMF_PoleMethod_Flag)   :: polemethod
+    type(ESMF_Mesh), pointer     :: stream_mesh
     character(CS)                :: calendar        ! calendar name
     integer                      :: dimcount
     integer, allocatable         :: minIndexPTile(:,:)
@@ -371,7 +372,8 @@ contains
     type(ESMF_VM)                :: vm
     logical                      :: masterproc
     integer                      :: nvars
-    integer                      :: i
+    integer                      :: i, stream_nlev
+    character(CL)                :: stream_vectors
     character(len=*), parameter  :: subname='(shr_strdata_mod:shr_sdat_init)'
     character(*)    , parameter  :: F00 = "('(shr_sdat_init) ',a)"
     character(*)    , parameter  :: F01  = "('(shr_sdat) ',a,2x,i8)"
@@ -391,6 +393,9 @@ contains
        ! TODO: add functionality if the stream mesh needs to be created from a grid
        call shr_stream_getMeshFileName (sdat%stream(ns), filename)
 
+       stream_mesh => sdat%pstrm(ns)%stream_mesh
+       stream_nlev =  sdat%pstrm(ns)%stream_nlev
+
        if (filename /= 'none' .and. masterproc) then
           inquire(file=trim(filename),exist=fileExists)
           if (.not. fileExists) then
@@ -399,7 +404,7 @@ contains
           end if
        endif
        if(filename /= 'none') then
-          sdat%pstrm(ns)%stream_mesh = ESMF_MeshCreate(trim(filename), fileformat=ESMF_FILEFORMAT_ESMFMESH, rc=rc)
+          stream_mesh = ESMF_MeshCreate(trim(filename), fileformat=ESMF_FILEFORMAT_ESMFMESH, rc=rc)
        endif
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
@@ -421,7 +426,7 @@ contains
        endif
 
        ! set ungridded dimension to the number of vertical level - must read this in
-       call shr_strdata_get_stream_nlev(sdat, ns, sdat%pstrm(ns)%stream_nlev, rc=rc)
+       call shr_strdata_get_stream_nlev(sdat, ns, stream_nlev, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
 
        ! create temporary fields on model mesh and add the fields to the field bundle
@@ -434,7 +439,7 @@ contains
              if (sdat%pstrm(ns)%stream_nlev > 1) then
                 lfield = ESMF_FieldCreate(sdat%model_mesh, ESMF_TYPEKIND_r8, &
                      name=trim(sdat%pstrm(ns)%fldlist_model(nfld)), &
-                     ungriddedLbound=(/1/), ungriddedUbound=(/sdat%pstrm(ns)%stream_nlev/), gridToFieldMap=(/2/), &
+                     ungriddedLbound=(/1/), ungriddedUbound=(/stream_nlev/), gridToFieldMap=(/2/), &
                      meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
              else
                 lfield = ESMF_FieldCreate(sdat%model_mesh, ESMF_TYPEKIND_r8, &
@@ -444,9 +449,9 @@ contains
              call ESMF_FieldBundleAdd(sdat%pstrm(ns)%fldbun_data(i), (/lfield/), rc=rc)
              if (chkerr(rc,__LINE__,u_FILE_u)) return
           enddo
-          if (sdat%pstrm(ns)%stream_nlev > 1) then
+          if (stream_nlev > 1) then
              lfield = ESMF_FieldCreate(sdat%model_mesh, ESMF_TYPEKIND_r8, &
-                  ungriddedLbound=(/1/), ungriddedUbound=(/sdat%pstrm(ns)%stream_nlev/), gridToFieldMap=(/2/), &
+                  ungriddedLbound=(/1/), ungriddedUbound=(/stream_nlev/), gridToFieldMap=(/2/), &
                   name=trim(sdat%pstrm(ns)%fldlist_model(nfld)), &
                   meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
           else
@@ -460,10 +465,10 @@ contains
 
        ! Create a field on the model mesh for coszen time interpolation for this stream if needed
        if (trim(sdat%stream(ns)%tinterpalgo) == 'coszen') then
-          if (sdat%pstrm(ns)%stream_nlev > 1) then
+          if (stream_nlev > 1) then
              sdat%pstrm(ns)%field_coszen = ESMF_FieldCreate(sdat%model_mesh, ESMF_TYPEKIND_r8, &
                   name='tavCosz', &
-                  ungriddedLbound=(/1/), ungriddedUbound=(/sdat%pstrm(ns)%stream_nlev/), gridToFieldMap=(/2/), &
+                  ungriddedLbound=(/1/), ungriddedUbound=(/stream_nlev/), gridToFieldMap=(/2/), &
                   meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
           else
              sdat%pstrm(ns)%field_coszen = ESMF_FieldCreate(sdat%model_mesh, ESMF_TYPEKIND_r8, &
@@ -479,15 +484,16 @@ contains
        ! create the source and destination fields needed to create the route handles
        ! assume that all fields in a stream share the same mesh and there is only a unique model mesh
        ! can do this outside of a stream loop by just using the first stream index
-       if(ESMF_MeshIsCreated(sdat%pstrm(ns)%stream_mesh)) then
+       if(ESMF_MeshIsCreated(stream_mesh)) then
 
-          if (sdat%pstrm(ns)%stream_nlev > 1) then 
-             sdat%pstrm(ns)%field_stream = ESMF_FieldCreate(sdat%pstrm(ns)%stream_mesh, &
-                  ungriddedLbound=(/1/), ungriddedUbound=(/sdat%pstrm(ns)%stream_nlev/), gridToFieldMap=(/2/), &
-                  ESMF_TYPEKIND_r8, meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
+          if (stream_nlev > 1) then
+             sdat%pstrm(ns)%field_stream = ESMF_FieldCreate(stream_mesh, &
+                  ESMF_TYPEKIND_r8, meshloc=ESMF_MESHLOC_ELEMENT, &
+                  ungriddedLbound=(/1/), ungriddedUbound=(/stream_nlev/), gridToFieldMap=(/2/), &
+                  rc=rc)
              if (chkerr(rc,__LINE__,u_FILE_u)) return
           else
-             sdat%pstrm(ns)%field_stream = ESMF_FieldCreate(sdat%pstrm(ns)%stream_mesh, &
+             sdat%pstrm(ns)%field_stream = ESMF_FieldCreate(stream_mesh, &
                   ESMF_TYPEKIND_r8, meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
              if (chkerr(rc,__LINE__,u_FILE_u)) return
           end if
@@ -528,29 +534,32 @@ contains
     end do ! end of loop over streams
 
     ! Check for vector pairs in the stream - BOTH ucomp and vcomp MUST BE IN THE SAME STREAM
-    do m = 1,shr_strdata_get_stream_count(sdat)
+    do ns = 1,shr_strdata_get_stream_count(sdat)
+       stream_mesh => sdat%pstrm(ns)%stream_mesh
+       stream_nlev = sdat%pstrm(ns)%stream_nlev
+       stream_vectors = trim(sdat%stream(ns)%stream_vectors)
+
        ! check that vector field list is a valid colon delimited string
-       if (trim(sdat%stream(m)%stream_vectors) /= 'null') then
+       if (trim(stream_vectors) /= 'null') then
           ! check that for now u and v are only for single leve fields
-          if (sdat%pstrm(ns)%stream_nlev > 1) then
+          if (stream_nlev > 1) then
              ! TODO: add support for u and v for multi level fields
              call shr_sys_abort(subname//': vector fields are not currently supported for multi-level fields')
           end if
           ! check that stream vector names are valid
-          if (.not. shr_string_listIsValid(sdat%stream(m)%stream_vectors)) then
-             write(sdat%logunit,*) trim(subname),' vec fldlist invalid m=',m,trim(sdat%stream(m)%stream_vectors)
-             call shr_sys_abort(subname//': vec fldlist invalid:'//trim(sdat%stream(m)%stream_vectors))
+          if (.not. shr_string_listIsValid(stream_vectors)) then
+             write(sdat%logunit,*) trim(subname),' vec fldlist invalid m=',m,trim(stream_vectors)
+             call shr_sys_abort(subname//': vec fldlist invalid:'//trim(stream_vectors))
           endif
           ! check that only 2 fields are contained for any vector pairing
-          if (shr_string_listGetNum(sdat%stream(m)%stream_vectors) /= 2) then
-             write(sdat%logunit,*) trim(subname),' vec fldlist ne 2 m=',m,trim(sdat%stream(m)%stream_vectors)
-             call shr_sys_abort(subname//': vec fldlist ne 2:'//trim(sdat%stream(m)%stream_vectors))
+          if (shr_string_listGetNum(stream_vectors) /= 2) then
+             write(sdat%logunit,*) trim(subname),' vec fldlist ne 2 m=',m,trim(stream_vectors)
+             call shr_sys_abort(subname//': vec fldlist ne 2:'//trim(stream_vectors))
           endif
           ! create stream vector field
-          sdat%pstrm(m)%stream_vector = ESMF_FieldCreate(sdat%pstrm(m)%stream_mesh, &
-               ESMF_TYPEKIND_r8, name='stream_vector', &
-               ungriddedLbound=(/1/), ungriddedUbound=(/2/), &
-               gridToFieldMap=(/2/), meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
+          sdat%pstrm(ns)%stream_vector = ESMF_FieldCreate(stream_mesh, &
+               ESMF_TYPEKIND_r8, name='stream_vector', meshloc=ESMF_MESHLOC_ELEMENT, &
+               ungriddedLbound=(/1/), ungriddedUbound=(/2/), gridToFieldMap=(/2/), rc=rc)
           if (chkerr(rc,__LINE__,u_FILE_u)) return
        end if
     enddo
@@ -575,14 +584,14 @@ contains
   end subroutine shr_strdata_init
 
   !===============================================================================
-  subroutine shr_strdata_get_stream_nlev(sdat, stream_index, nlev_dimname, nlev, rc)
+  subroutine shr_strdata_get_stream_nlev(sdat, stream_index, nlev, rc)
 
     ! Obtain the number of vertical levels in the stream
 
     ! input/output variables
     type(shr_strdata_type) , intent(inout) :: sdat
     integer                , intent(in)    :: stream_index
-    integer                , intent(out)   :: nlev 
+    integer                , intent(out)   :: nlev
     integer                , intent(out)   :: rc
 
     ! local variables
@@ -597,7 +606,7 @@ contains
 
     rc = ESMF_SUCCESS
 
-    if (trim(sdat%stream(stream_index)%nlev_dimname) == 'null') then
+    if (trim(sdat%stream(stream_index)%lev_dimname) == 'null') then
        nlev = 1
     else
        ! Determine the file to open
@@ -610,7 +619,7 @@ contains
 
        ! Open the file and determine the vertical dimension size
        rcode = pio_openfile(sdat%pio_subsystem, pioid, sdat%io_type, trim(filename), pio_nowrite)
-       rcode = pio_inq_dimid(pioid, trim(sdat%stream(stream_index)%nlev_dimname), dimid) 
+       rcode = pio_inq_dimid(pioid, trim(sdat%stream(stream_index)%lev_dimname), dimid)
        rcode = pio_inq_dimlen(pioid, dimid, nlev)
        call pio_closefile(pioid)
     end if
@@ -1135,7 +1144,7 @@ contains
     integer                              :: oDateUB,oSecUB,dDateUB
     real(r8)                             :: rDateM,rDateLB,rDateUB  ! model,LB,UB dates with fractional days
     integer                              :: n_lb, n_ub
-    integer                              :: i
+    integer                              :: i, stream_nlev
     character(CL)                        :: filename_lb
     character(CL)                        :: filename_ub
     character(CL)                        :: filename_next
@@ -1148,6 +1157,7 @@ contains
     rc = ESMF_SUCCESS
     stream => sdat%stream(ns)
     stream_mesh => sdat%pstrm(ns)%stream_mesh
+    stream_nlev = sdat%pstrm(ns)%stream_nlev
 
     call t_startf(trim(istr)//'_setup')
     ! allocate streamdat instance on all tasks
@@ -1192,7 +1202,7 @@ contains
           sdat%pstrm(ns)%stream_lb = i
        else
           ! read lower bound of data
-          call shr_strdata_readstrm(sdat, ns, stream, stream_mesh, &
+          call shr_strdata_readstrm(sdat, ns, stream, stream_mesh, stream_nlev, &
                sdat%pstrm(ns)%fldlist_stream, sdat%pstrm(ns)%fldlist_model, &
                sdat%pstrm(ns)%fldbun_data(sdat%pstrm(ns)%stream_lb), &
                sdat%pio_subsystem, sdat%io_type, sdat%pstrm(ns)%stream_pio_iodesc_set, sdat%pstrm(ns)%stream_pio_iodesc, &
@@ -1203,7 +1213,7 @@ contains
 
     if (sdat%pstrm(ns)%ymdUB /= oDateUB .or. sdat%pstrm(ns)%todUB /= oSecUB) then
        newdata = .true.
-       call shr_strdata_readstrm(sdat, ns, stream, stream_mesh, &
+       call shr_strdata_readstrm(sdat, ns, stream, stream_mesh, stream_nlev, &
             sdat%pstrm(ns)%fldlist_stream, sdat%pstrm(ns)%fldlist_model, &
             sdat%pstrm(ns)%fldbun_data(sdat%pstrm(ns)%stream_ub), &
             sdat%pio_subsystem, sdat%io_type, sdat%pstrm(ns)%stream_pio_iodesc_set, sdat%pstrm(ns)%stream_pio_iodesc, &
@@ -1226,22 +1236,23 @@ contains
   end subroutine shr_strdata_readLBUB
 
   !===============================================================================
-  subroutine shr_strdata_readstrm(sdat, ns, stream, stream_mesh, &
+  subroutine shr_strdata_readstrm(sdat, ns, stream, stream_mesh, stream_nlev, &
        fldlist_stream, fldlist_model, fldbun_model, &
        pio_subsystem, pio_iotype, pio_iodesc_set, pio_iodesc, &
        filename, nt, istr, boundstr, rc)
 
-    use shr_const_mod         , only : r8fill => SHR_CONST_SPVAL
-    use shr_infnan_mod        , only : shr_infnan_isnan
-
     ! Read the stream data and initialize the strea pio_iodesc the first time
     ! the stream is read
+
+    use shr_const_mod         , only : r8fill => SHR_CONST_SPVAL
+    use shr_infnan_mod        , only : shr_infnan_isnan
 
     ! input/output variables
     type(shr_strdata_type)      , intent(inout)         :: sdat  ! strdata data data-type
     integer                     , intent(in)            :: ns    ! current stream index
     type(shr_stream_streamType) , intent(inout)         :: stream
     type(ESMF_Mesh)             , intent(in)            :: stream_mesh
+    integer                     , intent(in)            :: stream_nlev
     character(len=*)            , intent(in)            :: fldlist_stream(:)
     character(len=*)            , intent(in)            :: fldlist_model(:)
     type(ESMF_FieldBundle)      , intent(inout)         :: fldbun_model
@@ -1321,7 +1332,7 @@ contains
     if (ESMF_MeshIsCreated(stream_mesh)) then
        if(.not. pio_iodesc_set) then
           call shr_strdata_set_stream_iodesc(sdat, pio_subsystem, pioid, &
-               trim(fldlist_stream(1)), stream_mesh, pio_iodesc, rc=rc)
+               trim(fldlist_stream(1)), stream_mesh, stream_nlev, pio_iodesc, rc=rc)
           if (chkerr(rc,__LINE__,u_FILE_u)) return
           pio_iodesc_set = .true.
        endif
@@ -1553,7 +1564,7 @@ contains
     type(ESMF_DistGrid)     :: distGrid
     integer                 :: lsize
     integer, pointer        :: compdof(:) => null()
-    integer, pointer        :: compdof3d(:) => null() 
+    integer, pointer        :: compdof3d(:) => null()
     character(CS)           :: dimname
     integer                 :: rCode ! pio return code (only used when pio error handling is PIO_BCAST_ERROR)
     character(*), parameter :: subname = '(shr_strdata_set_stream_iodesc) '
@@ -1626,7 +1637,7 @@ contains
 
     else if (ndims == 4) then
        rcode = pio_inq_dimname(pioid, dimids(ndims), dimname)
-       if (stream_nlev > 1 .and. (trim(dimname) == 'time' .or. trim(dimname) == 'nt') then
+       if (stream_nlev > 1 .and. (trim(dimname) == 'time' .or. trim(dimname) == 'nt')) then
           if (sdat%masterproc) then
              write(sdat%logunit,F02) 'setting iodesc for : '//trim(fldname)// &
                   ' with dimlens(1), dimlens(2),dimlens(3) = ',dimlens(1),dimlens(2),dimlens(3),&
@@ -1653,7 +1664,7 @@ contains
     !    call pio_seterrorhandling(pioid, old_error_handle)
 
     deallocate(compdof)
-    if (allocated(compdof3d)) deallocate(compdof3d)
+    if (associated(compdof3d)) deallocate(compdof3d)
     deallocate(dimids)
     deallocate(dimlens)
 
