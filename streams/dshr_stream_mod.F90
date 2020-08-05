@@ -365,9 +365,12 @@ contains
 
   !===============================================================================
 
-  subroutine shr_stream_init_from_inline(streamdat, stream_meshfile, stream_mapalgo, &
-       stream_yearFirst, stream_yearLast, stream_yearAlign, stream_offset, stream_taxmode, &
-       stream_fldlistFile, stream_fldListModel, stream_fileNames, logunit, compname)
+  subroutine shr_stream_init_from_inline(streamdat, &
+       stream_meshfile, stream_lev_dimname, stream_mapalgo, &
+       stream_yearFirst, stream_yearLast, stream_yearAlign, &
+       stream_offset, stream_taxmode, stream_tintalgo, stream_dtlimit, &
+       stream_fldlistFile, stream_fldListModel, stream_fileNames, &
+       logunit, compname)
 
     ! --------------------------------------------------------
     ! set values of stream datatype independent of a reading in a stream text file
@@ -375,14 +378,17 @@ contains
     ! --------------------------------------------------------
 
     ! input/output variables
-    type(shr_stream_streamType) , pointer, intent(inout) :: streamdat(:)           ! data streams (assume 1 below)
+    type(shr_stream_streamType) ,pointer, intent(inout)  :: streamdat(:)           ! data streams (assume 1 below)
     character(*)                ,intent(in)              :: stream_meshFile        ! full pathname to stream mesh file
+    character(*)                ,intent(in)              :: stream_lev_dimname     ! name of vertical dimension in stream
     character(*)                ,intent(in)              :: stream_mapalgo         ! stream mesh -> model mesh mapping type
     integer                     ,intent(in)              :: stream_yearFirst       ! first year to use
     integer                     ,intent(in)              :: stream_yearLast        ! last  year to use
     integer                     ,intent(in)              :: stream_yearAlign       ! align yearFirst with this model year
+    character(*)                ,intent(in)              :: stream_tintalgo        ! time interpolation algorithm
     integer                     ,intent(in)              :: stream_offset          ! offset in seconds of stream data
     character(*)                ,intent(in)              :: stream_taxMode         ! time axis mode
+    real(r8)                    ,intent(in)              :: stream_dtlimit         ! ratio of max/min stream delta times
     character(*)                ,intent(in)              :: stream_fldListFile(:)  ! file field names, colon delim list
     character(*)                ,intent(in)              :: stream_fldListModel(:) ! model field names, colon delim list
     character(*)                ,intent(in)              :: stream_filenames(:)    ! stream data filenames (full pathnamesa)
@@ -401,13 +407,18 @@ contains
     allocate(streamdat(1))
 
     ! overwrite default values
+    streamdat(1)%meshFile     = trim(stream_meshFile)
+    streamdat(1)%lev_dimname  = trim(stream_lev_dimname)
+    streamdat(1)%mapalgo      = trim(stream_mapalgo)
+
     streamdat(1)%yearFirst    = stream_yearFirst
     streamdat(1)%yearLast     = stream_yearLast
     streamdat(1)%yearAlign    = stream_yearAlign
+
+    streamdat(1)%tinterpAlgo  = trim(stream_tintalgo)
     streamdat(1)%offset       = stream_offset
     streamdat(1)%taxMode      = trim(stream_taxMode)
-    streamdat(1)%meshFile     = trim(stream_meshFile)
-    streamdat(1)%mapalgo      = trim(stream_mapalgo)
+    streamdat(1)%dtlimit      = stream_dtlimit
 
     streamdat(1)%pio_subsystem => shr_pio_getiosys(trim(compname))
     streamdat(1)%pio_iotype    =  shr_pio_getiotype(trim(compname))
@@ -433,7 +444,7 @@ contains
        streamdat(1)%varlist(n)%nameinmodel = trim(stream_fldlistModel(n))
     end do
 
-    ! Get initial calendar value
+    ! Get stream calendar
     call shr_stream_getCalendar(streamdat(1), 1, calendar)
     streamdat(1)%calendar = trim(calendar)
 
