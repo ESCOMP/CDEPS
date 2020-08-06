@@ -11,15 +11,14 @@ jobs:
       CXX: mpicxx
       CPPFLAGS: "-I/usr/include -I/usr/local/include"
     steps:
+     - uses: actions/cache@v2 actions/checkout@v2
      - name: Cache ESMF
        id: cache-esmf
-       uses: actions/cache@v2
        with:
          path: ESMF
          key: ${{ runner.os }}-ESMF
      - name: ESMF build
        if: steps.cache-esmf.outputs.cache-hit != 'true'
-       uses: actions/checkout@v2
        run: |
          sudo apt-get install gfortran wget openmpi-bin libopenmpi-dev
          wget https://github.com/esmf-org/esmf/archive/ESMF_8_1_0_beta_snapshot_25.tar.gz
