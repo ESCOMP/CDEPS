@@ -6,7 +6,7 @@ module dshr_strdata_mod
   use ESMF
 
   use shr_kind_mod     , only : r8=>shr_kind_r8, r4=>shr_kind_r4, i2=>shr_kind_I2
-  use shr_kind_mod     , only : cs=>shr_kind_cs, cl=>shr_kind_cl, cxx=>shr_kind_cxx 
+  use shr_kind_mod     , only : cs=>shr_kind_cs, cl=>shr_kind_cl, cxx=>shr_kind_cxx
   use shr_sys_mod      , only : shr_sys_abort
   use shr_const_mod    , only : shr_const_pi, shr_const_cDay, shr_const_spval
   use shr_cal_mod      , only : shr_cal_calendarname, shr_cal_timeSet
@@ -33,7 +33,6 @@ module dshr_strdata_mod
   use pio              , only : pio_double, pio_real, pio_int, pio_offset_kind, pio_get_var
   use pio              , only : pio_read_darray, pio_setframe, pio_fill_double, pio_get_att
   use pio              , only : PIO_BCAST_ERROR, PIO_RETURN_ERROR, PIO_NOERR, PIO_INTERNAL_ERROR, PIO_SHORT
-  use perf_mod         , only : t_startf, t_stopf, t_adj_detailf
 
   implicit none
   private
@@ -213,7 +212,7 @@ contains
     type(shr_strdata_type) , intent(inout) :: sdat                   ! stream data type
     integer                , intent(in)    :: my_task                ! my mpi task
     integer                , intent(in)    :: logunit                ! stdout logunit
-    character(len=*)       , intent(in)    :: compname               ! component name (e.g. ATM, OCN, ...) 
+    character(len=*)       , intent(in)    :: compname               ! component name (e.g. ATM, OCN, ...)
     type(ESMF_Clock)       , intent(in)    :: model_clock            ! model clock
     type(ESMF_Mesh)        , intent(in)    :: model_mesh             ! model mesh
     character(*)           , intent(in)    :: stream_meshFile        ! full pathname to stream mesh file
@@ -733,9 +732,7 @@ contains
        ltimers = timers
     endif
 
-    if (.not.ltimers) call t_adj_detailf(tadj)
-
-    call t_startf(trim(lstr)//trim(timname)//'_total')
+    call ESMF_TraceRegionEnter(trim(lstr)//trim(timname)//'_total')
 
     sdat%ymd = ymd
     sdat%tod = tod
@@ -776,7 +773,7 @@ contains
           ! fldbun_stream_ub to fldbun_stream_lb and read in new fldbun_stream_ub data
           ! ---------------------------------------------------------
 
-          call t_startf(trim(lstr)//trim(timname)//'_readLBUB')
+          call ESMF_TraceRegionEnter(trim(lstr)//trim(timname)//'_readLBUB')
 
           select case(sdat%stream(ns)%readmode)
           case ('single')
@@ -827,7 +824,7 @@ contains
              endif
           endif
 
-          call t_stopf(trim(lstr)//trim(timname)//'_readLBUB')
+          call ESMF_TraceRegionExit(trim(lstr)//trim(timname)//'_readLBUB')
 
        enddo ! end of loop over streams
 
@@ -843,19 +840,19 @@ contains
              ! time interpolation method is coszen
              ! ------------------------------------------
 
-             call t_startf(trim(lstr)//trim(timname)//'_coszen')
+             call ESMF_TraceRegionEnter(trim(lstr)//trim(timname)//'_coszen')
              allocate(coszen(sdat%model_lsize))
 
              ! get coszen
-             call t_startf(trim(lstr)//trim(timname)//'_coszenC')
+             call ESMF_TraceRegionEnter(trim(lstr)//trim(timname)//'_coszenC')
              call shr_tInterp_getCosz(coszen, sdat%model_lon, sdat%model_lat, ymdmod(ns), todmod, &
                   sdat%eccen, sdat%mvelpp, sdat%lambm0, sdat%obliqr, sdat%stream(ns)%calendar)
-             call t_stopf(trim(lstr)//trim(timname)//'_coszenC')
+             call ESMF_TraceRegionExit(trim(lstr)//trim(timname)//'_coszenC')
 
              ! get avg cosz factor
              if (newdata(ns)) then
                 ! compute a new avg cosz
-                call t_startf(trim(lstr)//trim(timname)//'_coszenN')
+                call ESMF_TraceRegionEnter(trim(lstr)//trim(timname)//'_coszenN')
                 if (.not. allocated(sdat%tavCoszen)) then
                    allocate(sdat%tavCoszen(sdat%model_lsize))
                 end if
@@ -863,7 +860,7 @@ contains
                      sdat%pstrm(ns)%ymdLB, sdat%pstrm(ns)%todLB,  sdat%pstrm(ns)%ymdUB, sdat%pstrm(ns)%todUB,  &
                      sdat%eccen, sdat%mvelpp, sdat%lambm0, sdat%obliqr, sdat%modeldt, &
                      sdat%stream(ns)%calendar, rc=rc)
-                call t_stopf(trim(lstr)//trim(timname)//'_coszenN')
+                call ESMF_TraceRegionExit(trim(lstr)//trim(timname)//'_coszenN')
              endif
 
              ! compute time interperpolate value - LB data normalized with this factor: cosz/tavCosz
@@ -884,7 +881,7 @@ contains
              end do
 
              deallocate(coszen)
-             call t_stopf(trim(lstr)//trim(timname)//'_coszen')
+             call ESMF_TraceRegionExit(trim(lstr)//trim(timname)//'_coszen')
 
           elseif (trim(sdat%stream(ns)%tinterpalgo) /= trim(shr_strdata_nullstr)) then
 
@@ -892,7 +889,7 @@ contains
              ! time interpolation method is not coszen
              ! ------------------------------------------
 
-             call t_startf(trim(lstr)//trim(timname)//'_tint')
+             call ESMF_TraceRegionEnter(trim(lstr)//trim(timname)//'_tint')
              call shr_tInterp_getFactors(sdat%pstrm(ns)%ymdlb, sdat%pstrm(ns)%todlb, &
                   sdat%pstrm(ns)%ymdub, sdat%pstrm(ns)%todub, &
                   ymdmod(ns), todmod, flb, fub, calendar=sdat%stream(ns)%calendar, logunit=sdat%logunit, &
@@ -914,7 +911,7 @@ contains
                 if (ChkErr(rc,__LINE__,u_FILE_u)) return
                 dataptr(:) = dataptr_lb(:) * flb + dataptr_ub(:) * fub
              end do
-             call t_stopf(trim(lstr)//trim(timname)//'_tint')
+             call ESMF_TraceRegionExit(trim(lstr)//trim(timname)//'_tint')
 
           else
 
@@ -922,13 +919,13 @@ contains
              ! zero out stream data for this field
              ! ------------------------------------------
 
-             call t_startf(trim(lstr)//trim(timname)//'_zero')
+             call ESMF_TraceRegionEnter(trim(lstr)//trim(timname)//'_zero')
              do nf = 1,size(sdat%pstrm(ns)%fldlist_model)
                 call dshr_fldbun_getfldptr(sdat%pstrm(ns)%fldbun_model, sdat%pstrm(ns)%fldlist_model(nf), dataptr, rc=rc)
                 if (ChkErr(rc,__LINE__,u_FILE_u)) return
                 dataptr(:) = 0._r8
              end do
-             call t_stopf(trim(lstr)//trim(timname)//'_zero')
+             call ESMF_TraceRegionExit(trim(lstr)//trim(timname)//'_zero')
 
           endif
 
@@ -939,8 +936,7 @@ contains
 
     endif  ! nstreams > 0
 
-    call t_stopf(trim(lstr)//trim(timname)//'_total')
-    if (.not.ltimers) call t_adj_detailf(-tadj)
+    call ESMF_TraceRegionExit(trim(lstr)//trim(timname)//'_total')
 
   end subroutine shr_strdata_advance
 
@@ -1059,7 +1055,7 @@ contains
     stream => sdat%stream(ns)
     stream_mesh => sdat%pstrm(ns)%stream_mesh
 
-    call t_startf(trim(istr)//'_setup')
+    call ESMF_TraceRegionEnter(trim(istr)//'_setup')
     ! allocate streamdat instance on all tasks
     call ESMF_VMGetCurrent(vm, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -1081,15 +1077,15 @@ contains
     rDateLB = real(sdat%pstrm(ns)%ymdLB,r8) + real(sdat%pstrm(ns)%todLB,r8)/shr_const_cday
     rDateUB = real(sdat%pstrm(ns)%ymdUB,r8) + real(sdat%pstrm(ns)%todUB,r8)/shr_const_cday
 
-    call t_stopf(trim(istr)//'_setup')
+    call ESMF_TraceRegionExit(trim(istr)//'_setup')
 
     ! if model current date is outside of model lower or upper bound - find the stream bounds
     if (rDateM < rDateLB .or. rDateM > rDateUB) then
-       call t_startf(trim(istr)//'_fbound')
+       call ESMF_TraceRegionEnter(trim(istr)//'_fbound')
        call shr_stream_findBounds(stream, mDate, mSec,  &
             sdat%pstrm(ns)%ymdLB, dDateLB, sdat%pstrm(ns)%todLB, n_lb, filename_lb, &
             sdat%pstrm(ns)%ymdUB, dDateUB, sdat%pstrm(ns)%todUB, n_ub, filename_ub)
-       call t_stopf(trim(istr)//'_fbound')
+       call ESMF_TraceRegionExit(trim(istr)//'_fbound')
     endif
 
     ! determine if need to read in new stream data
@@ -1122,7 +1118,7 @@ contains
     endif
 
     ! determine previous & next data files in list of files
-    call t_startf(trim(istr)//'_filemgt')
+    call ESMF_TraceRegionEnter(trim(istr)//'_filemgt')
     if (sdat%masterproc .and. newdata) then
        call shr_stream_getPrevFileName(stream, filename_lb, filename_prev)
        call shr_stream_getNextFileName(stream, filename_ub, filename_next)
@@ -1131,7 +1127,7 @@ contains
           ! do nothing
        end if
     endif
-    call t_stopf(trim(istr)//'_filemgt')
+    call ESMF_TraceRegionExit(trim(istr)//'_filemgt')
 
   end subroutine shr_strdata_readLBUB
 
@@ -1246,7 +1242,7 @@ contains
     ! the data for fldbun_stream with the field names fldname_stream_model
     ! ******************************************************************************
 
-    call t_startf(trim(istr)//'_readpio')
+    call ESMF_TraceRegionEnter(trim(istr)//'_readpio')
     if (sdat%masterproc) then
        write(sdat%logunit,F02) 'file ' // trim(boundstr) //': ',trim(filename), nt
     endif
@@ -1433,7 +1429,7 @@ contains
     if(.not. pio_iodesc_set) then
        deallocate(dataptr)
     endif
-    call t_stopf(trim(istr)//'_readpio')
+    call ESMF_TraceRegionExit(trim(istr)//'_readpio')
 
   end subroutine shr_strdata_readstrm
 
