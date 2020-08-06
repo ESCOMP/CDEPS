@@ -18,7 +18,7 @@ jobs:
          path: ESMF
          key: ${{ runner.os }}-ESMF
      - name: ESMF build
-       if steps.cache-esmf.outputs.cache-hit != 'true'
+       if: steps.cache-esmf.outputs.cache-hit != 'true'
        uses: actions/checkout@v2
        run: |
          sudo apt-get install gfortran wget openmpi-bin libopenmpi-dev
