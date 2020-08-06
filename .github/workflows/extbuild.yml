@@ -41,7 +41,7 @@ jobs:
     - name: Build PIO
       run: |
         wget https://github.com/NCAR/ParallelIO/releases/download/pio_2_5_1/pio-2.5.1.tar.gz
-	tar -xzvf pio-2.5.1.tar.gz
+        tar -xzvf pio-2.5.1.tar.gz
         mkdir build
         cd build
         cmake -Wno-dev -DNetCDF_C_LIBRARY=/usr/lib/x86_64-linux-gnu/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=/usr/include -DCMAKE_PREFIX_PATH=/usr -DPIO_HDF5_LOGGING=On -DPIO_USE_MALLOC=On -DPIO_ENABLE_LOGGING=On -DPIO_ENABLE_TIMING=Off ../pio-2.5.1
