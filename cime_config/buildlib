@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 def buildlib(bldroot, libroot, case, compname=None):
     if bldroot.endswith("obj") and not compname:
         compname = os.path.basename(os.path.abspath(os.path.join(bldroot,os.pardir)))
-    print "HERE compname is {} libroot={} bldroot={}".format(compname, libroot, bldroot)
+    print( "HERE compname is {} libroot={} bldroot={}".format(compname, libroot, bldroot) )
 
     if case.get_value("DEBUG"):
         strdebug = "debug"
