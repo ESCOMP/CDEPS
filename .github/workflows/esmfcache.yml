@@ -11,9 +11,10 @@ jobs:
       CXX: mpicxx
       CPPFLAGS: "-I/usr/include -I/usr/local/include"
     steps:
-     - uses: actions/cache@v2 actions/checkout@v2
+     - uses: actions/checkout@v2
      - name: Cache ESMF
        id: cache-esmf
+       uses: actions/cache@v2
        with:
          path: ESMF
          key: ${{ runner.os }}-ESMF
