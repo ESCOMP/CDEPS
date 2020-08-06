@@ -1,0 +1,48 @@
+# This is a basic workflow to help you get started with Actions
+
+name: extbuild
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    env:
+      CC: mpicc
+      FC: mpifort
+      CPPFLAGS: "-I/usr/include -I/usr/local/include"
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+
+    # Runs a single command using the runners shell
+    - name: Installs
+      run: sudo apt-get install netcdf-bin libnetcdf-dev gfortran wget openmpi-bin libopenmpi-dev 
+    - name: pnetcdf build
+      run: |
+        wget https://parallel-netcdf.github.io/Release/pnetcdf-1.12.1.tar.gz 
+        tar -xzvf pnetcdf-1.12.1.tar.gz
+        ls -l
+        pushd pnetcdf-1.12.1
+        ./configure --prefix=/usr --enable-shared --disable-cxx
+        make
+        sudo make install
+        popd
+    - name: Build PIO
+      run: |
+        wget https://github.com/NCAR/ParallelIO/releases/download/pio_2_5_1/pio-2.5.1.tar.gz
+        mkdir build
+        cd build
+        cmake -Wno-dev -DNetCDF_C_LIBRARY=/usr/lib/x86_64-linux-gnu/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=/usr/include -DCMAKE_PREFIX_PATH=/usr -DPIO_HDF5_LOGGING=On -DPIO_USE_MALLOC=On -DPIO_ENABLE_LOGGING=On -DPIO_ENABLE_TIMING=Off ../pio-2.5.1
+        make VERBOSE=1
+        
