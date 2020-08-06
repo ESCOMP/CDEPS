@@ -1264,8 +1264,6 @@ contains
 
     lsize = size(dataptr)
     do nf = 1,size(fldlist_stream)
-       call dshr_fldbun_getfieldN(fldbun_model, nf, field_dst, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
        rcode = pio_inq_varid(pioid, trim(fldlist_stream(nf)), varid)
        ! determine type of the variable
        rcode = pio_inq_vartype(pioid, varid, pio_iovartype)
@@ -1371,6 +1369,9 @@ contains
        elseif(associated(dataptr2d_src) .and. trim(fldlist_model(nf)) .eq. vname) then
           dataptr2d_src(2,:) = dataptr(:)
        else if (pio_iodesc_set) then
+          call dshr_fldbun_getfieldN(fldbun_model, nf, field_dst, rc=rc)
+          if (chkerr(rc,__LINE__,u_FILE_u)) return
+
           call ESMF_FieldRegrid(sdat%pstrm(ns)%field_stream, field_dst, routehandle=sdat%pstrm(ns)%routehandle, &
                termorderflag=ESMF_TERMORDER_SRCSEQ, checkflag=.false., zeroregion=ESMF_REGION_TOTAL, rc=rc)
           if (chkerr(rc,__LINE__,u_FILE_u)) return
