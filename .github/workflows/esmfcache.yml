@@ -18,7 +18,6 @@ jobs:
          path: ESMF
          key: ${{ runner.os }}-ESMF
 
-     - name: Installs
      -name: ESMF build
       if steps.cache-esmf.outputs.cache-hit != 'true'
       uses: actions/checkout@v2
