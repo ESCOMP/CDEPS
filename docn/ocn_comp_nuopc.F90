@@ -494,7 +494,6 @@ contains
     !--------------------
 
     ! Advance data model streams - time and spatially interpolate to model time and grid
-    call t_barrierf('docn_BARRIER',mpicom)
     call ESMF_TraceRegionEnter('docn_strdata_advance')
     call shr_strdata_advance(sdat, target_ymd, target_tod, logunit, 'docn', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -502,7 +501,6 @@ contains
 
     ! Copy all fields from streams to export state as default
     ! This automatically will update the fields in the export state
-    call t_barrierf('docn_dfield_copy_BARRIER', mpicom)
     call ESMF_TraceRegionEnter('docn_dfield_copy')
     if(.not. aquaplanet) then
        call dshr_dfield_copy(dfields, sdat, rc)
