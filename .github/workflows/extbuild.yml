@@ -50,11 +50,6 @@ jobs:
         popd
     - name: Build ESMF
       run: |
-        wget https://github.com/esmf-org/esmf/archive/ESMF_8_1_0_beta_snapshot_25.tar.gz
-        tar -xzvf ESMF_8_1_0_beta_snapshot_25.tar.gz
-        cd esmf-ESMF_8_1_0_beta_snapshot_25
-        make ESMF_COMM=openmpi ESMF_DIR='pwd' ESMF_YAMLCPP="internal"
-        popd
 #    - name: Build CDEPS
 #      run: |
 #        mkdir cdepsbld
