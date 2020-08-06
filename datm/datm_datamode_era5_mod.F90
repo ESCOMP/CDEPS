@@ -27,6 +27,7 @@ module datm_datamode_era5_mod
   real(r8), pointer :: Sa_z(:)              => null()
   real(r8), pointer :: Sa_u(:)              => null()
   real(r8), pointer :: Sa_v(:)              => null()
+  real(r8), pointer :: Sa_wspd(:)           => null()
   real(r8), pointer :: Sa_tbot(:)           => null()
   real(r8), pointer :: Sa_ptem(:)           => null()
   real(r8), pointer :: Sa_shum(:)           => null()
@@ -34,6 +35,7 @@ module datm_datamode_era5_mod
   real(r8), pointer :: Sa_pbot(:)           => null()
   real(r8), pointer :: Sa_pslv(:)           => null()
   real(r8), pointer :: Faxa_lwdn(:)         => null()
+  real(r8), pointer :: Faxa_lwnet(:)        => null()
   real(r8), pointer :: Faxa_rain(:)         => null()
   real(r8), pointer :: Faxa_rainc(:)        => null()
   real(r8), pointer :: Faxa_rainl(:)        => null()
@@ -61,7 +63,7 @@ module datm_datamode_era5_mod
   real(r8) , parameter :: rdair    = SHR_CONST_RDAIR ! dry air gas constant ~ J/K/kg
   real(r8) , parameter :: rhofw    = SHR_CONST_RHOFW ! density of fresh water ~ kg/m^3
   
-  character(*), parameter :: nullstr = 'null'
+  character(*), parameter :: nullstr = 'undefined'
   character(*), parameter :: rpfile  = 'rpointer.atm'
   character(*), parameter :: u_FILE_u = &
        __FILE__
@@ -89,7 +91,9 @@ contains
     call dshr_fldList_add(fldsExport, 'Sa_z'       )
     call dshr_fldList_add(fldsExport, 'Sa_u'       )
     call dshr_fldList_add(fldsExport, 'Sa_v'       )
+    call dshr_fldList_add(fldsExport, 'Sa_wspd'    )
     call dshr_fldList_add(fldsExport, 'Sa_tbot'    )
+    call dshr_fldList_add(fldsExport, 'Sa_tskn'    )
     call dshr_fldList_add(fldsExport, 'Sa_ptem'    )
     call dshr_fldList_add(fldsExport, 'Sa_dens'    )
     call dshr_fldList_add(fldsExport, 'Sa_pslv'    )
@@ -104,9 +108,10 @@ contains
     call dshr_fldList_add(fldsExport, 'Faxa_swvdr' )
     call dshr_fldList_add(fldsExport, 'Faxa_swndf' )
     call dshr_fldList_add(fldsExport, 'Faxa_swvdf' )
+    call dshr_fldList_add(fldsExport, 'Faxa_swdn'  )
     call dshr_fldList_add(fldsExport, 'Faxa_swnet' )
     call dshr_fldList_add(fldsExport, 'Faxa_lwdn'  )
-    call dshr_fldList_add(fldsExport, 'Faxa_swdn'  )
+    call dshr_fldList_add(fldsExport, 'Faxa_lwnet'  )
     call dshr_fldList_add(fldsExport, 'Faxa_sen'   )
     call dshr_fldList_add(fldsExport, 'Faxa_lat'   )
     call dshr_fldList_add(fldsExport, 'Faxa_taux'  )
@@ -116,7 +121,7 @@ contains
     do while (associated(fldlist))
        call NUOPC_Advertise(exportState, standardName=fldlist%stdname, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call ESMF_LogWrite('(datm_comp_advertise): Fr_atm'//trim(fldList%stdname), ESMF_LOGMSG_INFO)
+       call ESMF_LogWrite('(datm_comp_advertise): Fr_atm '//trim(fldList%stdname), ESMF_LOGMSG_INFO)
        fldList => fldList%next
     enddo
 
@@ -143,6 +148,12 @@ contains
 
     ! get export state pointers
     call dshr_state_getfldptr(exportState, 'Sa_z'       , fldptr1=Sa_z       , rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call dshr_state_getfldptr(exportState, 'Sa_u'       , fldptr1=Sa_u       , rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call dshr_state_getfldptr(exportState, 'Sa_v'       , fldptr1=Sa_v       , rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call dshr_state_getfldptr(exportState, 'Sa_wspd'    , fldptr1=Sa_wspd    , allowNullReturn=.true., rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Sa_tbot'    , fldptr1=Sa_tbot    , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -175,6 +186,8 @@ contains
     call dshr_state_getfldptr(exportState, 'Faxa_swnet' , fldptr1=Faxa_swnet , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Faxa_swdn'  , fldptr1=Faxa_swdn  , rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call dshr_state_getfldptr(exportState, 'Faxa_lwnet' , fldptr1=Faxa_lwnet , allowNullReturn=.true., rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Faxa_lwdn'  , fldptr1=Faxa_lwdn  , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -241,6 +254,11 @@ contains
        !--- bottom layer height ---
        Sa_z(n) = 10.0_r8
 
+       !--- calculate wind speed ---
+       if (associated(Sa_wspd)) then
+         Sa_wspd(n) = sqrt(Sa_u(n)*Sa_u(n)+Sa_v(n)*Sa_v(n)) 
+       end if
+
        !--- temperature ---
        if (tbotmax < 50.0_r8) Sa_tbot(n) = Sa_tbot(n) + tkFrz
        ! Limit very cold forcing to 180K
@@ -265,8 +283,11 @@ contains
        Faxa_swvdf(n) = Faxa_swdn(n)*Faxa_swvdf(n)
        Faxa_swndf(n) = Faxa_swdn(n)*Faxa_swndf(n)
 
+       !--- TODO: need to understand relationship between shortwave bands and net shortwave rad.
+       !--- currently it is provided directly from ERA5 and the total of the bands are not
+       !--- consistent with the swnet
        !--- swnet: a diagnostic quantity ---
-       Faxa_swnet(n) = Faxa_swndr(n) + Faxa_swvdr(n) + Faxa_swndf(n) + Faxa_swvdf(n)
+       !Faxa_swnet(n) = Faxa_swndr(n) + Faxa_swvdr(n) + Faxa_swndf(n) + Faxa_swvdf(n)
     end do
 
     !----------------------------------------------------------
@@ -275,6 +296,9 @@ contains
 
     ! convert J/m^2 to W/m^2
     Faxa_lwdn(:) = Faxa_lwdn(:)/3600.0_r8
+    if (associated(Faxa_lwnet)) then
+      Faxa_lwnet(:) = Faxa_lwnet(:)/3600.0_r8
+    end if
     Faxa_swdn(:) = Faxa_swdn(:)/3600.0_r8
     Faxa_swvdr(:) = Faxa_swvdr(:)/3600.0_r8
     Faxa_swndr(:) = Faxa_swndr(:)/3600.0_r8

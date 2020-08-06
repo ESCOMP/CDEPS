@@ -30,7 +30,7 @@ module dshr_methods_mod
 contains
 !===============================================================================
 
-  subroutine dshr_state_getfldptr(State, fldname, fldptr1, fldptr2, rc)
+  subroutine dshr_state_getfldptr(State, fldname, fldptr1, fldptr2, allowNullReturn, rc)
 
     ! ----------------------------------------------
     ! Get pointer to a state field
@@ -41,20 +41,39 @@ contains
     character(len=*) ,          intent(in)              :: fldname
     real(R8)         , pointer, intent(inout), optional :: fldptr1(:)
     real(R8)         , pointer, intent(inout), optional :: fldptr2(:,:)
+    logical          ,          intent(in),optional     :: allowNullReturn        
     integer          ,          intent(out)             :: rc
 
     ! local variables
-    type(ESMF_Field)           :: lfield
+    type(ESMF_Field)            :: lfield
+    integer                     :: itemCount 
     character(len=*), parameter :: subname='(dshr_state_getfldptr)'
     ! ----------------------------------------------
 
     rc = ESMF_SUCCESS
 
-    call ESMF_StateGet(State, itemName=trim(fldname), field=lfield, rc=rc)
-    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    if (present(allowNullReturn)) then
+      call ESMF_StateGet(State, itemSearch=trim(fldname), itemCount=itemCount, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
 
-    call dshr_field_getfldptr(lfield, fldptr1=fldptr1, fldptr2=fldptr2, rc=rc)
-    if (chkerr(rc,__LINE__,u_FILE_u)) return
+      ! check field is in the state or not?
+      if (itemCount >= 1) then
+        call ESMF_StateGet(State, itemName=trim(fldname), field=lfield, rc=rc)
+        if (chkerr(rc,__LINE__,u_FILE_u)) return
+
+        call dshr_field_getfldptr(lfield, fldptr1=fldptr1, fldptr2=fldptr2, rc=rc)
+        if (chkerr(rc,__LINE__,u_FILE_u)) return
+      else
+        ! the call to just returns if it cannot find the field
+        call ESMF_LogWrite(trim(subname)//" Could not find the field: "//trim(fldname)//" just returning", ESMF_LOGMSG_INFO)
+      end if
+    else
+      call ESMF_StateGet(State, itemName=trim(fldname), field=lfield, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+
+      call dshr_field_getfldptr(lfield, fldptr1=fldptr1, fldptr2=fldptr2, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return      
+    end if
 
   end subroutine dshr_state_getfldptr
 
