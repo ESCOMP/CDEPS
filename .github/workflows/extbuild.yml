@@ -44,13 +44,21 @@ jobs:
         tar -xzvf pio-2.5.1.tar.gz
         mkdir build
         cd build
-        cmake -Wno-dev -DNetCDF_C_LIBRARY=/usr/lib/x86_64-linux-gnu/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=/usr/include -DCMAKE_PREFIX_PATH=`pwd`/pio -DPIO_HDF5_LOGGING=On -DPIO_USE_MALLOC=On -DPIO_ENABLE_LOGGING=On -DPIO_ENABLE_TIMING=Off ../pio-2.5.1
+        cmake -Wno-dev -DNetCDF_C_LIBRARY=/usr/lib/x86_64-linux-gnu/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=/usr/include -DCMAKE_PREFIX_PATH=/usr -DCMAKE_INSTALL_PREFIX=../pio -DPIO_HDF5_LOGGING=On -DPIO_USE_MALLOC=On -DPIO_ENABLE_LOGGING=On -DPIO_ENABLE_TIMING=Off ../pio-2.5.1
         make VERBOSE=1
         make install
         popd
-    - name: Build CDEPS
+    - name: Build ESMF
       run: |
-        mkdir cdepsbld
-        cd cdepsbld
-        cmake -DPIO=`pwd`/../build/pio ../
-        make VERBOSE=1
+        wget https://github.com/esmf-org/esmf/archive/ESMF_8_1_0_beta_snapshot_25.tar.gz
+        tar -xzvf ESMF_8_1_0_beta_snapshot_25.tar.gz
+	cd esmf-ESMF_8_1_0_beta_snapshot_25
+	make ESMF_COMM=openmpi ESMF_DIR='pwd' ESMF_YAMLCPP="internal"
+	popd
+#    - name: Build CDEPS
+#      run: |
+#        mkdir cdepsbld
+#        cd cdepsbld
+#	export ESMFMKFILE=
+#        cmake -DPIO=../pio/
+#        make VERBOSE=1
