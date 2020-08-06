@@ -490,7 +490,6 @@ contains
     !--------------------
 
     ! time and spatially interpolate to model time and grid
-    call t_barrierf('dwav_BARRIER',mpicom)
     call ESMF_TraceRegionEnter('dwav_strdata_advance')
     call shr_strdata_advance(sdat, target_ymd, target_tod, logunit, 'dwav', rc=rc)
     call ESMF_TraceRegionExit('dwav_strdata_advance')
@@ -500,7 +499,6 @@ contains
     !--------------------
 
     ! This automatically will update the fields in the export state
-    call t_barrierf('dwav_comp_strdata_copy_BARRIER', mpicom)
     call ESMF_TraceRegionEnter('dwav_strdata_copy')
     call dshr_dfield_copy(dfields, sdat, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
