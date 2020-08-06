@@ -27,10 +27,10 @@ jobs:
 
     # Runs a single command using the runners shell
     - name: Installs
-      run: sudo apt-get install netcdf-bin libnetcdf-dev gfortran wget openmpi-bin libopenmpi-dev 
+      run: sudo apt-get install netcdf-bin libnetcdf-dev gfortran wget openmpi-bin libopenmpi-dev
     - name: pnetcdf build
       run: |
-        wget https://parallel-netcdf.github.io/Release/pnetcdf-1.12.1.tar.gz 
+        wget https://parallel-netcdf.github.io/Release/pnetcdf-1.12.1.tar.gz
         tar -xzvf pnetcdf-1.12.1.tar.gz
         ls -l
         pushd pnetcdf-1.12.1
@@ -41,8 +41,8 @@ jobs:
     - name: Build PIO
       run: |
         wget https://github.com/NCAR/ParallelIO/releases/download/pio_2_5_1/pio-2.5.1.tar.gz
+	tar -xzvf pio-2.5.1.tar.gz
         mkdir build
         cd build
         cmake -Wno-dev -DNetCDF_C_LIBRARY=/usr/lib/x86_64-linux-gnu/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=/usr/include -DCMAKE_PREFIX_PATH=/usr -DPIO_HDF5_LOGGING=On -DPIO_USE_MALLOC=On -DPIO_ENABLE_LOGGING=On -DPIO_ENABLE_TIMING=Off ../pio-2.5.1
         make VERBOSE=1
-        
