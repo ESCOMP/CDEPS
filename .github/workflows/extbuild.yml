@@ -46,3 +46,11 @@ jobs:
         cd build
         cmake -Wno-dev -DNetCDF_C_LIBRARY=/usr/lib/x86_64-linux-gnu/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=/usr/include -DCMAKE_PREFIX_PATH=/usr -DPIO_HDF5_LOGGING=On -DPIO_USE_MALLOC=On -DPIO_ENABLE_LOGGING=On -DPIO_ENABLE_TIMING=Off ../pio-2.5.1
         make VERBOSE=1
+        make install
+        popd
+    - name: Build CDEPS
+      run: |
+        mkdir cdepsbld
+        cd cdepsbld
+        cmake -DPIO=/usr ../
+        make VERBOSE=1
