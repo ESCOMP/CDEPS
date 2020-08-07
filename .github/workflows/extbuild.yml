@@ -21,13 +21,12 @@ jobs:
     outputs: ${{ steps.cache-esmf.outputs }}
     steps:
       - uses: actions/checkout@v2
-      - name: Cache ESMF
-        id: cache-esmf
+      - id: cache-esmf
         uses: actions/cache@v2
         with:
           path: ~/ESMF
           key: ${{ runner.os }}-ESMF
-      - name: ESMF build
+      - id: build-ESMF
         if: steps.cache-esmf.outputs.cache-hit != 'true'
         run: |
           sudo apt-get install gfortran wget openmpi-bin libopenmpi-dev
