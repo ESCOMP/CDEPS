@@ -100,10 +100,10 @@ jobs:
         if: steps.cache-netcdf-fortran.outputs.cache-hit != 'true'
         run: |
           ncdump --version
-          wget https://github.com/Unidata/netcdf-fortran/archive/v4.5.3.tar.gz
-          tar -xzvf v4.5.3.tar.gz
+          wget https://github.com/Unidata/netcdf-fortran/archive/v4.5.2.tar.gz
+          tar -xzvf v4.5.2.tar.gz
           ls -l
-          pushd netcdf-fortran-4.5.3
+          pushd netcdf-fortran-4.5.2
           ./configure --prefix=`pwd`/../netcdf-fortran
           make
           make install
