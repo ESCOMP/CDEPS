@@ -89,9 +89,19 @@ jobs:
         run: |
           wget https://github.com/NCAR/ParallelIO/releases/download/pio_2_5_1/pio-2.5.1.tar.gz
           tar -xzvf pio-2.5.1.tar.gz
-          mkdir build
-          pushd build
+          mkdir build-pio
+          pushd build-pio
           cmake -Wno-dev -DNetCDF_C_LIBRARY=/usr/lib/x86_64-linux-gnu/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=/usr/include -DCMAKE_PREFIX_PATH=/usr -DCMAKE_INSTALL_PREFIX=$HOME/pio -DPIO_HDF5_LOGGING=On -DPIO_USE_MALLOC=On -DPIO_ENABLE_LOGGING=On -DPIO_ENABLE_TIMING=Off -DNetCDF_Fortran_PATH=$HOME/netcdf-fortran -DPnetCDF_PATH=$HOME/pnetcdf ../pio-2.5.1
           make VERBOSE=1
           make install
+          popd
+
+      - name: Build CDEPS
+        run: |
+          git submodule init
+          git submodule update
+          mkdir build-cdeps
+          pushd build-cdeps
+          cmake ../
+          make
           popd
