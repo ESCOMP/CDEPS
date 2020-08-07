@@ -104,8 +104,6 @@ jobs:
           git submodule update
           mkdir build-cdeps
           pushd build-cdeps
-          export FFLAGS="-g -ffree-form -Wall"
-          export CFLAGS="-g -Wall -std=gnu99"
-          cmake ../
+          cmake -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_Fortran_FLAGS="-g -Wall -ffree-form" ../
           make
           popd
