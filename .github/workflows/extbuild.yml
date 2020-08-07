@@ -24,7 +24,7 @@ jobs:
         id: cache-esmf
         uses: actions/cache@v2
         with:
-          path: ESMF
+          path: ~/ESMF
           key: ${{ runner.os }}-ESMF
       - name: ESMF build
         if: steps.cache-esmf.outputs.cache-hit != 'true'
@@ -36,7 +36,7 @@ jobs:
           export ESMF_DIR=`pwd`
           export ESMF_COMM=openmpi
           export ESMF_YAMLCPP="internal"
-          export ESMF_INSTALL_PREFIX=$ESMF_DIR/../ESMF
+          export ESMF_INSTALL_PREFIX=~/ESMF
           export ESMF_BOPT=g
           make
           make install
@@ -61,7 +61,7 @@ jobs:
         id: cache-pnetcdf
         uses: actions/cache@v2
         with:
-          path: pnetcdf
+          path: ~/pnetcdf
           key: ${{ runner.os }}-pnetcdf
       - name: pnetcdf build
         if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
@@ -70,7 +70,7 @@ jobs:
           tar -xzvf pnetcdf-1.12.1.tar.gz
           ls -l
           pushd pnetcdf-1.12.1
-          ./configure --prefix=`pwd`/pnetcdf --enable-shared --disable-cxx
+          ./configure --prefix=~/pnetcdf --enable-shared --disable-cxx
           make
           sudo make install
           popd
@@ -94,7 +94,7 @@ jobs:
         id: cache-netcdf-fortran
         uses: actions/cache@v2
         with:
-          path: netcdf-fortran
+          path: ~/netcdf-fortran
           key: ${{ runner.os }}-netcdf-fortran
       - name: netcdf fortran build
         if: steps.cache-netcdf-fortran.outputs.cache-hit != 'true'
@@ -103,7 +103,7 @@ jobs:
           tar -xzvf v4.5.2.tar.gz
           ls -l
           pushd netcdf-fortran-4.5.2
-          ./configure --prefix=`pwd`/../netcdf-fortran
+          ./configure --prefix=~/netcdf-fortran
           make
           make install
           popd
@@ -134,7 +134,7 @@ jobs:
           mkdir build
           pushd build
           find ../ -print
-          cmake -Wno-dev -DNetCDF_C_LIBRARY=/usr/lib/x86_64-linux-gnu/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=/usr/include -DCMAKE_PREFIX_PATH=/usr -DCMAKE_INSTALL_PREFIX=../pio -DPIO_HDF5_LOGGING=On -DPIO_USE_MALLOC=On -DPIO_ENABLE_LOGGING=On -DPIO_ENABLE_TIMING=Off -DNetCDF_Fortran_PATH=../netcdf-fortran -DPnetCDF_PATH=../pnetcdf ../pio-2.5.1
+          cmake -Wno-dev -DNetCDF_C_LIBRARY=/usr/lib/x86_64-linux-gnu/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=/usr/include -DCMAKE_PREFIX_PATH=/usr -DCMAKE_INSTALL_PREFIX=~/pio -DPIO_HDF5_LOGGING=On -DPIO_USE_MALLOC=On -DPIO_ENABLE_LOGGING=On -DPIO_ENABLE_TIMING=Off -DNetCDF_Fortran_PATH=~/netcdf-fortran -DPnetCDF_PATH=~/pnetcdf ../pio-2.5.1
           make VERBOSE=1
           make install
           popd
