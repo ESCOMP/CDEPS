@@ -18,7 +18,6 @@ jobs:
       FC: mpifort
       CXX: mpicxx
       CPPFLAGS: "-I/usr/include -I/usr/local/include"
-    outputs: ${{ steps.cache-esmf.outputs }}
     steps:
       - uses: actions/checkout@v2
       - id: cache-esmf
@@ -50,7 +49,6 @@ jobs:
       CC: mpicc
       FC: mpifort
       CPPFLAGS: "-I/usr/include -I/usr/local/include"
-    outputs: ${{ steps.cache-pnetcdf.outputs }}
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -84,7 +82,6 @@ jobs:
       CC: mpicc
       FC: mpifort
       CPPFLAGS: "-I/usr/include -I/usr/local/include"
-    outputs: ${{ steps.cache-netcdf-fortran.outputs }}
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -128,6 +125,9 @@ jobs:
         with:
           path: pio
           key: ${{ runner.os }}-pio
+          restore-keys: |
+            ${{ runner.os }}-netcdf-fortran
+            ${{ runner.os }}-pnetcdf
       - name: Build PIO
         if: steps.cache-PIO.outputs.cache-hit != 'true'
         run: |
