@@ -1,0 +1,84 @@
+# This is a basic workflow to help you get started with Actions
+name: extbuild
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # Build the ESMF library, if the cache contains a previous build it will be used instead
+  build-cdeps:
+    runs-on: ubuntu-latest
+    env:
+      CC: mpicc
+      FC: mpifort
+      CXX: mpicxx
+      CPPFLAGS: "-I/usr/include -I/usr/local/include"
+    steps:
+      - uses: actions/checkout@v2
+      - id: cache-esmf
+        uses: actions/cache@v2
+        with:
+          path: ~/ESMF
+          key: ${{ runner.os }}-ESMF
+      - id: load-env
+        run: sudo apt-get install gfortran wget openmpi-bin netcdf-bin libopenmpi-dev
+
+      - id: build-ESMF
+        if: steps.cache-esmf.outputs.cache-hit != 'true'
+        run: |
+          wget https://github.com/esmf-org/esmf/archive/ESMF_8_1_0_beta_snapshot_25.tar.gz
+          tar -xzvf ESMF_8_1_0_beta_snapshot_25.tar.gz
+          pushd esmf-ESMF_8_1_0_beta_snapshot_25
+          export ESMF_DIR=`pwd`
+          export ESMF_COMM=openmpi
+          export ESMF_YAMLCPP="internal"
+          export ESMF_INSTALL_PREFIX=$HOME/ESMF
+          export ESMF_BOPT=g
+          make
+          make install
+          popd
+      - id: cache-pnetcdf
+        uses: actions/cache@v2
+        with:
+          path: ~/pnetcdf
+          key: ${{ runner.os }}-pnetcdf
+      - name: pnetcdf build
+        if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
+        run: |
+          wget https://parallel-netcdf.github.io/Release/pnetcdf-1.12.1.tar.gz
+          tar -xzvf pnetcdf-1.12.1.tar.gz
+          ls -l
+          pushd pnetcdf-1.12.1
+          ./configure --prefix=$HOME/pnetcdf --enable-shared --disable-cxx
+          make
+          make install
+          popd
+      - name: Cache netcdf-fortran
+        id: cache-netcdf-fortran
+        uses: actions/cache@v2
+        with:
+          path: ~/netcdf-fortran
+          key: ${{ runner.os }}-netcdf-fortran
+      - name: netcdf fortran build
+        if: steps.cache-netcdf-fortran.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get install libnetcdf-dev
+          wget https://github.com/Unidata/netcdf-fortran/archive/v4.5.2.tar.gz
+          tar -xzvf v4.5.2.tar.gz
+          ls -l
+          pushd netcdf-fortran-4.5.2
+          ./configure --prefix=$HOME/netcdf-fortran
+          make
+          make install
+
+      - name: Get cime
+        run: |
+          git clone https://github.com/ESMCI/cime.git
+          pushd cime/scripts
+          do more here
+          popd
