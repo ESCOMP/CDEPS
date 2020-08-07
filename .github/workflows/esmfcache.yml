@@ -29,4 +29,5 @@ jobs:
          export ESMF_COMM=openmpi
          export ESMF_YAMLCPP="internal"
          export ESMF_INSTALL_PREFIX=../ESMF
+         make
          make install
