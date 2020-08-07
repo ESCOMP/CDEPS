@@ -75,10 +75,43 @@ jobs:
           sudo make install
           popd
 
+  # Build the pnetcdf library, if the cache contains a previous build it will be used instead
+  netcdf-fortran-build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    env:
+      CC: mpicc
+      FC: mpifort
+      CPPFLAGS: "-I/usr/include -I/usr/local/include"
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      # Runs a single command using the runners shell
+      - name: Installs
+        run: sudo apt-get install gfortran wget openmpi-bin libopenmpi-dev netcdf-bin libnetcdf-dev
+      - name: Cache netcdf-fortran
+        id: cache-netcdf-fortran
+        uses: actions/cache@v2
+        with:
+          path: netcdf-fortran
+          key: ${{ runner.os }}-netcdf-fortran
+      - name: netcdf fortran build
+        if: steps.cache-netcdf-fortran.outputs.cache-hit != 'true'
+        run: |
+          wget https://github.com/Unidata/netcdf-fortran/archive/v4.5.3.tar.gz
+          tar -xzvf v4.5.3.tar.gz
+          ls -l
+          pushd netcdf-fortran-4.5.3
+         ./configure --prefix=`pwd`/../netcdf-fortran
+           make
+           make install
+           popd
+
 # Build the PIO library, if the cache contains a previous build it will be used
   pio-build:
     runs-on: ubuntu-latest
-    needs: pnetcdf-build
+    needs: [pnetcdf-build, netcdf-fortran-build]
     env:
       CC: mpicc
       FC: mpifort
@@ -100,7 +133,7 @@ jobs:
           tar -xzvf pio-2.5.1.tar.gz
           mkdir build
           pushd build
-          cmake -Wno-dev -DNetCDF_C_LIBRARY=/usr/lib/x86_64-linux-gnu/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=/usr/include -DCMAKE_PREFIX_PATH=/usr -DCMAKE_INSTALL_PREFIX=../pio -DPIO_HDF5_LOGGING=On -DPIO_USE_MALLOC=On -DPIO_ENABLE_LOGGING=On -DPIO_ENABLE_TIMING=Off -DPnetCDF_PATH=../pnetcdf../pio-2.5.1
+          cmake -Wno-dev -DNetCDF_C_LIBRARY=/usr/lib/x86_64-linux-gnu/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=/usr/include -DCMAKE_PREFIX_PATH=/usr -DCMAKE_INSTALL_PREFIX=../pio -DPIO_HDF5_LOGGING=On -DPIO_USE_MALLOC=On -DPIO_ENABLE_LOGGING=On -DPIO_ENABLE_TIMING=Off -DNetCDF_Fortran_PATH=../netcdf-fortran -DPnetCDF_PATH=../pnetcdf../pio-2.5.1
           make VERBOSE=1
           make install
           popd
