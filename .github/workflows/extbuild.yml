@@ -8,72 +8,72 @@ on:
   pull_request:
     branches: [ master ]
 
-  # A workflow run is made up of one or more jobs that can run sequentially or in parallel
-  jobs:
-    # Build the ESMF library, if the cache contains a previous build it will be used instead
-    esmf-build:
-      runs-on: ubuntu-latest
-      env:
-        CC: mpicc
-        FC: mpifort
-        CXX: mpicxx
-        CPPFLAGS: "-I/usr/include -I/usr/local/include"
-      steps:
-        - uses: actions/checkout@v2
-        - name: Cache ESMF
-          id: cache-esmf
-          uses: actions/cache@v2
-          with:
-            path: ESMF
-            key: ${{ runner.os }}-ESMF
-        - name: ESMF build
-          if: steps.cache-esmf.outputs.cache-hit != 'true'
-          run: |
-            sudo apt-get install gfortran wget openmpi-bin libopenmpi-dev
-            wget https://github.com/esmf-org/esmf/archive/ESMF_8_1_0_beta_snapshot_25.tar.gz
-            tar -xzvf ESMF_8_1_0_beta_snapshot_25.tar.gz
-            pushd esmf-ESMF_8_1_0_beta_snapshot_25
-            export ESMF_DIR=`pwd`
-            export ESMF_COMM=openmpi
-            export ESMF_YAMLCPP="internal"
-            export ESMF_INSTALL_PREFIX=../ESMF
-            export ESMF_BOPT=g
-            make
-            make install
-            popd
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # Build the ESMF library, if the cache contains a previous build it will be used instead
+  esmf-build:
+    runs-on: ubuntu-latest
+    env:
+      CC: mpicc
+      FC: mpifort
+      CXX: mpicxx
+      CPPFLAGS: "-I/usr/include -I/usr/local/include"
+    steps:
+      - uses: actions/checkout@v2
+      - name: Cache ESMF
+        id: cache-esmf
+        uses: actions/cache@v2
+        with:
+          path: ESMF
+          key: ${{ runner.os }}-ESMF
+      - name: ESMF build
+        if: steps.cache-esmf.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get install gfortran wget openmpi-bin libopenmpi-dev
+          wget https://github.com/esmf-org/esmf/archive/ESMF_8_1_0_beta_snapshot_25.tar.gz
+          tar -xzvf ESMF_8_1_0_beta_snapshot_25.tar.gz
+          pushd esmf-ESMF_8_1_0_beta_snapshot_25
+          export ESMF_DIR=`pwd`
+          export ESMF_COMM=openmpi
+          export ESMF_YAMLCPP="internal"
+          export ESMF_INSTALL_PREFIX=../ESMF
+          export ESMF_BOPT=g
+          make
+          make install
+          popd
 
-    # Build the pnetcdf library, if the cache contains a previous build it will be used instead
-    pnetcdf-build:
-      # The type of runner that the job will run on
-      runs-on: ubuntu-latest
-      env:
-        CC: mpicc
-        FC: mpifort
-        CPPFLAGS: "-I/usr/include -I/usr/local/include"
-      # Steps represent a sequence of tasks that will be executed as part of the job
-      steps:
-        # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-        - uses: actions/checkout@v2
-        # Runs a single command using the runners shell
-        - name: Installs
-          run: sudo apt-get install gfortran wget openmpi-bin libopenmpi-dev
-        - name: Cache pnetcdf
-          id: cache-pnetcdf
-          uses: actions/cache@v2
-          with:
-            path: pnetcdf
-            key: ${{ runner.os }}-pnetcdf
-        - name: pnetcdf build
-          if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
-          run: |
-            wget https://parallel-netcdf.github.io/Release/pnetcdf-1.12.1.tar.gz
-            tar -xzvf pnetcdf-1.12.1.tar.gz
-            ls -l
-            pushd pnetcdf-1.12.1
-            ./configure --prefix=../pnetcdf --enable-shared --disable-cxx
-            make
-            sudo make install
-            popd
+  # Build the pnetcdf library, if the cache contains a previous build it will be used instead
+  pnetcdf-build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    env:
+      CC: mpicc
+      FC: mpifort
+      CPPFLAGS: "-I/usr/include -I/usr/local/include"
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      # Runs a single command using the runners shell
+      - name: Installs
+        run: sudo apt-get install gfortran wget openmpi-bin libopenmpi-dev
+      - name: Cache pnetcdf
+        id: cache-pnetcdf
+        uses: actions/cache@v2
+        with:
+          path: pnetcdf
+          key: ${{ runner.os }}-pnetcdf
+      - name: pnetcdf build
+        if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
+        run: |
+          wget https://parallel-netcdf.github.io/Release/pnetcdf-1.12.1.tar.gz
+          tar -xzvf pnetcdf-1.12.1.tar.gz
+          ls -l
+          pushd pnetcdf-1.12.1
+          ./configure --prefix=../pnetcdf --enable-shared --disable-cxx
+          make
+          sudo make install
+          popd
 
 # Build the PIO library, if the cache contains a previous build it will be used
 #  pio-build:
