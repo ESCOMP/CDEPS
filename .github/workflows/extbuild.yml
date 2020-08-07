@@ -36,7 +36,7 @@ jobs:
           export ESMF_DIR=`pwd`
           export ESMF_COMM=openmpi
           export ESMF_YAMLCPP="internal"
-          export ESMF_INSTALL_PREFIX=~/ESMF
+          export ESMF_INSTALL_PREFIX=$HOME/ESMF
           export ESMF_BOPT=g
           make
           make install
@@ -70,7 +70,7 @@ jobs:
           tar -xzvf pnetcdf-1.12.1.tar.gz
           ls -l
           pushd pnetcdf-1.12.1
-          ./configure --prefix=~/pnetcdf --enable-shared --disable-cxx
+          ./configure --prefix=$HOME/pnetcdf --enable-shared --disable-cxx
           make
           sudo make install
           popd
@@ -103,7 +103,7 @@ jobs:
           tar -xzvf v4.5.2.tar.gz
           ls -l
           pushd netcdf-fortran-4.5.2
-          ./configure --prefix=~/netcdf-fortran
+          ./configure --prefix=$HOME/netcdf-fortran
           make
           make install
           popd
@@ -137,8 +137,7 @@ jobs:
           tar -xzvf pio-2.5.1.tar.gz
           mkdir build
           pushd build
-          find ~/ -print
-          cmake -Wno-dev -DNetCDF_C_LIBRARY=/usr/lib/x86_64-linux-gnu/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=/usr/include -DCMAKE_PREFIX_PATH=/usr -DCMAKE_INSTALL_PREFIX=~/pio -DPIO_HDF5_LOGGING=On -DPIO_USE_MALLOC=On -DPIO_ENABLE_LOGGING=On -DPIO_ENABLE_TIMING=Off -DNetCDF_Fortran_PATH=~/netcdf-fortran -DPnetCDF_PATH=~/pnetcdf ../pio-2.5.1
+          cmake -Wno-dev -DNetCDF_C_LIBRARY=/usr/lib/x86_64-linux-gnu/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=/usr/include -DCMAKE_PREFIX_PATH=/usr -DCMAKE_INSTALL_PREFIX=$HOME/pio -DPIO_HDF5_LOGGING=On -DPIO_USE_MALLOC=On -DPIO_ENABLE_LOGGING=On -DPIO_ENABLE_TIMING=Off -DNetCDF_Fortran_PATH=$HOME/netcdf-fortran -DPnetCDF_PATH=$HOME/pnetcdf ../pio-2.5.1
           make VERBOSE=1
           make install
           popd
