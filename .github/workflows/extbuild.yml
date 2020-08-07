@@ -98,6 +98,7 @@ jobs:
 
       - name: Build CDEPS
         run: |
+          export ESMFMKFILE=`find $HOME -name esmf.mk`
           git submodule init
           git submodule update
           mkdir build-cdeps
