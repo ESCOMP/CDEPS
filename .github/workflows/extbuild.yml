@@ -99,7 +99,6 @@ jobs:
       - name: netcdf fortran build
         if: steps.cache-netcdf-fortran.outputs.cache-hit != 'true'
         run: |
-          ncdump --version
           wget https://github.com/Unidata/netcdf-fortran/archive/v4.5.2.tar.gz
           tar -xzvf v4.5.2.tar.gz
           ls -l
