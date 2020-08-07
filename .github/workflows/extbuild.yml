@@ -26,7 +26,7 @@ jobs:
           path: ~/ESMF
           key: ${{ runner.os }}-ESMF
       - id: load-env
-        run: sudo apt-get install gfortran wget openmpi-bin netcdf-bin
+        run: sudo apt-get install gfortran wget openmpi-bin netcdf-bin libopenmpi-dev
 
       - id: build-ESMF
         if: steps.cache-esmf.outputs.cache-hit != 'true'
