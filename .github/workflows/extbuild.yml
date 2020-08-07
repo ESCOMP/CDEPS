@@ -12,8 +12,40 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
+  # Build the ESMF library, if the cache contains a previous build it will be used instead
+  esmf-build:
+    runs-on: ubuntu-latest
+    env:
+      CC: mpicc
+      FC: mpifort
+      CXX: mpicxx
+      CPPFLAGS: "-I/usr/include -I/usr/local/include"
+    steps:
+     - uses: actions/checkout@v2
+     - name: Cache ESMF
+       id: cache-esmf
+       uses: actions/cache@v2
+       with:
+         path: ESMF
+         key: ${{ runner.os }}-ESMF
+     - name: ESMF build
+       if: steps.cache-esmf.outputs.cache-hit != 'true'
+       run: |
+         sudo apt-get install gfortran wget openmpi-bin libopenmpi-dev
+         wget https://github.com/esmf-org/esmf/archive/ESMF_8_1_0_beta_snapshot_25.tar.gz
+         tar -xzvf ESMF_8_1_0_beta_snapshot_25.tar.gz
+         cd esmf-ESMF_8_1_0_beta_snapshot_25
+         export ESMF_DIR=`pwd`
+         export ESMF_COMM=openmpi
+         export ESMF_YAMLCPP="internal"
+         export ESMF_INSTALL_PREFIX=../ESMF
+	 export ESMF_BOPT=g
+         make
+         make install
+
+
+  # Build the pnetcdf library, if the cache contains a previous build it will be used instead
+  pnetcdf-build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
     env:
@@ -27,29 +59,54 @@ jobs:
 
     # Runs a single command using the runners shell
     - name: Installs
-      run: sudo apt-get install netcdf-bin libnetcdf-dev gfortran wget openmpi-bin libopenmpi-dev
+      run: sudo apt-get install gfortran wget openmpi-bin libopenmpi-dev
+    - name: Cache pnetcdf
+       id: cache-pnetcdf
+       uses: actions/cache@v2
+       with:
+         path: pnetcdf
+         key: ${{ runner.os }}-pnetcdf
     - name: pnetcdf build
-      run: |
-        wget https://parallel-netcdf.github.io/Release/pnetcdf-1.12.1.tar.gz
-        tar -xzvf pnetcdf-1.12.1.tar.gz
-        ls -l
-        pushd pnetcdf-1.12.1
-        ./configure --prefix=/usr --enable-shared --disable-cxx
-        make
-        sudo make install
-        popd
+        if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
+        run: |
+          wget https://parallel-netcdf.github.io/Release/pnetcdf-1.12.1.tar.gz
+          tar -xzvf pnetcdf-1.12.1.tar.gz
+          ls -l
+          pushd pnetcdf-1.12.1
+          ./configure --prefix=../pnetcdf --enable-shared --disable-cxx
+          make
+          sudo make install
+          popd
+  # Build the PIO library, if the cache contains a previous build it will be used
+  pio-build:
+    runs-on: ubuntu-latest
+    needs: pnetcdf-build
+    env:
+      CC: mpicc
+      FC: mpifort
+      CPPFLAGS: "-I/usr/include -I/usr/local/include"
+
+    - name: Installs
+      run: sudo apt-get install gfortran wget openmpi-bin libopenmpi-dev netcdf-bin libnetcdf-dev
+    - name: Cache PIO
+       id: cache-PIO
+       uses: actions/cache@v2
+       with:
+         path: pio
+         key: ${{ runner.os }}-pio
     - name: Build PIO
-      run: |
-        wget https://github.com/NCAR/ParallelIO/releases/download/pio_2_5_1/pio-2.5.1.tar.gz
-        tar -xzvf pio-2.5.1.tar.gz
-        mkdir build
-        cd build
-        cmake -Wno-dev -DNetCDF_C_LIBRARY=/usr/lib/x86_64-linux-gnu/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=/usr/include -DCMAKE_PREFIX_PATH=/usr -DCMAKE_INSTALL_PREFIX=../pio -DPIO_HDF5_LOGGING=On -DPIO_USE_MALLOC=On -DPIO_ENABLE_LOGGING=On -DPIO_ENABLE_TIMING=Off ../pio-2.5.1
-        make VERBOSE=1
-        make install
-        popd
-    - name: Build ESMF
-      run: |
+        if: steps.cache-PIO.outputs.cache-hit != 'true'
+        run: |
+          wget https://github.com/NCAR/ParallelIO/releases/download/pio_2_5_1/pio-2.5.1.tar.gz
+          tar -xzvf pio-2.5.1.tar.gz
+          mkdir build
+          cd build
+          cmake -Wno-dev -DNetCDF_C_LIBRARY=/usr/lib/x86_64-linux-gnu/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=/usr/include -DCMAKE_PREFIX_PATH=/usr -DCMAKE_INSTALL_PREFIX=../pio -DPIO_HDF5_LOGGING=On -DPIO_USE_MALLOC=On -DPIO_ENABLE_LOGGING=On -DPIO_ENABLE_TIMING=Off ../pio-2.5.1
+          make VERBOSE=1
+          make install
+          popd
+#    - name: Build ESMF
+#      run: |
 #    - name: Build CDEPS
 #      run: |
 #        mkdir cdepsbld
