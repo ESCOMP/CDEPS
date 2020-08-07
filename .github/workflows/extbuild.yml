@@ -98,7 +98,8 @@ jobs:
 
       - name: Build CDEPS
         run: |
-          export ESMFMKFILE=`find $HOME -name esmf.mk`
+          export ESMFMKFILE=$HOME/ESMF/lib/libg/Linux.gfortran.64.openmpi.default/esmf.mk
+          export PIO=$HOME/pio
           git submodule init
           git submodule update
           mkdir build-cdeps
