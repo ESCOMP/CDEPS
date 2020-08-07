@@ -58,23 +58,23 @@ on:
       # Runs a single command using the runners shell
       - name: Installs
         run: sudo apt-get install gfortran wget openmpi-bin libopenmpi-dev
-        - name: Cache pnetcdf
-          id: cache-pnetcdf
-          uses: actions/cache@v2
-          with:
-            path: pnetcdf
-            key: ${{ runner.os }}-pnetcdf
-            - name: pnetcdf build
-              if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
-              run: |
-                wget https://parallel-netcdf.github.io/Release/pnetcdf-1.12.1.tar.gz
-                tar -xzvf pnetcdf-1.12.1.tar.gz
-                ls -l
-                pushd pnetcdf-1.12.1
-                ./configure --prefix=../pnetcdf --enable-shared --disable-cxx
-                make
-                sudo make install
-                popd
+      - name: Cache pnetcdf
+        id: cache-pnetcdf
+        uses: actions/cache@v2
+        with:
+          path: pnetcdf
+          key: ${{ runner.os }}-pnetcdf
+      - name: pnetcdf build
+        if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
+        run: |
+          wget https://parallel-netcdf.github.io/Release/pnetcdf-1.12.1.tar.gz
+          tar -xzvf pnetcdf-1.12.1.tar.gz
+          ls -l
+          pushd pnetcdf-1.12.1
+          ./configure --prefix=../pnetcdf --enable-shared --disable-cxx
+          make
+          sudo make install
+          popd
   # Build the PIO library, if the cache contains a previous build it will be used
 #  pio-build:
 #    runs-on: ubuntu-latest
