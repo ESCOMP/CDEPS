@@ -25,10 +25,12 @@ jobs:
         with:
           path: ~/ESMF
           key: ${{ runner.os }}-ESMF
+      - id: load-env
+        run: sudo apt-get install gfortran wget openmpi-bin libopenmpi-dev netcdf-bin libnetcdf-dev
+
       - id: build-ESMF
         if: steps.cache-esmf.outputs.cache-hit != 'true'
         run: |
-          sudo apt-get install gfortran wget openmpi-bin libopenmpi-dev
           wget https://github.com/esmf-org/esmf/archive/ESMF_8_1_0_beta_snapshot_25.tar.gz
           tar -xzvf ESMF_8_1_0_beta_snapshot_25.tar.gz
           pushd esmf-ESMF_8_1_0_beta_snapshot_25
@@ -54,7 +56,7 @@ jobs:
           pushd pnetcdf-1.12.1
           ./configure --prefix=$HOME/pnetcdf --enable-shared --disable-cxx
           make
-          sudo make install
+          make install
           popd
       - name: Cache netcdf-fortran
         id: cache-netcdf-fortran
