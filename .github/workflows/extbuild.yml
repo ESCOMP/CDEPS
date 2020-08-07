@@ -11,7 +11,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # Build the ESMF library, if the cache contains a previous build it will be used instead
-  esmf-build:
+  build-cdeps:
     runs-on: ubuntu-latest
     env:
       CC: mpicc
@@ -40,24 +40,7 @@ jobs:
           make
           make install
           popd
-
-  # Build the pnetcdf library, if the cache contains a previous build it will be used instead
-  pnetcdf-build:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
-    env:
-      CC: mpicc
-      FC: mpifort
-      CPPFLAGS: "-I/usr/include -I/usr/local/include"
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
-      # Runs a single command using the runners shell
-      - name: Installs
-        run: sudo apt-get install gfortran wget openmpi-bin libopenmpi-dev
-      - name: Cache pnetcdf
-        id: cache-pnetcdf
+      - id: cache-pnetcdf
         uses: actions/cache@v2
         with:
           path: ~/pnetcdf
@@ -73,22 +56,6 @@ jobs:
           make
           sudo make install
           popd
-
-  # Build the netcdf library, if the cache contains a previous build it will be used instead
-  netcdf-fortran-build:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
-    env:
-      CC: mpicc
-      FC: mpifort
-      CPPFLAGS: "-I/usr/include -I/usr/local/include"
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
-      # Runs a single command using the runners shell
-      - name: Installs
-        run: sudo apt-get install gfortran wget openmpi-bin libopenmpi-dev netcdf-bin libnetcdf-dev
       - name: Cache netcdf-fortran
         id: cache-netcdf-fortran
         uses: actions/cache@v2
@@ -105,25 +72,12 @@ jobs:
           ./configure --prefix=$HOME/netcdf-fortran
           make
           make install
-          popd
 
-# Build the PIO library, if the cache contains a previous build it will be used
-  pio-build:
-    runs-on: ubuntu-latest
-    needs: [pnetcdf-build, netcdf-fortran-build]
-    env:
-      CC: mpicc
-      FC: mpifort
-      CPPFLAGS: "-I/usr/include -I/usr/local/include"
-    steps:
-      - uses: actions/checkout@v2
-      - name: Installs
-        run: sudo apt-get install gfortran wget openmpi-bin libopenmpi-dev netcdf-bin libnetcdf-dev
       - name: Cache PIO
         id: cache-PIO
         uses: actions/cache@v2
         with:
-          path: pio
+          path: ~/pio
           key: ${{ runner.os }}-pio
           restore-keys: |
             ${{ runner.os }}-netcdf-fortran
@@ -131,7 +85,6 @@ jobs:
       - name: Build PIO
         if: steps.cache-PIO.outputs.cache-hit != 'true'
         run: |
-          echo "${{ needs.pnetcdf-build.outputs }}"
           wget https://github.com/NCAR/ParallelIO/releases/download/pio_2_5_1/pio-2.5.1.tar.gz
           tar -xzvf pio-2.5.1.tar.gz
           mkdir build
