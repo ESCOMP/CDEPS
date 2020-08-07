@@ -36,7 +36,7 @@ jobs:
           export ESMF_DIR=`pwd`
           export ESMF_COMM=openmpi
           export ESMF_YAMLCPP="internal"
-          export ESMF_INSTALL_PREFIX=../ESMF
+          export ESMF_INSTALL_PREFIX=$ESMF_DIR/../ESMF
           export ESMF_BOPT=g
           make
           make install
@@ -70,7 +70,7 @@ jobs:
           tar -xzvf pnetcdf-1.12.1.tar.gz
           ls -l
           pushd pnetcdf-1.12.1
-          ./configure --prefix=../pnetcdf --enable-shared --disable-cxx
+          ./configure --prefix=`pwd`/pnetcdf --enable-shared --disable-cxx
           make
           sudo make install
           popd
