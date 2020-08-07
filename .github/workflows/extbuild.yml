@@ -20,9 +20,9 @@ jobs:
       CPPFLAGS: "-I/usr/include -I/usr/local/include"
     outputs: ${{ steps.cache-esmf.outputs }}
     steps:
-      - id: cache-esmf
       - uses: actions/checkout@v2
       - name: Cache ESMF
+        id: cache-esmf
         uses: actions/cache@v2
         with:
           path: ~/ESMF
@@ -54,13 +54,13 @@ jobs:
     outputs: ${{ steps.cache-pnetcdf.outputs }}
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - id: cache-pnetcdf
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
       # Runs a single command using the runners shell
       - name: Installs
         run: sudo apt-get install gfortran wget openmpi-bin libopenmpi-dev
       - name: Cache pnetcdf
+        id: cache-pnetcdf
         uses: actions/cache@v2
         with:
           path: ~/pnetcdf
