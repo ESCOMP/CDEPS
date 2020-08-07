@@ -26,7 +26,7 @@ jobs:
          tar -xzvf ESMF_8_1_0_beta_snapshot_25.tar.gz
          cd esmf-ESMF_8_1_0_beta_snapshot_25
          export ESMF_DIR=`pwd`
-	 export ESMF_COMM=openmpi
-	 export ESMF_YAMLCPP="internal"
-	 export ESMF_INSTALL_PREFIX=../ESMF
+         export ESMF_COMM=openmpi
+         export ESMF_YAMLCPP="internal"
+         export ESMF_INSTALL_PREFIX=../ESMF
          make install
