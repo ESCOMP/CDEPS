@@ -18,7 +18,7 @@ jobs:
       FC: mpifort
       CXX: mpicxx
       CPPFLAGS: "-I/usr/include -I/usr/local/include"
-    outputs: $HOME/ESMF
+    outputs: ${{ steps.cache-esmf.outputs }}
     steps:
       - uses: actions/checkout@v2
       - name: Cache ESMF
@@ -51,7 +51,7 @@ jobs:
       CC: mpicc
       FC: mpifort
       CPPFLAGS: "-I/usr/include -I/usr/local/include"
-    outputs: $HOME/pnetcdf
+    outputs: ${{ steps.cache-pnetcdf.outputs }}
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -85,7 +85,7 @@ jobs:
       CC: mpicc
       FC: mpifort
       CPPFLAGS: "-I/usr/include -I/usr/local/include"
-    outputs: $HOME/netcdf-fortran
+    outputs: ${{ steps.cache-netcdf-fortran.outputs }}
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -132,6 +132,7 @@ jobs:
       - name: Build PIO
         if: steps.cache-PIO.outputs.cache-hit != 'true'
         run: |
+          echo "${{ needs.pnetcdf-build.outputs }}"
           wget https://github.com/NCAR/ParallelIO/releases/download/pio_2_5_1/pio-2.5.1.tar.gz
           tar -xzvf pio-2.5.1.tar.gz
           mkdir build
