@@ -521,7 +521,7 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('sst_aquap_analytic')
        call  docn_datamode_aquaplanet_advance(exportstate, model_mesh, sst_option=aquap_option, rc=rc)
-       if (chkerr(rc,__line__,u_file_u)) return
+       if (ChkErr(rc,__LINE__,u_file_u)) return
     case('sst_aquap_constant')
        call  docn_datamode_aquaplanet_advance(exportState, model_mesh, sst_constant_value=sst_constant_value, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
