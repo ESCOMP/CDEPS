@@ -133,6 +133,8 @@ jobs:
           tar -xzvf pio-2.5.1.tar.gz
           mkdir build
           pushd build
+          ls ../pnetcdf/lib
+          ls ../netcdf-fortran/lib
           cmake -Wno-dev -DNetCDF_C_LIBRARY=/usr/lib/x86_64-linux-gnu/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=/usr/include -DCMAKE_PREFIX_PATH=/usr -DCMAKE_INSTALL_PREFIX=../pio -DPIO_HDF5_LOGGING=On -DPIO_USE_MALLOC=On -DPIO_ENABLE_LOGGING=On -DPIO_ENABLE_TIMING=Off -DNetCDF_Fortran_PATH=../netcdf-fortran -DPnetCDF_PATH=../pnetcdf ../pio-2.5.1
           make VERBOSE=1
           make install
