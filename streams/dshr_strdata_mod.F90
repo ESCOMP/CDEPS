@@ -1538,7 +1538,7 @@ contains
              if ( rcode /= PIO_NOERR ) then
                 call shr_sys_abort(' ERROR: reading in variable: '// trim(per_stream%fldlist_stream(nf)))
              end if
-             if(handlefill) then
+             if (handlefill) then
                 do n=1,size(dataptr1d)
                    if(.not. shr_infnan_isnan(data_real1d(n)) .and. data_real1d(n) .ne. fillvalue_r4) then
                       dataptr1d(n) = real(data_real1d(n), kind=r8)
@@ -1568,6 +1568,8 @@ contains
                 do l = 1,stream_nlev
                    do n = 1,size(dataptr2d, dim=2)
                       if (.not. shr_infnan_isnan(data_dbl2d(n,l)) .and. data_dbl2d(n,l) .ne. fillvalue_r8) then
+                         dataptr2d(l,n) = data_dbl2d(n,l)
+                      else
                          dataptr2d(l,n) = r8fill
                       endif
                    enddo
@@ -1580,6 +1582,7 @@ contains
                 end do
              end if
           else ! stream_nlev == 1
+             write(6,*)'DEBUG: dble data for ',trim(per_stream%fldlist_stream(nf)),' handlefill ',handlefill
              if (per_stream%stream_pio_iodesc_set) then
                 call pio_read_darray(pioid, varid, per_stream%stream_pio_iodesc, data_dbl1d, rcode)
              else
@@ -1589,13 +1592,17 @@ contains
                 call shr_sys_abort(' ERROR: reading in variable: '// trim(per_stream%fldlist_stream(nf)))
              end if
              if (handlefill) then
-                do n=1,size(dataptr1d)
-                   if(.not. shr_infnan_isnan(data_dbl1d(n)) .and. data_dbl1d(n) .ne. fillvalue_r8) then
+                do n = 1,size(dataptr1d)
+                   if (.not. shr_infnan_isnan(data_dbl1d(n)) .and. data_dbl1d(n) .ne. fillvalue_r8) then
                       dataptr1d(n) = data_dbl1d(n)
                    else
                       dataptr1d(n) = r8fill
                    end if
                 enddo
+             else
+                do n = 1,size(dataptr1d)
+                   dataptr1d(n) = data_dbl1d(n)
+                end do
              endif
           end if
 
@@ -1638,7 +1645,7 @@ contains
              if ( rcode /= PIO_NOERR ) then
                 call shr_sys_abort(' ERROR: reading in variable: '// trim(per_stream%fldlist_stream(nf)))
              end if
-             if(handlefill) then
+             if (handlefill) then
                 do n=1,lsize
                    if(data_short1d(n).eq.fillvalue_i2) then
                       dataptr1d(n) = r8fill
@@ -1770,6 +1777,7 @@ contains
     integer                 :: n, m, cnt
     type(var_desc_t)        :: varid
     integer                 :: ndims
+    character(CS)           :: dimname
     integer, allocatable    :: dimids(:)
     integer, allocatable    :: dimlens(:)
     integer                 :: unlimdid
@@ -1777,7 +1785,6 @@ contains
     integer                 :: lsize
     integer, pointer        :: compdof(:) => null()
     integer, pointer        :: compdof3d(:) => null()
-    character(CS)           :: dimname
     integer                 :: rCode ! pio return code (only used when pio error handling is PIO_BCAST_ERROR)
     character(*), parameter :: subname = '(shr_strdata_set_stream_iodesc) '
     character(*), parameter :: F00  = "('(shr_strdata_set_stream_iodesc) ',a,i8,2x,i8,2x,a)"
@@ -1787,13 +1794,15 @@ contains
 
     rc = ESMF_SUCCESS
 
-    ! query the first field in the stream dataset
+    ! set the number of vertical levels to a local variable
+    stream_nlev = per_stream%stream_nlev
+
+    ! query the variable fldname in the stream dataset for its dimensions
     rcode = pio_inq_varid(pioid, trim(fldname), varid)
     rcode = pio_inq_varndims(pioid, varid, ndims)
 
     allocate(dimids(ndims))
     allocate(dimlens(ndims))
-
     rcode = pio_inq_vardimid(pioid, varid, dimids(1:ndims))
     do n = 1, ndims
        rcode = pio_inq_dimlen(pioid, dimids(n), dimlens(n))
@@ -1807,11 +1816,19 @@ contains
     allocate(compdof(lsize))
     call ESMF_DistGridGet(distGrid, localDe=0, seqIndexList=compdof, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (stream_nlev > 1) then
+       allocate(compdof3d(stream_nlev*lsize))
+       cnt = 0
+       do n = 1,stream_nlev
+          do m = 1,size(compdof)
+             cnt = cnt + 1
+             compdof3d(cnt) = (compdof(m)-1)*stream_nlev + n
+          enddo
+       enddo
+    end if
 
     ! determine type of the variable
     rcode = pio_inq_vartype(pioid, varid, pio_iovartype)
-
-    stream_nlev = per_stream%stream_nlev
 
     if (ndims == 2) then
        if (sdat%masterproc) then
@@ -1828,14 +1845,6 @@ contains
           write(sdat%logunit,F01) 'setting iodesc for : '//trim(fldname)// &
                ' with dimlens(1), dimlens(2), dimlens(3) = ',dimlens(1),dimlens(2), dimlens(3), &
                ' variable had no time dimension '//trim(dimname)
-          allocate(compdof3d(lsize*stream_nlev))
-          cnt = 0
-          do m = 1,size(compdof)
-             do n = 1,stream_nlev
-                cnt = cnt + 1
-                compdof3d(cnt) = (compdof(m)-1)*stream_nlev + n
-             enddo
-          enddo
           call pio_initdecomp(sdat%pio_subsystem, pio_iovartype, (/dimlens(1),dimlens(2),dimlens(3)/), compdof3d, &
                per_stream%stream_pio_iodesc)
        else if (trim(dimname) == 'time' .or. trim(dimname) == 'nt') then
@@ -1855,16 +1864,8 @@ contains
              write(sdat%logunit,F02) 'setting iodesc for : '//trim(fldname)// &
                   ' with dimlens(1), dimlens(2),dimlens(3) = ',dimlens(1),dimlens(2),dimlens(3),&
                   ' variable had time dimension '
-             allocate(compdof3d(lsize*stream_nlev))
-             cnt = 0
-             do m = 1,size(compdof)
-                do n = 1,stream_nlev
-                   cnt = cnt + 1
-                   compdof3d(cnt) = (compdof(m)-1)*stream_nlev + n
-                enddo
-             enddo
           end if
-          call pio_initdecomp(sdat%pio_subsystem, pio_iovartype, (/dimlens(1),dimlens(2),dimlens(3)/), compdof, &
+          call pio_initdecomp(sdat%pio_subsystem, pio_iovartype, (/dimlens(1),dimlens(2),dimlens(3)/), compdof3d, &
                per_stream%stream_pio_iodesc)
        else
           write(6,*)'ERROR: dimlens= ',dimlens
