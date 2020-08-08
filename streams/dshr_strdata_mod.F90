@@ -396,7 +396,7 @@ contains
              call shr_sys_abort(subName//"ERROR: file does not exist: "//trim(fileName))
           end if
        endif
-       if(filename /= 'none') then
+       if (filename /= 'none') then
           sdat%pstrm(ns)%stream_mesh = ESMF_MeshCreate(trim(filename), fileformat=ESMF_FILEFORMAT_ESMFMESH, rc=rc)
        endif
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -1363,19 +1363,23 @@ contains
           call shr_sys_abort(subName//"ERROR: only double, real and short types are supported for stream read")
        end if
 
-       if(associated(dataptr2d_src) .and. trim(fldlist_model(nf)) .eq. uname) then
+       if (associated(dataptr2d_src) .and. trim(fldlist_model(nf)) .eq. uname) then
           ! save in dataptr2d_src
           dataptr2d_src(1,:) = dataptr(:)
-       elseif(associated(dataptr2d_src) .and. trim(fldlist_model(nf)) .eq. vname) then
+       else if (associated(dataptr2d_src) .and. trim(fldlist_model(nf)) .eq. vname) then
+          ! save in dataptr2d_src
           dataptr2d_src(2,:) = dataptr(:)
        else if (pio_iodesc_set) then
+          ! regrid the data
           call dshr_fldbun_getfieldN(fldbun_model, nf, field_dst, rc=rc)
           if (chkerr(rc,__LINE__,u_FILE_u)) return
-
           call ESMF_FieldRegrid(sdat%pstrm(ns)%field_stream, field_dst, routehandle=sdat%pstrm(ns)%routehandle, &
                termorderflag=ESMF_TERMORDER_SRCSEQ, checkflag=.false., zeroregion=ESMF_REGION_TOTAL, rc=rc)
           if (chkerr(rc,__LINE__,u_FILE_u)) return
        else
+          ! fill the data
+          call dshr_fldbun_getfieldN(fldbun_model, nf, field_dst, rc=rc)
+          if (chkerr(rc,__LINE__,u_FILE_u)) return
           call ESMF_FieldFill(field_dst, dataFillScheme="const", const1=dataptr(1), rc=rc)
           if (chkerr(rc,__LINE__,u_FILE_u)) return
        endif

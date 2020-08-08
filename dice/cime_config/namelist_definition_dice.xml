@@ -76,7 +76,7 @@
       <value stream="ssmi$">
 	$DIN_LOC_ROOT/ice/dice7/SSMI/ssmi.ifrac.0.5x0.5_ESMFmesh_120520.nc
       </value>
-      <value stream="ssmi_IAF">
+      <value stream="ssmi_iaf">
 	$DIN_LOC_ROOT/ocn/iaf/ssmi.ifrac.0.5x0.5_ESMFmesh_120520.nc
       </value>
     </values>
