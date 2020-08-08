@@ -395,7 +395,7 @@ contains
              call shr_sys_abort(subName//"ERROR: file does not exist: "//trim(fileName))
           end if
        endif
-       if(filename /= 'none') then
+       if (filename /= 'none') then
           sdat%pstrm(ns)%stream_mesh = ESMF_MeshCreate(trim(filename), fileformat=ESMF_FILEFORMAT_ESMFMESH, rc=rc)
        endif
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -698,15 +698,13 @@ contains
     logical                             :: checkflag = .false.
     integer                             :: npes
     integer                             :: my_task
+    integer                             :: nstreams
     real(r8)         ,parameter         :: solZenMin = 0.001_r8 ! minimum solar zenith angle
     integer          ,parameter         :: tadj = 2
     character(len=*) ,parameter         :: timname = "_strd_adv"
     character(*)     ,parameter         :: subname = "(shr_strdata_advance) "
     character(*)     ,parameter         :: F00  = "('(shr_strdata_advance) ',a)"
     character(*)     ,parameter         :: F01  = "('(shr_strdata_advance) ',a,a,i4,2(f10.5,2x))"
-    real(r8), pointer :: dataptr_temp1(:)
-    real(r8), pointer :: dataptr_temp2(:)
-    integer :: nstreams
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -806,21 +804,27 @@ contains
              call shr_cal_timeSet(timeUB,sdat%pstrm(ns)%ymdUB,0,sdat%stream(ns)%calendar,rc=rc)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
              timeint = timeUB-timeLB
-             call ESMF_TimeIntervalGet(timeint,StartTimeIn=timeLB,d=dday)
+             call ESMF_TimeIntervalGet(timeint, StartTimeIn=timeLB, d=dday)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
              dtime = abs(real(dday,r8) + real(sdat%pstrm(ns)%todUB-sdat%pstrm(ns)%todLB,r8)/shr_const_cDay)
 
              sdat%pstrm(ns)%dtmin = min(sdat%pstrm(ns)%dtmin,dtime)
              sdat%pstrm(ns)%dtmax = max(sdat%pstrm(ns)%dtmax,dtime)
+
              if ((sdat%pstrm(ns)%dtmax/sdat%pstrm(ns)%dtmin) > sdat%stream(ns)%dtlimit) then
                 if (sdat%masterproc) then
-                   write(sdat%logunit,*) trim(subname),' ERROR: for stream ',n
-                   write(sdat%logunit,*) trim(subName),' ERROR: dt limit1 ',&
-                        sdat%pstrm(ns)%dtmax, sdat%pstrm(ns)%dtmin, sdat%stream(ns)%dtlimit
-                   write(sdat%logunit,*) trim(subName),' ERROR: dt limit2 ',&
+                   write(sdat%logunit,*) trim(subname),' ERROR: for stream ',ns
+                   write(sdat%logunit,*) trim(subName),' ERROR: dtime, dtmax, dtmin, dtlimit = ',&
+                        dtime, sdat%pstrm(ns)%dtmax, sdat%pstrm(ns)%dtmin, sdat%stream(ns)%dtlimit
+                   write(sdat%logunit,*) trim(subName),' ERROR: ymdLB, todLB, ymdUB, todUB = ', &
                         sdat%pstrm(ns)%ymdLB, sdat%pstrm(ns)%todLB, sdat%pstrm(ns)%ymdUB, sdat%pstrm(ns)%todUB
                 end if
-                call shr_sys_abort(trim(subName)//' ERROR dt limit for stream')
+                write(6,*) trim(subname),' ERROR: for stream ',ns
+                write(6,*) trim(subName),' ERROR: dtime, dtmax, dtmin, dtlimit = ',&
+                     dtime, sdat%pstrm(ns)%dtmax, sdat%pstrm(ns)%dtmin, sdat%stream(ns)%dtlimit
+                write(6,*) trim(subName),' ERROR: ymdLB, todLB, ymdUB, todUB = ', &
+                     sdat%pstrm(ns)%ymdLB, sdat%pstrm(ns)%todLB, sdat%pstrm(ns)%ymdUB, sdat%pstrm(ns)%todUB
+                call shr_sys_abort(trim(subName)//' ERROR dt limit for stream, see atm.log output')
              endif
           endif
 
@@ -1256,8 +1260,6 @@ contains
 
     lsize = size(dataptr)
     do nf = 1,size(fldlist_stream)
-       call dshr_fldbun_getfieldN(fldbun_model, nf, field_dst, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
        rcode = pio_inq_varid(pioid, trim(fldlist_stream(nf)), varid)
        ! determine type of the variable
        rcode = pio_inq_vartype(pioid, varid, pio_iovartype)
@@ -1357,16 +1359,23 @@ contains
           call shr_sys_abort(subName//"ERROR: only double, real and short types are supported for stream read")
        end if
 
-       if(associated(dataptr2d_src) .and. trim(fldlist_model(nf)) .eq. uname) then
+       if (associated(dataptr2d_src) .and. trim(fldlist_model(nf)) .eq. uname) then
           ! save in dataptr2d_src
           dataptr2d_src(1,:) = dataptr(:)
-       elseif(associated(dataptr2d_src) .and. trim(fldlist_model(nf)) .eq. vname) then
+       else if (associated(dataptr2d_src) .and. trim(fldlist_model(nf)) .eq. vname) then
+          ! save in dataptr2d_src
           dataptr2d_src(2,:) = dataptr(:)
        else if (pio_iodesc_set) then
+          ! regrid the data
+          call dshr_fldbun_getfieldN(fldbun_model, nf, field_dst, rc=rc)
+          if (chkerr(rc,__LINE__,u_FILE_u)) return
           call ESMF_FieldRegrid(sdat%pstrm(ns)%field_stream, field_dst, routehandle=sdat%pstrm(ns)%routehandle, &
                termorderflag=ESMF_TERMORDER_SRCSEQ, checkflag=.false., zeroregion=ESMF_REGION_TOTAL, rc=rc)
           if (chkerr(rc,__LINE__,u_FILE_u)) return
        else
+          ! fill the data
+          call dshr_fldbun_getfieldN(fldbun_model, nf, field_dst, rc=rc)
+          if (chkerr(rc,__LINE__,u_FILE_u)) return
           call ESMF_FieldFill(field_dst, dataFillScheme="const", const1=dataptr(1), rc=rc)
           if (chkerr(rc,__LINE__,u_FILE_u)) return
        endif
