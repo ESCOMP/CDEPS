@@ -1674,6 +1674,7 @@ contains
 
        if(associated(dataptr2d_src) .and. trim(per_stream%fldlist_model(nf)) .eq. uname) then
           ! save in dataptr2d_src
+
           dataptr2d_src(1,:) = dataptr1d(:)
        elseif(associated(dataptr2d_src) .and. trim(per_stream%fldlist_model(nf)) .eq. vname) then
           dataptr2d_src(2,:) = dataptr1d(:)

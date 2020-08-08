@@ -342,7 +342,7 @@
       <!-- optional stream prescribed aero      -->
       <!-- ==================================== -->
       <value  stream="presaero.cplhist">
-	$DATM_DOMAIN_MESH
+	$ATM_DOMAIN_MESH
       </value>
       <value stream="presaero\.">
 	$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc
@@ -351,7 +351,7 @@
       <!-- optional topo                        -->
       <!-- ==================================== -->
       <value stream="topo.cplhist">
-	$DATM_DOMAIN_MESH
+	$ATM_DOMAIN_MESH
       </value>
       <value stream="topo.observed">
 	$DIN_LOC_ROOT/atm/datm7/topo_forcing/topodata_0.9x1.SCRIP.210520_ESMFmesh.nc
@@ -2422,6 +2422,10 @@
       <value stream="CPLHISTForcing.State1hr">linear</value>
       <value stream="presaero.cplhist">nearest</value>
       <value stream="topo.cplhist">nearest</value>
+      <value stream="CLM_QIAN.Solar">coszen</value>
+      <value stream="CLM_QIAN.Precip">nearest</value>
+      <value stream="CLM_QIAN_WISO.Solar">coszen</value>
+      <value stream="CLM_QIAN_WISO.Precip">nearest</value>
       <value stream="CLMCRUNCEP.Solar">coszen</value>
       <value stream="CLMCRUNCEP.Precip">nearest</value>
       <value stream="CLMCRUNCEPv7.Solar">coszen</value>
@@ -2516,6 +2520,9 @@
       <value stream="CPLHISTForcing.State1hr">3.0</value>
       <value stream="presaero.cplhist">3.0</value>
       <value stream="topo.cplhist">3.0</value>
+      <value stream="co2tseries.20tr">1.e30</value>
+      <value stream="co2tseries.SSP">1.e30</value>
+      <value datm_mode="1PT">1.e30</value>
     </values>
   </entry>
 

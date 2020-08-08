@@ -153,7 +153,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Sa_v'       , fldptr1=Sa_v       , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call dshr_state_getfldptr(exportState, 'Sa_wspd'    , fldptr1=Sa_wspd    , rc=rc)
+    call dshr_state_getfldptr(exportState, 'Sa_wspd'    , fldptr1=Sa_wspd    , allowNullReturn=.true., rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Sa_tbot'    , fldptr1=Sa_tbot    , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -187,7 +187,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Faxa_swdn'  , fldptr1=Faxa_swdn  , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call dshr_state_getfldptr(exportState, 'Faxa_lwnet' , fldptr1=Faxa_lwnet , rc=rc)
+    call dshr_state_getfldptr(exportState, 'Faxa_lwnet' , fldptr1=Faxa_lwnet , allowNullReturn=.true., rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Faxa_lwdn'  , fldptr1=Faxa_lwdn  , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -296,7 +296,9 @@ contains
 
     ! convert J/m^2 to W/m^2
     Faxa_lwdn(:) = Faxa_lwdn(:)/3600.0_r8
-    Faxa_lwnet(:) = Faxa_lwnet(:)/3600.0_r8
+    if (associated(Faxa_lwnet)) then
+      Faxa_lwnet(:) = Faxa_lwnet(:)/3600.0_r8
+    end if
     Faxa_swdn(:) = Faxa_swdn(:)/3600.0_r8
     Faxa_swvdr(:) = Faxa_swvdr(:)/3600.0_r8
     Faxa_swndr(:) = Faxa_swndr(:)/3600.0_r8
