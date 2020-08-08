@@ -275,7 +275,6 @@ contains
     integer               :: spatialDim         ! number of dimension in mesh
     integer               :: numOwnedElements   ! local size of mesh
     real(r8), allocatable :: ownedElemCoords(:) ! mesh lat and lons
-    integer               :: rcode
     ! ----------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -632,8 +631,7 @@ contains
     ! local variables
     integer                             :: ns               !stream index
     integer                             :: nf               ! field index
-    integer                             :: n,i              ! generic indices
-    integer                             :: nu
+    integer                             :: i                ! generic indices
     logical , allocatable               :: newData(:)
     integer , allocatable               :: ymdmod(:)        ! modified model dates to handle Feb 29
     real(r8), allocatable               :: coszen(:)        ! cosine of zenith angle
@@ -657,7 +655,6 @@ contains
     integer                             :: dday             ! delta days
     real(r8)                            :: dtime            ! delta time
     integer                             :: year,month,day   ! date year month day
-    integer                             :: numOwnedElements ! local size of mesh
     integer                             :: nstreams
     real(r8)         ,parameter         :: solZenMin = 0.001_r8 ! minimum solar zenith angle
     integer          ,parameter         :: tadj = 2

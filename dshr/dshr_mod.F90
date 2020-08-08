@@ -1262,7 +1262,6 @@ contains
     type(var_desc_t)  :: varid
     type(io_desc_t)   :: pio_iodesc
     integer           :: rcode
-    integer           :: yy, mm, dd
     character(*), parameter :: F00   = "('(dshr_restart_write) ',2a,2(i0,2x))"
     !-------------------------------------------------------------------------------
 
@@ -1344,7 +1343,7 @@ contains
     integer,          intent(inout)  :: rc
 
     ! local variables
-    integer           :: mytask, ierr, len
+    integer           :: mytask
     type(ESMF_VM)     :: vm
     type(ESMF_Field)  :: field
     real(r8), pointer :: farrayptr(:,:)
@@ -1571,6 +1570,7 @@ contains
     if ( eccen  == SHR_ORB_UNDEF_REAL .or. obliqr == SHR_ORB_UNDEF_REAL .or. &
          mvelpp == SHR_ORB_UNDEF_REAL .or. lambm0 == SHR_ORB_UNDEF_REAL) then
        write (msgstr, *) subname//' ERROR: orb params incorrect'
+       write (logunit, *) msgstr
        call ESMF_LogSetError(ESMF_RC_NOT_VALID, msg=msgstr, line=__LINE__, file=__FILE__, rcToReturn=rc)
        return  ! bail out
     endif
@@ -1595,7 +1595,6 @@ contains
     real(R8) :: nextsw_cday
     real(R8) :: julday
     integer  :: liradsw
-    integer  :: yy,mm,dd
     character(*),parameter :: subName =  '(getNextRadCDay) '
     !-------------------------------------------------------------------------------
 

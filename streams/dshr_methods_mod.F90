@@ -427,7 +427,7 @@ contains
     integer                , intent(out)          :: rc
 
     ! local variables
-    integer                         :: j,n
+    integer                         :: n
     integer                         :: fieldCount, lrank
     character(ESMF_MAXSTR), pointer :: lfieldnamelist(:)
     character(len=CL)               :: lstring
