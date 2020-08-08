@@ -89,7 +89,7 @@ contains
     integer         , intent(out) :: rc
 
     ! local variables
-    integer                         :: i,j,n
+    integer                         :: n
     type(ESMf_Field)                :: lfield
     integer                         :: fieldCount, lrank
     character(ESMF_MAXSTR) ,pointer :: lfieldnamelist(:)
@@ -427,7 +427,7 @@ contains
     integer                , intent(out)          :: rc
 
     ! local variables
-    integer                         :: i,j,n
+    integer                         :: j,n
     integer                         :: fieldCount, lrank
     character(ESMF_MAXSTR), pointer :: lfieldnamelist(:)
     character(len=CL)               :: lstring
