@@ -224,12 +224,9 @@ contains
 
     ! local variables
     type(ESMF_VM)                  :: vm
-    type(ESMF_Mesh)                :: mesh_global
     type(ESMF_Calendar)            :: esmf_calendar           ! esmf calendar
-    type(ESMF_CalKind_Flag)        :: esmf_caltype            ! esmf calendar type
     type(ESMF_DistGrid)            :: distGrid
     integer, pointer               :: model_gindex(:)         ! model global index spzce
-    character(CS)                  :: calendar                ! calendar name
     integer                        :: mpicom
     integer                        :: my_task
     logical                        :: scol_mode
@@ -820,7 +817,6 @@ contains
     type(ESMF_Time)         :: CurrTime         ! Current Time
     type(ESMF_Time)         :: NextAlarm        ! Next restart alarm time
     type(ESMF_TimeInterval) :: AlarmInterval    ! Alarm interval
-    integer                 :: sec
     character(len=*), parameter :: &   ! Clock and alarm options
          optNONE           = "none"      , &
          optNever          = "never"     , &
@@ -1134,7 +1130,6 @@ contains
 
     ! local variables
     integer :: year, mon, day ! year, month, day as integers
-    integer :: tdate          ! temporary date
     integer :: date           ! coded-date (yyyymmdd)
     integer         , parameter :: SecPerDay = 86400 ! Seconds per day
     character(len=*), parameter :: subname='(dshr_time_init)'
@@ -1146,7 +1141,6 @@ contains
        call shr_sys_abort( subname//'ERROR yymmdd is a negative number or time-of-day out of bounds' )
     end if
 
-    tdate = abs(date)
     year = int(tdate/10000)
     if (date < 0) year = -year
     mon = int( mod(tdate,10000)/  100)
@@ -1233,7 +1227,7 @@ contains
 
   !===============================================================================
   subroutine dshr_restart_write(rpfile, case_name, model_name, inst_suffix, ymd, tod, &
-       logunit, mpicom, my_task, sdat, fld, fldname)
+       logunit, my_task, sdat, fld, fldname)
 
     ! Write restart file
 

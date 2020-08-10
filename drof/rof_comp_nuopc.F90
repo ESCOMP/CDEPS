@@ -446,7 +446,7 @@ contains
        select case (trim(datamode))
        case('copyall')
           call dshr_restart_write(rpfile, case_name, 'drof', inst_suffix, target_ymd, target_tod, &
-               logunit, mpicom, my_task, sdat)
+               logunit, my_task, sdat)
        end select
     end if
 

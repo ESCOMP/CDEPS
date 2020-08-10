@@ -589,7 +589,7 @@ contains
        call datm_datamode_jra_advance(exportstate, target_ymd, target_tod, sdat%model_calendar, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('CLMNCEP')
-       call datm_datamode_clmncep_advance(importstate, exportstate, masterproc, logunit, mpicom,  rc)
+       call datm_datamode_clmncep_advance(masterproc, logunit, mpicom,  rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('ERA5')
        call datm_datamode_era5_advance(exportstate, masterproc, logunit, mpicom, target_ymd, &

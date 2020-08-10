@@ -375,7 +375,7 @@ contains
 
        call ESMF_TraceRegionEnter('dlnd_restart')
        call dshr_restart_write(rpfile, case_name, 'dlnd', inst_suffix, next_ymd, next_tod, &
-            logunit, mpicom, my_task, sdat)
+            logunit, my_task, sdat)
        call ESMF_TraceRegionExit('dlnd_restart')
     endif
 

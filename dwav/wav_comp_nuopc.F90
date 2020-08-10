@@ -358,7 +358,7 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
        call dshr_restart_write(rpfile, case_name, 'dwav', inst_suffix, next_ymd, next_tod, &
-            logunit, mpicom, my_task, sdat)
+            logunit, my_task, sdat)
        call ESMF_TraceRegionExit('dwav_restart')
     endif
 
