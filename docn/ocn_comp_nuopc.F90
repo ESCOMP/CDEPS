@@ -126,15 +126,15 @@ contains
 
     ! switching to IPD versions
     call ESMF_GridCompSetEntryPoint(gcomp, ESMF_METHOD_INITIALIZE, &
-	 userRoutine=dshr_model_initphase, phase=0, rc=rc)
+         userRoutine=dshr_model_initphase, phase=0, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     ! set entry point for methods that require specific implementation
     call NUOPC_CompSetEntryPoint(gcomp, ESMF_METHOD_INITIALIZE, &
-	 phaseLabelList=(/"IPDv01p1"/), userRoutine=InitializeAdvertise, rc=rc)
+         phaseLabelList=(/"IPDv01p1"/), userRoutine=InitializeAdvertise, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     call NUOPC_CompSetEntryPoint(gcomp, ESMF_METHOD_INITIALIZE, &
-	 phaseLabelList=(/"IPDv01p3"/), userRoutine=InitializeRealize, rc=rc)
+         phaseLabelList=(/"IPDv01p3"/), userRoutine=InitializeRealize, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! attach specializing method(s)
@@ -175,8 +175,8 @@ contains
     !-------------------------------------------------------------------------------
 
     namelist / docn_nml / datamode, &
-	 model_meshfile, model_maskfile, model_createmesh_fromfile, &
-	 restfilm,  nx_global, ny_global, sst_constant_value
+         model_meshfile, model_maskfile, model_createmesh_fromfile, &
+         restfilm,  nx_global, ny_global, sst_constant_value
 
     rc = ESMF_SUCCESS
 
@@ -186,7 +186,7 @@ contains
     ! Obtain flds_scalar values, mpi values, multi-instance values and
     ! set logunit and set shr logging to my log file
     call dshr_init(gcomp, mpicom, my_task, inst_index, inst_suffix, &
-	 flds_scalar_name, flds_scalar_num, flds_scalar_index_nx, flds_scalar_index_ny, logunit, rc)
+         flds_scalar_name, flds_scalar_num, flds_scalar_index_nx, flds_scalar_index_ny, logunit, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Determine logical masterproc
@@ -200,18 +200,18 @@ contains
        read (nu,nml=docn_nml,iostat=ierr)
        close(nu)
        if (ierr > 0) then
-	  write(logunit,F00) 'ERROR: reading input namelist, '//trim(nlfilename)//' iostat=',ierr
-	  call shr_sys_abort(subName//': namelist read error '//trim(nlfilename))
+          write(logunit,F00) 'ERROR: reading input namelist, '//trim(nlfilename)//' iostat=',ierr
+          call shr_sys_abort(subName//': namelist read error '//trim(nlfilename))
        end if
 
        ! write namelist input to standard out
        write(logunit,F00)' case_name = ',trim(case_name)
        write(logunit,F00)' datamode  = ',trim(datamode)
        if (model_createmesh_fromfile /= nullstr) then
-	  write(logunit,F00)' model_create_meshfile_fromfile = ',trim(model_createmesh_fromfile)
+          write(logunit,F00)' model_create_meshfile_fromfile = ',trim(model_createmesh_fromfile)
        else
-	  write(logunit,F00)' model_meshfile = ',trim(model_meshfile)
-	  write(logunit,F00)' model_maskfile = ',trim(model_maskfile)
+          write(logunit,F00)' model_meshfile = ',trim(model_meshfile)
+          write(logunit,F00)' model_maskfile = ',trim(model_maskfile)
        end if
        write(logunit,F01)' nx_global = ',nx_global
        write(logunit,F01)' ny_global = ',ny_global
@@ -219,24 +219,24 @@ contains
 
        ! check that files exists
        if (model_createmesh_fromfile /= nullstr) then
-	  inquire(file=trim(model_createmesh_fromfile), exist=exists)
-	  if (.not.exists) then
-	     write(logunit, *)' ERROR: model_createmesh_fromfile '//&
-		  trim(model_createmesh_fromfile)//' does not exist'
-	     call shr_sys_abort(trim(subname)//' ERROR: model_createmesh_fromfile '//&
-		  trim(model_createmesh_fromfile)//' does not exist')
-	  end if
+          inquire(file=trim(model_createmesh_fromfile), exist=exists)
+          if (.not.exists) then
+             write(logunit, *)' ERROR: model_createmesh_fromfile '//&
+                  trim(model_createmesh_fromfile)//' does not exist'
+             call shr_sys_abort(trim(subname)//' ERROR: model_createmesh_fromfile '//&
+                  trim(model_createmesh_fromfile)//' does not exist')
+          end if
        else
-	  inquire(file=trim(model_meshfile), exist=exists)
-	  if (.not.exists) then
-	     write(logunit, *)' ERROR: model_meshfile '//trim(model_meshfile)//' does not exist'
-	     call shr_sys_abort(trim(subname)//' ERROR: model_meshfile '//trim(model_meshfile)//' does not exist')
-	  end if
-	  inquire(file=trim(model_maskfile), exist=exists)
-	  if (.not.exists) then
-	     write(logunit, *)' ERROR: model_maskfile '//trim(model_maskfile)//' does not exist'
-	     call shr_sys_abort(trim(subname)//' ERROR: model_maskfile '//trim(model_maskfile)//' does not exist')
-	  end if
+          inquire(file=trim(model_meshfile), exist=exists)
+          if (.not.exists) then
+             write(logunit, *)' ERROR: model_meshfile '//trim(model_meshfile)//' does not exist'
+             call shr_sys_abort(trim(subname)//' ERROR: model_meshfile '//trim(model_meshfile)//' does not exist')
+          end if
+          inquire(file=trim(model_maskfile), exist=exists)
+          if (.not.exists) then
+             write(logunit, *)' ERROR: model_maskfile '//trim(model_maskfile)//' does not exist'
+             call shr_sys_abort(trim(subname)//' ERROR: model_maskfile '//trim(model_maskfile)//' does not exist')
+          end if
        end if
     endif
 
@@ -254,9 +254,9 @@ contains
     if (datamode(1:9) == 'sst_aquap') then
        ! First determine the prescribed aquaplanet option
        if (len_trim(datamode) == 10) then
-	  read(datamode(10:10),'(i1)') aquap_option
+          read(datamode(10:10),'(i1)') aquap_option
        else if (len_trim(datamode) == 11) then
-	  read(datamode(10:11),'(i2)') aquap_option
+          read(datamode(10:11),'(i2)') aquap_option
        end if
        ! Now remove the index from the datamode value, to have a generic setting for later use
        datamode = "sst_aquap_analytic"
@@ -264,12 +264,12 @@ contains
 
     ! Validate datamode
     if ( trim(datamode) == 'sstdata'            .or. & ! read stream, no import data
-	 trim(datamode) == 'iaf'                .or. & ! read stream, needs import data?
-	 trim(datamode) == 'sst_aquap_file'     .or. & ! read stream, no import data
-	 trim(datamode) == 'som'                .or. & ! read stream, needs import data
-	 trim(datamode) == 'som_aquap'          .or. & ! read stream, needs import data
-	 trim(datamode) == 'sst_aquap_analytic' .or. & ! analytic, no streams, import or export data
-	 trim(datamode) == 'sst_aquap_constant' ) then ! analytic, no streams, import or export data
+         trim(datamode) == 'iaf'                .or. & ! read stream, needs import data?
+         trim(datamode) == 'sst_aquap_file'     .or. & ! read stream, no import data
+         trim(datamode) == 'som'                .or. & ! read stream, needs import data
+         trim(datamode) == 'som_aquap'          .or. & ! read stream, needs import data
+         trim(datamode) == 'sst_aquap_analytic' .or. & ! analytic, no streams, import or export data
+         trim(datamode) == 'sst_aquap_constant' ) then ! analytic, no streams, import or export data
        ! success do nothing
     else
        call shr_sys_abort(' ERROR illegal docn datamode = '//trim(datamode))
@@ -317,8 +317,8 @@ contains
     ! Initialize model mesh, restart flag, logunit, model_mask and model_frac
     call ESMF_TraceRegionEnter('docn_strdata_init')
     call dshr_mesh_init(gcomp, nullstr, logunit, 'OCN', nx_global, ny_global, &
-	 model_meshfile, model_maskfile, model_createmesh_fromfile, model_mesh, &
-	 model_mask, model_frac, restart_read, rc=rc)
+         model_meshfile, model_maskfile, model_createmesh_fromfile, model_mesh, &
+         model_mask, model_frac, restart_read, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Initialize stream data type if not aqua planet
@@ -333,10 +333,10 @@ contains
     ! NUOPC_Realize "realizes" a previously advertised field in the importState and exportState
     ! by replacing the advertised fields with the newly created fields of the same name.
     call dshr_fldlist_realize( exportState, fldsExport, flds_scalar_name, flds_scalar_num, model_mesh, &
-	 subname//trim(modelname)//':Export', rc=rc)
+         subname//trim(modelname)//':Export', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_fldlist_realize( importState, fldsImport, flds_scalar_name, flds_scalar_num, model_mesh, &
-	 subname//trim(modelname)//':Import', rc=rc)
+         subname//trim(modelname)//':Import', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Get the time to interpolate the stream data to
@@ -453,29 +453,29 @@ contains
        ! Initialize datamode module ponters
        select case (trim(datamode))
        case('sstdata', 'sst_aquap_file')
-	  call docn_datamode_copyall_init_pointers(exportState, model_frac, rc)
-	  if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          call docn_datamode_copyall_init_pointers(exportState, model_frac, rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('iaf')
-	  call docn_datamode_iaf_init_pointers(importState, exportState, model_frac, rc)
-	  if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          call docn_datamode_iaf_init_pointers(importState, exportState, model_frac, rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('som', 'som_aquap')
-	  call docn_datamode_som_init_pointers(importState, exportState, sdat, model_frac, rc)
-	  if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          call docn_datamode_som_init_pointers(importState, exportState, sdat, model_frac, rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('sst_aquap_analytic', 'sst_aquap_constant')
-	  call  docn_datamode_aquaplanet_init_pointers(exportState, model_frac, rc)
-	  if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          call  docn_datamode_aquaplanet_init_pointers(exportState, model_frac, rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end select
 
        ! Read restart if needed
        if (restart_read) then
-	  select case (trim(datamode))
-	  case('sstdata', 'sst_aquap_file')
-	     call docn_datamode_copyall_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
-	  case('iaf')
-	     call docn_datamode_iaf_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
-	  case('som', 'som_aquap')
-	     call docn_datamode_som_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
-	  end select
+          select case (trim(datamode))
+          case('sstdata', 'sst_aquap_file')
+             call docn_datamode_copyall_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
+          case('iaf')
+             call docn_datamode_iaf_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
+          case('som', 'som_aquap')
+             call docn_datamode_som_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
+          end select
        end if
 
        ! Reset first_time
@@ -524,14 +524,14 @@ contains
     if (restart_write) then
        select case (trim(datamode))
        case('sstdata','sst_aquap_file')
-	  call docn_datamode_copyall_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-	       logunit, my_task, sdat)
+          call docn_datamode_copyall_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
+               logunit, my_task, sdat)
        case('iaf')
-	  call docn_datamode_iaf_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-	       logunit, my_task, sdat)
+          call docn_datamode_iaf_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
+               logunit, my_task, sdat)
        case('som','som_aquap')
-	  call docn_datamode_som_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-	       logunit, my_task, sdat)
+          call docn_datamode_som_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
+               logunit, my_task, sdat)
        end select
     end if
 
@@ -573,13 +573,13 @@ contains
       call ESMF_StateGet(exportState, itemNameList=lfieldnamelist, rc=rc)
       if (chkerr(rc,__LINE__,u_FILE_u)) return
       do n = 1, fieldCount
-	 call ESMF_StateGet(exportState, itemName=trim(lfieldNameList(n)), field=lfield, rc=rc)
-	 if (chkerr(rc,__LINE__,u_FILE_u)) return
-	 if (trim(lfieldnamelist(n)) /= flds_scalar_name) then
-	    call dshr_dfield_add( dfields, sdat, trim(lfieldnamelist(n)), trim(lfieldnamelist(n)), exportState, &
-		 logunit, masterproc, rc)
-	    if (chkerr(rc,__LINE__,u_FILE_u)) return
-	 end if
+         call ESMF_StateGet(exportState, itemName=trim(lfieldNameList(n)), field=lfield, rc=rc)
+         if (chkerr(rc,__LINE__,u_FILE_u)) return
+         if (trim(lfieldnamelist(n)) /= flds_scalar_name) then
+            call dshr_dfield_add( dfields, sdat, trim(lfieldnamelist(n)), trim(lfieldnamelist(n)), exportState, &
+                 logunit, masterproc, rc)
+            if (chkerr(rc,__LINE__,u_FILE_u)) return
+         end if
       end do
     end subroutine docn_init_dfields
 
