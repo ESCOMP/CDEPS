@@ -1,4 +1,4 @@
-# This is a basic workflow to help you get started with Actions
+# This is a workflow to compile the cdeps source without cime
 name: extbuild
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
@@ -10,7 +10,6 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # Build the ESMF library, if the cache contains a previous build it will be used instead
   build-cdeps:
     runs-on: ubuntu-latest
     env:
@@ -18,8 +17,11 @@ jobs:
       FC: mpifort
       CXX: mpicxx
       CPPFLAGS: "-I/usr/include -I/usr/local/include"
+      ESMF_VERSION: ESMF_8_1_0_beta_snapshot_25
     steps:
       - uses: actions/checkout@v2
+        # Build the ESMF library, if the cache contains a previous build
+        # it will be used instead
       - id: cache-esmf
         uses: actions/cache@v2
         with:
@@ -27,13 +29,12 @@ jobs:
           key: ${{ runner.os }}-ESMF
       - id: load-env
         run: sudo apt-get install gfortran wget openmpi-bin netcdf-bin libopenmpi-dev
-
       - id: build-ESMF
         if: steps.cache-esmf.outputs.cache-hit != 'true'
         run: |
-          wget https://github.com/esmf-org/esmf/archive/ESMF_8_1_0_beta_snapshot_25.tar.gz
-          tar -xzvf ESMF_8_1_0_beta_snapshot_25.tar.gz
-          pushd esmf-ESMF_8_1_0_beta_snapshot_25
+          wget https://github.com/esmf-org/esmf/archive/${{ env.ESMF_VERSION }}.tar.gz
+          tar -xzvf ${{ env.ESMF_VERSION }}.tar.gz
+          pushd esmf-${{ env.ESMF_VERSION }}
           export ESMF_DIR=`pwd`
           export ESMF_COMM=openmpi
           export ESMF_YAMLCPP="internal"
