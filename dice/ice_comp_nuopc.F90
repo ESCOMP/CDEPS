@@ -356,9 +356,6 @@ contains
     type(ESMF_Alarm)        :: alarm
     type(ESMF_TimeInterval) :: timeStep
     type(ESMF_Time)         :: currTime, nextTime
-    integer                 :: current_mon   ! model month
-    integer                 :: current_day   ! model day
-    integer                 :: current_tod   ! model sec into model date
     real(R8)                :: cosarg        ! for setting ice temp pattern
     real(R8)                :: jday, jday0   ! elapsed day counters
     integer                 :: next_ymd      ! model date
