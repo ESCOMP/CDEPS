@@ -1582,7 +1582,6 @@ contains
                 end do
              end if
           else ! stream_nlev == 1
-             write(6,*)'DEBUG: dble data for ',trim(per_stream%fldlist_stream(nf)),' handlefill ',handlefill
              if (per_stream%stream_pio_iodesc_set) then
                 call pio_read_darray(pioid, varid, per_stream%stream_pio_iodesc, data_dbl1d, rcode)
              else
@@ -1774,6 +1773,7 @@ contains
 
     ! local variables
     integer                 :: stream_nlev
+    integer                 :: gsize2d
     integer                 :: pio_iovartype
     integer                 :: n, m, cnt
     type(var_desc_t)        :: varid
@@ -1802,6 +1802,7 @@ contains
     rcode = pio_inq_varid(pioid, trim(fldname), varid)
     rcode = pio_inq_varndims(pioid, varid, ndims)
 
+    ! allocate memory for dimids and dimlens
     allocate(dimids(ndims))
     allocate(dimlens(ndims))
     rcode = pio_inq_vardimid(pioid, varid, dimids(1:ndims))
@@ -1819,11 +1820,13 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (stream_nlev > 1) then
        allocate(compdof3d(stream_nlev*lsize))
+       ! Assume that first 2 dimensions correspond to the compdof
+       gsize2d = dimlens(1)*dimlens(2)
        cnt = 0
        do n = 1,stream_nlev
           do m = 1,size(compdof)
              cnt = cnt + 1
-             compdof3d(cnt) = (compdof(m)-1)*stream_nlev + n
+             compdof3d(cnt) = (n-1)*gsize2d + compdof(m)
           enddo
        enddo
     end if
@@ -1831,11 +1834,12 @@ contains
     ! determine type of the variable
     rcode = pio_inq_vartype(pioid, varid, pio_iovartype)
 
+    ! determine io descriptor
     if (ndims == 2) then
        if (sdat%masterproc) then
           write(sdat%logunit,F00) 'setting iodesc for : '//trim(fldname)// &
                ' with dimlens(1), dimlens2 = ',dimlens(1),dimlens(2),&
-               ' variable had no time dimension '
+               ' variable has no time dimension '
        end if
        call pio_initdecomp(sdat%pio_subsystem, pio_iovartype, (/dimlens(1),dimlens(2)/), compdof, &
             per_stream%stream_pio_iodesc)
@@ -1845,14 +1849,14 @@ contains
        if (stream_nlev > 1) then
           write(sdat%logunit,F01) 'setting iodesc for : '//trim(fldname)// &
                ' with dimlens(1), dimlens(2), dimlens(3) = ',dimlens(1),dimlens(2), dimlens(3), &
-               ' variable had no time dimension '//trim(dimname)
+               ' variable has no time dimension '//trim(dimname)
           call pio_initdecomp(sdat%pio_subsystem, pio_iovartype, (/dimlens(1),dimlens(2),dimlens(3)/), compdof3d, &
                per_stream%stream_pio_iodesc)
        else if (trim(dimname) == 'time' .or. trim(dimname) == 'nt') then
           if (sdat%masterproc) then
              write(sdat%logunit,F01) 'setting iodesc for : '//trim(fldname)// &
                   ' with dimlens(1), dimlens(2) = ',dimlens(1),dimlens(2),&
-                  ' variable had time dimension '//trim(dimname)
+                  ' variable as time dimension '//trim(dimname)
           end if
           call pio_initdecomp(sdat%pio_subsystem, pio_iovartype, (/dimlens(1),dimlens(2)/), compdof, &
                per_stream%stream_pio_iodesc)
@@ -1864,7 +1868,7 @@ contains
           if (sdat%masterproc) then
              write(sdat%logunit,F02) 'setting iodesc for : '//trim(fldname)// &
                   ' with dimlens(1), dimlens(2),dimlens(3) = ',dimlens(1),dimlens(2),dimlens(3),&
-                  ' variable had time dimension '
+                  ' variable has time dimension '
           end if
           call pio_initdecomp(sdat%pio_subsystem, pio_iovartype, (/dimlens(1),dimlens(2),dimlens(3)/), compdof3d, &
                per_stream%stream_pio_iodesc)
@@ -1878,6 +1882,7 @@ contains
        call shr_sys_abort(trim(subname)//' only ndims of 2 and 3 and 4 are currently supported')
     end if
 
+    ! deallocate memory
     deallocate(compdof)
     if (associated(compdof3d)) deallocate(compdof3d)
     deallocate(dimids)
