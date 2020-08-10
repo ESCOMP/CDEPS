@@ -74,7 +74,7 @@ jobs:
         run: |
           sudo apt-get install libnetcdf-dev
           wget https://github.com/Unidata/netcdf-fortran/archive/${{ env.NETCDF_VERSION }}.tar.gz
-          tar -xzvf ${{ env.NETCDF_VERSION }}.tar.gz
+          tar -xzvf ${{ env.NETCDF_FORTRAN_VERSION }}.tar.gz
           ls -l
           pushd netcdf-fortran-*
           ./configure --prefix=$HOME/netcdf-fortran
@@ -88,8 +88,8 @@ jobs:
           path: ~/pio
           key: ${{ runner.os }}-${{ env.PIO_VERSION }}.pio
           restore-keys: |
-            ${{ runner.os }}-netcdf-fortran
-            ${{ runner.os }}-pnetcdf
+            ${{ runner.os }}-${{ env.NETCDF_FORTRAN_VERSION }}-netcdf-fortran
+            ${{ runner.os }}-${{ env.PNETCDF_VERSION }}-pnetcdf
       - name: Build PIO
         if: steps.cache-PIO.outputs.cache-hit != 'true'
         run: |
