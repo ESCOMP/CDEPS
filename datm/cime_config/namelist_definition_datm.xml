@@ -2694,32 +2694,6 @@
     </values>
   </entry>
 
-  <entry id="bias_correct" skip_default_entry="true"> <!--- anomaly forcing - bias correction -->
-    <type>char</type>
-    <category>datm</category>
-    <group>datm_nml</group>
-    <valid_values>BC.QIAN.CMAP.Precip,BC.QIAN.GPCP.Precip,BC.CRUNCEP.CMAP.Precip,BC.CRUNCEP.GPCP.Precip</valid_values>
-    <desc>
-      If set, include bias correction streams in namelist.
-    </desc>
-    <values>
-      <value/>
-    </values>
-  </entry>
-
-  <entry id="anomaly_forcing" skip_default_entry="true"> <!--- for anomaly forcing -->
-    <type>char(10)</type>
-    <category>datm</category>
-    <group>datm_nml</group>
-    <valid_values>Anomaly.Forcing.Precip,Anomaly.Forcing.Temperature,Anomaly.Forcing.Pressure,Anomaly.Forcing.Humidity,Anomaly.Forcing.Uwind,Anomaly.Forcing.Vwind,Anomaly.Forcing.Shortwave,Anomaly.Forcing.Longwave</valid_values>
-    <desc>
-      If set, include anomaly forcing streams in namelist.
-    </desc>
-    <values>
-      <value/>
-    </values>
-  </entry>
-
   <entry id="factorfn_data">
     <type>char</type>
     <category>datm</category>

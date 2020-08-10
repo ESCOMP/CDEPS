@@ -187,7 +187,7 @@ contains
     namelist / datm_nml / datamode, &
          model_meshfile, model_maskfile, model_createmesh_fromfile, &
          nx_global, ny_global, restfilm, iradsw, factorFn_data, factorFn_mesh, &
-         flds_presaero, flds_co2, flds_wiso, bias_correct, anomaly_forcing
+         flds_presaero, flds_co2, flds_wiso
 
     rc = ESMF_SUCCESS
 
