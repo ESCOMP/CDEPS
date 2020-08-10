@@ -280,6 +280,9 @@ contains
     type(ESMF_Time)             :: currTime
     integer                     :: current_ymd   ! model date
     integer                     :: current_year  ! model year
+    integer                     :: current_mon   ! model month
+    integer                     :: current_day   ! model day
+    integer                     :: current_tod   ! model sec into model date
     real(R8)                    :: cosarg        ! for setting ice temp pattern
     real(R8)                    :: jday, jday0   ! elapsed day counters
     integer                     :: model_dt      ! integer model timestep
@@ -506,7 +509,7 @@ contains
        select case (trim(datamode))
        case('ssmi', 'ssmi_iaf')
           call dice_datamode_ssmi_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, mpicom, my_task, sdat)
+               logunit, my_task, sdat)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end select
     end if
