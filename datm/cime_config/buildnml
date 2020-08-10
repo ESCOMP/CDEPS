@@ -86,10 +86,6 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
         streams.append("topo.{}".format(datm_topo))
     if datm_co2_tseries != "none":
         streams.append("co2tseries.{}".format(datm_co2_tseries))
-    bias_correct = nmlgen.get_value("bias_correct")
-    streams.append(bias_correct)
-    anomaly_forcing = nmlgen.get_value("anomaly_forcing")
-    streams += anomaly_forcing
     stream_path = os.path.join(confdir, "datm.streams"+inst_string+".xml" )
     nmlgen.create_nuopc_stream_files(config, caseroot, streams, stream_path, data_list_path)
 
