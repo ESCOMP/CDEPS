@@ -92,6 +92,9 @@ module atm_comp_nuopc
   logical                      :: flds_presaero = .false.             ! true => send valid prescribe aero fields to mediator
   logical                      :: flds_co2 = .false.                  ! true => send prescribed co2 to mediator
   logical                      :: flds_wiso = .false.                 ! true => send water isotopes to mediator
+  character(CL)                :: bias_correct = nullstr              ! send bias correction fields to coupler
+  character(CL)                :: anomaly_forcing(8) = nullstr        ! send anomaly forcing fields to coupler
+
   character(CL)                :: restfilm = nullstr                  ! model restart file namelist
   integer                      :: nx_global                           ! global nx
   integer                      :: ny_global                           ! global ny
@@ -187,7 +190,7 @@ contains
     namelist / datm_nml / datamode, &
          model_meshfile, model_maskfile, model_createmesh_fromfile, &
          nx_global, ny_global, restfilm, iradsw, factorFn_data, factorFn_mesh, &
-         flds_presaero, flds_co2, flds_wiso
+         flds_presaero, flds_co2, flds_wiso, bias_correct, anomaly_forcing
 
     rc = ESMF_SUCCESS
 
