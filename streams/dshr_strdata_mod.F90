@@ -637,7 +637,6 @@ contains
     real(r8), allocatable               :: coszen(:)        ! cosine of zenith angle
     integer                             :: todmod           ! modified model dates to handle Feb 29
     character(len=32)                   :: lstr             ! local string
-    logical                             :: ltimers          ! local logical for timers
     real(r8)                            :: flb,fub          ! factor for lb and ub
     real(r8) ,pointer                   :: dataptr(:)       ! pointer into field bundle
     real(r8) ,pointer                   :: dataptr_lb(:)    ! pointer into field bundle
@@ -681,11 +680,6 @@ contains
     if (nstreams < 1) return ! TODO: is this needed
 
     lstr = trim(istr)
-
-    ltimers = .true.
-    if (present(timers)) then
-       ltimers = timers
-    endif
 
     call ESMF_TraceRegionEnter(trim(lstr)//trim(timname)//'_total')
 
