@@ -43,7 +43,6 @@ module datm_datamode_core2_mod
   real(r8), pointer :: Faxa_swvdr(:) => null()
   real(r8), pointer :: Faxa_swvdf(:) => null()
   real(r8), pointer :: Faxa_swnet(:) => null()
-  real(r8), pointer :: Faxa_swdn(:)  => null()
 
   ! stream data
   real(r8), pointer :: strm_prec(:)      => null()
@@ -249,18 +248,16 @@ contains
   end subroutine datm_datamode_core2_init_pointers
 
   !===============================================================================
-  subroutine datm_datamode_core2_advance(exportstate, datamode, target_ymd, target_tod, target_mon, &
-       model_calendar, factorfn_mesh, factorfn_data, rc)
+  subroutine datm_datamode_core2_advance(datamode, target_ymd, target_tod, target_mon, &
+       model_calendar, factorfn_mesh, rc)
 
     ! input/output variables
-    type(ESMF_State)       , intent(inout) :: exportState
     character(len=*)       , intent(in)    :: datamode
     integer                , intent(in)    :: target_ymd
     integer                , intent(in)    :: target_tod
     integer                , intent(in)    :: target_mon
     character(len=*)       , intent(in)    :: model_calendar
     character(len=*)       , intent(in)    :: factorfn_mesh
-    character(len=*)       , intent(in)    :: factorfn_data
     integer                , intent(out)   :: rc
 
     ! local variables
@@ -426,9 +423,6 @@ contains
     type(ESMF_Field)       :: field_src
     type(ESMF_Field)       :: field_dst
     integer                :: lsize
-    integer                :: gsize
-    integer                :: n         ! generic indicies
-    logical                :: domap     ! map or not
     integer, pointer       :: gindex(:) ! domain decomposition of data
     integer                :: ndims     ! number of dims
     integer, allocatable   :: dimid(:)

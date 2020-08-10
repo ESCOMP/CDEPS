@@ -71,7 +71,6 @@ module rof_comp_nuopc
   character(*) , parameter     :: modName =  "(rof_comp_nuopc)"
 
   ! linked lists
-  type(fldList_type) , pointer :: fldsImport => null()
   type(fldList_type) , pointer :: fldsExport => null()
   type(dfield_type)  , pointer :: dfields    => null()
 
@@ -146,7 +145,6 @@ contains
 
     ! local variables
     integer           :: inst_index ! number of current instance (ie. 1)
-    character(len=CL) :: cvalue     ! temporary
     integer           :: nu         ! unit number
     integer           :: ierr       ! error code
     logical           :: exists     ! check for file existence
@@ -267,8 +265,6 @@ contains
     integer         :: current_mon  ! model month
     integer         :: current_day  ! model day
     integer         :: current_tod  ! model sec into model date
-    character(CL)   :: cvalue       ! temporary
-    integer         :: n,k          ! generic counters
     character(len=*), parameter :: F00   = "('rof_comp_nuopc: ')',8a)"
     character(len=*), parameter :: subname=trim(modName)//':(InitializeRealize) '
     !-------------------------------------------------------------------------------

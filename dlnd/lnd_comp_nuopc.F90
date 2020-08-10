@@ -72,7 +72,6 @@ module lnd_comp_nuopc
   integer                  :: ny_global                           ! global ny dimension of model mesh
 
   ! linked lists
-  type(fldList_type) , pointer :: fldsImport => null()
   type(fldList_type) , pointer :: fldsExport => null()
   type(dfield_type)  , pointer :: dfields    => null()
 
@@ -271,7 +270,6 @@ contains
     integer         :: current_mon  ! model month
     integer         :: current_day  ! model day
     integer         :: current_tod  ! model sec into model date
-    character(CL)   :: cvalue       ! temporary
     character(len=*),parameter :: subname=trim(modName)//':(InitializeRealize) '
     !-------------------------------------------------------------------------------
 

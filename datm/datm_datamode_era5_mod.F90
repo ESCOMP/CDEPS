@@ -33,7 +33,6 @@ module datm_datamode_era5_mod
   real(r8), pointer :: Sa_shum(:)           => null()
   real(r8), pointer :: Sa_dens(:)           => null()
   real(r8), pointer :: Sa_pbot(:)           => null()
-  real(r8), pointer :: Sa_pslv(:)           => null()
   real(r8), pointer :: Faxa_lwdn(:)         => null()
   real(r8), pointer :: Faxa_lwnet(:)        => null()
   real(r8), pointer :: Faxa_rain(:)         => null()
@@ -55,7 +54,6 @@ module datm_datamode_era5_mod
   ! stream data
   real(r8), pointer :: strm_tdew(:)      => null()
 
-  logical  :: atm_prognostic = .false.
   real(r8) :: tbotmax ! units detector
   real(r8) :: tdewmax ! units detector
 
@@ -136,7 +134,6 @@ contains
     integer                , intent(out)   :: rc
 
     ! local variables
-    type(ESMF_StateItem_Flag) :: itemFlag
     character(len=*), parameter :: subname='(datm_init_pointers): '
     !-------------------------------------------------------------------------------
 
@@ -217,17 +214,12 @@ contains
 
     ! local variables
     logical  :: first_time = .true.
-    integer  :: n,kf                ! indices
+    integer  :: n                   ! indices
     integer  :: lsize               ! size of attr vect
     real(r8) :: rtmp
-    real(r8) :: swndr
-    real(r8) :: swndf
-    real(r8) :: swvdr
-    real(r8) :: swvdf
-    real(r8) :: ratio_rvrf
     real(r8) :: tbot, pbot
     real(r8) :: vp
-    real(r8) :: ea, e, qsat, frac
+    real(r8) :: e, qsat
     character(len=*), parameter :: subname='(datm_datamode_era5_advance): '
     !-------------------------------------------------------------------------------
 

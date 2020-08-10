@@ -92,8 +92,6 @@ module atm_comp_nuopc
   logical                      :: flds_presaero = .false.             ! true => send valid prescribe aero fields to mediator
   logical                      :: flds_co2 = .false.                  ! true => send prescribed co2 to mediator
   logical                      :: flds_wiso = .false.                 ! true => send water isotopes to mediator
-  character(CL)                :: bias_correct = nullstr              ! send bias correction fields to coupler (not used here)
-  character(CL)                :: anomaly_forcing(8) = nullstr        ! send anomaly forcing fields to coupler (not used here)
   character(CL)                :: restfilm = nullstr                  ! model restart file namelist
   integer                      :: nx_global                           ! global nx
   integer                      :: ny_global                           ! global ny
@@ -177,7 +175,6 @@ contains
     integer, intent(out) :: rc
 
     ! local variables
-    character(len=CL) :: cvalue     ! temporary
     integer           :: nu         ! unit number
     integer           :: ierr       ! error code
     logical           :: exists     ! check for file existence
@@ -417,7 +414,6 @@ contains
     ! local variables
     type(ESMF_State)        :: importState, exportState
     type(ESMF_Clock)        :: clock
-    type(ESMF_Time)         :: time
     type(ESMF_Alarm)        :: alarm
     type(ESMF_Time)         :: currTime
     type(ESMF_Time)         :: nextTime
@@ -432,7 +428,6 @@ contains
     real(R8)                :: orbMvelpp     ! orb moving vernal eq (radians)
     real(R8)                :: orbLambm0     ! orb mean long of perhelion (radians)
     real(R8)                :: orbObliqr     ! orb obliquity (radians)
-    character(len=CL)       :: cvalue        ! temporary
     character(len=*),parameter  :: subname=trim(modName)//':(ModelAdvance) '
     !-------------------------------------------------------------------------------
 
@@ -587,8 +582,8 @@ contains
     call ESMF_TraceRegionEnter('datm_datamode')
     select case (trim(datamode))
     case('CORE2_NYF','CORE2_IAF')
-       call datm_datamode_core2_advance(exportstate, datamode, target_ymd, target_tod, target_mon, &
-            sdat%model_calendar, factorfn_mesh, factorfn_data, rc)
+       call datm_datamode_core2_advance(datamode, target_ymd, target_tod, target_mon, &
+            sdat%model_calendar, factorfn_mesh, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('CORE_IAF_JRA')
        call datm_datamode_jra_advance(exportstate, target_ymd, target_tod, sdat%model_calendar, rc)
@@ -735,7 +730,6 @@ contains
     real(R8) :: nextsw_cday
     real(R8) :: julday
     integer  :: liradsw
-    integer  :: yy,mm,dd
     character(*),parameter :: subName =  '(getNextRadCDay) '
     !-------------------------------------------------------------------------------
 

@@ -280,13 +280,8 @@ contains
     type(ESMF_Time)             :: currTime
     integer                     :: current_ymd   ! model date
     integer                     :: current_year  ! model year
-    integer                     :: current_mon   ! model month
-    integer                     :: current_day   ! model day
-    integer                     :: current_tod   ! model sec into model date
     real(R8)                    :: cosarg        ! for setting ice temp pattern
     real(R8)                    :: jday, jday0   ! elapsed day counters
-    character(CL)               :: cvalue        ! temporary
-    integer                     :: n,k           ! generic counters
     integer                     :: model_dt      ! integer model timestep
     character(len=*), parameter :: F00   = "('ice_comp_nuopc: ')',8a)"
     character(len=*), parameter :: subname=trim(modName)//':(InitializeRealize) '

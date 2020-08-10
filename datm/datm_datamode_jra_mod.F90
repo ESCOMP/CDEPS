@@ -39,7 +39,6 @@ module datm_datamode_jra_mod
   real(r8), pointer :: Faxa_swvdr(:) => null()
   real(r8), pointer :: Faxa_swvdf(:) => null()
   real(r8), pointer :: Faxa_swnet(:) => null()
-  real(r8), pointer :: Faxa_swdn(:)  => null()
 
   ! stream data
   real(r8), pointer :: strm_prec(:)  => null()
@@ -208,7 +207,6 @@ contains
     real(R8)          :: avg_alb            ! average albedo
     real(R8)          :: rday               ! elapsed day
     real(R8)          :: cosFactor          ! cosine factor
-    real(R8)          :: factor             ! generic/temporary correction factor
     character(len=*), parameter :: subname='(datm_datamode_jra): '
     !-------------------------------------------------------------------------------
 
