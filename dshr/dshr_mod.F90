@@ -1141,7 +1141,7 @@ contains
        call shr_sys_abort( subname//'ERROR yymmdd is a negative number or time-of-day out of bounds' )
     end if
 
-    year = int(tdate/10000)
+    year = int(abs(tdate)/10000)
     if (date < 0) year = -year
     mon = int( mod(tdate,10000)/  100)
     day = mod(tdate,  100)
