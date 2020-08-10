@@ -1242,7 +1242,6 @@ contains
     integer                     , intent(in)    :: tod       ! model sec into model date
     integer                     , intent(in)    :: logunit
     integer                     , intent(in)    :: my_task
-    integer                     , intent(in)    :: mpicom
     type(shr_strdata_type)      , intent(inout) :: sdat
     real(r8)         , optional , pointer       :: fld(:)
     character(len=*) , optional , intent(in)    :: fldname
