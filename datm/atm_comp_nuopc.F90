@@ -602,19 +602,19 @@ contains
        select case (trim(datamode))
        case('CORE2_NYF','CORE2_IAF')
           call datm_datamode_core2_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, mpicom, my_task, sdat)
+               logunit, my_task, sdat)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('CORE_IAF_JRA')
           call datm_datamode_jra_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, mpicom, my_task, sdat)
+               logunit, my_task, sdat)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('CLMNCEP')
           call datm_datamode_clmncep_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, mpicom, my_task, sdat)
+               logunit, my_task, sdat)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('ERA5')
           call datm_datamode_era5_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, mpicom, my_task, sdat)
+               logunit, my_task, sdat)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end select
     end if
