@@ -39,7 +39,6 @@ module datm_datamode_jra_mod
   real(r8), pointer :: Faxa_swvdr(:) => null()
   real(r8), pointer :: Faxa_swvdf(:) => null()
   real(r8), pointer :: Faxa_swnet(:) => null()
-  real(r8), pointer :: Faxa_swdn(:)  => null()
 
   ! stream data
   real(r8), pointer :: strm_prec(:)  => null()
@@ -208,7 +207,6 @@ contains
     real(R8)          :: avg_alb            ! average albedo
     real(R8)          :: rday               ! elapsed day
     real(R8)          :: cosFactor          ! cosine factor
-    real(R8)          :: factor             ! generic/temporary correction factor
     character(len=*), parameter :: subname='(datm_datamode_jra): '
     !-------------------------------------------------------------------------------
 
@@ -254,7 +252,7 @@ contains
 
   !===============================================================================
   subroutine datm_datamode_jra_restart_write(case_name, inst_suffix, ymd, tod, &
-       logunit, mpicom, my_task, sdat)
+       logunit, my_task, sdat)
     
     ! input/output variables
     character(len=*)            , intent(in)    :: case_name
@@ -263,12 +261,11 @@ contains
     integer                     , intent(in)    :: tod       ! model sec into model date
     integer                     , intent(in)    :: logunit
     integer                     , intent(in)    :: my_task
-    integer                     , intent(in)    :: mpicom
     type(shr_strdata_type)      , intent(inout) :: sdat
     !-------------------------------------------------------------------------------
 
     call dshr_restart_write(rpfile, case_name, 'datm', inst_suffix, ymd, tod, &
-         logunit, mpicom, my_task, sdat)
+         logunit, my_task, sdat)
 
   end subroutine datm_datamode_jra_restart_write
 

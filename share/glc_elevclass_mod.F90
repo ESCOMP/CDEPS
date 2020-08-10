@@ -165,7 +165,6 @@ contains
     !
     ! !ARGUMENTS:
     integer :: num_elevation_classes  ! function result
-    integer :: rc
     !
     ! !LOCAL VARIABLES:
 

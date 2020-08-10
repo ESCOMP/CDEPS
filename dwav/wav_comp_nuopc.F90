@@ -75,7 +75,6 @@ module wav_comp_nuopc
   character(*) , parameter     :: modName =  "(wav_comp_nuopc)"
 
   ! linked lists
-  type(fldList_type) , pointer :: fldsImport => null()
   type(fldList_type) , pointer :: fldsExport => null()
   type(dfield_type)  , pointer :: dfields    => null()
 
@@ -146,7 +145,6 @@ contains
 
     ! local variables
     integer           :: inst_index         ! number of current instance (ie. 1)
-    character(len=CL) :: cvalue             ! temporary
     integer           :: nu                 ! unit number
     integer           :: ierr               ! error code
     logical           :: exists
@@ -256,7 +254,6 @@ contains
     integer         :: current_mon  ! model month
     integer         :: current_day  ! model day
     integer         :: current_tod  ! model sec into model date
-    character(CL)   :: cvalue       ! temporary
     character(len=*), parameter :: subname=trim(modName)//':(InitializeRealize) '
     !-------------------------------------------------------------------------------
 
@@ -293,7 +290,7 @@ contains
     call shr_cal_ymd2date(current_year, current_mon, current_day, current_ymd)
 
     ! Run dwav to create export state
-    call dwav_comp_run(mpicom, my_task, logunit, current_ymd, current_tod, sdat, rc=rc)
+    call dwav_comp_run(logunit, current_ymd, current_tod, sdat, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Add scalars to export state
@@ -345,7 +342,7 @@ contains
     call shr_cal_ymd2date(yr, mon, day, next_ymd)
 
     ! run dwav
-    call dwav_comp_run(mpicom, my_task, logunit, next_ymd, next_tod, sdat, rc=rc)
+    call dwav_comp_run(logunit, next_ymd, next_tod, sdat, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! write_restart if alarm is ringing
@@ -361,7 +358,7 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
        call dshr_restart_write(rpfile, case_name, 'dwav', inst_suffix, next_ymd, next_tod, &
-            logunit, mpicom, my_task, sdat)
+            logunit, my_task, sdat)
        call ESMF_TraceRegionExit('dwav_restart')
     endif
 
@@ -437,7 +434,6 @@ contains
     integer                , intent(out)   :: rc
 
     ! local variables
-    character(CS), allocatable :: strm_flds(:)
     character(*), parameter    :: subName = "(dwav_comp_realize) "
     ! ----------------------------------------------
 
@@ -467,15 +463,13 @@ contains
   end subroutine dwav_comp_realize
 
   !===============================================================================
-  subroutine dwav_comp_run(mpicom, my_task, logunit, target_ymd, target_tod, sdat, rc)
+  subroutine dwav_comp_run(logunit, target_ymd, target_tod, sdat, rc)
 
     ! --------------------------
     ! advance dwav
     ! --------------------------
 
     ! input/output variables:
-    integer                , intent(in)    :: mpicom           ! mpi communicator
-    integer                , intent(in)    :: my_task
     integer                , intent(in)    :: logunit
     integer                , intent(in)    :: target_ymd       ! model date
     integer                , intent(in)    :: target_tod       ! model sec into model date

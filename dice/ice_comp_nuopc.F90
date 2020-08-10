@@ -285,8 +285,6 @@ contains
     integer                     :: current_tod   ! model sec into model date
     real(R8)                    :: cosarg        ! for setting ice temp pattern
     real(R8)                    :: jday, jday0   ! elapsed day counters
-    character(CL)               :: cvalue        ! temporary
-    integer                     :: n,k           ! generic counters
     integer                     :: model_dt      ! integer model timestep
     character(len=*), parameter :: F00   = "('ice_comp_nuopc: ')',8a)"
     character(len=*), parameter :: subname=trim(modName)//':(InitializeRealize) '
@@ -358,9 +356,6 @@ contains
     type(ESMF_Alarm)        :: alarm
     type(ESMF_TimeInterval) :: timeStep
     type(ESMF_Time)         :: currTime, nextTime
-    integer                 :: current_mon   ! model month
-    integer                 :: current_day   ! model day
-    integer                 :: current_tod   ! model sec into model date
     real(R8)                :: cosarg        ! for setting ice temp pattern
     real(R8)                :: jday, jday0   ! elapsed day counters
     integer                 :: next_ymd      ! model date
@@ -511,7 +506,7 @@ contains
        select case (trim(datamode))
        case('ssmi', 'ssmi_iaf')
           call dice_datamode_ssmi_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, mpicom, my_task, sdat)
+               logunit, my_task, sdat)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end select
     end if

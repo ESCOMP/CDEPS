@@ -127,7 +127,6 @@ contains
     integer            , intent(out)   :: rc
 
     ! local variables
-    integer         :: n
     type(fldlist_type), pointer :: fldList
     !-------------------------------------------------------------------------------
 
@@ -569,7 +568,7 @@ contains
 
   !===============================================================================
   subroutine dice_datamode_ssmi_restart_write(case_name, inst_suffix, ymd, tod, &
-       logunit, mpicom, my_task, sdat)
+       logunit, my_task, sdat)
 
     ! input/output variables
     character(len=*)            , intent(in)    :: case_name
@@ -578,12 +577,11 @@ contains
     integer                     , intent(in)    :: tod       ! model sec into model date
     integer                     , intent(in)    :: logunit
     integer                     , intent(in)    :: my_task
-    integer                     , intent(in)    :: mpicom
     type(shr_strdata_type)      , intent(inout) :: sdat
     !-------------------------------------------------------------------------------
 
     call dshr_restart_write(rpfile, case_name, 'dice', inst_suffix, ymd, tod, &
-         logunit, mpicom, my_task, sdat, fld=water, fldname='water')
+         logunit, my_task, sdat, fld=water, fldname='water')
 
   end subroutine dice_datamode_ssmi_restart_write
 
