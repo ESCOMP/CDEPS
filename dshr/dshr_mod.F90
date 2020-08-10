@@ -1131,6 +1131,7 @@ contains
     ! local variables
     integer :: year, mon, day ! year, month, day as integers
     integer :: date           ! coded-date (yyyymmdd)
+    integer :: tdate
     integer         , parameter :: SecPerDay = 86400 ! Seconds per day
     character(len=*), parameter :: subname='(dshr_time_init)'
     !-------------------------------------------------------------------------------
@@ -1141,7 +1142,8 @@ contains
        call shr_sys_abort( subname//'ERROR yymmdd is a negative number or time-of-day out of bounds' )
     end if
 
-    year = int(abs(date)/10000)
+    tdate = abs(date)
+    year = int(tdate/10000)
     if (date < 0) year = -year
     mon = int( mod(tdate,10000)/  100)
     day = mod(tdate,  100)
