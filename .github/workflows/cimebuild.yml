@@ -118,6 +118,6 @@ jobs:
           export FC=mpif90
           export NETCDF_PATH=/usr
           export NETCDF_FORTRAN_PATH=$HOME/netcdf-fortran
-          export NetCDF_C_PATH=$NETCDF_PATH
+          export NETCDF_C_PATH=$NETCDF_PATH
           export PnetCDF_PATH=$HOME/pnetcdf
           ./create_test SMS_Vnuopc.f19_g17.A.ubuntu_gnu --machine ubuntu
