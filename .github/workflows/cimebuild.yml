@@ -108,6 +108,7 @@ jobs:
           ../configure --mpilib mpi-serial --machine ubuntu --macros-format Makefile
           make
       - name: Build tests
+        run: |
           cd $HOME/cime/scripts
           mkdir $HOME/scratch
           export CIME_MODEL=cesm
