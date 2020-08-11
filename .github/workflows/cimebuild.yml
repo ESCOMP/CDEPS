@@ -106,11 +106,10 @@ jobs:
           cd $HOME/cime/tools/cprnc
           export CIME_MODEL=cesm
           ../configure --mpilib mpi-serial --machine ubuntu --macros-format Makefile
-          make
+          make FC=gfortran NETCDF=$HOME/netcdf-fortran
       - name: Build tests
         run: |
           cd $HOME/cime/scripts
           mkdir $HOME/scratch
           export CIME_MODEL=cesm
-          export NETCDF=$HOME/netcdf-fortran
           ./create_test SMS_Vnuopc.f19_g17.A.ubuntu_gnu --machine ubuntu
