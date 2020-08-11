@@ -21,6 +21,7 @@ jobs:
       - uses: actions/checkout@v2
       - id: load-env
         run: sudo apt-get install gfortran wget openmpi-bin netcdf-bin libopenmpi-dev libxml2-utils
+      # Build or retreve from cache the ESMF library
       - id: cache-esmf
         uses: actions/cache@v2
         with:
@@ -40,6 +41,7 @@ jobs:
           make
           make install
           popd
+      # Build or retreve the pnetcdf library
       - id: cache-pnetcdf
         uses: actions/cache@v2
         with:
@@ -56,6 +58,7 @@ jobs:
           make
           make install
           popd
+      # Build or retreve the netcdf-fortran library, we use ubuntu for netcdf-c
       - name: Cache netcdf-fortran
         id: cache-netcdf-fortran
         uses: actions/cache@v2
@@ -72,6 +75,7 @@ jobs:
           ./configure --prefix=$HOME/netcdf-fortran
           make
           make install
+      # Retreve or create the inputdata directory
       - name: Cache inputdata
         id: cache-inputdata
         uses: actions/cache@v2
