@@ -1,5 +1,5 @@
 # This is a workflow to compile the cdeps source without cime
-name: extbuild
+name: cimebuild
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
 on:
@@ -10,7 +10,7 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  build-cdeps:
+  build-cdeps-with-cime:
     runs-on: ubuntu-latest
     env:
       CC: mpicc
@@ -90,7 +90,9 @@ jobs:
           git clone https://github.com/ESCOMP/CMEPS.git nuopc
           cd $HOME/cime/scripts
           mkdir $HOME/scratch
-#          ./create_test --machine ubuntu --xml-testlist
+          export CIME_MODEL=cesm
+          ./create_test SMS.f19_g17.A.ubuntu_gnu
+          #          ./create_test --machine ubuntu --xml-testlist
 
       - name: Cache inputdata
         id: cache-inputdata
