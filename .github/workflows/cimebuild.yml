@@ -19,15 +19,13 @@ jobs:
       NETCDF_FORTRAN_VERSION: v4.5.2
     steps:
       - uses: actions/checkout@v2
-        # Build the ESMF library, if the cache contains a previous build
-        # it will be used instead
+      - id: load-env
+        run: sudo apt-get install gfortran wget openmpi-bin netcdf-bin libopenmpi-dev libxml2-utils
       - id: cache-esmf
         uses: actions/cache@v2
         with:
           path: ~/ESMF
           key: ${{ runner.os }}-${{ env.ESMF_VERSION }}-ESMF
-      - id: load-env
-        run: sudo apt-get install gfortran wget openmpi-bin netcdf-bin libopenmpi-dev libxml2-utils
       - id: build-ESMF
         if: steps.cache-esmf.outputs.cache-hit != 'true'
         run: |
@@ -112,4 +110,4 @@ jobs:
           cd $HOME/cime/scripts
           mkdir $HOME/scratch
           export CIME_MODEL=cesm
-          ./create_test SMS_Vnuopc.f19_g17.A.ubuntu_gnu --machine ubuntu
+          ./create_test SMS_Vnuopc_Mmpi-serial.f19_g17.A.ubuntu_gnu --machine ubuntu
