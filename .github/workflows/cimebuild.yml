@@ -116,4 +116,6 @@ jobs:
           export CIME_MODEL=cesm
           export CC=mpicc
           export FC=mpif90
+          export NETCDF_C_PATH=/usr/local
+          export NETCDF_FORTRAN_PATH=$HOME/netcdf-fortran
           ./create_test SMS_Vnuopc.f19_g17.A.ubuntu_gnu --machine ubuntu
