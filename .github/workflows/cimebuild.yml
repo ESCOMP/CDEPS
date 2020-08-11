@@ -120,4 +120,6 @@ jobs:
           export NETCDF_FORTRAN_PATH=$HOME/netcdf-fortran
           export NETCDF_C_PATH=$NETCDF_PATH
           export PnetCDF_PATH=$HOME/pnetcdf
-          ./create_test SMS_Vnuopc.f19_g17.A.ubuntu_gnu --machine ubuntu
+          ./create_test SMS_Vnuopc.f19_g17.A.ubuntu_gnu --machine ubuntu --no-build
+          cd $HOME/scratch/SMS_Vnuopc.f19_g17*
+          ./case.build
