@@ -99,4 +99,5 @@ jobs:
           cd $HOME/cime/scripts
           mkdir $HOME/scratch
           export CIME_MODEL=cesm
+          export NETCDF_FORTRAN_PATH=$HOME/netcdf-fortran
           ./create_test SMS_Vnuopc.f19_g17.A.ubuntu_gnu --machine ubuntu
