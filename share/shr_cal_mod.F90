@@ -523,8 +523,8 @@ contains
     tdate = abs(date)
     year =int(     tdate       /10000)
     if (date < 0) year = -year
-    month=int( mod(tdate,10000_SHR_KIND_I8)/  100)
-    day  =     mod(tdate,  100_SHR_KIND_I8)
+    month=int( mod(tdate,10000_SHR_KIND_I8)/100, SHR_KIND_IN)
+    day  =int( mod(tdate,  100_SHR_KIND_I8), SHR_KIND_IN)
 
     if (debug > 1) write(s_logunit,*) trim(subname),'_b ',year,month,day
 
@@ -798,8 +798,8 @@ contains
     i8dsec = i8dsec - i8dday*spd
 
     ! convert to i4
-    idday = i8dday
-    idsec = i8dsec
+    idday = int(i8dday, SHR_KIND_I4)
+    idsec = int(i8dsec, SHR_KIND_I4)
 
     calkind = ESMF_CALKIND_NOLEAP
     lcalendar = shr_cal_calendarName(calendar)
@@ -885,8 +885,8 @@ contains
     i8dsec = i8dsec - i8dday*spd
 
     ! convert to i4
-    idday = i8dday
-    idsec = i8dsec
+    idday = int(i8dday, SHR_KIND_I4)
+    idsec = int(i8dsec, SHR_KIND_I4)
 
     calkind = ESMF_CALKIND_NOLEAP
     lcalendar = shr_cal_calendarName(calendar)

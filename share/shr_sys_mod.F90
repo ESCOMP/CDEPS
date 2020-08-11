@@ -92,7 +92,7 @@ SUBROUTINE shr_sys_system(str,rcode)
 
 #else
 
-   write(s_logunit,F00) 'ERROR: no implementation of system call for this architecture'
+   write(s_logunit,F00) 'ERROR: no implementation of system call for this architecture'//trim(str)
    call shr_sys_abort(subName//'no implementation of system call for this architecture')
 #endif
 #endif
@@ -123,7 +123,7 @@ SUBROUTINE shr_sys_chdir(path, rcode)
 !-------------------------------------------------------------------------------
 ! PURPOSE: an architecture independent system call
 !-------------------------------------------------------------------------------
-
+   rcode = 0
    lenpath=len_trim(path)
 
 #if (defined AIX)

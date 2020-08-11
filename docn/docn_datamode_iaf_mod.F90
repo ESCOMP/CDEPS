@@ -178,7 +178,7 @@ contains
 
   !===============================================================================
   subroutine docn_datamode_iaf_restart_write(case_name, inst_suffix, ymd, tod, &
-       logunit, mpicom, my_task, sdat)
+       logunit, my_task, sdat)
     
     ! write restart file
 
@@ -189,12 +189,11 @@ contains
     integer                     , intent(in)    :: tod       ! model sec into model date
     integer                     , intent(in)    :: logunit
     integer                     , intent(in)    :: my_task
-    integer                     , intent(in)    :: mpicom
     type(shr_strdata_type)      , intent(inout) :: sdat
     !-------------------------------------------------------------------------------
 
     call dshr_restart_write(rpfile, case_name, 'docn', inst_suffix, ymd, tod, &
-         logunit, mpicom, my_task, sdat)
+         logunit, my_task, sdat)
 
   end subroutine docn_datamode_iaf_restart_write
 

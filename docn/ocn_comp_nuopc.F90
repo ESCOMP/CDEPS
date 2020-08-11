@@ -167,8 +167,6 @@ contains
     integer           :: nu                 ! unit number
     integer           :: ierr               ! error code
     logical           :: exists             ! check for file existence
-    integer           :: n
-    type(fldlist_type), pointer :: fldList
     character(len=*),parameter :: subname=trim(module_name)//':(InitializeAdvertise) '
     character(*)    ,parameter :: F00 = "('(ocn_comp_nuopc) ',8a)"
     character(*)    ,parameter :: F01 = "('(ocn_comp_nuopc) ',a,2x,i8)"
@@ -305,17 +303,12 @@ contains
     integer, intent(out) :: rc
 
     ! local variables
-    type(ESMF_TimeInterval)         :: TimeStep
     type(ESMF_Time)                 :: currTime
     integer                         :: current_ymd  ! model date
     integer                         :: current_year ! model year
     integer                         :: current_mon  ! model month
     integer                         :: current_day  ! model day
     integer                         :: current_tod  ! model sec into model date
-    integer                         :: fieldcount
-    type(ESMF_Field)                :: lfield
-    character(ESMF_MAXSTR) ,pointer :: lfieldnamelist(:)
-    integer                         :: n
     character(len=*), parameter :: subname=trim(module_name)//':(InitializeRealize) '
     !-------------------------------------------------------------------------------
 
@@ -532,13 +525,13 @@ contains
        select case (trim(datamode))
        case('sstdata','sst_aquap_file')
           call docn_datamode_copyall_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, mpicom, my_task, sdat)
+               logunit, my_task, sdat)
        case('iaf')
           call docn_datamode_iaf_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, mpicom, my_task, sdat)
+               logunit, my_task, sdat)
        case('som','som_aquap')
           call docn_datamode_som_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, mpicom, my_task, sdat)
+               logunit, my_task, sdat)
        end select
     end if
 

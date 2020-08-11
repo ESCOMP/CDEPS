@@ -163,9 +163,7 @@ contains
 
     ! local variables
     type(ESMF_VM) :: vm
-    integer       :: i
     integer       :: localPet
-    integer       :: ierr
     character(len=*), parameter  :: subname='(shr_strdata_init_from_xml)'
     ! ----------------------------------------------
 
@@ -270,18 +268,13 @@ contains
     integer                    , intent(out)   :: rc
 
     ! local variables
-    integer               :: n,k          ! generic counters
+    integer               :: n                  ! generic counters
     type(ESMF_DistGrid)   :: distGrid
-    integer               :: dimCount
     integer               :: tileCount
     integer, allocatable  :: elementCountPTile(:)
-    integer, allocatable  :: indexCountPDE(:,:)
     integer               :: spatialDim         ! number of dimension in mesh
     integer               :: numOwnedElements   ! local size of mesh
     real(r8), allocatable :: ownedElemCoords(:) ! mesh lat and lons
-    integer               :: my_task
-    integer               :: ierr
-    integer               :: rcode
     ! ----------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -336,33 +329,15 @@ contains
     ! local variables
     type(ESMF_Calendar)          :: esmf_calendar   ! esmf calendar
     type(ESMF_CalKind_Flag)      :: esmf_caltype    ! esmf calendar type
-    type(ESMF_DistGrid)          :: distgrid
-    type(ESMF_RegridMethod_Flag) :: regridmethod
-    type(ESMF_PoleMethod_Flag)   :: polemethod
     character(CS)                :: calendar        ! calendar name
-    integer                      :: dimcount
-    integer, allocatable         :: minIndexPTile(:,:)
-    integer, allocatable         :: maxIndexPTile(:,:)
-    integer                      :: lnx, lny        ! global mesh dimensions
-    integer                      :: ne              ! number of local mesh elements
     integer                      :: ns              ! stream index
-    integer                      :: n,m,k           ! generic index
+    integer                      :: m             ! generic index
     character(CL)                :: fileName        ! generic file name
-    integer                      :: nfiles          ! number of data files for a given stream
-    character(CS)                :: uname           ! u vector field name
-    character(CS)                :: vname           ! v vector field name
-    integer                      :: nu, nv          ! vector indices
-    integer                      :: nstream         ! loop stream index
-    integer                      :: nvector         ! loop vector index
     integer                      :: nfld            ! loop stream field index
-    integer                      :: nflds           ! total number of fields in a given stream
+
     type(ESMF_Field)             :: lfield          ! temporary
     type(ESMF_Field)             :: lfield_dst      ! temporary
     integer                      :: srcTermProcessing_Value = 0 ! should this be a module variable?
-    integer , pointer            :: stream_gindex(:)
-    integer                      :: stream_lsize
-    character(CS)                :: tmpstr
-    integer                      :: ierr
     integer                      :: localpet
     logical                      :: fileExists
     type(ESMF_VM)                :: vm
@@ -372,7 +347,6 @@ contains
     character(len=*), parameter  :: subname='(shr_strdata_mod:shr_sdat_init)'
     character(*)    , parameter  :: F00 = "('(shr_sdat_init) ',a)"
     character(*)    , parameter  :: F01  = "('(shr_sdat) ',a,2x,i8)"
-    character(ESMF_MAXSTR) ,pointer :: lfieldnamelist(:)
     ! ----------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -657,17 +631,12 @@ contains
     ! local variables
     integer                             :: ns               !stream index
     integer                             :: nf               ! field index
-    integer                             :: m                ! vector index
-    integer                             :: n,i              ! generic indices
-    integer                             :: ierr
-    integer                             :: nu,nv
-    integer                             :: lsize
+    integer                             :: i                ! generic indices
     logical , allocatable               :: newData(:)
     integer , allocatable               :: ymdmod(:)        ! modified model dates to handle Feb 29
     real(r8), allocatable               :: coszen(:)        ! cosine of zenith angle
     integer                             :: todmod           ! modified model dates to handle Feb 29
     character(len=32)                   :: lstr             ! local string
-    logical                             :: ltimers          ! local logical for timers
     real(r8)                            :: flb,fub          ! factor for lb and ub
     real(r8) ,pointer                   :: dataptr(:)       ! pointer into field bundle
     real(r8) ,pointer                   :: dataptr_lb(:)    ! pointer into field bundle
@@ -685,19 +654,6 @@ contains
     integer                             :: dday             ! delta days
     real(r8)                            :: dtime            ! delta time
     integer                             :: year,month,day   ! date year month day
-    integer                             :: spatialDim       ! spatial dimension of mesh
-    integer                             :: numOwnedElements ! local size of mesh
-    character(CS)                       :: uname            ! u vector field name
-    character(CS)                       :: vname            ! v vector field name
-    type(ESMF_Field)                    :: field_src
-    type(ESMF_Field)                    :: field_dst
-    real(r8)                            :: lon, lat
-    real(r8)                            :: sinlon, sinlat
-    real(r8)                            :: coslon, coslat
-    real(r8)                            :: ux, uy
-    logical                             :: checkflag = .false.
-    integer                             :: npes
-    integer                             :: my_task
     integer                             :: nstreams
     real(r8)         ,parameter         :: solZenMin = 0.001_r8 ! minimum solar zenith angle
     integer          ,parameter         :: tadj = 2
@@ -724,11 +680,6 @@ contains
     if (nstreams < 1) return ! TODO: is this needed
 
     lstr = trim(istr)
-
-    ltimers = .true.
-    if (present(timers)) then
-       ltimers = timers
-    endif
 
     call ESMF_TraceRegionEnter(trim(lstr)//trim(timname)//'_total')
 
@@ -1034,13 +985,8 @@ contains
     ! local variables
     type(shr_stream_streamType), pointer :: stream
     type(ESMF_Mesh)            , pointer :: stream_mesh
-    type(ESMF_FieldBundle)     , pointer :: fldbun_stream_lb
-    type(ESMF_FieldBundle)     , pointer :: fldbun_stream_ub
     type(ESMF_VM)                        :: vm
-    integer                              :: nf
-    integer                              :: rCode      ! return code
     logical                              :: fileexists
-    integer                              :: ivals(6)   ! bcast buffer
     integer                              :: oDateLB,oSecLB,dDateLB
     integer                              :: oDateUB,oSecUB,dDateUB
     real(r8)                             :: rDateM,rDateLB,rDateUB  ! model,LB,UB dates with fractional days
@@ -1291,7 +1237,7 @@ contains
        call PIO_seterrorhandling(pioid, old_error_handle)
 
        if (debug>0 .and. sdat%masterproc)  then
-          write(sdat%logunit,F02)' reading '//trim(fldlist_stream(nf))//' into '//trim(fldlist_model(nf)),&
+          Write(sdat%logunit,F02)' reading '//trim(fldlist_stream(nf))//' into '//trim(fldlist_model(nf)),&
                ' at time index: ',nt
        end if
 
@@ -1462,7 +1408,6 @@ contains
     integer                       :: ndims
     integer, allocatable          :: dimids(:)
     integer, allocatable          :: dimlens(:)
-    integer                       :: unlimdid
     type(ESMF_DistGrid)           :: distGrid
     integer                       :: lsize
     integer, pointer              :: compdof(:) => null()
@@ -1473,8 +1418,6 @@ contains
     character(*), parameter       :: F01  = "('(shr_strdata_set_stream_iodesc) ',a,i8,2x,i8,2x,a)"
     character(*), parameter       :: F02  = "('(shr_strdata_set_stream_iodesc) ',a,i8,2x,i8,2x,i8,2x,a)"
     !-------------------------------------------------------------------------------
-    integer :: old_error_handle
-
     rc = ESMF_SUCCESS
 
 !    call pio_seterrorhandling(pioid, PIO_BCAST_ERROR, old_error_handle)
@@ -1580,23 +1523,5 @@ contains
     end do
 
   end subroutine shr_strdata_get_stream_pointer
-
-  !===============================================================================
-  subroutine shr_strdata_handle_error(ierr, errorstr)
-    use pio, only: pio_noerr
-
-    ! input/output variables
-    integer,          intent(in)  :: ierr
-    character(len=*), intent(in)  :: errorstr
-
-    ! local variables
-    character(len=256) :: errormsg
-    !-------------------------------------------------------------------------------
-
-    if (ierr /= PIO_NOERR) then
-      write(errormsg, '(a,i6,2a)') '(PIO:', ierr, ') ', trim(errorstr)
-      call shr_sys_abort(errormsg)
-    end if
-  end subroutine shr_strdata_handle_error
 
 end module dshr_strdata_mod
