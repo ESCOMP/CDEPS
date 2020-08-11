@@ -85,7 +85,10 @@ jobs:
           cd $HOME
           git clone https://github.com/jedwards4b/cime.git -b add_github_action
           cd $HOME/cime/src/components
-          ln -fs $HOME/CDEPS cdeps
+          ln -fs $HOME/CDEPS/CDEPS cdeps
+          cd cdeps
+          git submodule init
+          git submodule update
           cd $HOME/cime/src/drivers
           git clone https://github.com/ESCOMP/CMEPS.git nuopc
           cd $HOME/cime/scripts
