@@ -80,7 +80,7 @@ jobs:
           cd $HOME
           git clone https://github.com/jedwards4b/cime.git -b add_github_action
           cd $HOME/cime/src/components
-          ln -fs $HOME/CDEPS/CDEPS cdeps
+          ln -fs $HOME/work/CDEPS/CDEPS cdeps
           pwd
           ls -l
           cd cdeps
