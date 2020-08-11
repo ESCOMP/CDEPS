@@ -83,7 +83,6 @@ jobs:
       - name: create inputdata dir
         if: steps.cache-inputdata.outputs.cache-hit != 'true'
         run: mkdir $HOME/inputdata
-
       - name: Checkout cime
         run: |
           cd $HOME
@@ -101,4 +100,3 @@ jobs:
           mkdir $HOME/scratch
           export CIME_MODEL=cesm
           ./create_test SMS_Vnuopc.f19_g17.A.ubuntu_gnu --machine ubuntu
-          #          ./create_test --machine ubuntu --xml-testlist
