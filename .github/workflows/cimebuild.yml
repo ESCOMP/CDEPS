@@ -89,8 +89,6 @@ jobs:
           git clone https://github.com/jedwards4b/cime.git -b add_github_action
           cd $HOME/cime/src/components
           ln -fs $HOME/work/CDEPS/CDEPS cdeps
-          pwd
-          ls -l
           cd cdeps
           git submodule init
           git submodule update
@@ -101,3 +99,4 @@ jobs:
           export CIME_MODEL=cesm
           export NETCDF_FORTRAN_PATH=$HOME/netcdf-fortran
           ./create_test SMS_Vnuopc.f19_g17.A.ubuntu_gnu --machine ubuntu
+          cat /home/runner/scratch/SMS_Vnuopc.f19_g17.A.ubuntu_gnu.*/bld/cprnc.bldlog.*
