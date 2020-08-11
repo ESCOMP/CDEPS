@@ -89,10 +89,12 @@
 <li class="toctree-l2"><a class="reference internal" href="#overview">2.1. Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#data-model-stream-xml-input">2.2. Data Model Stream XML Input</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#data-model-namelist-input">2.3. Data Model Namelist Input</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#details-on-year-align">2.4. Details on year_align</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#data-model-stream-inline-api">2.4. Data Model Stream Inline API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#handling-stream-calendars">2.5. Handling Stream Calendars</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="design_details.html">3. Design Details</a></li>
+<li class="toctree-l1"><a class="reference internal" href="datm.html">4. Data Atmosphere (DATM)</a></li>
 </ul>
 
             
@@ -202,42 +204,32 @@ as well.  Each data point in the input files is associated with a
 discrete time (as opposed to a time interval).  Depending on whether
 you pick lower, upper, nearest, linear, or coszen, the data in the
 input file will be “interpolated” to the time in the model.</p>
-<p>The offset shifts the time axis of the input data the given number of
-seconds.  So if the input data is at 0, 3600, 7200, 10800 seconds
-(hourly) and you set an offset of 1800, then the input data will be
-set at times 1800, 5400, 9000, and 12600.  So a model at time 3600
-using linear interpolation would have data at “n=2” with offset of 0
-will have data at “n=(2+3)/2” with an offset of 1800.  n=2 is the 2nd
-data in the time list 0, 3600, 7200, 10800 in this example.  n=(2+3)/2
-is the average of the 2nd and 3rd data in the time list 0, 3600,
-7200, 10800.  offset can be positive or negative.</p>
-<p>Stream-dependent input is contained in the input xml file
+<p>Stream-dependent input is contained in an input xml file
 <code class="docutils literal notranslate"><span class="pre">d{model_name}.streams.xml</span></code>, where <code class="docutils literal notranslate"><span class="pre">model_name</span></code> can be <code class="docutils literal notranslate"><span class="pre">atm</span></code>,
 <code class="docutils literal notranslate"><span class="pre">ice</span></code>, <code class="docutils literal notranslate"><span class="pre">lnd</span></code>, <code class="docutils literal notranslate"><span class="pre">ocn</span></code>, <code class="docutils literal notranslate"><span class="pre">rof</span></code> or <code class="docutils literal notranslate"><span class="pre">wav</span></code>.  Multiple streams can
 be specified in the this xml file (see <a class="reference internal" href="#input-streams"><span class="std std-ref">streams</span></a>).</p>
 <p>The schema for this xml file is as follows:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;?xml version=&quot;1.0&quot;?&gt;
-&lt;file id=&quot;stream&quot; version=&quot;1.0&quot;&gt;
-  &lt;stream_info&gt;
-    &lt;taxmode&gt;&lt;/taxmode&gt;
-    &lt;tInterpAlgo&gt;&lt;/tInterpAlgo&gt;
-    &lt;readMode&gt;&lt;/readMode&gt;
-    &lt;mapalgo&gt;&lt;/mapalgo&gt;
-    &lt;dtlimit&gt;&lt;/dtlimit&gt;
-    &lt;yearFirst&gt;&lt;/yearFirst&gt;
-    &lt;yearLast&gt;&lt;/yearLast&gt;
-    &lt;yearAlign&gt;&lt;/yearAlign&gt;
-    &lt;stream_vectors&gt;&lt;/stream_vectors&gt;
-    &lt;stream_mesh_file&gt;&lt;/stream_mesh_file&gt;
-    &lt;stream_data_files&gt;
-      &lt;file&gt;&lt;/file&gt;
-    &lt;/stream_data_files&gt;
-    &lt;stream_data_variables&gt;
-      &lt;var&gt;&lt;/var&gt;
-    &lt;/stream_data_variables&gt;
-    &lt;stream_offset&gt;&lt;/stream_offset&gt;
-  &lt;/stream_info&gt;
-&lt;/file&gt;
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">file</span> <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;stream&quot;</span> <span class="n">version</span><span class="o">=</span><span class="s2">&quot;1.0&quot;</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">stream_info</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">taxmode</span><span class="o">&gt;&lt;/</span><span class="n">taxmode</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">tInterpAlgo</span><span class="o">&gt;&lt;/</span><span class="n">tInterpAlgo</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">readMode</span><span class="o">&gt;&lt;/</span><span class="n">readMode</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">mapalgo</span><span class="o">&gt;&lt;/</span><span class="n">mapalgo</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">dtlimit</span><span class="o">&gt;&lt;/</span><span class="n">dtlimit</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">yearFirst</span><span class="o">&gt;&lt;/</span><span class="n">yearFirst</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">yearLast</span><span class="o">&gt;&lt;/</span><span class="n">yearLast</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">yearAlign</span><span class="o">&gt;&lt;/</span><span class="n">yearAlign</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">stream_vectors</span><span class="o">&gt;&lt;/</span><span class="n">stream_vectors</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">stream_mesh_file</span><span class="o">&gt;&lt;/</span><span class="n">stream_mesh_file</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">stream_data_files</span><span class="o">&gt;</span>
+      <span class="o">&lt;</span><span class="n">file</span><span class="o">&gt;&lt;/</span><span class="n">file</span><span class="o">&gt;</span>
+    <span class="o">&lt;/</span><span class="n">stream_data_files</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">stream_data_variables</span><span class="o">&gt;</span>
+      <span class="o">&lt;</span><span class="n">var</span><span class="o">&gt;&lt;/</span><span class="n">var</span><span class="o">&gt;</span>
+    <span class="o">&lt;/</span><span class="n">stream_data_variables</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">stream_offset</span><span class="o">&gt;&lt;/</span><span class="n">stream_offset</span><span class="o">&gt;</span>
+  <span class="o">&lt;/</span><span class="n">stream_info</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">file</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <p>where:</p>
@@ -250,7 +242,8 @@ valid value indefinitely, or to limit the interpolated data to fall only between
 the least and greatest valid value of the time array. Valid values are:</p>
 <p>extend = extrapolate before and after the period by using the first or last value.</p>
 <p>cycle  = cycle between the range of data</p>
-<p class="last">limit  = restrict to the period for which the data is valid</p>
+<p>limit  = restrict to the period for which the data is valid</p>
+<p class="last">CIME-CCS default = cycle</p>
 </dd>
 <dt><strong>tInterpAlgo</strong></dt>
 <dd><p class="first">time interpolation algorithm option. Valid values are:</p>
@@ -283,12 +276,6 @@ to stream data on model mesh. Valid values are:</p>
 </dd>
 <dt><strong>stream_vectors</strong></dt>
 <dd>paired vector field names</dd>
-<dt><strong>yearFirst</strong></dt>
-<dd>the first year of data that will be used</dd>
-<dt><strong>yearLast</strong></dt>
-<dd>the last year of data that will be used</dd>
-<dt><strong>yearAlign</strong></dt>
-<dd>a model year that will be aligned with data for year_first</dd>
 <dt><strong>stream_data_files</strong></dt>
 <dd>Each &lt;file&gt;&lt;/file&gt; entry contains a data files to use. If there is
 more than one file, the files must be in chronological order, that
@@ -299,7 +286,7 @@ in the time axis of the second file.</dd>
 variable in the netCDF file on the left and the name of the
 corresponding model variable on the right.</dd>
 <dt><strong>stream_offset</strong></dt>
-<dd>The offset allows a user to shift the time axis of a data stream by
+<dd><p class="first">The offset allows a user to shift the time axis of a data stream by
 a fixed and constant number of seconds. For instance, if a data set
 contains daily average data with timestamps for the data at the end
 of the day, it might be appropriate to shift the time axis by 12
@@ -311,13 +298,73 @@ support more complex shifts such as end of month to mid-month. But
 in conjunction with the time interpolation methods in the strdata
 input, hopefully most user needs can be accommodated with the two
 settings. Note that a positive offset advances the input data time
-axis forward by that number of seconds.</dd>
+axis forward by that number of seconds.</p>
+<p>As an example of offsets, if the input data is at 0, 3600, 7200,
+10800 seconds (hourly) and you set an offset of 1800, then the input
+data will be set at times 1800, 5400, 9000, and 12600.  So a model
+at time 3600 using linear interpolation would have data at “n=2”
+with offset of 0 will have data at “n=(2+3)/2” with an offset
+of 1800.  n=2 is the 2nd data in the time list 0, 3600, 7200, 10800
+in this example.  n=(2+3)/2 is the average of the 2nd and 3rd data
+in the time list 0, 3600, 7200, 10800.  offset can be positive or
+negative.</p>
+<p class="last">CIME-CCS default = 0</p>
+</dd>
+<dt><strong>yearFirst</strong></dt>
+<dd>the first year of stream data that will be used</dd>
+<dt><strong>yearLast</strong></dt>
+<dd>the last year of stream data that will be used</dd>
+<dt><strong>yearAlign</strong></dt>
+<dd><p class="first">the simulation year corresponding to <code class="docutils literal notranslate"><span class="pre">yearFirst</span></code>.</p>
+<p>A common usage is to set this to the first year of the model run
+(for CIME-CCS this would correspond to the xml variable
+<code class="docutils literal notranslate"><span class="pre">RUN_STARTDATE</span></code>). With this setting, the forcing in the first year
+of the run will be the forcing of year <code class="docutils literal notranslate"><span class="pre">yearFirst</span></code>.</p>
+<p>Another usage is to align the calendar of transient forcing with
+the model calendar. For example, setting <code class="docutils literal notranslate"><span class="pre">yearAlign</span></code> =
+<code class="docutils literal notranslate"><span class="pre">yearFirst</span></code> will lead to the forcing calendar being the same as
+the model calendar. The forcing for a given model year would be the
+forcing of the same year. This would be appropriate in transient
+runs where the model calendar is setup to span the same year range
+as the forcing data.</p>
+<p><em>The following pertains to CIME-CCS details for yearAlign usage</em></p>
+<p>For some data model modes, <code class="docutils literal notranslate"><span class="pre">yearAlign</span></code> can be set via an xml variable
+whose name ends with <code class="docutils literal notranslate"><span class="pre">YR_ALIGN</span></code> (there are a few such xml variables,
+each pertaining to a particular data model mode).</p>
+<p>An example of this is land-only historical simulations in which we run
+the model for 1850 to 2010 using atmospheric forcing data that is only
+available for 1901 to 2010. In this case, we want to run the model for
+years 1850 (so <code class="docutils literal notranslate"><span class="pre">RUN_STARTDATE</span></code> has year 1850) through 1900 by looping
+over the forcing data for 1901-1920, and then run the model for years
+1901-2010 using the forcing data from 1901-2010. To do this, initially set:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">xmlchange</span> <span class="n">DATM_CLMNCEP_YR_ALIGN</span><span class="o">=</span><span class="mi">1901</span>
+<span class="o">./</span><span class="n">xmlchange</span> <span class="n">DATM_CLMNCEP_YR_START</span><span class="o">=</span><span class="mi">1901</span>
+<span class="o">./</span><span class="n">xmlchange</span> <span class="n">DATM_CLMNCEP_YR_END</span><span class="o">=</span><span class="mi">1920</span>
+</pre></div>
+</div>
+<p>When the model has completed year 1900, set:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">xmlchange</span> <span class="n">DATM_CLMNCEP_YR_ALIGN</span><span class="o">=</span><span class="mi">1901</span>
+<span class="o">./</span><span class="n">xmlchange</span> <span class="n">DATM_CLMNCEP_YR_START</span><span class="o">=</span><span class="mi">1901</span>
+<span class="o">./</span><span class="n">xmlchange</span> <span class="n">DATM_CLMNCEP_YR_END</span><span class="o">=</span><span class="mi">2010</span>
+</pre></div>
+</div>
+<p>With this setup, the correlation between model run year and forcing year
+looks like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">RUN</span>   <span class="n">Year</span> <span class="p">:</span> <span class="mi">1850</span> <span class="o">...</span> <span class="mi">1860</span> <span class="mi">1861</span> <span class="o">...</span> <span class="mi">1870</span> <span class="o">...</span> <span class="mi">1880</span> <span class="mi">1881</span> <span class="o">...</span> <span class="mi">1890</span> <span class="o">...</span> <span class="mi">1900</span> <span class="mi">1901</span> <span class="o">...</span> <span class="mi">2010</span>
+<span class="n">FORCE</span> <span class="n">Year</span> <span class="p">:</span> <span class="mi">1910</span> <span class="o">...</span> <span class="mi">1920</span> <span class="mi">1901</span> <span class="o">...</span> <span class="mi">1910</span> <span class="o">...</span> <span class="mi">1920</span> <span class="mi">1901</span> <span class="o">...</span> <span class="mi">1910</span> <span class="o">...</span> <span class="mi">1920</span> <span class="mi">1901</span> <span class="o">...</span> <span class="mi">2010</span>
+</pre></div>
+</div>
+<p class="last">Setting <code class="docutils literal notranslate"><span class="pre">DATM_CLMNCEP_YR_ALIGN</span></code> to 1901 tells the code that you want
+to align model year 1901 with forcing data year 1901, and then it
+calculates what the forcing year should be if the model starts in year 1850.</p>
+</dd>
 </dl>
 </div>
 <div class="section" id="data-model-namelist-input">
-<h2>2.3. Data Model Namelist Input<a class="headerlink" href="#data-model-namelist-input" title="Permalink to this headline">¶</a></h2>
-<p>Each data model has an associated input namelist file, <code class="docutils literal notranslate"><span class="pre">xxx_in</span></code>,
-where <code class="docutils literal notranslate"><span class="pre">xxx=[datm,dlnd,dice,docn,drof,dwav]</span></code>.</p>
+<span id="input-namelists"></span><h2>2.3. Data Model Namelist Input<a class="headerlink" href="#data-model-namelist-input" title="Permalink to this headline">¶</a></h2>
+<p>Each data model has an associated input namelist file, <code class="docutils literal notranslate"><span class="pre">d{model_name}_in</span></code>,
+where <code class="docutils literal notranslate"><span class="pre">model_name=[datm,dlnd,dice,docn,drof,dwav]</span></code>.</p>
+<p>The following namelist variables appear in each data model namelist:</p>
 <dl class="docutils">
 <dt><strong>dataMode</strong></dt>
 <dd><p class="first">component specific mode.</p>
@@ -330,50 +377,6 @@ where <code class="docutils literal notranslate"><span class="pre">xxx=[datm,dln
 <p class="last"><span class="xref std std-ref">dwav dataMode</span></p>
 </dd>
 </dl>
-</div>
-<div class="section" id="details-on-year-align">
-<h2>2.4. Details on year_align<a class="headerlink" href="#details-on-year-align" title="Permalink to this headline">¶</a></h2>
-<p>The <code class="docutils literal notranslate"><span class="pre">year_align</span></code> value gives the simulation year corresponding to
-<code class="docutils literal notranslate"><span class="pre">year_first</span></code>. A common usage is to set this to the year of
-<code class="docutils literal notranslate"><span class="pre">RUN_STARTDATE</span></code>. With this setting, the forcing in the first year of
-the run will be the forcing of year <code class="docutils literal notranslate"><span class="pre">year_first</span></code>. Another use case is
-to align the calendar of transient forcing with the model calendar. For
-example, setting <code class="docutils literal notranslate"><span class="pre">year_align</span></code> = <code class="docutils literal notranslate"><span class="pre">year_first</span></code> will lead to the
-forcing calendar being the same as the model calendar. The forcing for a
-given model year would be the forcing of the same year. This would be
-appropriate in transient runs where the model calendar is setup to span
-the same year range as the forcing data.</p>
-<p>For some data model modes, <code class="docutils literal notranslate"><span class="pre">year_align</span></code> can be set via an xml variable
-whose name ends with <code class="docutils literal notranslate"><span class="pre">YR_ALIGN</span></code> (there are a few such xml variables,
-each pertaining to a particular data model mode).</p>
-<p>An example of this is land-only historical simulations in which we run
-the model for 1850 to 2010 using atmospheric forcing data that is only
-available for 1901 to 2010. In this case, we want to run the model for
-years 1850 (so <code class="docutils literal notranslate"><span class="pre">RUN_STARTDATE</span></code> has year 1850) through 1900 by looping
-over the forcing data for 1901-1920, and then run the model for years
-1901-2010 using the forcing data from 1901-2010. To do this, we
-initially set:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">xmlchange</span> <span class="n">DATM_CLMNCEP_YR_ALIGN</span><span class="o">=</span><span class="mi">1901</span>
-<span class="o">./</span><span class="n">xmlchange</span> <span class="n">DATM_CLMNCEP_YR_START</span><span class="o">=</span><span class="mi">1901</span>
-<span class="o">./</span><span class="n">xmlchange</span> <span class="n">DATM_CLMNCEP_YR_END</span><span class="o">=</span><span class="mi">1920</span>
-</pre></div>
-</div>
-<p>When the model has completed year 1900, then we set:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">xmlchange</span> <span class="n">DATM_CLMNCEP_YR_ALIGN</span><span class="o">=</span><span class="mi">1901</span>
-<span class="o">./</span><span class="n">xmlchange</span> <span class="n">DATM_CLMNCEP_YR_START</span><span class="o">=</span><span class="mi">1901</span>
-<span class="o">./</span><span class="n">xmlchange</span> <span class="n">DATM_CLMNCEP_YR_END</span><span class="o">=</span><span class="mi">2010</span>
-</pre></div>
-</div>
-<p>With this setup, the correlation between model run year and forcing year
-looks like this:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">RUN</span>   <span class="n">Year</span> <span class="p">:</span> <span class="mi">1850</span> <span class="o">...</span> <span class="mi">1860</span> <span class="mi">1861</span> <span class="o">...</span> <span class="mi">1870</span> <span class="o">...</span> <span class="mi">1880</span> <span class="mi">1881</span> <span class="o">...</span> <span class="mi">1890</span> <span class="o">...</span> <span class="mi">1900</span> <span class="mi">1901</span> <span class="o">...</span> <span class="mi">2010</span>
-<span class="n">FORCE</span> <span class="n">Year</span> <span class="p">:</span> <span class="mi">1910</span> <span class="o">...</span> <span class="mi">1920</span> <span class="mi">1901</span> <span class="o">...</span> <span class="mi">1910</span> <span class="o">...</span> <span class="mi">1920</span> <span class="mi">1901</span> <span class="o">...</span> <span class="mi">1910</span> <span class="o">...</span> <span class="mi">1920</span> <span class="mi">1901</span> <span class="o">...</span> <span class="mi">2010</span>
-</pre></div>
-</div>
-<p>Setting <code class="docutils literal notranslate"><span class="pre">DATM_CLMNCEP_YR_ALIGN</span></code> to 1901 tells the code that you want
-to align model year 1901 with forcing data year 1901, and then it
-calculates what the forcing year should be if the model starts in
-year 1850.</p>
 <p>Each data model’s <strong>cime-config/buildnml</strong> utility automatically
 generates the required stream description files for the case.  The
 directory contents of each data model will look like the following
@@ -388,38 +391,103 @@ provides out-of-the box settings for the target data model and target
 stream.  <strong>buildnml</strong> utilizes these two files to construct the stream
 files for the given compset settings. You can modify the generated
 stream files for your particular needs by doing the following:</p>
-<ol class="arabic">
-<li><p class="first">Copy the relevant description file from <code class="docutils literal notranslate"><span class="pre">$CASEROOT/CaseDocs</span></code> to
-<code class="docutils literal notranslate"><span class="pre">$CASEROOT</span></code>. Change the permission of the file to write. For
-example, assuming you are in <strong>$CASEROOT</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>cp $CASEROOT/CaseDocs/datm.streams.txt.CLM_QIAN.Solar  $CASEROOT/streams.txt.CLM_QIAN.Solar
-chmod u+w $CASEROOT/datm.streams.txt.CLM_QIAN.Solar
-</pre></div>
-</div>
-</li>
-<li><p class="first">Edit <code class="docutils literal notranslate"><span class="pre">$CASEROOT/datm.streams.txt.CLM_QIAN.Solar</span></code> with your desired changes.</p>
-<ul class="simple">
+<ol class="arabic simple">
+<li>Copy the relevant description file from <code class="docutils literal notranslate"><span class="pre">$CASEROOT/CaseDocs</span></code> to
+<code class="docutils literal notranslate"><span class="pre">$CASEROOT</span></code>. Change the permission of the file to write.</li>
+<li>Edit the <code class="docutils literal notranslate"><span class="pre">$CASEROOT</span></code> file with your desired changes.<ul>
 <li><em>Be sure not to put any tab characters in the file: use spaces
 instead</em>.</li>
-<li>In contrast to other user_nl_xxx files, be sure to set all
-relevant data model settings in the xml files, issue the
-<strong>preview_namelist</strong> command and THEN edit the <code class="docutils literal notranslate"><span class="pre">$CASEROOT</span></code>
-<code class="docutils literal notranslate"><span class="pre">datm.streams.txt.CLM_QIAN.Solar</span></code> file.</li>
-<li><strong>Once you have created a $CASEROOT xxx.streams.txt.* file, further
-modifications to the relevant data model settings in the xml
-files will be ignored.</strong></li>
-<li>If you later realize that you need to change some settings in an
-xml file, you should remove the xxx.streams.txt.* file(s),
-make the modifications in the xml file, rerun
-<strong>preview_namelists</strong>, and then reintroduce your modifications
-into a new xxx.streams.txt.* stream file(s).</li>
 </ul>
 </li>
-<li><p class="first">Call <strong>preview_namelists</strong> and verify that your changes do indeed
+<li>Call <strong>preview_namelists</strong> and verify that your changes do indeed
 appear in the resultant stream description file appear in
-<code class="docutils literal notranslate"><span class="pre">CaseDocs/datm.streams.txt.CLM_QIAN.Solar</span></code>. These changes will
-also appear in <code class="docutils literal notranslate"><span class="pre">$RUNDIR/datm.streams.txt.CLM_QIAN.Solar</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">CaseDocs/{model_name}streams.xml</span></code>. These changes will
+also appear in <code class="docutils literal notranslate"><span class="pre">$RUNDIR/{model_name}.streams.xml</span></code>.</li>
+</ol>
+</div>
+<div class="section" id="data-model-stream-inline-api">
+<h2>2.4. Data Model Stream Inline API<a class="headerlink" href="#data-model-stream-inline-api" title="Permalink to this headline">¶</a></h2>
+<p>As mentioned previously, the streams code can be used from either a
+CDEPS data model <strong>OR</strong> inline calls from a prognostic component. This
+is a very powerful feature in that data model input can be obtained
+using standardized interfaces and ESMF online mapping.</p>
+<p>The inline API assumes that there is <strong>only one stream</strong> and consists
+of two calls: one to initialize the stream data type
+(<code class="docutils literal notranslate"><span class="pre">shr_strdata_init</span></code>):</p>
+<div class="highlight-Fortran notranslate"><div class="highlight"><pre><span></span><span class="k">call </span><span class="n">shr_strdata_init_from_inline</span><span class="p">(</span><span class="n">sdat</span><span class="p">,</span> <span class="n">my_task</span><span class="p">,</span> <span class="n">logunit</span><span class="p">,</span> <span class="n">compname</span><span class="p">,</span> <span class="p">&amp;</span>
+      <span class="n">model_clock</span><span class="p">,</span> <span class="n">model_mesh</span><span class="p">,</span> <span class="p">&amp;</span>
+      <span class="n">stream_meshfile</span><span class="p">,</span> <span class="n">stream_mapalgo</span><span class="p">,</span> <span class="p">&amp;</span>
+      <span class="n">stream_filenames</span><span class="p">,</span> <span class="n">stream_fldlistFile</span><span class="p">,</span> <span class="n">stream_fldListModel</span><span class="p">,</span> <span class="p">&amp;</span>
+      <span class="n">stream_yearFirst</span><span class="p">,</span> <span class="n">stream_yearLast</span><span class="p">,</span> <span class="n">stream_yearAlign</span><span class="p">,</span> <span class="p">&amp;</span>
+      <span class="n">stream_offset</span><span class="p">,</span> <span class="n">stream_taxmode</span><span class="p">,</span> <span class="n">rc</span><span class="p">)</span>
+
+<span class="k">type</span><span class="p">(</span><span class="n">shr_strdata_type</span><span class="p">)</span> <span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span> <span class="kd">::</span> <span class="n">sdat</span>                   <span class="c">! stream data type</span>
+<span class="kt">integer</span>                <span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>    <span class="kd">::</span> <span class="n">my_task</span>                <span class="c">! my mpi task</span>
+<span class="kt">integer</span>                <span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>    <span class="kd">::</span> <span class="n">logunit</span>                <span class="c">! stdout logunit</span>
+<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">)</span>       <span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>    <span class="kd">::</span> <span class="n">compname</span>               <span class="c">! component name (e.g. ATM, OCN, ...)</span>
+<span class="k">type</span><span class="p">(</span><span class="n">ESMF_Clock</span><span class="p">)</span>       <span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>    <span class="kd">::</span> <span class="n">model_clock</span>            <span class="c">! model clock</span>
+<span class="k">type</span><span class="p">(</span><span class="n">ESMF_Mesh</span><span class="p">)</span>        <span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>    <span class="kd">::</span> <span class="n">model_mesh</span>             <span class="c">! model mesh</span>
+<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">)</span>       <span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>    <span class="kd">::</span> <span class="n">stream_meshFile</span>        <span class="c">! full pathname to stream mesh file</span>
+<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">)</span>       <span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>    <span class="kd">::</span> <span class="n">stream_mapalgo</span>         <span class="c">! stream mesh -&gt; model mesh mapping type</span>
+<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">)</span>       <span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>    <span class="kd">::</span> <span class="n">stream_filenames</span><span class="p">(:)</span>    <span class="c">! stream data filenames (full pathnamesa)</span>
+<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">)</span>       <span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>    <span class="kd">::</span> <span class="n">stream_fldListFile</span><span class="p">(:)</span>  <span class="c">! file field names, colon delim list</span>
+<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">)</span>       <span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>    <span class="kd">::</span> <span class="n">stream_fldListModel</span><span class="p">(:)</span> <span class="c">! model field names, colon delim list</span>
+<span class="kt">integer</span>                <span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>    <span class="kd">::</span> <span class="n">stream_yearFirst</span>       <span class="c">! first year to use</span>
+<span class="kt">integer</span>                <span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>    <span class="kd">::</span> <span class="n">stream_yearLast</span>        <span class="c">! last  year to use</span>
+<span class="kt">integer</span>                <span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>    <span class="kd">::</span> <span class="n">stream_yearAlign</span>       <span class="c">! align yearFirst with this model year</span>
+<span class="kt">integer</span>                <span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>    <span class="kd">::</span> <span class="n">stream_offset</span>          <span class="c">! offset in seconds of stream data</span>
+<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">)</span>       <span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>    <span class="kd">::</span> <span class="n">stream_taxMode</span>         <span class="c">! time axis mode</span>
+<span class="kt">integer</span>                <span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>   <span class="kd">::</span> <span class="n">rc</span>                     <span class="c">! error code</span>
+</pre></div>
+</div>
+<p>and one to advance the stream (<code class="docutils literal notranslate"><span class="pre">shr_strdata_advance</span></code>):</p>
+<div class="highlight-Fortran notranslate"><div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">shr_strdata_advance</span><span class="p">(</span><span class="n">sdat</span><span class="p">,</span> <span class="n">ymd</span><span class="p">,</span> <span class="n">tod</span><span class="p">,</span> <span class="n">logunit</span><span class="p">,</span> <span class="n">istr</span><span class="p">,</span> <span class="n">timers</span><span class="p">,</span> <span class="n">rc</span><span class="p">)</span>
+
+  <span class="k">type</span><span class="p">(</span><span class="n">shr_strdata_type</span><span class="p">)</span> <span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span>       <span class="kd">::</span> <span class="n">sdat</span>    <span class="c">! stream data type</span>
+  <span class="kt">integer</span>                <span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>          <span class="kd">::</span> <span class="n">ymd</span>     <span class="c">! current model date</span>
+  <span class="kt">integer</span>                <span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>          <span class="kd">::</span> <span class="n">tod</span>     <span class="c">! current model date</span>
+  <span class="kt">integer</span>                <span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>          <span class="kd">::</span> <span class="n">logunit</span> <span class="c">! stdout logunit</span>
+  <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">)</span>       <span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>          <span class="kd">::</span> <span class="n">istr</span>    <span class="c">! string used for timing output</span>
+  <span class="kt">integer</span>                <span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>         <span class="kd">::</span> <span class="n">rc</span>      <span class="c">! error code</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="handling-stream-calendars">
+<h2>2.5. Handling Stream Calendars<a class="headerlink" href="#handling-stream-calendars" title="Permalink to this headline">¶</a></h2>
+<p>Handling stream calendars can be tricky if there are mismatches
+between the stream and data model calendars.  CDEPS always uses the
+stream calendar for time interpolation for reasons described below.
+When there is a calendar mismatch, Feb 29 is supported in a special
+way as needed to get reasonable values.  Note that when Feb 29 needs
+to be treated specially, a discontinuity will be introduced.  The size
+of that discontinuity will depend on the time series input data.
+Four cases can occur:</p>
+<ol class="arabic simple">
+<li>The stream calendar and model calendar are identical
+Proceed in the standard way.</li>
+<li>The stream is a no leap calendar and the model is gregorian calendar.
+Time interpolate on the noleap calendar.  If the model date is Feb 29,
+compute stream data for Feb 28 by setting model time to Feb 28.
+This results in duplicate stream data on Feb 28 and Feb 29 and a
+discontinuity at the start of Feb 29. This could potentially be fixed
+by using the gregorian calendar for time interpolation when the input data
+is relatively infrequent (say greater than daily) with the following concerns.<ul>
+<li>The forcing will not be reproduced identically on the same day with
+with climatological inputs data</li>
+<li>Input data with variable input frequency might behave funny</li>
+<li>An arbitrary discontinuity will be introduced in the time
+interpolation method based upon the logic chosen to transition
+from reproducing Feb 28 on Feb 29 and interpolating to Feb 29.</li>
+<li>The time gradient of data will change by adding a day arbitrarily.</li>
+</ul>
 </li>
+<li>The stream is a gregorian calendar and the model is a noleap calendar
+Time interpolate on the gregorian calendar. This causes Feb 29
+stream data to be skipped and lead to a discontinuity at the start
+of March 1.</li>
+<li>The calendars mismatch and none of the above
+If the calendars mismatch and neither of the three cases above are
+recognized, then abort.</li>
 </ol>
 </div>
 </div>
