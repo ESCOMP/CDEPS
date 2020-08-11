@@ -110,4 +110,6 @@ jobs:
           cd $HOME/cime/scripts
           mkdir $HOME/scratch
           export CIME_MODEL=cesm
-          ./create_test SMS_Vnuopc_Mmpi-serial.f19_g17.A.ubuntu_gnu --machine ubuntu
+          export CC=mpicc
+          export FC=mpif90
+          ./create_test SMS_Vnuopc.f19_g17.A.ubuntu_gnu --machine ubuntu
