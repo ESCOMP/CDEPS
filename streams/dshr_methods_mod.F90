@@ -117,9 +117,6 @@ contains
              ! no local data
           elseif (lrank == 1) then
              if (size(dataPtr1d) > 0) then
-                !
-                call ESMF_LogWrite('DEBUG:  '//trim(lfieldnamelist(n)), ESMF_LOGMSG_INFO)
-                !
                 write(msgString,'(A,3g14.7,i8)') trim(string)//': '//trim(lfieldnamelist(n)), &
                      minval(dataPtr1d), maxval(dataPtr1d), sum(dataPtr1d), size(dataPtr1d)
              else

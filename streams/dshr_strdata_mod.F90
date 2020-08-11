@@ -751,7 +751,7 @@ contains
     ! local variables
     integer                             :: ns               ! stream index
     integer                             :: nf               ! field index
-    integer                             :: i,l              ! generic indices
+    integer                             :: i,lev            ! generic indices
     logical , allocatable               :: newData(:)
     integer , allocatable               :: ymdmod(:)        ! modified model dates to handle Feb 29
     real(r8), allocatable               :: coszen(:)        ! cosine of zenith angle
@@ -1011,8 +1011,8 @@ contains
                    call dshr_fldbun_getfldptr(sdat%pstrm(ns)%fldbun_data(sdat%pstrm(ns)%stream_ub), &
                         sdat%pstrm(ns)%fldlist_model(nf), fldptr2=dataptr2d_ub, rc=rc)
                    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-                   do l = 1,sdat%pstrm(ns)%stream_nlev
-                      dataptr2d(l,:) = dataptr2d_lb(l,:) * flb + dataptr2d_ub(l,:) * fub
+                   do lev = 1,sdat%pstrm(ns)%stream_nlev
+                      dataptr2d(lev,:) = dataptr2d_lb(lev,:) * flb + dataptr2d_ub(lev,:) * fub
                    end do
                 else
                    call dshr_fldbun_getfldptr(sdat%pstrm(ns)%fldbun_model, &
@@ -1304,7 +1304,7 @@ contains
     integer(i2), allocatable :: data_short(:)
     integer(i2)              :: fillvalue_i2
     character(CS)            :: uname, vname
-    integer                  :: i, l
+    integer                  :: i, lev
     logical                  :: checkflag = .false.
     character(*), parameter  :: subname = '(shr_strdata_readstrm) '
     character(*), parameter  :: F00   = "('(shr_strdata_readstrm) ',8a)"
@@ -1456,19 +1456,19 @@ contains
                 call shr_sys_abort(' ERROR: reading in variable: '// trim(per_stream%fldlist_stream(nf)))
              end if
              if (handlefill) then
-                do l = 1,stream_nlev
+                do lev = 1,stream_nlev
                    do n = 1,size(dataptr2d, dim=2)
-                      if (.not. shr_infnan_isnan(data_real2d(n,l)) .and. data_real2d(n,l) .ne. fillvalue_r4) then
-                         dataptr2d(l,n) = real(data_real2d(n,l), kind=r8) ! Note the order of indices
+                      if (.not. shr_infnan_isnan(data_real2d(n,lev)) .and. data_real2d(n,lev) .ne. fillvalue_r4) then
+                         dataptr2d(lev,n) = real(data_real2d(n,lev), kind=r8) ! Note the order of indices
                       else
-                         dataptr2d(l,n) = r8fill
+                         dataptr2d(lev,n) = r8fill
                       endif
                    enddo
                 end do
              else
-                do l = 1,stream_nlev
+                do lev = 1,stream_nlev
                    do n = 1,size(dataptr2d, dim=2)
-                      dataptr2d(l,n) = real(data_real2d(n,l), kind=r8)
+                      dataptr2d(lev,n) = real(data_real2d(n,lev), kind=r8)
                    end do
                 end do
              end if
@@ -1508,19 +1508,19 @@ contains
                 call shr_sys_abort(' ERROR: reading in 2d double variable: '// trim(per_stream%fldlist_stream(nf)))
              end if
              if (handlefill) then
-                do l = 1,stream_nlev
+                do lev = 1,stream_nlev
                    do n = 1,size(dataptr2d, dim=2)
-                      if (.not. shr_infnan_isnan(data_dbl2d(n,l)) .and. data_dbl2d(n,l) .ne. fillvalue_r8) then
-                         dataptr2d(l,n) = data_dbl2d(n,l)
+                      if (.not. shr_infnan_isnan(data_dbl2d(n,lev)) .and. data_dbl2d(n,lev) .ne. fillvalue_r8) then
+                         dataptr2d(lev,n) = data_dbl2d(n,lev)
                       else
-                         dataptr2d(l,n) = r8fill
+                         dataptr2d(lev,n) = r8fill
                       endif
                    enddo
                 end do
              else
-                do l = 1,stream_nlev
+                do lev = 1,stream_nlev
                    do n = 1,size(dataptr2d, dim=2)
-                      dataptr2d(l,n) = data_dbl2d(n,l)
+                      dataptr2d(lev,n) = data_dbl2d(n,lev)
                    end do
                 end do
              end if
@@ -1562,19 +1562,19 @@ contains
                 call shr_sys_abort(' ERROR: reading in 2d short variable: '// trim(per_stream%fldlist_stream(nf)))
              end if
              if (handlefill) then
-                do l = 1,stream_nlev
+                do lev = 1,stream_nlev
                    do n = 1,lsize
-                      if(data_short2d(n,l).eq.fillvalue_i2) then
-                         dataptr2d(l,n) = r8fill
+                      if(data_short2d(n,lev) .eq. fillvalue_i2) then
+                         dataptr2d(lev,n) = r8fill
                       else
-                         dataptr2d(l,n) = real(data_short2d(l,n),r8) * scale_factor + add_offset
+                         dataptr2d(lev,n) = real(data_short2d(lev,n),r8) * scale_factor + add_offset
                       endif
                    enddo
                 end do
              else
-                do l = 1,stream_nlev
+                do lev = 1,stream_nlev
                    do n = 1,lsize
-                      dataptr2d(l,n) = real(data_short2d(n,l),r8) * scale_factor + add_offset
+                      dataptr2d(lev,n) = real(data_short2d(n,lev),r8) * scale_factor + add_offset
                    enddo
                 end do
              end if
