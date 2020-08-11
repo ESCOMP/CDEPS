@@ -74,7 +74,6 @@ jobs:
           sudo apt-get install libnetcdf-dev
           wget https://github.com/Unidata/netcdf-fortran/archive/${{ env.NETCDF_FORTRAN_VERSION }}.tar.gz
           tar -xzvf ${{ env.NETCDF_FORTRAN_VERSION }}.tar.gz
-          ls -l
           pushd netcdf-fortran-*
           ./configure --prefix=$HOME/netcdf-fortran
           make
@@ -89,6 +88,7 @@ jobs:
           cd cdeps
           git submodule init
           git submodule update
+          ls -l
           cd $HOME/cime/src/drivers
           git clone https://github.com/ESCOMP/CMEPS.git nuopc
           cd $HOME/cime/scripts
