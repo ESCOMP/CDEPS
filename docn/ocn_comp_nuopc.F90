@@ -22,8 +22,6 @@ module ocn_comp_nuopc
   use dshr_mod         , only : dshr_state_setscalar, dshr_set_runclock
   use dshr_dfield_mod  , only : dfield_type, dshr_dfield_add, dshr_dfield_copy
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_realize
-  use perf_mod         , only : t_startf, t_stopf, t_adj_detailf, t_barrierf
-  use pio
 
   ! Datamode specialized modules
   use docn_datamode_copyall_mod    , only : docn_datamode_copyall_advertise
@@ -169,8 +167,6 @@ contains
     integer           :: nu                 ! unit number
     integer           :: ierr               ! error code
     logical           :: exists             ! check for file existence
-    integer           :: n
-    type(fldlist_type), pointer :: fldList
     character(len=*),parameter :: subname=trim(module_name)//':(InitializeAdvertise) '
     character(*)    ,parameter :: F00 = "('(ocn_comp_nuopc) ',8a)"
     character(*)    ,parameter :: F01 = "('(ocn_comp_nuopc) ',a,2x,i8)"
@@ -307,24 +303,19 @@ contains
     integer, intent(out) :: rc
 
     ! local variables
-    type(ESMF_TimeInterval)         :: TimeStep
     type(ESMF_Time)                 :: currTime
     integer                         :: current_ymd  ! model date
     integer                         :: current_year ! model year
     integer                         :: current_mon  ! model month
     integer                         :: current_day  ! model day
     integer                         :: current_tod  ! model sec into model date
-    integer                         :: fieldcount
-    type(ESMF_Field)                :: lfield
-    character(ESMF_MAXSTR) ,pointer :: lfieldnamelist(:)
-    integer                         :: n
     character(len=*), parameter :: subname=trim(module_name)//':(InitializeRealize) '
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
 
     ! Initialize model mesh, restart flag, logunit, model_mask and model_frac
-    call t_startf('docn_strdata_init')
+    call ESMF_TraceRegionEnter('docn_strdata_init')
     call dshr_mesh_init(gcomp, nullstr, logunit, 'OCN', nx_global, ny_global, &
          model_meshfile, model_maskfile, model_createmesh_fromfile, model_mesh, &
          model_mask, model_frac, restart_read, rc=rc)
@@ -336,7 +327,7 @@ contains
        call shr_strdata_init_from_xml(sdat, xmlfilename, model_mesh, clock, 'OCN', logunit, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
-    call t_stopf('docn_strdata_init')
+    call ESMF_TraceRegionExit('docn_strdata_init')
 
     ! Realize the actively coupled fields, now that a mesh is established and
     ! NUOPC_Realize "realizes" a previously advertised field in the importState and exportState
@@ -447,7 +438,7 @@ contains
 
     rc = ESMF_SUCCESS
 
-    call t_startf('DOCN_RUN')
+    call ESMF_TraceRegionEnter('DOCN_RUN')
 
     !--------------------
     ! First time initialization
@@ -496,21 +487,19 @@ contains
     !--------------------
 
     ! Advance data model streams - time and spatially interpolate to model time and grid
-    call t_barrierf('docn_BARRIER',mpicom)
-    call t_startf('docn_strdata_advance')
+    call ESMF_TraceRegionEnter('docn_strdata_advance')
     call shr_strdata_advance(sdat, target_ymd, target_tod, logunit, 'docn', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call t_stopf('docn_strdata_advance')
+    call ESMF_TraceRegionExit('docn_strdata_advance')
 
     ! Copy all fields from streams to export state as default
     ! This automatically will update the fields in the export state
-    call t_barrierf('docn_dfield_copy_BARRIER', mpicom)
-    call t_startf('docn_dfield_copy')
+    call ESMF_TraceRegionEnter('docn_dfield_copy')
     if(.not. aquaplanet) then
        call dshr_dfield_copy(dfields, sdat, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     endif
-    call t_stopf('docn_dfield_copy')
+    call ESMF_TraceRegionExit('docn_dfield_copy')
 
     ! Perform data mode specific calculations
     select case (trim(datamode))
@@ -525,7 +514,7 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('sst_aquap_analytic')
        call  docn_datamode_aquaplanet_advance(exportstate, model_mesh, sst_option=aquap_option, rc=rc)
-       if (chkerr(rc,__line__,u_file_u)) return
+       if (ChkErr(rc,__LINE__,u_file_u)) return
     case('sst_aquap_constant')
        call  docn_datamode_aquaplanet_advance(exportState, model_mesh, sst_constant_value=sst_constant_value, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -536,17 +525,17 @@ contains
        select case (trim(datamode))
        case('sstdata','sst_aquap_file')
           call docn_datamode_copyall_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, mpicom, my_task, sdat)
+               logunit, my_task, sdat)
        case('iaf')
           call docn_datamode_iaf_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, mpicom, my_task, sdat)
+               logunit, my_task, sdat)
        case('som','som_aquap')
           call docn_datamode_som_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, mpicom, my_task, sdat)
+               logunit, my_task, sdat)
        end select
     end if
 
-    call t_stopf('DOCN_RUN')
+    call ESMF_TraceRegionExit('DOCN_RUN')
 
     ! write diagnostics
     if (diagnose_data) then

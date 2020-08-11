@@ -34,7 +34,6 @@ contains
     integer, optional , intent(in)    :: ungridded_ubound
     ! local variables
     type(fldlist_type), pointer :: fldlist_new
-    integer :: rc
     ! ----------------------------------------------
 
     allocate(fldlist_new)
@@ -62,7 +61,6 @@ contains
     integer             , intent(inout) :: rc
 
     ! local variables
-    integer                     :: n
     type(fldlist_type), pointer :: fldList
     type(ESMF_Field)            :: field
     character(len=CS)           :: stdname

@@ -26,8 +26,6 @@ module atm_comp_nuopc
   use dshr_mod         , only : dshr_orbital_init, dshr_orbital_update
   use dshr_dfield_mod  , only : dfield_type, dshr_dfield_add, dshr_dfield_copy
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add, dshr_fldlist_realize
-  use perf_mod         , only : t_startf, t_stopf, t_barrierf
-
   use datm_datamode_core2_mod   , only : datm_datamode_core2_advertise
   use datm_datamode_core2_mod   , only : datm_datamode_core2_init_pointers
   use datm_datamode_core2_mod   , only : datm_datamode_core2_advance
@@ -94,8 +92,9 @@ module atm_comp_nuopc
   logical                      :: flds_presaero = .false.             ! true => send valid prescribe aero fields to mediator
   logical                      :: flds_co2 = .false.                  ! true => send prescribed co2 to mediator
   logical                      :: flds_wiso = .false.                 ! true => send water isotopes to mediator
-  character(CL)                :: bias_correct = nullstr              ! send bias correction fields to coupler (not used here)
-  character(CL)                :: anomaly_forcing(8) = nullstr        ! send anomaly forcing fields to coupler (not used here)
+  character(CL)                :: bias_correct = nullstr              ! send bias correction fields to coupler
+  character(CL)                :: anomaly_forcing(8) = nullstr        ! send anomaly forcing fields to coupler
+
   character(CL)                :: restfilm = nullstr                  ! model restart file namelist
   integer                      :: nx_global                           ! global nx
   integer                      :: ny_global                           ! global ny
@@ -179,7 +178,6 @@ contains
     integer, intent(out) :: rc
 
     ! local variables
-    character(len=CL) :: cvalue     ! temporary
     integer           :: nu         ! unit number
     integer           :: ierr       ! error code
     logical           :: exists     ! check for file existence
@@ -332,8 +330,8 @@ contains
     integer(i8)             :: stepno        ! step number
     real(r8)                :: nextsw_cday   ! calendar of next atm sw
     character(CL)           :: cvalue        ! character string for input config
-    real(R8)                :: orbEccen      ! orb eccentricity (unit-less)
-    real(R8)                :: orbMvelpp     ! orb moving vernal eq (radians)
+    real(R8)                :: orbEccen      ! orb eccentricity (unist-less)
+    real(R8)                :: orbMvelpp     ! orb moving vernal eqa (radians)
     real(R8)                :: orbLambm0     ! orb mean long of perhelion (radians)
     real(R8)                :: orbObliqr     ! orb obliquity (radians)
     logical                 :: isPresent, isSet
@@ -344,7 +342,7 @@ contains
     call ESMF_LogWrite(subname//' called', ESMF_LOGMSG_INFO)
 
     ! Initialize mesh, restart flag, compid, and logunit
-    call t_startf('datm_strdata_init')
+    call ESMF_TraceRegionEnter('datm_strdata_init')
     call dshr_mesh_init(gcomp, nullstr, logunit, 'ATM', nx_global, ny_global, &
          model_meshfile, model_maskfile, model_createmesh_fromfile, model_mesh, &
          model_mask, model_frac, restart_read, rc=rc)
@@ -354,7 +352,7 @@ contains
     xmlfilename = 'datm.streams'//trim(inst_suffix)//'.xml'
     call shr_strdata_init_from_xml(sdat, xmlfilename, model_mesh, clock, 'ATM', logunit, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call t_stopf('datm_strdata_init')
+    call ESMF_TraceRegionExit('datm_strdata_init')
 
     ! NUOPC_Realize "realizes" a previously advertised field in the importState and exportState
     ! by replacing the advertised fields with the newly created fields of the same name.
@@ -419,7 +417,6 @@ contains
     ! local variables
     type(ESMF_State)        :: importState, exportState
     type(ESMF_Clock)        :: clock
-    type(ESMF_Time)         :: time
     type(ESMF_Alarm)        :: alarm
     type(ESMF_Time)         :: currTime
     type(ESMF_Time)         :: nextTime
@@ -434,13 +431,12 @@ contains
     real(R8)                :: orbMvelpp     ! orb moving vernal eq (radians)
     real(R8)                :: orbLambm0     ! orb mean long of perhelion (radians)
     real(R8)                :: orbObliqr     ! orb obliquity (radians)
-    character(len=CL)       :: cvalue        ! temporary
     character(len=*),parameter  :: subname=trim(modName)//':(ModelAdvance) '
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
 
-    call t_startf(subname)
+    call ESMF_TraceRegionEnter(subname)
     call memcheck(subname, 5, my_task==master_task)
 
     ! Query the Component for its clock, importState and exportState
@@ -475,11 +471,11 @@ contains
     endif
 
     ! Run datm
-    call t_startf('datm_run')
+    call ESMF_TraceRegionEnter('datm_run')
     call datm_comp_run(importstate, exportstate, next_ymd, next_tod, mon, &
          orbEccen, orbMvelpp, orbLambm0, orbObliqr, restart_write,  rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call t_stopf('datm_run')
+    call ESMF_TraceRegionExit('datm_run')
 
     ! Update nextsw_cday for scalar data
     ! Use nextYMD and nextTOD here since since the component - clock is advance at the END of the time interval
@@ -487,7 +483,7 @@ contains
     call dshr_state_SetScalar(nextsw_cday, flds_scalar_index_nextsw_cday, exportState, flds_scalar_name, flds_scalar_num, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    call t_stopf(subname)
+    call ESMF_TraceRegionExit(subname)
 
   end subroutine ModelAdvance
 
@@ -519,7 +515,7 @@ contains
 
     rc = ESMF_SUCCESS
 
-    call t_startf('DATM_RUN')
+    call ESMF_TraceRegionEnter('DATM_RUN')
 
     !--------------------
     ! First time initialization
@@ -573,32 +569,30 @@ contains
     call shr_strdata_setOrbs(sdat, orbEccen, orbMvelpp, orbLambm0, orbObliqr, idt)
 
     ! time and spatially interpolate to model time and grid
-    call t_barrierf('datm_BARRIER',mpicom)
-    call t_startf('datm_strdata_advance')
+    call ESMF_TraceRegionEnter('datm_strdata_advance')
     call shr_strdata_advance(sdat, target_ymd, target_tod, logunit, 'datm', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call t_stopf('datm_strdata_advance')
+    call ESMF_TraceRegionExit('datm_strdata_advance')
 
     ! copy all fields from streams to export state as default
     ! This automatically will update the fields in the export state
-    call t_barrierf('datm_comp_dfield_copy_BARRIER', mpicom)
-    call t_startf('datm_dfield_copy')
+    call ESMF_TraceRegionEnter('datm_dfield_copy')
     call dshr_dfield_copy(dfields, sdat, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call t_stopf('datm_dfield_copy')
+    call ESMF_TraceRegionExit('datm_dfield_copy')
 
     ! Determine data model behavior based on the mode
-    call t_startf('datm_datamode')
+    call ESMF_TraceRegionEnter('datm_datamode')
     select case (trim(datamode))
     case('CORE2_NYF','CORE2_IAF')
-       call datm_datamode_core2_advance(exportstate, datamode, target_ymd, target_tod, target_mon, &
-            sdat%model_calendar, factorfn_mesh, factorfn_data, rc)
+       call datm_datamode_core2_advance(datamode, target_ymd, target_tod, target_mon, &
+            sdat%model_calendar, factorfn_mesh, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('CORE_IAF_JRA')
        call datm_datamode_jra_advance(exportstate, target_ymd, target_tod, sdat%model_calendar, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('CLMNCEP')
-       call datm_datamode_clmncep_advance(importstate, exportstate, masterproc, logunit, mpicom,  rc)
+       call datm_datamode_clmncep_advance(masterproc, logunit, mpicom,  rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('ERA5')
        call datm_datamode_era5_advance(exportstate, masterproc, logunit, mpicom, target_ymd, &
@@ -611,19 +605,19 @@ contains
        select case (trim(datamode))
        case('CORE2_NYF','CORE2_IAF')
           call datm_datamode_core2_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, mpicom, my_task, sdat)
+               logunit, my_task, sdat)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('CORE_IAF_JRA')
           call datm_datamode_jra_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, mpicom, my_task, sdat)
+               logunit, my_task, sdat)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('CLMNCEP')
           call datm_datamode_clmncep_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, mpicom, my_task, sdat)
+               logunit, my_task, sdat)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('ERA5')
           call datm_datamode_era5_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, mpicom, my_task, sdat)
+               logunit, my_task, sdat)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end select
     end if
@@ -637,8 +631,8 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
-    call t_stopf('datm_datamode')
-    call t_stopf('DATM_RUN')
+    call ESMF_TraceRegionExit('datm_datamode')
+    call ESMF_TraceRegionExit('DATM_RUN')
 
   !--------
   contains
@@ -739,7 +733,6 @@ contains
     real(R8) :: nextsw_cday
     real(R8) :: julday
     integer  :: liradsw
-    integer  :: yy,mm,dd
     character(*),parameter :: subName =  '(getNextRadCDay) '
     !-------------------------------------------------------------------------------
 

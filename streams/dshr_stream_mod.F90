@@ -1191,7 +1191,7 @@ contains
     character(*)                ,intent(out) :: calendar ! calendar name
 
     ! local
-    integer                :: fid, vid, n
+    integer                :: vid, n
     character(CL)          :: fileName,lcal
     integer                :: old_handle
     integer                :: rCode
@@ -1389,7 +1389,7 @@ contains
     type(var_desc_t) :: varid, tvarid, dvarid, ntvarid, hdvarid
     integer :: rcode
     integer :: dimid_stream, dimid_files,dimid_nt, dimid_str
-    integer :: nt, n, k, maxnfiles=0
+    integer :: n, k, maxnfiles=0
     integer :: maxnt = 0
     integer, allocatable :: tmp(:)
     character(len=CL) :: fname

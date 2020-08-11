@@ -23,7 +23,6 @@ module ice_comp_nuopc
   use dshr_strdata_mod     , only : shr_strdata_type, shr_strdata_init_from_xml, shr_strdata_advance
   use dshr_dfield_mod      , only : dfield_type, dshr_dfield_add, dshr_dfield_copy
   use dshr_fldlist_mod     , only : fldlist_type, dshr_fldlist_add, dshr_fldlist_realize
-  use perf_mod             , only : t_startf, t_stopf, t_adj_detailf, t_barrierf
 
   use dice_datamode_ssmi_mod , only : dice_datamode_ssmi_advertise
   use dice_datamode_ssmi_mod , only : dice_datamode_ssmi_init_pointers
@@ -286,8 +285,6 @@ contains
     integer                     :: current_tod   ! model sec into model date
     real(R8)                    :: cosarg        ! for setting ice temp pattern
     real(R8)                    :: jday, jday0   ! elapsed day counters
-    character(CL)               :: cvalue        ! temporary
-    integer                     :: n,k           ! generic counters
     integer                     :: model_dt      ! integer model timestep
     character(len=*), parameter :: F00   = "('ice_comp_nuopc: ')',8a)"
     character(len=*), parameter :: subname=trim(modName)//':(InitializeRealize) '
@@ -296,7 +293,7 @@ contains
     rc = ESMF_SUCCESS
 
     ! Initialize mesh, restart flag, logunit
-    call t_startf('dice_strdata_init')
+    call ESMF_TraceRegionEnter('dice_strdata_init')
     call dshr_mesh_init(gcomp, nullstr, logunit, 'ICE', nx_global, ny_global, &
          model_meshfile, model_maskfile, model_createmesh_fromfile, model_mesh, &
          model_mask, model_frac, restart_read, rc=rc)
@@ -306,7 +303,7 @@ contains
     xmlfilename = 'dice.streams'//trim(inst_suffix)//'.xml'
     call shr_strdata_init_from_xml(sdat, xmlfilename, model_mesh, clock, 'ICE', logunit, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call t_stopf('dice_strdata_init')
+    call ESMF_TraceRegionExit('dice_strdata_init')
 
     ! NUOPC_Realize "realizes" a previously advertised field in the importState and exportState
     ! by replacing the advertised fields with the newly created fields of the same name.
@@ -359,9 +356,6 @@ contains
     type(ESMF_Alarm)        :: alarm
     type(ESMF_TimeInterval) :: timeStep
     type(ESMF_Time)         :: currTime, nextTime
-    integer                 :: current_mon   ! model month
-    integer                 :: current_day   ! model day
-    integer                 :: current_tod   ! model sec into model date
     real(R8)                :: cosarg        ! for setting ice temp pattern
     real(R8)                :: jday, jday0   ! elapsed day counters
     integer                 :: next_ymd      ! model date
@@ -375,7 +369,7 @@ contains
 
     rc = ESMF_SUCCESS
 
-    call t_startf(subname)
+    call ESMF_TraceRegionEnter(subname)
     call memcheck(subname, 5, my_task == master_task)
 
     ! Query the Component for its clock, importState and exportState
@@ -413,7 +407,7 @@ contains
     call dice_comp_run(importState, exportState, next_ymd, next_tod, cosarg, restart_write, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    call t_stopf(subname)
+    call ESMF_TraceRegionExit(subname)
 
   end subroutine ModelAdvance
 
@@ -440,7 +434,7 @@ contains
 
     rc = ESMF_SUCCESS
 
-    call t_startf('DICE_RUN')
+    call ESMF_TraceRegionEnter('DICE_RUN')
 
     !--------------------
     ! first time initialization
@@ -477,27 +471,27 @@ contains
     !--------------------
 
     ! time and spatially interpolate to model time and grid
-    call t_barrierf('dice_BARRIER',mpicom)
-    call t_startf('dice_strdata_advance')
+
+    call ESMF_TraceRegionEnter('dice_strdata_advance')
     call shr_strdata_advance(sdat, target_ymd, target_tod, logunit, 'dice', rc=rc)
-    call t_stopf('dice_strdata_advance')
+    call ESMF_TraceRegionExit('dice_strdata_advance')
 
     !--------------------
     ! copy all fields from streams to export state as default
     !--------------------
 
     ! This automatically will update the fields in the export state
-    call t_barrierf('dice_comp_dfield_copy_BARRIER', mpicom)
-    call t_startf('dice_dfield_copy')
+
+    call ESMF_TraceRegionEnter('dice_dfield_copy')
     call dshr_dfield_copy(dfields, sdat, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call t_stopf('dice_dfield_copy')
+    call ESMF_TraceRegionExit('dice_dfield_copy')
 
     !-------------------------------------------------
     ! Determine data model behavior based on the mode
     !-------------------------------------------------
 
-    call t_startf('dice_datamode')
+    call ESMF_TraceRegionEnter('dice_datamode')
 
     ! Perform data mode specific calculations
     select case (trim(datamode))
@@ -512,7 +506,7 @@ contains
        select case (trim(datamode))
        case('ssmi', 'ssmi_iaf')
           call dice_datamode_ssmi_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, mpicom, my_task, sdat)
+               logunit, my_task, sdat)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end select
     end if
@@ -523,8 +517,8 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
-    call t_stopf('dice_datamode')
-    call t_stopf('DICE_RUN')
+    call ESMF_TraceRegionExit('dice_datamode')
+    call ESMF_TraceRegionExit('DICE_RUN')
 
   end subroutine dice_comp_run
 

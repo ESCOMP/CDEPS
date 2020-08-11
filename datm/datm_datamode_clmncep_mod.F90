@@ -35,8 +35,6 @@ module datm_datamode_clmncep_mod
   real(r8), pointer :: Sa_dens(:)           => null()
   real(r8), pointer :: Sa_pbot(:)           => null()
   real(r8), pointer :: Sa_pslv(:)           => null()
-  real(r8), pointer :: Sa_co2prog(:)        => null() ! co2
-  real(r8), pointer :: Sa_co2diag(:)        => null() ! co2
   real(r8), pointer :: Faxa_lwdn(:)         => null()
   real(r8), pointer :: Faxa_rainc(:)        => null()
   real(r8), pointer :: Faxa_rainl(:)        => null()
@@ -47,7 +45,6 @@ module datm_datamode_clmncep_mod
   real(r8), pointer :: Faxa_swvdr(:)        => null()
   real(r8), pointer :: Faxa_swvdf(:)        => null()
   real(r8), pointer :: Faxa_swnet(:)        => null()
-  real(r8), pointer :: Faxa_swdn(:)         => null()
 
   ! stream data
   real(r8), pointer :: strm_z(:)         => null()
@@ -61,7 +58,6 @@ module datm_datamode_clmncep_mod
   real(r8), pointer :: strm_swdn(:)      => null()
   real(r8), pointer :: strm_swdndf(:)    => null()
   real(r8), pointer :: strm_swdndr(:)    => null()
-  real(r8), pointer :: strm_prec(:)      => null()
   real(r8), pointer :: strm_precc(:)     => null()
   real(r8), pointer :: strm_precl(:)     => null()
   real(r8), pointer :: strm_precn(:)     => null()
@@ -319,11 +315,9 @@ contains
   end subroutine datm_datamode_clmncep_init_pointers
 
   !===============================================================================
-  subroutine datm_datamode_clmncep_advance(importState, exportState, masterproc, logunit, mpicom, rc)
+  subroutine datm_datamode_clmncep_advance(masterproc, logunit, mpicom, rc)
 
     ! input/output variables
-    type(ESMF_State)       , intent(inout) :: importState
-    type(ESMF_State)       , intent(inout) :: exportState
     logical                , intent(in)    :: masterproc
     integer                , intent(in)    :: logunit
     integer                , intent(in)    :: mpicom
@@ -331,7 +325,7 @@ contains
 
     ! local variables
     logical  :: first_time = .true.
-    integer  :: n,kf                ! indices
+    integer  :: n                   ! indices
     integer  :: lsize               ! size of attr vect
     real(r8) :: rtmp
     real(r8) :: swndr
@@ -546,7 +540,7 @@ contains
 
   !===============================================================================
   subroutine datm_datamode_clmncep_restart_write(case_name, inst_suffix, ymd, tod, &
-       logunit, mpicom, my_task, sdat)
+       logunit, my_task, sdat)
     
     ! input/output variables
     character(len=*)            , intent(in)    :: case_name
@@ -555,12 +549,11 @@ contains
     integer                     , intent(in)    :: tod       ! model sec into model date
     integer                     , intent(in)    :: logunit
     integer                     , intent(in)    :: my_task
-    integer                     , intent(in)    :: mpicom
     type(shr_strdata_type)      , intent(inout) :: sdat
     !-------------------------------------------------------------------------------
 
     call dshr_restart_write(rpfile, case_name, 'datm', inst_suffix, ymd, tod, &
-         logunit, mpicom, my_task, sdat)
+         logunit, my_task, sdat)
 
   end subroutine datm_datamode_clmncep_restart_write
 

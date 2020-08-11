@@ -33,7 +33,6 @@ module dshr_strdata_mod
   use pio              , only : pio_double, pio_real, pio_int, pio_offset_kind, pio_get_var
   use pio              , only : pio_read_darray, pio_setframe, pio_fill_double, pio_get_att
   use pio              , only : PIO_BCAST_ERROR, PIO_RETURN_ERROR, PIO_NOERR, PIO_INTERNAL_ERROR, PIO_SHORT
-  use perf_mod         , only : t_startf, t_stopf, t_adj_detailf
 
   implicit none
   private
@@ -172,9 +171,7 @@ contains
 
     ! local variables
     type(ESMF_VM) :: vm
-    integer       :: i
     integer       :: localPet
-    integer       :: ierr
     character(len=*), parameter  :: subname='(shr_strdata_init_from_xml)'
     ! ----------------------------------------------
 
@@ -287,18 +284,13 @@ contains
     integer                    , intent(out)   :: rc
 
     ! local variables
-    integer               :: n,k          ! generic counters
+    integer               :: n                  ! generic counters
     type(ESMF_DistGrid)   :: distGrid
-    integer               :: dimCount
     integer               :: tileCount
     integer, allocatable  :: elementCountPTile(:)
-    integer, allocatable  :: indexCountPDE(:,:)
     integer               :: spatialDim         ! number of dimension in mesh
     integer               :: numOwnedElements   ! local size of mesh
     real(r8), allocatable :: ownedElemCoords(:) ! mesh lat and lons
-    integer               :: my_task
-    integer               :: ierr
-    integer               :: rcode
     ! ----------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -351,36 +343,17 @@ contains
     integer                , intent(out)   :: rc
 
     ! local variables
+    type(ESMF_Mesh), pointer     :: stream_mesh
     type(ESMF_Calendar)          :: esmf_calendar   ! esmf calendar
     type(ESMF_CalKind_Flag)      :: esmf_caltype    ! esmf calendar type
-    type(ESMF_DistGrid)          :: distgrid
-    type(ESMF_RegridMethod_Flag) :: regridmethod
-    type(ESMF_PoleMethod_Flag)   :: polemethod
-    type(ESMF_Mesh), pointer     :: stream_mesh
     character(CS)                :: calendar        ! calendar name
-    integer                      :: dimcount
-    integer, allocatable         :: minIndexPTile(:,:)
-    integer, allocatable         :: maxIndexPTile(:,:)
-    integer                      :: lnx, lny        ! global mesh dimensions
-    integer                      :: ne              ! number of local mesh elements
     integer                      :: ns              ! stream index
-    integer                      :: n,m,k           ! generic index
+    integer                      :: m               ! generic index
     character(CL)                :: fileName        ! generic file name
-    integer                      :: nfiles          ! number of data files for a given stream
-    character(CS)                :: uname           ! u vector field name
-    character(CS)                :: vname           ! v vector field name
-    integer                      :: nu, nv          ! vector indices
-    integer                      :: nstream         ! loop stream index
-    integer                      :: nvector         ! loop vector index
     integer                      :: nfld            ! loop stream field index
-    integer                      :: nflds           ! total number of fields in a given stream
     type(ESMF_Field)             :: lfield          ! temporary
     type(ESMF_Field)             :: lfield_dst      ! temporary
     integer                      :: srcTermProcessing_Value = 0 ! should this be a module variable?
-    integer , pointer            :: stream_gindex(:)
-    integer                      :: stream_lsize
-    character(CS)                :: tmpstr
-    integer                      :: ierr
     integer                      :: localpet
     logical                      :: fileExists
     type(ESMF_VM)                :: vm
@@ -391,7 +364,6 @@ contains
     character(len=*), parameter  :: subname='(shr_strdata_mod:shr_sdat_init)'
     character(*)    , parameter  :: F00 = "('(shr_sdat_init) ',a)"
     character(*)    , parameter  :: F01  = "('(shr_sdat) ',a,2x,i8)"
-    character(ESMF_MAXSTR) ,pointer :: lfieldnamelist(:)
     ! ----------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -779,17 +751,12 @@ contains
     ! local variables
     integer                             :: ns               ! stream index
     integer                             :: nf               ! field index
-    integer                             :: m                ! vector loop index
-    integer                             :: n,i,l            ! generic indices
-    integer                             :: ierr             ! error status
-    integer                             :: nu,nv            ! vector indices
-    integer                             :: lsize            ! local size
-    logical , allocatable               :: newData(:)       ! read in new data if true
+    integer                             :: i,l              ! generic indices
+    logical , allocatable               :: newData(:)
     integer , allocatable               :: ymdmod(:)        ! modified model dates to handle Feb 29
     real(r8), allocatable               :: coszen(:)        ! cosine of zenith angle
     integer                             :: todmod           ! modified model dates to handle Feb 29
     character(len=32)                   :: lstr             ! local string
-    logical                             :: ltimers          ! local logical for timers
     real(r8)                            :: flb,fub          ! factor for lb and ub
     real(r8) ,pointer                   :: dataptr1d(:)     ! pointer into field bundle
     real(r8) ,pointer                   :: dataptr1d_lb(:)  ! pointer into field bundle
@@ -810,20 +777,8 @@ contains
     integer                             :: dday             ! delta days
     real(r8)                            :: dtime            ! delta time
     integer                             :: year,month,day   ! date year month day
-    integer                             :: spatialDim       ! spatial dimension of mesh
-    integer                             :: numOwnedElements ! local size of mesh
-    character(CS)                       :: uname            ! u vector field name
-    character(CS)                       :: vname            ! v vector field name
-    type(ESMF_Field)                    :: field_src
-    type(ESMF_Field)                    :: field_dst
-    real(r8)                            :: lon, lat
-    real(r8)                            :: sinlon, sinlat
-    real(r8)                            :: coslon, coslat
-    real(r8)                            :: ux, uy
-    logical                             :: checkflag = .false.
-    integer                             :: npes
-    integer                             :: my_task
-    integer                             :: nstreams, stream_index
+    integer                             :: nstreams
+    integer                             :: stream_index
     real(r8)         ,parameter         :: solZenMin = 0.001_r8 ! minimum solar zenith angle
     integer          ,parameter         :: tadj = 2
     character(len=*) ,parameter         :: timname = "_strd_adv"
@@ -848,19 +803,13 @@ contains
     nullify(data_v_src)
     nullify(data_u_dst)
     nullify(data_v_dst)
+
     nstreams = shr_strdata_get_stream_count(sdat)
     if (nstreams < 1) return ! TODO: is this needed
 
     lstr = trim(istr)
 
-    ltimers = .true.
-    if (present(timers)) then
-       ltimers = timers
-    endif
-
-    if (.not.ltimers) call t_adj_detailf(tadj)
-
-    call t_startf(trim(lstr)//trim(timname)//'_total')
+    call ESMF_TraceRegionEnter(trim(lstr)//trim(timname)//'_total')
 
     sdat%ymd = ymd
     sdat%tod = tod
@@ -901,7 +850,7 @@ contains
           ! fldbun_stream_ub to fldbun_stream_lb and read in new fldbun_stream_ub data
           ! ---------------------------------------------------------
 
-          call t_startf(trim(lstr)//trim(timname)//'_readLBUB')
+          call ESMF_TraceRegionEnter(trim(lstr)//trim(timname)//'_readLBUB')
 
           select case(sdat%stream(ns)%readmode)
           case ('single')
@@ -958,7 +907,7 @@ contains
              endif
           endif
 
-          call t_stopf(trim(lstr)//trim(timname)//'_readLBUB')
+          call ESMF_TraceRegionExit(trim(lstr)//trim(timname)//'_readLBUB')
 
        enddo ! end of loop over streams
 
@@ -977,19 +926,19 @@ contains
              ! time interpolation method is coszen
              ! ------------------------------------------
 
-             call t_startf(trim(lstr)//trim(timname)//'_coszen')
+             call ESMF_TraceRegionEnter(trim(lstr)//trim(timname)//'_coszen')
              allocate(coszen(sdat%model_lsize))
 
              ! get coszen
-             call t_startf(trim(lstr)//trim(timname)//'_coszenC')
+             call ESMF_TraceRegionEnter(trim(lstr)//trim(timname)//'_coszenC')
              call shr_tInterp_getCosz(coszen, sdat%model_lon, sdat%model_lat, ymdmod(ns), todmod, &
                   sdat%eccen, sdat%mvelpp, sdat%lambm0, sdat%obliqr, sdat%stream(ns)%calendar)
-             call t_stopf(trim(lstr)//trim(timname)//'_coszenC')
+             call ESMF_TraceRegionExit(trim(lstr)//trim(timname)//'_coszenC')
 
              ! get avg cosz factor
              if (newdata(ns)) then
                 ! compute a new avg cosz
-                call t_startf(trim(lstr)//trim(timname)//'_coszenN')
+                call ESMF_TraceRegionEnter(trim(lstr)//trim(timname)//'_coszenN')
                 if (.not. allocated(sdat%tavCoszen)) then
                    allocate(sdat%tavCoszen(sdat%model_lsize))
                 end if
@@ -997,7 +946,7 @@ contains
                      sdat%pstrm(ns)%ymdLB, sdat%pstrm(ns)%todLB,  sdat%pstrm(ns)%ymdUB, sdat%pstrm(ns)%todUB,  &
                      sdat%eccen, sdat%mvelpp, sdat%lambm0, sdat%obliqr, sdat%modeldt, &
                      sdat%stream(ns)%calendar, rc=rc)
-                call t_stopf(trim(lstr)//trim(timname)//'_coszenN')
+                call ESMF_TraceRegionExit(trim(lstr)//trim(timname)//'_coszenN')
              endif
 
              ! compute time interperpolate value - LB data normalized with this factor: cosz/tavCosz
@@ -1034,7 +983,7 @@ contains
              end do
 
              deallocate(coszen)
-             call t_stopf(trim(lstr)//trim(timname)//'_coszen')
+             call ESMF_TraceRegionExit(trim(lstr)//trim(timname)//'_coszen')
 
           elseif (trim(sdat%stream(ns)%tinterpalgo) /= trim(shr_strdata_nullstr)) then
 
@@ -1042,7 +991,7 @@ contains
              ! time interpolation method is not coszen
              ! ------------------------------------------
 
-             call t_startf(trim(lstr)//trim(timname)//'_tint')
+             call ESMF_TraceRegionEnter(trim(lstr)//trim(timname)//'_tint')
              call shr_tInterp_getFactors(sdat%pstrm(ns)%ymdlb, sdat%pstrm(ns)%todlb, &
                   sdat%pstrm(ns)%ymdub, sdat%pstrm(ns)%todub, &
                   ymdmod(ns), todmod, flb, fub, calendar=sdat%stream(ns)%calendar, logunit=sdat%logunit, &
@@ -1078,7 +1027,7 @@ contains
                    dataptr1d(:) = dataptr1d_lb(:) * flb + dataptr1d_ub(:) * fub
                 end if
              end do
-             call t_stopf(trim(lstr)//trim(timname)//'_tint')
+             call ESMF_TraceRegionExit(trim(lstr)//trim(timname)//'_tint')
 
           else
 
@@ -1086,7 +1035,7 @@ contains
              ! zero out stream data for this field
              ! ------------------------------------------
 
-             call t_startf(trim(lstr)//trim(timname)//'_zero')
+             call ESMF_TraceRegionEnter(trim(lstr)//trim(timname)//'_zero')
              do nf = 1,size(sdat%pstrm(ns)%fldlist_model)
                 if (sdat%pstrm(ns)%stream_nlev > 1) then
                    call dshr_fldbun_getfldptr(sdat%pstrm(ns)%fldbun_model, &
@@ -1100,7 +1049,7 @@ contains
                    dataptr1d(:) = 0._r8
                 end if
              end do
-             call t_stopf(trim(lstr)//trim(timname)//'_zero')
+             call ESMF_TraceRegionExit(trim(lstr)//trim(timname)//'_zero')
 
           endif
 
@@ -1111,8 +1060,7 @@ contains
 
     endif  ! nstreams > 0
 
-    call t_stopf(trim(lstr)//trim(timname)//'_total')
-    if (.not.ltimers) call t_adj_detailf(-tadj)
+    call ESMF_TraceRegionExit(trim(lstr)//trim(timname)//'_total')
 
   end subroutine shr_strdata_advance
 
@@ -1206,13 +1154,8 @@ contains
     ! local variables
     type(shr_stream_streamType), pointer :: stream
     type(ESMF_Mesh)            , pointer :: stream_mesh
-    type(ESMF_FieldBundle)     , pointer :: fldbun_stream_lb
-    type(ESMF_FieldBundle)     , pointer :: fldbun_stream_ub
     type(ESMF_VM)                        :: vm
-    integer                              :: nf
-    integer                              :: rCode      ! return code
     logical                              :: fileexists
-    integer                              :: ivals(6)   ! bcast buffer
     integer                              :: oDateLB,oSecLB,dDateLB
     integer                              :: oDateUB,oSecUB,dDateUB
     real(r8)                             :: rDateM,rDateLB,rDateUB  ! model,LB,UB dates with fractional days
@@ -1231,7 +1174,7 @@ contains
     stream => sdat%stream(ns)
     stream_mesh => sdat%pstrm(ns)%stream_mesh
 
-    call t_startf(trim(istr)//'_setup')
+    call ESMF_TraceRegionEnter(trim(istr)//'_setup')
     ! allocate streamdat instance on all tasks
     call ESMF_VMGetCurrent(vm, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -1253,15 +1196,15 @@ contains
     rDateLB = real(sdat%pstrm(ns)%ymdLB,r8) + real(sdat%pstrm(ns)%todLB,r8)/shr_const_cday
     rDateUB = real(sdat%pstrm(ns)%ymdUB,r8) + real(sdat%pstrm(ns)%todUB,r8)/shr_const_cday
 
-    call t_stopf(trim(istr)//'_setup')
+    call ESMF_TraceRegionExit(trim(istr)//'_setup')
 
     ! if model current date is outside of model lower or upper bound - find the stream bounds
     if (rDateM < rDateLB .or. rDateM > rDateUB) then
-       call t_startf(trim(istr)//'_fbound')
+       call ESMF_TraceRegionEnter(trim(istr)//'_fbound')
        call shr_stream_findBounds(stream, mDate, mSec,  &
             sdat%pstrm(ns)%ymdLB, dDateLB, sdat%pstrm(ns)%todLB, n_lb, filename_lb, &
             sdat%pstrm(ns)%ymdUB, dDateUB, sdat%pstrm(ns)%todUB, n_ub, filename_ub)
-       call t_stopf(trim(istr)//'_fbound')
+       call ESMF_TraceRegionExit(trim(istr)//'_fbound')
     endif
 
     ! determine if need to read in new stream data
@@ -1290,7 +1233,7 @@ contains
     endif
 
     ! determine previous & next data files in list of files
-    call t_startf(trim(istr)//'_filemgt')
+    call ESMF_TraceRegionEnter(trim(istr)//'_filemgt')
     if (sdat%masterproc .and. newdata) then
        call shr_stream_getPrevFileName(stream, filename_lb, filename_prev)
        call shr_stream_getNextFileName(stream, filename_ub, filename_next)
@@ -1299,7 +1242,7 @@ contains
           ! do nothing
        end if
     endif
-    call t_stopf(trim(istr)//'_filemgt')
+    call ESMF_TraceRegionExit(trim(istr)//'_filemgt')
 
   end subroutine shr_strdata_readLBUB
 
@@ -1430,7 +1373,7 @@ contains
     ! the dimension of the input data are (i,stream_nlev)
     ! ******************************************************************************
 
-    call t_startf(trim(istr)//'_readpio')
+    call ESMF_TraceRegionEnter(trim(istr)//'_readpio')
     if (sdat%masterproc) then
        write(sdat%logunit,F02) 'file ' // trim(boundstr) //': ',trim(filename), nt
     endif
@@ -1667,22 +1610,21 @@ contains
 
        end if
 
-       ! Get a field on the model  mesh
-       call dshr_fldbun_getfieldN(fldbun_data, nf, field_dst, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-
        if(associated(dataptr2d_src) .and. trim(per_stream%fldlist_model(nf)) .eq. uname) then
           ! save in dataptr2d_src
-
           dataptr2d_src(1,:) = dataptr1d(:)
        elseif(associated(dataptr2d_src) .and. trim(per_stream%fldlist_model(nf)) .eq. vname) then
           dataptr2d_src(2,:) = dataptr1d(:)
        else if (per_stream%stream_pio_iodesc_set) then
           ! Regrid the field_stream read in to the model mesh
+          call dshr_fldbun_getfieldN(fldbun_data, nf, field_dst, rc=rc)
+          if (chkerr(rc,__LINE__,u_FILE_u)) return
           call ESMF_FieldRegrid(per_stream%field_stream, field_dst, routehandle=per_stream%routehandle, &
                termorderflag=ESMF_TERMORDER_SRCSEQ, checkflag=.false., zeroregion=ESMF_REGION_TOTAL, rc=rc)
           if (chkerr(rc,__LINE__,u_FILE_u)) return
        else
+          call dshr_fldbun_getfieldN(fldbun_data, nf, field_dst, rc=rc)
+          if (chkerr(rc,__LINE__,u_FILE_u)) return
           call ESMF_FieldFill(field_dst, dataFillScheme="const", const1=dataptr1d(1), rc=rc)
           if (chkerr(rc,__LINE__,u_FILE_u)) return
        endif
@@ -1755,7 +1697,7 @@ contains
     if (.not. per_stream%stream_pio_iodesc_set) then
        deallocate(dataptr1d)
     endif
-    call t_stopf(trim(istr)//'_readpio')
+    call ESMF_TraceRegionExit(trim(istr)//'_readpio')
 
   end subroutine shr_strdata_readstrm
 
@@ -1772,6 +1714,7 @@ contains
     integer                     , intent(out)   :: rc
 
     ! local variables
+
     integer                 :: stream_nlev
     integer                 :: gsize2d
     integer                 :: pio_iovartype
@@ -1969,23 +1912,5 @@ contains
        if (found) exit
     end do
   end subroutine shr_strdata_get_stream_pointer_2d
-
-  !===============================================================================
-  subroutine shr_strdata_handle_error(ierr, errorstr)
-    use pio, only: pio_noerr
-
-    ! input/output variables
-    integer,          intent(in)  :: ierr
-    character(len=*), intent(in)  :: errorstr
-
-    ! local variables
-    character(len=256) :: errormsg
-    !-------------------------------------------------------------------------------
-
-    if (ierr /= PIO_NOERR) then
-      write(errormsg, '(a,i6,2a)') '(PIO:', ierr, ') ', trim(errorstr)
-      call shr_sys_abort(errormsg)
-    end if
-  end subroutine shr_strdata_handle_error
 
 end module dshr_strdata_mod
