@@ -86,6 +86,7 @@ module dshr_stream_mod
      integer           :: yearFirst    = -1                     ! first year to use in t-axis (yyyymmdd)
      integer           :: yearLast     = -1                     ! last  year to use in t-axis (yyyymmdd)
      integer           :: yearAlign    = -1                     ! align yearFirst with this model year
+     character(CS)     :: lev_dimname  = 'null'                 ! name of vertical dimension if any
      character(CS)     :: taxMode      = shr_stream_taxis_cycle ! cycling option for time axis
      character(CS)     :: tInterpAlgo  = 'linear'               ! algorithm to use for time interpolation
      character(CS)     :: mapalgo      = 'bilinear'             ! type of mapping - default is 'bilinear'
@@ -139,6 +140,7 @@ contains
     !    <yearAlign></yearAlign>
     !    <stream_vectors></stream_vectors>
     !    <stream_mesh_file></stream_mesh_file>
+    !    <stream_lev_dimname></stream_lev_dimname> 
     !    <stream_data_files>
     !      <file></file>
     !    </stream_data_files>
@@ -246,6 +248,13 @@ contains
              call shr_sys_abort("stream vectors must be provided")
           endif
 
+          p => item(getElementsByTagname(streamnode, "stream_lev_dimname"), 0)
+          if (associated(p)) then
+             call extractDataContent(p, streamdat(i)%lev_dimname)
+          else
+             call shr_sys_abort("stream vertical level dimension name must be provided")
+          endif
+
           p => item(getElementsByTagname(streamnode, "stream_data_files"), 0)
           if (.not. associated(p)) then
              call shr_sys_abort("stream data files must be provided")
@@ -318,6 +327,8 @@ contains
        enddo
        call ESMF_VMBroadCast(vm, streamdat(i)%meshfile,     CL, 0, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call ESMF_VMBroadCast(vm, streamdat(i)%lev_dimname,  CS, 0, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call ESMF_VMBroadCast(vm, streamdat(i)%taxmode,      CS, 0, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call ESMF_VMBroadCast(vm, streamdat(i)%readmode,     CS, 0, rc=rc)
@@ -354,9 +365,12 @@ contains
 
   !===============================================================================
 
-  subroutine shr_stream_init_from_inline(streamdat, stream_meshfile, stream_mapalgo, &
-       stream_yearFirst, stream_yearLast, stream_yearAlign, stream_offset, stream_taxmode, &
-       stream_fldlistFile, stream_fldListModel, stream_fileNames, logunit, compname)
+  subroutine shr_stream_init_from_inline(streamdat, &
+       stream_meshfile, stream_lev_dimname, stream_mapalgo, &
+       stream_yearFirst, stream_yearLast, stream_yearAlign, &
+       stream_offset, stream_taxmode, stream_tintalgo, stream_dtlimit, &
+       stream_fldlistFile, stream_fldListModel, stream_fileNames, &
+       logunit, compname)
 
     ! --------------------------------------------------------
     ! set values of stream datatype independent of a reading in a stream text file
@@ -364,14 +378,17 @@ contains
     ! --------------------------------------------------------
 
     ! input/output variables
-    type(shr_stream_streamType) , pointer, intent(inout) :: streamdat(:)           ! data streams (assume 1 below)
+    type(shr_stream_streamType) ,pointer, intent(inout)  :: streamdat(:)           ! data streams (assume 1 below)
     character(*)                ,intent(in)              :: stream_meshFile        ! full pathname to stream mesh file
+    character(*)                ,intent(in)              :: stream_lev_dimname     ! name of vertical dimension in stream
     character(*)                ,intent(in)              :: stream_mapalgo         ! stream mesh -> model mesh mapping type
     integer                     ,intent(in)              :: stream_yearFirst       ! first year to use
     integer                     ,intent(in)              :: stream_yearLast        ! last  year to use
     integer                     ,intent(in)              :: stream_yearAlign       ! align yearFirst with this model year
+    character(*)                ,intent(in)              :: stream_tintalgo        ! time interpolation algorithm
     integer                     ,intent(in)              :: stream_offset          ! offset in seconds of stream data
     character(*)                ,intent(in)              :: stream_taxMode         ! time axis mode
+    real(r8)                    ,intent(in)              :: stream_dtlimit         ! ratio of max/min stream delta times
     character(*)                ,intent(in)              :: stream_fldListFile(:)  ! file field names, colon delim list
     character(*)                ,intent(in)              :: stream_fldListModel(:) ! model field names, colon delim list
     character(*)                ,intent(in)              :: stream_filenames(:)    ! stream data filenames (full pathnamesa)
@@ -390,13 +407,18 @@ contains
     allocate(streamdat(1))
 
     ! overwrite default values
+    streamdat(1)%meshFile     = trim(stream_meshFile)
+    streamdat(1)%lev_dimname  = trim(stream_lev_dimname)
+    streamdat(1)%mapalgo      = trim(stream_mapalgo)
+
     streamdat(1)%yearFirst    = stream_yearFirst
     streamdat(1)%yearLast     = stream_yearLast
     streamdat(1)%yearAlign    = stream_yearAlign
+
+    streamdat(1)%tinterpAlgo  = trim(stream_tintalgo)
     streamdat(1)%offset       = stream_offset
     streamdat(1)%taxMode      = trim(stream_taxMode)
-    streamdat(1)%meshFile     = trim(stream_meshFile)
-    streamdat(1)%mapalgo      = trim(stream_mapalgo)
+    streamdat(1)%dtlimit      = stream_dtlimit
 
     streamdat(1)%pio_subsystem => shr_pio_getiosys(trim(compname))
     streamdat(1)%pio_iotype    =  shr_pio_getiotype(trim(compname))
@@ -422,7 +444,7 @@ contains
        streamdat(1)%varlist(n)%nameinmodel = trim(stream_fldlistModel(n))
     end do
 
-    ! Get initial calendar value
+    ! Get stream calendar
     call shr_stream_getCalendar(streamdat(1), 1, calendar)
     streamdat(1)%calendar = trim(calendar)
 

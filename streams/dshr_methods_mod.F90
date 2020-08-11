@@ -40,12 +40,12 @@ contains
     character(len=*) ,          intent(in)              :: fldname
     real(R8)         , pointer, intent(inout), optional :: fldptr1(:)
     real(R8)         , pointer, intent(inout), optional :: fldptr2(:,:)
-    logical          ,          intent(in),optional     :: allowNullReturn        
+    logical          ,          intent(in),optional     :: allowNullReturn
     integer          ,          intent(out)             :: rc
 
     ! local variables
     type(ESMF_Field)            :: lfield
-    integer                     :: itemCount 
+    integer                     :: itemCount
     character(len=*), parameter :: subname='(dshr_state_getfldptr)'
     ! ----------------------------------------------
 
@@ -71,7 +71,7 @@ contains
       if (chkerr(rc,__LINE__,u_FILE_u)) return
 
       call dshr_field_getfldptr(lfield, fldptr1=fldptr1, fldptr2=fldptr2, rc=rc)
-      if (chkerr(rc,__LINE__,u_FILE_u)) return      
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
     end if
 
   end subroutine dshr_state_getfldptr

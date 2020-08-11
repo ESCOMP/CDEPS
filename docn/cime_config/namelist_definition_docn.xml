@@ -171,6 +171,16 @@
     </values>
   </entry>
 
+  <entry id="strm_lev_dimname" skip_default_entry="true">
+    <type>char</type>
+    <category>streams</category>
+    <group>streams_file</group>
+    <desc>Stream domain file directory.</desc>
+    <values>
+      <value>null</value>
+    </values>
+  </entry>
+
   <entry id="strm_datfil" skip_default_entry="true">
     <type>char</type>
     <category>streams</category>
