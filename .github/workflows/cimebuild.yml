@@ -102,7 +102,10 @@ jobs:
           key: cesm-inputdata
       - name: create inputdata dir
         if: steps.cache-inputdata.outputs.cache-hit != 'true'
-        run: [[ -d $HOME/inputdata ]] && echo "inputdata Directory Exists" || mkdir $HOME/inputdata
+        run: |
+          if [! -d $HOME/inputdata ]; then
+            mkdir $HOME/inputdata
+          fi
        - name: Cache cprnc
         id: cache-cprnc
         uses: actions/cache@v2
@@ -116,7 +119,9 @@ jobs:
           export CIME_MODEL=cesm
           ../configure --mpilib mpi-serial --machine ubuntu --macros-format Makefile
           make FC=gfortran NETCDF_PATH=$HOME/netcdf
-          [[ -d $HOME/cprnc ]] && echo "cprnc Directory Exists" || mkdir $HOME/cprnc
+          if [! -d $HOME/cprnc]; then
+            mkdir $HOME/cprnc
+          fi
           cp cprnc $HOME/cprnc/
       - name: Build tests
         run: |
