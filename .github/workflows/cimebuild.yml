@@ -137,13 +137,7 @@ jobs:
           export PNETCDF_PATH=$HOME/pnetcdf
           export PYTHONPATH=$HOME/cime/scripts/lib:$HOME/cime/scripts/Tools:$PYTHONPATH
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/netcdf/lib:$HOME/pnetcdf/lib
-          ./create_test SMS_Vnuopc.f19_g17.A.ubuntu_gnu --machine ubuntu --no-build
+          ./create_test SMS_Vnuopc.f19_g17.A.ubuntu_gnu --machine ubuntu
           cd $HOME/scratch/SMS_Vnuopc.f19_g17*
           ./preview_namelists
           ./check_input_data --download
-          ./case.build
-          ulimit -s unlimited
-          ulimit -a
-          cd run
-          ls -l ../bld
-          mpirun -np 4 ../bld/cesm.exe
