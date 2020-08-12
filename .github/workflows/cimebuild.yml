@@ -16,11 +16,12 @@ jobs:
       # Versions of all dependencies can be updated here
       ESMF_VERSION: ESMF_8_1_0_beta_snapshot_25
       PNETCDF_VERSION: pnetcdf-1.12.1
-      NETCDF_FORTRAN_VERSION: v4.5.2
+      NETCDF_FORTRAN_VERSION: v4.5.3
+      NETCDF_C_VERSION: netcdf-c-4.7.4
     steps:
       - uses: actions/checkout@v2
       - id: load-env
-        run: sudo apt-get install gfortran wget openmpi-bin netcdf-bin libopenmpi-dev libxml2-utils
+        run: sudo apt-get install gfortran wget openmpi-bin libopenmpi-dev libxml2-utils
       # Build or retreve from cache the ESMF library
       - id: cache-esmf
         uses: actions/cache@v2
@@ -59,6 +60,22 @@ jobs:
           make install
           popd
       # Build or retreve the netcdf-fortran library, we use ubuntu for netcdf-c
+      - name: Cache netcdf
+        id: cache-netcdf
+        uses: actions/cache@v2
+        with:
+          path: ~/netcdf
+          key: ${{ runner.os }}-${{ env.NETCDF_C_VERSION }}-netcdf
+      - name: netcdf c build
+        if: steps.cache-netcdf.outputs.cache-hit != 'true'
+        run: |
+          wget https://www.unidata.ucar.edu/downloads/netcdf/ftp/${{ env.NETCDF_C_VERSION }}.tar.gz
+          tar -xzvf ${{ env.NETCDF_C_VERSION }}.tar.gz
+          pushd ${{ env.NETCDF_C_VERSION }}
+          ./configure --prefix=$HOME/netcdf --disable-dap --disable-utilities --disable-netcdf-4
+          make
+          sudo make install
+          popd
       - name: Cache netcdf-fortran
         id: cache-netcdf-fortran
         uses: actions/cache@v2
@@ -72,7 +89,7 @@ jobs:
           wget https://github.com/Unidata/netcdf-fortran/archive/${{ env.NETCDF_FORTRAN_VERSION }}.tar.gz
           tar -xzvf ${{ env.NETCDF_FORTRAN_VERSION }}.tar.gz
           pushd netcdf-fortran-*
-          ./configure --prefix=$HOME/netcdf-fortran
+          ./configure --prefix=$HOME/netcdf
           make
           make install
       # Retreve or create the inputdata directory
@@ -118,6 +135,7 @@ jobs:
           export FC=mpif90
           export NETCDF_PATH=/usr
           export NETCDF_FORTRAN_PATH=$HOME/netcdf-fortran
+          export NETCDF_C_PATH=/usr
           export NETCDF_C_LIBRARY=/usr/lib/x86_64-linux-gnu/libnetcdf.so
           export NETCDF_C_INCLUDE_DIR=/usr/include
           export PNETCDF_PATH=$HOME/pnetcdf
