@@ -116,6 +116,7 @@ jobs:
           export CIME_MODEL=cesm
           ../configure --mpilib mpi-serial --machine ubuntu --macros-format Makefile
           make FC=gfortran NETCDF_PATH=$HOME/netcdf
+          [ -d $HOME/cprnc ] && echo "Directory Exists" || mkdir $HOME/cprnc
           cp cprnc $HOME/cprnc/
       - name: Build tests
         run: |
