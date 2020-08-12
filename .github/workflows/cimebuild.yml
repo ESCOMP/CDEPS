@@ -112,7 +112,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: $HOME/cprnc
-          key: cprnc
+          key: ${{ runner.os }}.cprnc
       - name: Build cprnc
         if: steps.cache-cprnc.outputs.cache-hit != 'true'
         run: |
@@ -136,7 +136,6 @@ jobs:
           export NETCDF_PATH=$HOME/netcdf
           export PNETCDF_PATH=$HOME/pnetcdf
           export PYTHONPATH=$HOME/cime/scripts/lib:$HOME/cime/scripts/Tools:$PYTHONPATH
-          ls $HOME/cime/scripts/Tools
           ./create_test SMS_Vnuopc.f19_g17.A.ubuntu_gnu --machine ubuntu --no-build
           cd $HOME/scratch/SMS_Vnuopc.f19_g17*
           ./xmlquery CCSM_CPRNC
