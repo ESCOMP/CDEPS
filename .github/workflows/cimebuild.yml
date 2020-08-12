@@ -120,8 +120,7 @@ jobs:
           cp cprnc $HOME/cprnc/
       - name: Build tests
         run: |
-          find $HOME -name \*.nc
-          find $HOME -name cprnc
+          ls -l $HOME/inputdata
           cd $HOME/cime/scripts
           mkdir $HOME/scratch
           export CIME_MODEL=cesm
@@ -136,4 +135,7 @@ jobs:
           ./xmlquery CCSM_CPRNC
           ./case.build
           ./check_input_data --download
-          ./case.submit
+          ./preview_namelists
+          pushd run
+          ulimit -a
+          mpirun -np 4 ../bld/cesm.exe
