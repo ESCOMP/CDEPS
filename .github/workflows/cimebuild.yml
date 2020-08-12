@@ -20,123 +20,123 @@ jobs:
       NETCDF_C_VERSION: netcdf-c-4.7.4
     steps:
       - uses: actions/checkout@v2
-      - id: load-env
-      run: sudo apt-get install gfortran wget openmpi-bin libopenmpi-dev libxml2-utils
-      # Build or retreve from cache the ESMF library
-      - id: cache-esmf
-      uses: actions/cache@v2
-      with:
-        path: ~/ESMF
-        key: ${{ runner.os }}-${{ env.ESMF_VERSION }}-ESMF
-      - id: build-ESMF
-        if: steps.cache-esmf.outputs.cache-hit != 'true'
-        run: |
-          wget https://github.com/esmf-org/esmf/archive/${{ env.ESMF_VERSION }}.tar.gz
-          tar -xzvf ${{ env.ESMF_VERSION }}.tar.gz
-          pushd esmf-${{ env.ESMF_VERSION }}
-          export ESMF_DIR=`pwd`
-          export ESMF_COMM=openmpi
-          export ESMF_YAMLCPP="internal"
-          export ESMF_INSTALL_PREFIX=$HOME/ESMF
-          export ESMF_BOPT=g
-          make
-          make install
-          popd
-      # Build or retreve the pnetcdf library
-      - id: cache-pnetcdf
-        uses: actions/cache@v2
-        with:
-          path: ~/pnetcdf
-          key: ${{ runner.os }}-${{ env.PNETCDF_VERSION}}-pnetcdf
-      - name: pnetcdf build
-        if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
-        run: |
-          wget https://parallel-netcdf.github.io/Release/${{ env.PNETCDF_VERSION }}.tar.gz
-          tar -xzvf ${{ env.PNETCDF_VERSION }}.tar.gz
-          ls -l
-          pushd ${{ env.PNETCDF_VERSION }}
-          ./configure --prefix=$HOME/pnetcdf --enable-shared --disable-cxx
-          make
-          make install
-          popd
+        - id: load-env
+          run: sudo apt-get install gfortran wget openmpi-bin libopenmpi-dev libxml2-utils
+          # Build or retreve from cache the ESMF library
+        - id: cache-esmf
+          uses: actions/cache@v2
+          with:
+            path: ~/ESMF
+            key: ${{ runner.os }}-${{ env.ESMF_VERSION }}-ESMF
+        - id: build-ESMF
+          if: steps.cache-esmf.outputs.cache-hit != 'true'
+          run: |
+            wget https://github.com/esmf-org/esmf/archive/${{ env.ESMF_VERSION }}.tar.gz
+            tar -xzvf ${{ env.ESMF_VERSION }}.tar.gz
+            pushd esmf-${{ env.ESMF_VERSION }}
+            export ESMF_DIR=`pwd`
+            export ESMF_COMM=openmpi
+            export ESMF_YAMLCPP="internal"
+            export ESMF_INSTALL_PREFIX=$HOME/ESMF
+            export ESMF_BOPT=g
+            make
+            make install
+            popd
+            # Build or retreve the pnetcdf library
+        - id: cache-pnetcdf
+          uses: actions/cache@v2
+          with:
+            path: ~/pnetcdf
+            key: ${{ runner.os }}-${{ env.PNETCDF_VERSION}}-pnetcdf
+        - name: pnetcdf build
+          if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
+          run: |
+            wget https://parallel-netcdf.github.io/Release/${{ env.PNETCDF_VERSION }}.tar.gz
+            tar -xzvf ${{ env.PNETCDF_VERSION }}.tar.gz
+            ls -l
+            pushd ${{ env.PNETCDF_VERSION }}
+            ./configure --prefix=$HOME/pnetcdf --enable-shared --disable-cxx
+            make
+            make install
+            popd
           # Build or retreve the netcdf library.
-      - name: Cache netcdf
-        id: cache-netcdf
-        uses: actions/cache@v2
-        with:
-          path: ~/netcdf
-          key: ${{ runner.os }}-${{ env.NETCDF_C_VERSION }}-netcdf
-      - name: netcdf build
-        if: steps.cache-netcdf.outputs.cache-hit != 'true'
-        run: |
-          wget https://www.unidata.ucar.edu/downloads/netcdf/ftp/${{ env.NETCDF_C_VERSION }}.tar.gz
-          tar -xzvf ${{ env.NETCDF_C_VERSION }}.tar.gz
-          pushd ${{ env.NETCDF_C_VERSION }}
-          ./configure --prefix=$HOME/netcdf --disable-dap --disable-utilities --disable-netcdf-4
-          make
-          make install
-          popd
-          wget https://github.com/Unidata/netcdf-fortran/archive/${{ env.NETCDF_FORTRAN_VERSION }}.tar.gz
-          tar -xzvf ${{ env.NETCDF_FORTRAN_VERSION }}.tar.gz
-          pushd netcdf-fortran-*
-          ./configure --prefix=$HOME/netcdf CPPFLAGS="-I$HOME/netcdf/include " LDFLAGS="-L$HOME/netcdf/lib -lnetcdf"
-          make
-          make install
-      - name: Checkout cime
-        run: |
-          cd $HOME
-          git clone https://github.com/jedwards4b/cime.git -b add_github_action
-          cd $HOME/cime/src/components
-          ln -fs $HOME/work/CDEPS/CDEPS cdeps
-          cd cdeps
-          git submodule init
-          git submodule update
-          cd $HOME/cime/src/drivers
-          git clone https://github.com/ESCOMP/CMEPS.git nuopc
+        - name: Cache netcdf
+          id: cache-netcdf
+          uses: actions/cache@v2
+          with:
+            path: ~/netcdf
+            key: ${{ runner.os }}-${{ env.NETCDF_C_VERSION }}-netcdf
+        - name: netcdf build
+          if: steps.cache-netcdf.outputs.cache-hit != 'true'
+          run: |
+            wget https://www.unidata.ucar.edu/downloads/netcdf/ftp/${{ env.NETCDF_C_VERSION }}.tar.gz
+            tar -xzvf ${{ env.NETCDF_C_VERSION }}.tar.gz
+            pushd ${{ env.NETCDF_C_VERSION }}
+            ./configure --prefix=$HOME/netcdf --disable-dap --disable-utilities --disable-netcdf-4
+            make
+            make install
+            popd
+            wget https://github.com/Unidata/netcdf-fortran/archive/${{ env.NETCDF_FORTRAN_VERSION }}.tar.gz
+            tar -xzvf ${{ env.NETCDF_FORTRAN_VERSION }}.tar.gz
+            pushd netcdf-fortran-*
+            ./configure --prefix=$HOME/netcdf CPPFLAGS="-I$HOME/netcdf/include " LDFLAGS="-L$HOME/netcdf/lib -lnetcdf"
+            make
+            make install
+        - name: Checkout cime
+          run: |
+            cd $HOME
+            git clone https://github.com/jedwards4b/cime.git -b add_github_action
+            cd $HOME/cime/src/components
+            ln -fs $HOME/work/CDEPS/CDEPS cdeps
+            cd cdeps
+            git submodule init
+            git submodule update
+            cd $HOME/cime/src/drivers
+            git clone https://github.com/ESCOMP/CMEPS.git nuopc
           # Retreve the inputdata directory
-      - name: Cache inputdata
-        id: cache-inputdata
-        uses: actions/cache@v2
-        with:
-          path: ~/inputdata
-          key: cesm-inputdata1
-      - name: create inputdata dir
-        if: steps.cache-inputdata.outputs.cache-hit != 'true'
-        run: |
-          if [[ ! -d $HOME/inputdata ]]; then
-          mkdir $HOME/inputdata
-          fi
-        shell: bash
-      - name: Cache cprnc
-        id: cache-cprnc
-        uses: actions/cache@v2
-        with:
-          path: $HOME/cprnc
-          key: ${{ runner.os }}.cprnc
-      - name: Build cprnc
-        if: steps.cache-cprnc.outputs.cache-hit != 'true'
-        run: |
-          cd $HOME/cime/tools/cprnc
-          export CIME_MODEL=cesm
-          ../configure --mpilib mpi-serial --machine ubuntu --macros-format Makefile
-          make FC=gfortran NETCDF_PATH=$HOME/netcdf
-          if [[ ! -d $HOME/cprnc ]]; then
-          mkdir $HOME/cprnc
-          fi
-          cp cprnc $HOME/cprnc/
-        shell: bash
-      - name: Build tests
-        run: |
-          ls -l $HOME/inputdata
-          cd $HOME/cime/scripts
-          mkdir $HOME/scratch
-          export CIME_MODEL=cesm
-          export CC=mpicc
-          export FC=mpif90
-          export NETCDF_PATH=$HOME/netcdf
-          export PNETCDF_PATH=$HOME/pnetcdf
-          export PYTHONPATH=$HOME/cime/scripts/lib:$HOME/cime/scripts/Tools:$PYTHONPATH
-          ./create_test SMS_Vnuopc.f19_g17.A.ubuntu_gnu --machine ubuntu --no-build
-          cd $HOME/scratch/SMS_Vnuopc.f19_g17*
-          ./preview_namelists
-          ./check_input_data --download
+        - name: Cache inputdata
+          id: cache-inputdata
+          uses: actions/cache@v2
+          with:
+            path: ~/inputdata
+            key: cesm-inputdata1
+        - name: create inputdata dir
+          if: steps.cache-inputdata.outputs.cache-hit != 'true'
+          run: |
+            if [[ ! -d $HOME/inputdata ]]; then
+            mkdir $HOME/inputdata
+            fi
+            shell: bash
+        - name: Cache cprnc
+          id: cache-cprnc
+          uses: actions/cache@v2
+          with:
+            path: $HOME/cprnc
+            key: ${{ runner.os }}.cprnc
+        - name: Build cprnc
+          if: steps.cache-cprnc.outputs.cache-hit != 'true'
+          run: |
+            cd $HOME/cime/tools/cprnc
+            export CIME_MODEL=cesm
+            ../configure --mpilib mpi-serial --machine ubuntu --macros-format Makefile
+            make FC=gfortran NETCDF_PATH=$HOME/netcdf
+            if [[ ! -d $HOME/cprnc ]]; then
+            mkdir $HOME/cprnc
+            fi
+            cp cprnc $HOME/cprnc/
+          shell: bash
+        - name: Build tests
+          run: |
+            ls -l $HOME/inputdata
+            cd $HOME/cime/scripts
+            mkdir $HOME/scratch
+            export CIME_MODEL=cesm
+            export CC=mpicc
+            export FC=mpif90
+            export NETCDF_PATH=$HOME/netcdf
+            export PNETCDF_PATH=$HOME/pnetcdf
+            export PYTHONPATH=$HOME/cime/scripts/lib:$HOME/cime/scripts/Tools:$PYTHONPATH
+            ./create_test SMS_Vnuopc.f19_g17.A.ubuntu_gnu --machine ubuntu --no-build
+            cd $HOME/scratch/SMS_Vnuopc.f19_g17*
+            ./preview_namelists
+            ./check_input_data --download
