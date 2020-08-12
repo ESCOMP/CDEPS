@@ -88,7 +88,7 @@ jobs:
           wget https://github.com/Unidata/netcdf-fortran/archive/${{ env.NETCDF_FORTRAN_VERSION }}.tar.gz
           tar -xzvf ${{ env.NETCDF_FORTRAN_VERSION }}.tar.gz
           pushd netcdf-fortran-*
-          ./configure --prefix=$HOME/netcdf CPPFLAGS="-I$HOME/netcdf/include "
+          ./configure --prefix=$HOME/netcdf CPPFLAGS="-I$HOME/netcdf/include " LDFLAGS=`$HOME/netcdf/bin/nc-config --libs`
           make
           make install
       # Retreve or create the inputdata directory
