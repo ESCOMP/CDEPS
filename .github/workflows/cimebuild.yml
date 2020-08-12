@@ -125,6 +125,8 @@ jobs:
           export FC=mpif90
           export NETCDF_PATH=$HOME/netcdf
           export PNETCDF_PATH=$HOME/pnetcdf
+          export PYTHONPATH=$HOME/cime/scripts/lib:$HOME/cime/scripts/Tools:$PYTHONPATH
+          ls $HOME/cime/scripts/Tools
           ./create_test SMS_Vnuopc.f19_g17.A.ubuntu_gnu --machine ubuntu --no-build
           cd $HOME/scratch/SMS_Vnuopc.f19_g17*
           ./case.build
