@@ -107,7 +107,7 @@ jobs:
         id: cache-cprnc
         uses: actions/cache@v2
         with:
-          path: $HOME/cime/tools/cprnc/cprnc
+          path: $HOME/cime/tools/cprnc/
           key: cprnc
       - name: Build cprnc
         if: steps.cache-cprnc.outputs.cache-hit != 'true'
@@ -118,6 +118,7 @@ jobs:
           make FC=gfortran NETCDF_PATH=$HOME/netcdf
       - name: Build tests
         run: |
+          ls $HOME/cime/tools/cprnc
           cd $HOME/cime/scripts
           mkdir $HOME/scratch
           export CIME_MODEL=cesm
