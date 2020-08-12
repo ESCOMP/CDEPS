@@ -82,16 +82,6 @@ jobs:
           ./configure --prefix=$HOME/netcdf CPPFLAGS="-I$HOME/netcdf/include " LDFLAGS="-L$HOME/netcdf/lib -lnetcdf"
           make
           make install
-      # Retreve or create the inputdata directory
-      - name: Cache inputdata
-        id: cache-inputdata
-        uses: actions/cache@v2
-        with:
-          path: ~/inputdata
-          key: cesm-inputdata
-      - name: create inputdata dir
-        if: steps.cache-inputdata.outputs.cache-hit != 'true'
-        run: mkdir $HOME/inputdata
       - name: Checkout cime
         run: |
           cd $HOME
@@ -103,20 +93,30 @@ jobs:
           git submodule update
           cd $HOME/cime/src/drivers
           git clone https://github.com/ESCOMP/CMEPS.git nuopc
-      - name: Cache cprnc
+      # Retreve the inputdata directory
+      - name: Cache inputdata
+        id: cache-inputdata
+        uses: actions/cache@v2
+        with:
+          path: ~/inputdata
+          key: cesm-inputdata
+      - name: create inputdata dir
+        if: steps.cache-inputdata.outputs.cache-hit != 'true'
+        run: [ -d $HOME/inputdata ] && echo "inputdata Directory Exists" || mkdir $HOME/inputdata
+       - name: Cache cprnc
         id: cache-cprnc
         uses: actions/cache@v2
         with:
           path: $HOME/cprnc
           key: cprnc
       - name: Build cprnc
-#        if: steps.cache-cprnc.outputs.cache-hit != 'true'
+        if: steps.cache-cprnc.outputs.cache-hit != 'true'
         run: |
           cd $HOME/cime/tools/cprnc
           export CIME_MODEL=cesm
           ../configure --mpilib mpi-serial --machine ubuntu --macros-format Makefile
           make FC=gfortran NETCDF_PATH=$HOME/netcdf
-          [ -d $HOME/cprnc ] && echo "Directory Exists" || mkdir $HOME/cprnc
+          [ -d $HOME/cprnc ] && echo "cprnc Directory Exists" || mkdir $HOME/cprnc
           cp cprnc $HOME/cprnc/
       - name: Build tests
         run: |
@@ -138,9 +138,6 @@ jobs:
           ./preview_namelists
           ./check_input_data --download
           ulimit -a
-      - name: Cache inputdata2
-        id: cache-inputdata2
-        uses: actions/cache@v2
-        with:
-          path: ~/inputdata
-          key: cesm-inputdata
+          ulimit -s unlimited
+          cd run
+          mpirun -np 4 ../bld/cesm.exe
