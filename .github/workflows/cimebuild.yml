@@ -138,12 +138,10 @@ jobs:
           export PYTHONPATH=$HOME/cime/scripts/lib:$HOME/cime/scripts/Tools:$PYTHONPATH
           ./create_test SMS_Vnuopc.f19_g17.A.ubuntu_gnu --machine ubuntu --no-build
           cd $HOME/scratch/SMS_Vnuopc.f19_g17*
-          ./xmlquery CCSM_CPRNC
-          ls -l $HOME/cprnc/cprnc
-          find $HOME -name cprnc
           ./preview_namelists
           ./check_input_data --download
-          ulimit -a
           ulimit -s unlimited
+          ulimit -a
           cd run
-          mpirun -np 4 ../bld/cesm.exe
+          ls -l ../bld
+          mpirun -np 4 $HOME/scratch/SMS_Vnuopc.f19_g17*/bld/cesm.exe
