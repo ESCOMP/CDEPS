@@ -21,13 +21,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - id: load-env
-        run: sudo apt-get install gfortran wget openmpi-bin libopenmpi-dev libxml2-utils
+      run: sudo apt-get install gfortran wget openmpi-bin libopenmpi-dev libxml2-utils
       # Build or retreve from cache the ESMF library
       - id: cache-esmf
-        uses: actions/cache@v2
-        with:
-          path: ~/ESMF
-          key: ${{ runner.os }}-${{ env.ESMF_VERSION }}-ESMF
+      uses: actions/cache@v2
+      with:
+        path: ~/ESMF
+        key: ${{ runner.os }}-${{ env.ESMF_VERSION }}-ESMF
       - id: build-ESMF
         if: steps.cache-esmf.outputs.cache-hit != 'true'
         run: |
@@ -59,7 +59,7 @@ jobs:
           make
           make install
           popd
-      # Build or retreve the netcdf library.
+          # Build or retreve the netcdf library.
       - name: Cache netcdf
         id: cache-netcdf
         uses: actions/cache@v2
@@ -93,18 +93,18 @@ jobs:
           git submodule update
           cd $HOME/cime/src/drivers
           git clone https://github.com/ESCOMP/CMEPS.git nuopc
-      # Retreve the inputdata directory
+          # Retreve the inputdata directory
       - name: Cache inputdata
         id: cache-inputdata
         uses: actions/cache@v2
         with:
           path: ~/inputdata
-          key: cesm-inputdata
+          key: cesm-inputdata1
       - name: create inputdata dir
         if: steps.cache-inputdata.outputs.cache-hit != 'true'
         run: |
           if [[ ! -d $HOME/inputdata ]]; then
-            mkdir $HOME/inputdata
+          mkdir $HOME/inputdata
           fi
         shell: bash
       - name: Cache cprnc
@@ -121,7 +121,7 @@ jobs:
           ../configure --mpilib mpi-serial --machine ubuntu --macros-format Makefile
           make FC=gfortran NETCDF_PATH=$HOME/netcdf
           if [[ ! -d $HOME/cprnc ]]; then
-            mkdir $HOME/cprnc
+          mkdir $HOME/cprnc
           fi
           cp cprnc $HOME/cprnc/
         shell: bash
@@ -136,7 +136,6 @@ jobs:
           export NETCDF_PATH=$HOME/netcdf
           export PNETCDF_PATH=$HOME/pnetcdf
           export PYTHONPATH=$HOME/cime/scripts/lib:$HOME/cime/scripts/Tools:$PYTHONPATH
-          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/netcdf/lib:$HOME/pnetcdf/lib
           ./create_test SMS_Vnuopc.f19_g17.A.ubuntu_gnu --machine ubuntu --no-build
           cd $HOME/scratch/SMS_Vnuopc.f19_g17*
           ./preview_namelists
