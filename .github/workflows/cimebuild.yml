@@ -107,16 +107,15 @@ jobs:
         id: cache-cprnc
         uses: actions/cache@v2
         with:
-          path: $HOME/cprnc/
+          path: $HOME/cprnc
           key: cprnc
       - name: Build cprnc
-        if: steps.cache-cprnc.outputs.cache-hit != 'true'
+#        if: steps.cache-cprnc.outputs.cache-hit != 'true'
         run: |
           cd $HOME/cime/tools/cprnc
           export CIME_MODEL=cesm
           ../configure --mpilib mpi-serial --machine ubuntu --macros-format Makefile
           make FC=gfortran NETCDF_PATH=$HOME/netcdf
-          mkdir $HOME/cprnc
           cp cprnc $HOME/cprnc/
       - name: Build tests
         run: |
