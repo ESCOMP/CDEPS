@@ -59,14 +59,14 @@ jobs:
           make
           make install
           popd
-      # Build or retreve the netcdf-fortran library, we use ubuntu for netcdf-c
+      # Build or retreve the netcdf library.
       - name: Cache netcdf
         id: cache-netcdf
         uses: actions/cache@v2
         with:
           path: ~/netcdf
           key: ${{ runner.os }}-${{ env.NETCDF_C_VERSION }}-netcdf
-      - name: netcdf c build
+      - name: netcdf build
         if: steps.cache-netcdf.outputs.cache-hit != 'true'
         run: |
           wget https://www.unidata.ucar.edu/downloads/netcdf/ftp/${{ env.NETCDF_C_VERSION }}.tar.gz
@@ -76,15 +76,6 @@ jobs:
           make
           make install
           popd
-      - name: Cache netcdf-fortran
-        id: cache-netcdf-fortran
-        uses: actions/cache@v2
-        with:
-          path: ~/netcdf-fortran
-          key: ${{ runner.os }}-${{ env.NETCDF_FORTRAN_VERSION }}-netcdf-fortran
-      - name: netcdf fortran build
-        if: steps.cache-netcdf-fortran.outputs.cache-hit != 'true'
-        run: |
           wget https://github.com/Unidata/netcdf-fortran/archive/${{ env.NETCDF_FORTRAN_VERSION }}.tar.gz
           tar -xzvf ${{ env.NETCDF_FORTRAN_VERSION }}.tar.gz
           pushd netcdf-fortran-*
@@ -124,7 +115,7 @@ jobs:
           cd $HOME/cime/tools/cprnc
           export CIME_MODEL=cesm
           ../configure --mpilib mpi-serial --machine ubuntu --macros-format Makefile
-          make FC=gfortran NETCDF_PATH=$HOME/netcdf-fortran
+          make FC=gfortran NETCDF_PATH=$HOME/netcdf
       - name: Build tests
         run: |
           cd $HOME/cime/scripts
@@ -132,11 +123,7 @@ jobs:
           export CIME_MODEL=cesm
           export CC=mpicc
           export FC=mpif90
-          export NETCDF_PATH=/usr
-          export NETCDF_FORTRAN_PATH=$HOME/netcdf-fortran
-          export NETCDF_C_PATH=/usr
-          export NETCDF_C_LIBRARY=/usr/lib/x86_64-linux-gnu/libnetcdf.so
-          export NETCDF_C_INCLUDE_DIR=/usr/include
+          export NETCDF_PATH=$HOME/netcdf
           export PNETCDF_PATH=$HOME/pnetcdf
           ./create_test SMS_Vnuopc.f19_g17.A.ubuntu_gnu --machine ubuntu --no-build
           cd $HOME/scratch/SMS_Vnuopc.f19_g17*
