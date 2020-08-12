@@ -85,10 +85,10 @@ jobs:
       - name: netcdf fortran build
         if: steps.cache-netcdf-fortran.outputs.cache-hit != 'true'
         run: |
-          sudo apt-get install libnetcdf-dev
           wget https://github.com/Unidata/netcdf-fortran/archive/${{ env.NETCDF_FORTRAN_VERSION }}.tar.gz
           tar -xzvf ${{ env.NETCDF_FORTRAN_VERSION }}.tar.gz
           pushd netcdf-fortran-*
+          export PATH=$HOME/netcdf:$PATH
           ./configure --prefix=$HOME/netcdf
           make
           make install
