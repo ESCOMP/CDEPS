@@ -118,7 +118,8 @@ jobs:
           make FC=gfortran NETCDF_PATH=$HOME/netcdf
       - name: Build tests
         run: |
-          ls $HOME/cime/tools/cprnc
+          find $HOME -name \*.nc
+          find $HOME -name cprnc
           cd $HOME/cime/scripts
           mkdir $HOME/scratch
           export CIME_MODEL=cesm
@@ -130,6 +131,7 @@ jobs:
           ls $HOME/cime/scripts/Tools
           ./create_test SMS_Vnuopc.f19_g17.A.ubuntu_gnu --machine ubuntu --no-build
           cd $HOME/scratch/SMS_Vnuopc.f19_g17*
+          ./xmlquery CCSM_CPRNC
           ./case.build
           ./check_input_data --download
           ./case.submit
