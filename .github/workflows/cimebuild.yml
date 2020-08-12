@@ -74,7 +74,7 @@ jobs:
           pushd ${{ env.NETCDF_C_VERSION }}
           ./configure --prefix=$HOME/netcdf --disable-dap --disable-utilities --disable-netcdf-4
           make
-          sudo make install
+          make install
           popd
       - name: Cache netcdf-fortran
         id: cache-netcdf-fortran
@@ -88,8 +88,7 @@ jobs:
           wget https://github.com/Unidata/netcdf-fortran/archive/${{ env.NETCDF_FORTRAN_VERSION }}.tar.gz
           tar -xzvf ${{ env.NETCDF_FORTRAN_VERSION }}.tar.gz
           pushd netcdf-fortran-*
-          export PATH=$HOME/netcdf:$PATH
-          ./configure --prefix=$HOME/netcdf
+          ./configure --prefix=$HOME/netcdf CPPFLAGS="-I$HOME/netcdf/include "
           make
           make install
       # Retreve or create the inputdata directory
