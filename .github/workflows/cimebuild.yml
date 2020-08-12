@@ -94,7 +94,6 @@ jobs:
         run: mkdir $HOME/inputdata
       - name: Checkout cime
         run: |
-          mkdir $HOME/inputdata
           cd $HOME
           git clone https://github.com/jedwards4b/cime.git -b add_github_action
           cd $HOME/cime/src/components
