@@ -137,7 +137,7 @@ jobs:
           export PNETCDF_PATH=$HOME/pnetcdf
           export PYTHONPATH=$HOME/cime/scripts/lib:$HOME/cime/scripts/Tools:$PYTHONPATH
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/netcdf/lib:$HOME/pnetcdf/lib
-          ./create_test SMS_Vnuopc.f19_g17.A.ubuntu_gnu --machine ubuntu
+          ./create_test SMS_Vnuopc.f19_g17.A.ubuntu_gnu --machine ubuntu --no-build
           cd $HOME/scratch/SMS_Vnuopc.f19_g17*
           ./preview_namelists
           ./check_input_data --download
