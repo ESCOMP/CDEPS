@@ -103,7 +103,7 @@ jobs:
       - name: create inputdata dir
         if: steps.cache-inputdata.outputs.cache-hit != 'true'
         run: |
-          if [! -d $HOME/inputdata ]; then
+          if [[ ! -d $HOME/inputdata ]]; then
             mkdir $HOME/inputdata
           fi
         shell: bash
@@ -120,7 +120,7 @@ jobs:
           export CIME_MODEL=cesm
           ../configure --mpilib mpi-serial --machine ubuntu --macros-format Makefile
           make FC=gfortran NETCDF_PATH=$HOME/netcdf
-          if [! -d $HOME/cprnc]; then
+          if [[ ! -d $HOME/cprnc ]]; then
             mkdir $HOME/cprnc
           fi
           cp cprnc $HOME/cprnc/
