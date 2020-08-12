@@ -140,8 +140,9 @@ jobs:
           cd $HOME/scratch/SMS_Vnuopc.f19_g17*
           ./preview_namelists
           ./check_input_data --download
+          ./case.build
           ulimit -s unlimited
           ulimit -a
           cd run
           ls -l ../bld
-          mpirun -np 4 $HOME/scratch/SMS_Vnuopc.f19_g17*/bld/cesm.exe
+          mpirun -np 4 ../bld/cesm.exe
