@@ -130,3 +130,5 @@ jobs:
           ./create_test SMS_Vnuopc.f19_g17.A.ubuntu_gnu --machine ubuntu --no-build
           cd $HOME/scratch/SMS_Vnuopc.f19_g17*
           ./case.build
+          ./check_input_data --download
+          ./case.submit
