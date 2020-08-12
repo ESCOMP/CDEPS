@@ -106,7 +106,7 @@ jobs:
           if [[ ! -d $HOME/inputdata ]]; then
           mkdir $HOME/inputdata
           fi
-          shell: bash
+        shell: bash
       - name: Cache cprnc
         id: cache-cprnc
         uses: actions/cache@v2
@@ -124,7 +124,7 @@ jobs:
           mkdir $HOME/cprnc
           fi
           cp cprnc $HOME/cprnc/
-          shell: bash
+        shell: bash
       - name: Build tests
         run: |
           ls -l $HOME/inputdata
