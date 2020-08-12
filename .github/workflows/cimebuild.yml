@@ -134,12 +134,10 @@ jobs:
           cd $HOME/scratch/SMS_Vnuopc.f19_g17*
           ./xmlquery CCSM_CPRNC
           ls -l $HOME/cprnc/cprnc
-          ./case.build
-          ./check_input_data --download
+          find $HOME -name cprnc
           ./preview_namelists
-          pushd run
+          ./check_input_data --download
           ulimit -a
-          mpirun -np 4 ../bld/cesm.exe
       - name: Cache inputdata2
         id: cache-inputdata2
         uses: actions/cache@v2
