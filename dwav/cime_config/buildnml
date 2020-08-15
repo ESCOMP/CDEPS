@@ -60,6 +60,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     expect(not scol_mode, 
            "for, DWAV single column mode is not allowed")
 
+    # Initialize nmlgen
     nmlgen.init_defaults(infile, config)
 
     # Generate dwav_in
@@ -67,9 +68,12 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     nmlgen.write_output_file(namelist_file, data_list_path, groups=['dwav_nml'])
 
     # Generate dwav.streams.xml
-    streams = nmlgen.get_streams()
-    stream_path = os.path.join(confdir, "dwav.streams"+inst_string+".xml" )
-    nmlgen.create_nuopc_stream_files(config, caseroot, streams, stream_path, data_list_path)
+    streamlist = nmlgen.get_streams()
+    stream_definition_file = os.path.join(_CIMEROOT, "src", "components", 
+                                          "cdeps", "dwav", "cime_config", "stream_definition_dwav.xml")
+    streams = StreamCDEPS(stream_definition_file, case) 
+    outfile = os.path.join(confdir, "dwav.streams"+inst_string+".xml" )
+    streams.create_stream_xml(streamlist, case, outfile)
 
 ###############################################################################
 def buildnml(case, caseroot, compname):

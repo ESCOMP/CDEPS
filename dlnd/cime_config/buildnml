@@ -62,17 +62,20 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     expect(not scol_mode, 
            "for DLND, single column mode is not allowed")
 
-    # initialize nmlgen
+    # Initialize nmlgen
     nmlgen.init_defaults(infile, config)
 
     # Generate dlnd_in
     namelist_file = os.path.join(confdir, "dlnd_in")
     nmlgen.write_output_file(namelist_file, data_list_path, groups=['dlnd_nml'])
 
-    # Generate dlnd.stream.xml
-    streams = nmlgen.get_streams()
-    stream_path = os.path.join(confdir, "dlnd.streams"+inst_string+".xml" )
-    nmlgen.create_nuopc_stream_files(config, caseroot, streams, stream_path, data_list_path)
+    # Generate dlnd.streams.xml
+    streamlist = nmlgen.get_streams()
+    stream_definition_file = os.path.join(_CIMEROOT, "src", "components", 
+                                          "cdeps", "dlnd", "cime_config", "stream_definition_dlnd.xml")
+    streams = StreamCDEPS(stream_definition_file, case) 
+    outfile = os.path.join(confdir, "dlnd.streams"+inst_string+".xml" )
+    streams.create_stream_xml(streamlist, case, outfile)
 
 ###############################################################################
 def buildnml(case, caseroot, compname):

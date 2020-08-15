@@ -20,6 +20,7 @@ from CIME.nmlgen import NamelistGenerator
 from CIME.utils import expect, get_model, safe_copy
 from CIME.buildnml import create_namelist_infile, parse_input, copy_inputs_to_rundir
 from CIME.XML.files import Files
+from CIME.XML.stream_cdeps import StreamCDEPS
 
 logger = logging.getLogger(__name__)
 
@@ -78,20 +79,27 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     namelist_file = os.path.join(confdir, "datm_in")
     nmlgen.write_output_file(namelist_file, data_list_path, groups=['datm_nml'])
 
-    # Generate datm.streams.xml
-    streams = nmlgen.get_streams()
+    # Determine streams
+    streamlist = nmlgen.get_streams()
     if datm_presaero != "none":
-        streams.append("presaero.{}".format(datm_presaero))
+        streamlist.append("presaero.{}".format(datm_presaero))
     if datm_topo != "none":
-        streams.append("topo.{}".format(datm_topo))
+        streamlist.append("topo.{}".format(datm_topo))
     if datm_co2_tseries != "none":
-        streams.append("co2tseries.{}".format(datm_co2_tseries))
+        streamlist.append("co2tseries.{}".format(datm_co2_tseries))
     bias_correct = nmlgen.get_value("bias_correct")
-    streams.append(bias_correct)
+    if bias_correct is not None:
+        streamlist.append(bias_correct)
     anomaly_forcing = nmlgen.get_value("anomaly_forcing")
-    streams += anomaly_forcing
-    stream_path = os.path.join(confdir, "datm.streams"+inst_string+".xml" )
-    nmlgen.create_nuopc_stream_files(config, caseroot, streams, stream_path, data_list_path)
+    if anomaly_forcing[0] is not None:
+        streamlist += anomaly_forcing
+    
+    # Generate datm.streams.xml
+    stream_definition_file = os.path.join(_CIMEROOT, "src", "components", 
+                                          "cdeps", "datm", "cime_config", "stream_definition_datm.xml")
+    streams = StreamCDEPS(stream_definition_file, case) 
+    outfile = os.path.join(confdir, "datm.streams"+inst_string+".xml" )
+    streams.create_stream_xml(streamlist, case, outfile)
 
 ###############################################################################
 def buildnml(case, caseroot, compname):

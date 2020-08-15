@@ -20,6 +20,7 @@ from CIME.XML.files import Files
 from CIME.nmlgen import NamelistGenerator
 from CIME.utils import expect, safe_copy
 from CIME.buildnml import create_namelist_infile, parse_input, copy_inputs_to_rundir
+from CIME.XML.stream_cdeps import StreamCDEPS
 
 logger = logging.getLogger(__name__)
 
@@ -34,9 +35,8 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     different instances. The `confdir` argument is used to specify the directory
     in which output files will be placed.
     """
-
     #----------------------------------------------------
-    # Write out docn_in and docn.streamss.xml
+    # Write out docn_in and docn.streams.xml
     #----------------------------------------------------
 
     caseroot = case.get_value("CASEROOT")
@@ -80,11 +80,14 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     else:
         generate_stream_file = True
     if generate_stream_file:
+        # Create the list of streams
+        streamlist = nmlgen.get_streams()
         # Create stream xml file - docn.streams.xml
-        # first construct the list of streams - this uses the "streamlist" namelist_definition_docn.xml values
-        streams = nmlgen.get_streams()
-        stream_path = os.path.join(confdir, "docn.streams"+inst_string+".xml" )
-        nmlgen.create_nuopc_stream_files(config, caseroot, streams, stream_path, data_list_path)
+        stream_definition_file = os.path.join(_CIMEROOT, "src", "components", 
+                                              "cdeps", "docn", "cime_config", "stream_definition_docn.xml")
+        streams = StreamCDEPS(stream_definition_file, case) 
+        outfile = os.path.join(confdir, "docn.streams"+inst_string+".xml" )
+        streams.create_stream_xml(streamlist, case, outfile)
 
 ###############################################################################
 def buildnml(case, caseroot, compname):
