@@ -25,7 +25,7 @@ from CIME.nmlgen import NamelistGenerator
 from CIME.utils import expect, safe_copy
 from CIME.XML.files import Files
 from CIME.buildnml import create_namelist_infile, parse_input, copy_inputs_to_rundir
-from CIME.XML.stream_cdeps import StreamCDEPS
+from stream_cdeps import StreamCDEPS
 
 logger = logging.getLogger(__name__)
 
