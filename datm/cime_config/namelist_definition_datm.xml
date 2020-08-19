@@ -4,6 +4,9 @@
 
 <entry_id version="2.0">
 
+  <!-- Note that streamslist here does not handle the optional streams - -->
+  <!-- those are handled in buildnml -->
+
   <entry id="streamslist">
     <type>char(100)</type>
     <category>streams</category>
@@ -25,8 +28,14 @@
       <value datm_mode="CLMNLDAS2">
         CLMNLDAS2.Solar,CLMNLDAS2.Precip,CLMNLDAS2.TPQW
       </value>
-      <value datm_mode="1PT">
-        1PT
+      <value datm_mode="1PT" model_grid="1x1_mexicocityMEX">
+        1PT.mexicocityMEX
+      </value>
+      <value datm_mode="1PT" model_grid="1x1_vancouverCAN">
+        1PT.vancouverCAN
+      </value>
+      <value datm_mode="1PT" model_grid="1x1_urbanc_alpha">
+        1PT.urbanc_alpha
       </value>
       <value datm_mode="CORE2_NYF" >
         CORE2_NYF.GISS,CORE2_NYF.GXGXS,CORE2_NYF.NCEP
@@ -38,7 +47,7 @@
         CORE_IAF_JRA.PREC,CORE_IAF_JRA.LWDN,CORE_IAF_JRA.SWDN,CORE_IAF_JRA.Q_10,CORE_IAF_JRA.SLP_,CORE_IAF_JRA.T_10,CORE_IAF_JRA.U_10,CORE_IAF_JRA.V_10,CORE_IAF_JRA.CORE2.ArcFactor
       </value>
       <value datm_mode="CORE_IAF_JRA_1p4_2018" >CORE_IAF_JRA_1p4_2018.GCGCS.PREC,CORE_IAF_JRA_1p4_2018.GISS.LWDN,CORE_IAF_JRA_1p4_2018.GISS.SWDN,CORE_IAF_JRA_1p4_2018.NCEP.Q_10,CORE_IAF_JRA_1p4_2018.NCEP.SLP_,CORE_IAF_JRA_1p4_2018.NCEP.T_10,CORE_IAF_JRA_1p4_2018.NCEP.U_10,CORE_IAF_JRA_1p4_2018.NCEP.V_10</value>
-      <value datm_mode="CORE2_IAF" atm_grid="01col" >
+      <value datm_mode="CORE2_IAF" model_grid="01col" >
         CORE2_IAF.NCEP.DENS.SOFS,CORE2_IAF.NCEP.PSLV.SOFS,CORE2_IAF.PREC.SOFS.DAILY,CORE2_IAF.LWDN.SOFS.DAILY,CORE2_IAF.SWDN.SOFS.DAILY,CORE2_IAF.SWUP.SOFS.DAILY,CORE2_IAF.SHUM.SOFS.6HOUR,CORE2_IAF.TBOT.SOFS.6HOUR,CORE2_IAF.U.SOFS.6HOUR,CORE2_IAF.V.SOFS.6HOUR,CORE2_IAF.CORE2.ArcFactor
       </value>
       <value datm_mode="ERA5">
@@ -57,16 +66,16 @@
     <valid_values>CLMNCEP,CORE2_NYF,CORE2_IAF,CORE_IAF_JRA,ERA5,CPLHIST</valid_values>
     <desc>
       general method that operates on the data.
-      datamode = "CPLHIST"
+      ----datamode = "CPLHIST"----
       CPLHIST mode will examine the fields found in all input data streams,
       if any input field names match the field names used internally, they
       are copied into the export array and passed directly to the coupler
       without any special user code.  Any required fields not found on an
       input stream will be set to zero except for aerosol deposition fields
       which will be set to a special value.
-      datamode = "CORE2_NYF"
+      ----datamode = "CORE2_NYF"----
       Coordinated Ocean-ice Reference Experiments (CORE) Version 2 Normal Year Forcing.
-      datamode = "CORE2_IAF"
+      ----datamode = "CORE2_IAF"----
       In conjunction with with CORE Version 2 atmospheric forcing data,
       provides the atmosphere forcing favored by the Ocean Model Working
       Group when coupling an active ocean model with observed atmospheric
@@ -77,16 +86,16 @@
       W.G.Large, S.G.Yeager (2008), The global climatology of an
       interannually varying air-sea flux data set.
       Clm Dyn doi 10.1007/s00382-008-0441-3.
-      datamode = "CORE_IAF_JRA"
+      ----datamode = "CORE_IAF_JRA"----
       JRA55 intra-annual year forcing
-      datamode = "CLMNCEP"
+      ----datamode = "CLMNCEP"----
       In conjunction with NCEP climatological atmosphere data, provides the
       atmosphere forcing favored by the Land Model Working Group when
       coupling an active land model with observed atmospheric forcing.  This
       mode replicates code previously found in CLM (circa 2005), before the
       LMWG started using the CCSM flux coupler and data models to do
       active-land-only simulations.
-      datamode = "ERA5"
+      ----datamode = "ERA5"----
       Fifth generation ECMWF atmospheric reanalysis of the global climate
     </desc>
     <values>
@@ -220,7 +229,7 @@
       <value>null</value>
       <value datm_mode="CORE2_NYF">$DIN_LOC_ROOT/atm/datm7/CORE2/COREv2.correction_factors.T62.121007.nc</value>
       <value datm_mode="CORE2_IAF">$DIN_LOC_ROOT/atm/datm7/CORE2/COREv2.correction_factors.T62.121007.nc</value>
-      <value datm_mode="CORE2_IAF" atm_grid="01col">null</value>
+      <value datm_mode="CORE2_IAF" model_grid="01col">null</value>
     </values>
   </entry>
 
@@ -236,7 +245,7 @@
       <value>null</value>
       <value datm_mode="CORE2_NYF">$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc</value>
       <value datm_mode="CORE2_IAF">$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc</value>
-      <value datm_mode="CORE2_IAF" atm_grid="01col">null</value>
+      <value datm_mode="CORE2_IAF" model_grid="01col">null</value>
     </values>
   </entry>
 

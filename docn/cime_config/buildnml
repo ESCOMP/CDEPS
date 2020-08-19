@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""Namelist creator for CIME's data ocn model.
+"""Namelist creator for CDEPS data ocn model.
 """
 
 # Typically ignore this.
@@ -11,8 +11,13 @@
 
 import os, sys, re
 
-_CIMEROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..","..","..","..","..")
-sys.path.append(os.path.join(_CIMEROOT, "scripts", "Tools"))
+_CDEPS_CONFIG = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir,os.pardir,"cime_config")
+_CIMEROOT = os.environ.get("CIMEROOT")
+if _CIMEROOT is None:
+    raise SystemExit("ERROR: must set CIMEROOT environment variable")
+_LIBDIR = os.path.join(_CIMEROOT, "scripts", "Tools")
+sys.path.append(_LIBDIR)
+sys.path.append(os.path.join(_CDEPS_CONFIG))
 
 from standard_script_setup import *
 from CIME.case import Case
@@ -41,14 +46,12 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
 
     caseroot = case.get_value("CASEROOT")
     docn_mode = case.get_value("DOCN_MODE")
-    ocn_domain_file = case.get_value("OCN_DOMAIN_FILE")
-    ocn_domain_path = case.get_value("OCN_DOMAIN_PATH")
     ocn_grid = case.get_value("OCN_GRID")
     ocn_nx = case.get_value("OCN_NX")
     ocn_ny = case.get_value("OCN_NY")
     atm_nx = case.get_value("ATM_NX")
     atm_ny = case.get_value("ATM_NY")
-    grid = case.get_value("GRID")
+    model_grid = case.get_value("GRID")
 
     # Check for incompatible options.
     expect(ocn_grid != "null",
@@ -60,7 +63,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
 
     # Initialize namelist defaults
     config = {}
-    config['grid'] = grid
+    config['model_grid'] = model_grid
     config['ocn_grid'] = ocn_grid
     config['docn_mode'] = docn_mode
     config['create_mesh'] = 'true' if case.get_value("OCN_DOMAIN_MESH") == 'create_mesh' else 'false'
@@ -79,15 +82,15 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
         generate_stream_file = False
     else:
         generate_stream_file = True
+    #endif
     if generate_stream_file:
-        # Create the list of streams
         streamlist = nmlgen.get_streams()
-        # Create stream xml file - docn.streams.xml
-        stream_definition_file = os.path.join(_CIMEROOT, "src", "components", 
-                                              "cdeps", "docn", "cime_config", "stream_definition_docn.xml")
-        streams = StreamCDEPS(stream_definition_file, case) 
+        stream_file = os.path.join(_CDEPS_CONFIG,os.pardir, "docn","cime_config","stream_definition_docn.xml")
+        schema_file = os.path.join(_CDEPS_CONFIG,"streams_v2.0.xsd")
+        streams = StreamCDEPS(stream_file, schema_file)
         outfile = os.path.join(confdir, "docn.streams"+inst_string+".xml" )
-        streams.create_stream_xml(streamlist, case, outfile)
+        streams.create_stream_xml(streamlist, case, outfile, data_list_path)
+    #endif
 
 ###############################################################################
 def buildnml(case, caseroot, compname):

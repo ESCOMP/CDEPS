@@ -6,8 +6,13 @@ build cime component model library.   This buildlib script is used by all CDEPS 
 
 import sys, os
 
-_CIMEROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..","..","..","..", "..")
+_CIMEROOT = os.environ.get("CIMEROOT")
+if _CIMEROOT is None:
+    raise SystemExit("ERROR: must set CIMEROOT environment variable")
 sys.path.append(os.path.join(_CIMEROOT, "scripts", "Tools"))
+
+_LIBDIR = os.path.join(_CIMEROOT, "scripts", "Tools")
+sys.path.append(_LIBDIR)
 
 from standard_script_setup import *
 from CIME.buildlib import parse_input
@@ -48,7 +53,7 @@ def buildlib(bldroot, libroot, case, compname=None):
             expect(False, "ERROR in {} build {} {}".format(compname,o,e))
     else:
         logger.info("Running cmake for CDEPS")
-        srcpath = os.path.join(case.get_value("CIMEROOT"),"src","components","cdeps")
+        srcpath = os.path.join(case.get_value("SRCROOT"),"components","cdeps")
 
         cmake_flags = get_standard_cmake_args(case, os.path.join(sharedpath,"cdeps"), shared_lib=True)
         ccomp, cxxcomp, fcomp = get_compiler_names(case)
