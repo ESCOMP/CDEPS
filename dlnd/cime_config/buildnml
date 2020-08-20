@@ -17,7 +17,7 @@ if _CIMEROOT is None:
     raise SystemExit("ERROR: must set CIMEROOT environment variable")
 _LIBDIR = os.path.join(_CIMEROOT, "scripts", "Tools")
 sys.path.append(_LIBDIR)
-sys.path.append(os.path.join(_CDEPS_CONFIG))
+sys.path.append(_CDEPS_CONFIG)
 
 from standard_script_setup import *
 from CIME.case import Case

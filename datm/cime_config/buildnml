@@ -17,7 +17,7 @@ if _CIMEROOT is None:
     raise SystemExit("ERROR: must set CIMEROOT environment variable")
 _LIBDIR = os.path.join(_CIMEROOT, "scripts", "Tools")
 sys.path.append(_LIBDIR)
-sys.path.append(os.path.join(_CDEPS_CONFIG))
+sys.path.append(_CDEPS_CONFIG)
 
 from standard_script_setup import *
 from CIME.case import Case
@@ -85,7 +85,6 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
 
     # Determine streams
     streamlist = nmlgen.get_streams()
-    print "DEBUG: streamlist is ",streamlist
     if datm_presaero != "none":
         streamlist.append("presaero.{}".format(datm_presaero))
     if datm_topo != "none":
