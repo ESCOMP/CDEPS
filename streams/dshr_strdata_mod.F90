@@ -1301,7 +1301,6 @@ contains
     real(r8)                 :: sinlat, sinlon
     real(r8)                 :: coslat, coslon
     real(r8)                 :: scale_factor, add_offset
-    integer(i2), allocatable :: data_short(:)
     integer(i2)              :: fillvalue_i2
     character(CS)            :: uname, vname
     integer                  :: i, lev
@@ -1724,7 +1723,6 @@ contains
     character(CS)           :: dimname
     integer, allocatable    :: dimids(:)
     integer, allocatable    :: dimlens(:)
-    integer                 :: unlimdid
     type(ESMF_DistGrid)     :: distGrid
     integer                 :: lsize
     integer, pointer        :: compdof(:) => null()

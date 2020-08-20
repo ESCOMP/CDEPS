@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""Namelist creator for CIME's data river model.
+"""Namelist creator for CDEPS data river model.
 """
 
 # Typically ignore this.
@@ -11,8 +11,13 @@
 
 import os, sys
 
-_CIMEROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..","..","..","..","..")
-sys.path.append(os.path.join(_CIMEROOT, "scripts", "Tools"))
+_CDEPS_CONFIG = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir,os.pardir,"cime_config")
+_CIMEROOT = os.environ.get("CIMEROOT")
+if _CIMEROOT is None:
+    raise SystemExit("ERROR: must set CIMEROOT environment variable")
+_LIBDIR = os.path.join(_CIMEROOT, "scripts", "Tools")
+sys.path.append(_LIBDIR)
+sys.path.append(_CDEPS_CONFIG)
 
 from standard_script_setup import *
 from CIME.case import Case
@@ -20,6 +25,7 @@ from CIME.XML.files import Files
 from CIME.nmlgen import NamelistGenerator
 from CIME.utils import expect, safe_copy
 from CIME.buildnml import create_namelist_infile, parse_input, copy_inputs_to_rundir
+from stream_cdeps import StreamCDEPS
 
 logger = logging.getLogger(__name__)
 
@@ -56,12 +62,12 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     config['drof_mode'] = drof_mode
     config['create_mesh'] = 'true' if case.get_value("ROF_DOMAIN_MESH") == 'create_mesh' else 'false'
 
-    # do not allow single column mode for drof
+    # Do not allow single column mode for drof
     scol_mode = True if case.get_value('PTS_MODE') else False
     expect(not scol_mode, 
            "for, DROF single column mode is not allowed")
 
-    # initialize nmlgen
+    # Initialize nmlgen
     nmlgen.init_defaults(infile, config)
 
     # Generate drof_in
@@ -69,9 +75,12 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     nmlgen.write_output_file(namelist_file, data_list_path, groups=['drof_nml'])
 
     # Generate drof.streams.xml
-    streams = nmlgen.get_streams()
-    stream_path = os.path.join(confdir, "drof.streams"+inst_string+".xml" )
-    nmlgen.create_nuopc_stream_files(config, caseroot, streams, stream_path, data_list_path)
+    streamlist = nmlgen.get_streams()
+    stream_file = os.path.join(_CDEPS_CONFIG,os.pardir, "drof","cime_config","stream_definition_drof.xml")
+    schema_file = os.path.join(_CDEPS_CONFIG,"streams_v2.0.xsd")
+    streams = StreamCDEPS(stream_file, schema_file)
+    outfile = os.path.join(confdir, "drof.streams"+inst_string+".xml" )
+    streams.create_stream_xml(streamlist, case, outfile, data_list_path)
 
 ###############################################################################
 def buildnml(case, caseroot, compname):

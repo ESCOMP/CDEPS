@@ -1,0 +1,382 @@
+<?xml version="1.0"?>
+
+<?xml-stylesheet type="text/xsl" href="namelist_definition.xsl"?>
+
+<stream_data version="2.0" xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <stream_entry name="rof.diatren_ann_rx1">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/lnd/dlnd7/RX1/runoff.daitren.annual_ESMFmesh_120520.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/lnd/dlnd7/RX1/runoff.daitren.annual.20190226.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>runoff Forr_rofl</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1</stream_year_first>
+    <stream_year_last>1</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>upper</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>3.0</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="rof.diatren_ann_ais00_rx1">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/lnd/dlnd7/RX1/runoff.daitren.annual_ESMFmesh_120520.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/lnd/dlnd7/RX1/runoff.daitren.annual.20190226.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>runoff Forr_rofl</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1</stream_year_first>
+    <stream_year_last>1</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>upper</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>3.0</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="rof.diatren_ann_ais45_rx1">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/lnd/dlnd7/RX1/runoff.daitren.annual_ESMFmesh_120520.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/lnd/dlnd7/RX1/runoff.daitren.annual.20190226.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>runoff Forr_rofl</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1</stream_year_first>
+    <stream_year_last>1</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>upper</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>3.0</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="rof.diatren_ann_ais55_rx1">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/lnd/dlnd7/RX1/runoff.daitren.annual_ESMFmesh_120520.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/lnd/dlnd7/RX1/runoff.daitren.annual.20190226.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>runoff Forr_rofl</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1</stream_year_first>
+    <stream_year_last>1</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>upper</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>3.0</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="rof.diatren_ann_ais00_rx1">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/lnd/dlnd7/RX1/runoff.daitren.annual_ESMFmesh_120520.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/lnd/dlnd7/RX1/runoff.daitren.annual.20190226.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>runoff Forr_rofl</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1</stream_year_first>
+    <stream_year_last>1</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>upper</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>3.0</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="rof.diatren_iaf_rx1">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/lnd/dlnd7/RX1/runoff.daitren.annual_ESMFmesh_120520.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/lnd/dlnd7/RX1/runoff.daitren.iaf.20120419.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>runoff Forr_rofl</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1948</stream_year_first>
+    <stream_year_last>2009</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>upper</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>3.0</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="rof.diatren_iaf_ais00_rx1">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/lnd/dlnd7/RX1/runoff.daitren.annual_ESMFmesh_120520.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/lnd/dlnd7/RX1/runoff.daitren.iaf-AISx00.20120419.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>runoff Forr_rofl</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1948</stream_year_first>
+    <stream_year_last>2009</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>upper</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>3.0</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="rof.diatren_iaf_ais45_rx1">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/lnd/dlnd7/RX1/runoff.daitren.annual_ESMFmesh_120520.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/lnd/dlnd7/RX1/runoff.daitren.iaf-AISx45.20120419.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>runoff Forr_rofl</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1948</stream_year_first>
+    <stream_year_last>2009</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>upper</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>3.0</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="rof.diatren_iaf_ais55_rx1">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/lnd/dlnd7/RX1/runoff.daitren.annual_ESMFmesh_120520.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/lnd/dlnd7/RX1/runoff.daitren.iaf-AISx55.20120419.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>runoff Forr_rofl</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1948</stream_year_first>
+    <stream_year_last>2009</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>upper</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>3.0</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="rof.iaf_jra">
+    <stream_meshfile>
+      <meshfile><!-- $DIN_LOC_ROOT/lnd/dlnd7/JRA55/JRA.v1.4.runoff.1958.190214.nc --></meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1958" last_year="2016">$DIN_LOC_ROOT/lnd/dlnd7/JRA55/JRA.v1.1.runoff.%y.170807.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>rofl Forr_rofl</var>
+      <var>rofi Forr_rofi</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1958</stream_year_first>
+    <stream_year_last>2016</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>upper</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>3.0</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="rof.iaf_jra_1p4_2018">
+    <stream_meshfile>
+      <meshfile><!-- $DIN_LOC_ROOT/lnd/dlnd7/JRA55/JRA.v1.4.runoff.1958.190214.nc --></meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1958" last_year="2016">$DIN_LOC_ROOT/lnd/dlnd7/JRA55/JRA.v1.1.runoff.%y.170807.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>rofl Forr_rofl</var>
+      <var>rofi Forr_rofi</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1958</stream_year_first>
+    <stream_year_last>2018</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>upper</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>3.0</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="rof.cplhist">
+    <stream_meshfile>
+      <meshfile>$ROF_DOMAIN_MESH</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/lnd/dlnd7/RX1/runoff.daitren.iaf.20120419.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>rofImp_Forr_rofl  Forr_rofl</var>
+      <var>rofImp_Forr_rofi  Forr_rofi</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DROF_CPLHIST_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DROF_CPLHIST_YR_START</stream_year_first>
+    <stream_year_last>$DROF_CPLHIST_YR_END</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>nearest</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>3.0</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+</stream_data>

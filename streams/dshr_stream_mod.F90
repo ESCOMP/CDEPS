@@ -180,7 +180,7 @@ contains
 
        Sdoc => parseFile(xmlfilename, iostat=status)
        if (status /= 0) then
-          call shr_sys_abort("Could not open file "//trim(xmlfilename))
+          call shr_sys_abort("Could not parse file "//trim(xmlfilename))
        endif
        streamlist => getElementsByTagname(Sdoc, "stream_info")
        nstrms = getLength(streamlist)
