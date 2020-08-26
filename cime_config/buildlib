@@ -26,74 +26,78 @@ logger = logging.getLogger(__name__)
 
 def buildlib(bldroot, libroot, case, compname=None):
     if bldroot.endswith("obj") and not compname:
-        compname = os.path.basename(os.path.abspath(os.path.join(bldroot,os.pardir)))
+	compname = os.path.basename(os.path.abspath(os.path.join(bldroot,os.pardir)))
 
     if case.get_value("DEBUG"):
-        strdebug = "debug"
+	strdebug = "debug"
     else:
-        strdebug = "nodebug"
+	strdebug = "nodebug"
     if case.get_value("BUILD_THREADED"):
-        strthread = "threads"
+	strthread = "threads"
     else:
-        strthread = "nothreads"
+	strthread = "nothreads"
     mpilib = case.get_value("MPILIB")
 
     sharedpath = os.path.join(case.get_value("COMPILER"),mpilib,
-                              strdebug, strthread, "nuopc")
+			      strdebug, strthread, "nuopc")
 
 
     if compname:
-        s, o, e = run_cmd("make d{}".format(compname), from_dir=bldroot, verbose=True)
-        libname = "lib{}.a".format(compname)
-        dlibname = "libd{}.a".format(compname)
-        dlibpath = os.path.join(bldroot, dlibname)
-        if os.path.exists(dlibpath):
-            symlink_force(os.path.join(bldroot,dlibname), os.path.join(libroot,libname))
-        else:
-            expect(False, "ERROR in {} build {} {}".format(compname,o,e))
+	s, o, e = run_cmd("make d{}".format(compname), from_dir=bldroot, verbose=True)
+	libname = "lib{}.a".format(compname)
+	dlibname = "libd{}.a".format(compname)
+	dlibpath = os.path.join(bldroot, dlibname)
+	if os.path.exists(dlibpath):
+	    symlink_force(os.path.join(bldroot,dlibname), os.path.join(libroot,libname))
+	else:
+	    expect(False, "ERROR in {} build {} {}".format(compname,o,e))
     else:
-        logger.info("Running cmake for CDEPS")
-        srcpath = os.path.join(case.get_value("SRCROOT"),"components","cdeps")
+	logger.info("Running cmake for CDEPS")
+	srcpath = os.path.join(case.get_value("SRCROOT"),"components","cdeps")
 
-        cmake_flags = get_standard_cmake_args(case, os.path.join(sharedpath,"cdeps"), shared_lib=True)
-        ccomp, cxxcomp, fcomp = get_compiler_names(case)
+	cmake_flags = get_standard_cmake_args(case, os.path.join(sharedpath,"cdeps"), shared_lib=True)
+#        ccomp, cxxcomp, fcomp = get_compiler_names(case)
 
-        cmake_flags += " -DCMAKE_C_COMPILER={} -DCMAKE_CXX_COMPILER={} -DCMAKE_Fortran_COMPILER={}".format(ccomp, cxxcomp, fcomp)
-        cmake_flags += " -DCMAKE_INSTALL_PREFIX={} ".format(libroot)
-        cmake_flags += " -DLIBROOT={} ".format(libroot) + srcpath
-        cmake_flags += " -DMPILIB={} ".format(mpilib)
-        cmake_flags += " -DPIO_C_LIBRARY={path}/lib -DPIO_C_INCLUDE_DIR={path}/include ".format(path=os.path.join(case.get_value("EXEROOT"),sharedpath))
-        cmake_flags += " -DPIO_Fortran_LIBRARY={path}/lib -DPIO_Fortran_INCLUDE_DIR={path}/include ".format(path=os.path.join(case.get_value("EXEROOT"),sharedpath))
+#        cmake_flags += " -DCMAKE_C_COMPILER={} -DCMAKE_CXX_COMPILER={} -DCMAKE_Fortran_COMPILER={}".format(ccomp, cxxcomp, fcomp)
+	cmake_flags += " -DCMAKE_INSTALL_PREFIX={} ".format(libroot)
+	cmake_flags += " -DLIBROOT={} ".format(libroot) + srcpath
+	cmake_flags += " -DMPILIB={} ".format(mpilib)
+	cmake_flags += " -DPIO_C_LIBRARY={path}/lib -DPIO_C_INCLUDE_DIR={path}/include ".format(path=os.path.join(case.get_value("EXEROOT"),sharedpath))
+	cmake_flags += " -DPIO_Fortran_LIBRARY={path}/lib -DPIO_Fortran_INCLUDE_DIR={path}/include ".format(path=os.path.join(case.get_value("EXEROOT"),sharedpath))
 
-        logger.info("cmake_flags {}".format(cmake_flags))
-        s,o,e = run_cmd("cmake {} ".format(cmake_flags), from_dir=bldroot, verbose=True)
-        expect(not s,"ERROR from cmake output={}, error={}".format(o,e))
+	logger.info("cmake_flags {}".format(cmake_flags))
+	s,o,e = run_cmd("cmake {} ".format(cmake_flags), from_dir=bldroot, verbose=True)
+	expect(not s,"ERROR from cmake output={}, error={}".format(o,e))
 
-        s,o,e = run_cmd("make install", from_dir=bldroot, verbose=True)
-        expect(not s,"ERROR from make output={}, error={}".format(o,e))
+	s,o,e = run_cmd("make install", from_dir=bldroot, verbose=True)
+	expect(not s,"ERROR from make output={}, error={}".format(o,e))
 
 
-        # Link the CDEPS component directories to the location expected by cime
-        for comp in ("atm", "lnd", "ice", "ocn", "rof", "wav"):
-            compname = case.get_value("COMP_{}".format(comp.upper()))
-            comppath = os.path.join(case.get_value("EXEROOT"),comp,"obj")
-            if compname == "d"+comp:
-                if not os.path.islink(comppath):
-                    os.rmdir(comppath)
-                symlink_force(os.path.join(bldroot,compname), comppath)
+	# Link the CDEPS component directories to the location expected by cime
+	for comp in ("atm", "lnd", "ice", "ocn", "rof", "wav"):
+	    compname = case.get_value("COMP_{}".format(comp.upper()))
+	    comppath = os.path.join(case.get_value("EXEROOT"),comp,"obj")
+	    if compname == "d"+comp:
+		if not os.path.islink(comppath):
+		    os.rmdir(comppath)
+		symlink_force(os.path.join(bldroot,compname), comppath)
 
 
 def get_compiler_names(case):
-    machobj = Machines(machine=case.get_value("MACH"))
+    machine=case.get_value("MACH")
+    machobj = Machines(machine=machine)
     compobj = Compilers(machobj)
+    compiler = case.get_value("COMPILER")
     if case.get_value("MPILIB") == 'mpi-serial':
-        ccomp = compobj.get_value("SCC").strip()
-        cxxcomp = compobj.get_value("SCXX").strip()
-        fcomp = compobj.get_value("SFC").strip()
+	print("HERE Compiler {} mach={}".format(compiler, machine))
+	ccomp = compobj.get_value("SCC",{"COMPILER":compiler,"MACH":machine}).strip()
+	cxxcomp = compobj.get_value("SCXX",{"COMPILER":compiler}).strip()
+	fcomp = compobj.get_value("SFC",{"COMPILER":compiler}).strip()
+	print("HERE the compilers are {} {} {}".format(ccomp,cxxcomp, fcomp))
     else:
-        ccomp = compobj.get_value("MPICC").strip()
-        cxxcomp = compobj.get_value("MPICXX").strip()
-        fcomp = compobj.get_value("MPIFC").strip()
+	ccomp = compobj.get_value("MPICC",{"COMPILER":compiler}).strip()
+	cxxcomp = compobj.get_value("MPICXX",{"COMPILER":compiler}).strip()
+	fcomp = compobj.get_value("MPIFC",{"COMPILER":compiler}).strip()
 
     return ccomp, cxxcomp, fcomp
 
@@ -101,7 +105,7 @@ def get_compiler_names(case):
 def _main_func(args):
     caseroot, libroot, bldroot = parse_input(args)
     with Case(caseroot) as case:
-        buildlib(bldroot, libroot, case)
+	buildlib(bldroot, libroot, case)
 
 if __name__ == "__main__":
     _main_func(sys.argv)
