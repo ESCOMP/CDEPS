@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 
 project(NUOPC_DATA_MODELS LANGUAGES Fortran VERSION 0.1)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+message("CMAKE_C_COMPILER is ${CMAKE_C_COMPILER}")
 include(ExternalProject)
 find_package(ESMF REQUIRED)
 if (DEFINED PIO)
