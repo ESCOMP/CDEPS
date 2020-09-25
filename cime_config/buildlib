@@ -54,11 +54,8 @@ def buildlib(bldroot, libroot, case, compname=None):
     else:
         logger.info("Running cmake for CDEPS")
         srcpath = os.path.abspath(os.path.join(os.path.dirname(__file__),os.pardir))
-
         cmake_flags = get_standard_cmake_args(case, os.path.join(sharedpath,"cdeps"), shared_lib=True)
-        ccomp, cxxcomp, fcomp = get_compiler_names(case)
 
-        cmake_flags += " -DCMAKE_C_COMPILER={} -DCMAKE_CXX_COMPILER={} -DCMAKE_Fortran_COMPILER={}".format(ccomp, cxxcomp, fcomp)
         cmake_flags += " -DCMAKE_INSTALL_PREFIX={} ".format(libroot)
         cmake_flags += " -DLIBROOT={} ".format(libroot)
         cmake_flags += " -DMPILIB={} ".format(mpilib)
@@ -84,16 +81,20 @@ def buildlib(bldroot, libroot, case, compname=None):
 
 
 def get_compiler_names(case):
-    machobj = Machines(machine=case.get_value("MACH"))
+    machine=case.get_value("MACH")
+    machobj = Machines(machine=machine)
     compobj = Compilers(machobj)
+    compiler = case.get_value("COMPILER")
     if case.get_value("MPILIB") == 'mpi-serial':
-        ccomp = compobj.get_value("SCC").strip()
-        cxxcomp = compobj.get_value("SCXX").strip()
-        fcomp = compobj.get_value("SFC").strip()
+        print("HERE Compiler {} mach={}".format(compiler, machine))
+        ccomp = compobj.get_value("SCC",{"COMPILER":compiler,"MACH":machine}).strip()
+        cxxcomp = compobj.get_value("SCXX",{"COMPILER":compiler}).strip()
+        fcomp = compobj.get_value("SFC",{"COMPILER":compiler}).strip()
+        print("HERE the compilers are {} {} {}".format(ccomp,cxxcomp, fcomp))
     else:
-        ccomp = compobj.get_value("MPICC").strip()
-        cxxcomp = compobj.get_value("MPICXX").strip()
-        fcomp = compobj.get_value("MPIFC").strip()
+        ccomp = compobj.get_value("MPICC",{"COMPILER":compiler}).strip()
+        cxxcomp = compobj.get_value("MPICXX",{"COMPILER":compiler}).strip()
+        fcomp = compobj.get_value("MPIFC",{"COMPILER":compiler}).strip()
 
     return ccomp, cxxcomp, fcomp
 
