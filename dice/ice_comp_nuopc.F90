@@ -204,7 +204,7 @@ contains
        write(logunit,F01)' ny_global  = ',ny_global
        write(logunit,F03)' flux_swpf  = ',flux_swpf
        write(logunit,F03)' flux_Qmin  = ',flux_Qmin
-       write(logunit,F03)' flux_Qacc  = ',flux_Qacc
+       write(logunit,F02)' flux_Qacc  = ',flux_Qacc
        write(logunit,F03)' flux_Qacc0 = ',flux_Qacc0
        write(logunit,F00)' restfilm = ',trim(restfilm)
 
