@@ -54,4 +54,5 @@ foreach(COMP datm dice dlnd docn drof dwav)
 endforeach(COMP)
 
 install(TARGETS streams dshr
-	LIBRARY DESTINATION lib)
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib)

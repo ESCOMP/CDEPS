@@ -22,7 +22,8 @@ target_include_directories (streams PUBLIC ${ESMF_F90COMPILEPATHS})
 target_include_directories (streams PUBLIC ${PIO_Fortran_INCLUDE_DIR})
 target_include_directories (streams PUBLIC ${CMAKE_BINARY_DIR}/share)
 install(TARGETS streams
-	LIBRARY DESTINATION lib)
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib)
 foreach(MOD ${MODFILES})
   install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${MOD}" DESTINATION include)
 endforeach()
