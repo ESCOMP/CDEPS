@@ -84,7 +84,7 @@ subroutine shr_assert(var, msg, file, line)
 
   if (.not. var) then
      if(present(msg)) mlen=len(msg)
-     allocate(full_msg(mlen+80))
+     allocate(full_msg(1:mlen+80))
      full_msg = 'ERROR'
      if (present(file)) then
         full_msg = full_msg // ' in ' // trim(file)

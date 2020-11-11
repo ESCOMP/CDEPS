@@ -110,6 +110,6 @@ jobs:
           git submodule update
           mkdir build-cdeps
           pushd build-cdeps
-          cmake -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_Fortran_FLAGS="-g -Wall -ffree-form -ffree-line-length-none -Werror " ../
+          cmake -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_Fortran_FLAGS="-g -Wall -ffree-form -ffree-line-length-none  " ../
           make VERBOSE=1
           popd
