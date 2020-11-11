@@ -80,9 +80,11 @@ subroutine shr_assert(var, msg, file, line)
   integer         , intent(in), optional :: line
 
   character(len=:), allocatable :: full_msg
-  
-  full_msg = ''
+  integer :: mlen = 0
+
   if (.not. var) then
+     if(present(msg)) mlen=len(msg)
+     allocate(full_msg(mlen+80))
      full_msg = 'ERROR'
      if (present(file)) then
         full_msg = full_msg // ' in ' // trim(file)
