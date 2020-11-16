@@ -65,25 +65,27 @@ def buildlib(bldroot, libroot, case, compname=None):
 
         latest_src_file = max(all_files_under(srcpath), key=os.path.getmtime)
         src_time = os.path.getmtime(latest_src_file)
-        bld_time = src_time + 1
-        bldfiles = all_files_under(bldroot)
-        if peek(bldfiles):
-            latest_bld_file = max(bldfiles, key=os.path.getmtime)
-            bld_time = os.path.getmtime(latest_bld_file)
+        if os.path.exists(os.path.join(bldroot,"CMakeFiles")):
+            bld_time = os.path.getmtime(os.path.join(bldroot,"CMakeFiles"))
+        else:
+            bld_time = src_time - 1
 
-        if src_time < bld_time:
+        # if any file in src is newer than CmakeFiles in the build directory, rerun cmake
+        if src_time > bld_time:
             logger.info("cmake_flags {}".format(cmake_flags))
             s,o,e = run_cmd("cmake {} ".format(cmake_flags), from_dir=bldroot, verbose=True)
             expect(not s,"ERROR from cmake output={}, error={}".format(o,e))
         else:
             # The dwav_lib is the last file built in cdeps, wait for it to be built
             dwav_lib = os.path.join(bldroot,"dwav","libdwav.a")
-            time_to_wait = 60
+            time_to_wait = 300
             time_counter = 0
             while not os.path.exists(dwav_lib):
                 time.sleep(1)
                 time_counter += 1
-                if time_counter > time_to_wait:break
+                if time_counter > time_to_wait:
+                    break
+            expect(time_counter <= time_to_wait," Timeout waiting for {}".format(dwav_lib))
 
         s,o,e = run_cmd("make install", from_dir=bldroot, verbose=True)
         expect(not s,"ERROR from make output={}, error={}".format(o,e))
@@ -96,15 +98,6 @@ def buildlib(bldroot, libroot, case, compname=None):
                 if not os.path.islink(comppath):
                     os.rmdir(comppath)
                 symlink_force(os.path.join(bldroot,compname), comppath)
-
-
-
-def peek(iterable):
-    try:
-        first = next(iterable)
-    except StopIteration:
-        return None
-    return first
 
 def all_files_under(path):
     """Iterates through all files that are under the given path."""
