@@ -285,7 +285,7 @@
 
   <stream_entry name="rof.iaf_jra">
     <stream_meshfile>
-      <meshfile><!-- $DIN_LOC_ROOT/lnd/dlnd7/JRA55/JRA.v1.4.runoff.1958.190214.nc --></meshfile>
+      <meshfile>$DIN_LOC_ROOT/lnd/dlnd7/JRA55/JRA.v1.4.runoff.1958_ESMFmesh_cdf5_20201020.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
       <file first_year="1958" last_year="2016">$DIN_LOC_ROOT/lnd/dlnd7/JRA55/JRA.v1.1.runoff.%y.170807.nc</file>
@@ -317,7 +317,7 @@
 
   <stream_entry name="rof.iaf_jra_1p4_2018">
     <stream_meshfile>
-      <meshfile><!-- $DIN_LOC_ROOT/lnd/dlnd7/JRA55/JRA.v1.4.runoff.1958.190214.nc --></meshfile>
+      <meshfile>$DIN_LOC_ROOT/lnd/dlnd7/JRA55/JRA.v1.4.runoff.1958_ESMFmesh_cdf5_20201020.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
       <file first_year="1958" last_year="2016">$DIN_LOC_ROOT/lnd/dlnd7/JRA55/JRA.v1.1.runoff.%y.170807.nc</file>
