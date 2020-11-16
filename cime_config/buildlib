@@ -78,7 +78,7 @@ def buildlib(bldroot, libroot, case, compname=None):
         else:
             # The dwav_lib is the last file built in cdeps, wait for it to be built
             dwav_lib = os.path.join(bldroot,"dwav","libdwav.a")
-            time_to_wait = 10
+            time_to_wait = 60
             time_counter = 0
             while not os.path.exists(dwav_lib):
                 time.sleep(1)
@@ -96,6 +96,8 @@ def buildlib(bldroot, libroot, case, compname=None):
                 if not os.path.islink(comppath):
                     os.rmdir(comppath)
                 symlink_force(os.path.join(bldroot,compname), comppath)
+
+
 
 def peek(iterable):
     try:
