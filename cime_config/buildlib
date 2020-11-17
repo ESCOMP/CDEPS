@@ -57,7 +57,6 @@ def buildlib(bldroot, libroot, case, compname=None):
         srcpath = os.path.abspath(os.path.join(os.path.dirname(__file__),os.pardir))
         cmake_flags = get_standard_cmake_args(case, os.path.join(sharedpath,"cdeps"), shared_lib=True)
         # base path of install to be completed by setting DESTDIR in make install
-#        cmake_flags += " -DCMAKE_INSTALL_PREFIX:PATH={} ".format(libroot[len(exe_root)+1:])
         cmake_flags += " -DCMAKE_INSTALL_PREFIX:PATH=/"
         cmake_flags += " -DLIBROOT={} ".format(libroot)
         cmake_flags += " -DMPILIB={} ".format(mpilib)
