@@ -41,6 +41,7 @@ def buildlib(bldroot, libroot, case, compname=None):
     sharedpath = os.path.join(case.get_value("COMPILER"),mpilib,
                               strdebug, strthread, "nuopc")
 
+    exe_root = case.get_value("EXEROOT")
 
     if compname:
         s, o, e = run_cmd("make d{}".format(compname), from_dir=bldroot, verbose=True)
@@ -55,8 +56,9 @@ def buildlib(bldroot, libroot, case, compname=None):
         logger.info("Running cmake for CDEPS")
         srcpath = os.path.abspath(os.path.join(os.path.dirname(__file__),os.pardir))
         cmake_flags = get_standard_cmake_args(case, os.path.join(sharedpath,"cdeps"), shared_lib=True)
-
-        cmake_flags += " -DCMAKE_INSTALL_PREFIX={} ".format(libroot)
+        # base path of install to be completed by setting DESTDIR in make install
+#        cmake_flags += " -DCMAKE_INSTALL_PREFIX:PATH={} ".format(libroot[len(exe_root)+1:])
+        cmake_flags += " -DCMAKE_INSTALL_PREFIX:PATH=/"
         cmake_flags += " -DLIBROOT={} ".format(libroot)
         cmake_flags += " -DMPILIB={} ".format(mpilib)
         cmake_flags += " -DPIO_C_LIBRARY={path}/lib -DPIO_C_INCLUDE_DIR={path}/include ".format(path=os.path.join(case.get_value("EXEROOT"),sharedpath))
@@ -86,8 +88,9 @@ def buildlib(bldroot, libroot, case, compname=None):
                 if time_counter > time_to_wait:
                     break
             expect(time_counter <= time_to_wait," Timeout waiting for {}".format(dwav_lib))
+        print("HERE exeroot {} bldroot {}".format(exe_root, bldroot))
 
-        s,o,e = run_cmd("make install", from_dir=bldroot, verbose=True)
+        s,o,e = run_cmd("make install DESTDIR={}".format(libroot), from_dir=bldroot, verbose=True)
         expect(not s,"ERROR from make output={}, error={}".format(o,e))
 
         # Link the CDEPS component directories to the location expected by cime
