@@ -23,7 +23,8 @@ target_include_directories (dshr PUBLIC "${CMAKE_BINARY_DIR}/streams")
 target_include_directories (dshr PUBLIC "${CMAKE_BINARY_DIR}/share")
 target_include_directories (dshr PUBLIC "${PIO_Fortran_INCLUDE_DIR}")
 install(TARGETS dshr
-        LIBRARY DESTINATION lib)
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib)
 foreach(MOD ${MODFILES})
   install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${MOD}" DESTINATION include)
 endforeach()
