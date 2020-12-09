@@ -5,7 +5,7 @@ module dshr_tInterp_mod
   !---------------------------------------------------------------
 
   use ESMF
-  use shr_kind_mod     , only : i8=>shr_kind_i8, r8=>shr_kind_r8, cs=>shr_kind_cs, cl=>shr_kind_cl
+  use shr_kind_mod     , only : i8=>shr_kind_i8, r8=>shr_kind_r8, cs=>shr_kind_cs, cl=>shr_kind_cl, shr_kind_in
   use shr_sys_mod      , only : shr_sys_abort
   use shr_cal_mod      , only : shr_cal_timeSet, shr_cal_advDateInt, shr_cal_date2julian 
   use shr_orb_mod      , only : shr_orb_cosz, shr_orb_decl, SHR_ORB_UNDEF_REAL
@@ -222,7 +222,7 @@ contains
     ldt8 = modeldt
     if (mod(dtsec,ldt8) /= 0) then
        ldt8 = (dtsec)/((dtsec)/ldt8+1)
-       ldt = ldt8
+       ldt = int(ldt8, shr_kind_in)
     endif
 
     ! compute time average
@@ -250,7 +250,7 @@ contains
           timeint = reday2-reday0
           call ESMF_TimeIntervalGet(timeint, s_i8=dtsec, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          ldt = dtsec
+          ldt = int(dtsec, shr_kind_in)
        endif
 
        !--- get next cosz value for t-avg ---

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <testlist version="2.0">
 
-  <test compset="2000_DATM%QIA_SLND_DICE%SSMI_DOCN%DOM_SROF_SGLC_SWAV" grid="T42_T42" name="SMS_Ln9" testmods="datm/scam">
+  <test compset="2000_DATM%QIA_SLND_DICE%SSMI_DOCN%DOM_SROF_SGLC_SWAV" grid="T42_T42" name="SMS_Ln9_P1" testmods="datm/scam">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_cdeps"/>
     </machines>
@@ -95,6 +95,14 @@
     </options>
   </test>
   <test compset="2000_DATM%1PT_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="1x1_mexicocityMEX" name="SMS_Vnuopc_Ld5_P1">
+    <machines>
+      <machine name="cheyenne" compiler="intel" category="aux_cdeps"/>
+    </machines>
+    <options>
+      <option name="wallclock"> 00:10:00 </option>
+    </options>
+  </test>
+  <test compset="2000_DATM%ERA5_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="TL319_t061" name="SMS_Vnuopc_Ld5">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_cdeps"/>
     </machines>

@@ -1,9 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-
-project(NUOPC_DATA_MODELS LANGUAGES Fortran VERSION 0.1)
-list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 include(ExternalProject)
-find_package(ESMF REQUIRED)
 
 if (DEFINED CIMEROOT)
   message("Using CIME in ${CIMEROOT} with compiler ${COMPILER}")
@@ -11,11 +7,34 @@ if (DEFINED CIMEROOT)
   if (${PIO_VERSION} LESS 2)
     message( FATAL_ERROR "Version 2 of the PIO library required")
   endif()
-  set(FOX ${LIBROOT})
+  if (${MPILIB} STREQUAL "mpi-serial")
+    set(CMAKE_C_COMPILER ${SCC})
+    set(CMAKE_Fortran_COMPILER ${SFC})
+    set(CMAKE_CXX_COMPILER ${SCXX})
+  else()
+    set(CMAKE_C_COMPILER ${MPICC})
+    set(CMAKE_Fortran_COMPILER ${MPIFC})
+    set(CMAKE_CXX_COMPILER ${MPICXX})
+  endif()
   set(CMAKE_Fortran_FLAGS "${FFLAGS} -I${LIBROOT}/include -I${LIBROOT}/finclude -I${LIBROOT}/nuopc/esmf/${NINST_VALUE}/include")
-else ()
+else()
   set(BLD_STANDALONE TRUE)
-endif ()
+endif()
+
+project(NUOPC_DATA_MODELS LANGUAGES Fortran VERSION 0.1)
+
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+
+message("CMAKE_MODULE_PATH is ${CMAKE_MODULE_PATH}")
+
+find_package(ESMF REQUIRED)
+if (DEFINED PIO)
+  set(PIO_PATH ${PIO})
+else()
+  set(PIO_PATH $ENV{PIO})
+endif()
+find_package(PIO REQUIRED COMPONENT C Fortran PATH ${PIO_PATH})
+
 if (NOT DEFINED MPILIB OR NOT ${MPILIB} STREQUAL "mpi-serial")
   find_package(MPI REQUIRED)
 endif()
@@ -23,10 +42,10 @@ endif()
 if(BLD_STANDALONE)
   add_subdirectory(share)
   list(APPEND EXTRA_LIBS cdeps_share)
-  list(APPEND EXTRA_INCLUDES "${PIO_INCDIR}" "${CMAKE_BINARY_DIR}/share" )
+  list(APPEND EXTRA_INCLUDES "${CMAKE_BINARY_DIR}/share" )
 endif()
 
-
+add_subdirectory(fox)
 add_subdirectory(streams)
 add_subdirectory(dshr)
 
@@ -35,4 +54,4 @@ foreach(COMP datm dice dlnd docn drof dwav)
 endforeach(COMP)
 
 install(TARGETS streams dshr
-        LIBRARY DESTINATION lib)
+	LIBRARY DESTINATION lib)

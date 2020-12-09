@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+
+<?xml-stylesheet type="text/xsl" href="namelist_definition.xsl"?>
+
+<stream_data version="2.0" xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <stream_entry name="ssmi_nyf">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/ice/dice7/SSMI/ssmi.ifrac.0.5x0.5_ESMFmesh_120520.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/ice/dice7/SSMI/ssmi_ifrac.clim.x0.5.090319.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>ifrac  Si_ifrac</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1</stream_year_first>
+    <stream_year_last>1</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="ssmi_iaf">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/ocn/iaf/ssmi.ifrac.0.5x0.5_ESMFmesh_120520.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1948" last_year="2007">$DIN_LOC_ROOT/ocn/iaf/ssmi.ifrac.0.5x0.5.%y.nc</file>
+      <file first_year="2008" last_year="2009">$DIN_LOC_ROOT/ocn/iaf/ssmi.ifrac.0.5x0.5.%y.20120420.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>ifrac  Si_ifrac</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1948</stream_year_first>
+    <stream_year_last>2009</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+</stream_data>

@@ -25,7 +25,6 @@ module rof_comp_nuopc
   use dshr_mod         , only : dshr_restart_read, dshr_restart_write, dshr_mesh_init
   use dshr_dfield_mod  , only : dfield_type, dshr_dfield_add, dshr_dfield_copy
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add, dshr_fldlist_realize
-  use perf_mod         , only : t_startf, t_stopf, t_adj_detailf, t_barrierf
 
   implicit none
   private ! except
@@ -72,7 +71,6 @@ module rof_comp_nuopc
   character(*) , parameter     :: modName =  "(rof_comp_nuopc)"
 
   ! linked lists
-  type(fldList_type) , pointer :: fldsImport => null()
   type(fldList_type) , pointer :: fldsExport => null()
   type(dfield_type)  , pointer :: dfields    => null()
 
@@ -147,7 +145,6 @@ contains
 
     ! local variables
     integer           :: inst_index ! number of current instance (ie. 1)
-    character(len=CL) :: cvalue     ! temporary
     integer           :: nu         ! unit number
     integer           :: ierr       ! error code
     logical           :: exists     ! check for file existence
@@ -268,8 +265,6 @@ contains
     integer         :: current_mon  ! model month
     integer         :: current_day  ! model day
     integer         :: current_tod  ! model sec into model date
-    character(CL)   :: cvalue       ! temporary
-    integer         :: n,k          ! generic counters
     character(len=*), parameter :: F00   = "('rof_comp_nuopc: ')',8a)"
     character(len=*), parameter :: subname=trim(modName)//':(InitializeRealize) '
     !-------------------------------------------------------------------------------
@@ -277,7 +272,7 @@ contains
     rc = ESMF_SUCCESS
 
     ! Initialize mesh, restart flag, logunit
-    call t_startf('drof_strdata_init')
+    call ESMF_TraceRegionEnter('drof_strdata_init')
     call dshr_mesh_init(gcomp, nullstr, logunit, 'ROF', nx_global, ny_global, &
          model_meshfile, model_maskfile, model_createmesh_fromfile, model_mesh, &
          model_mask, model_frac, restart_read, rc=rc)
@@ -287,7 +282,7 @@ contains
     xmlfilename = 'drof.streams'//trim(inst_suffix)//'.xml'
     call shr_strdata_init_from_xml(sdat, xmlfilename, model_mesh, clock, 'ROF', logunit, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call t_stopf('drof_strdata_init')
+    call ESMF_TraceRegionExit('drof_strdata_init')
 
     ! NUOPC_Realize "realizes" a previously advertised field in the importState and exportState
     ! by replacing the advertised fields with the newly created fields of the same name.
@@ -392,7 +387,7 @@ contains
     character(*), parameter :: subName = "(drof_comp_run) "
     !-------------------------------------------------------------------------------
 
-    call t_startf('DROF_RUN')
+    call ESMF_TraceRegionEnter('DROF_RUN')
 
     !--------------------
     ! First time initialization
@@ -424,21 +419,19 @@ contains
     !--------------------
 
     ! time and spatially interpolate to model time and grid
-    call t_barrierf('drof_BARRIER',mpicom)
-    call t_startf('drof_strdata_advance')
+    call ESMF_TraceRegionEnter('drof_strdata_advance')
     call shr_strdata_advance(sdat, target_ymd, target_tod, logunit, 'drof', rc=rc)
-    call t_stopf('drof_strdata_advance')
+    call ESMF_TraceRegionExit('drof_strdata_advance')
 
     ! copy all fields from streams to export state as default
     ! This automatically will update the fields in the export state
-    call t_barrierf('drof_comp_dfield_copy_BARRIER', mpicom)
-    call t_startf('drof_dfield_copy')
+    call ESMF_TraceRegionEnter('drof_dfield_copy')
     call dshr_dfield_copy(dfields,  sdat, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call t_stopf('drof_dfield_copy')
+    call ESMF_TraceRegionExit('drof_dfield_copy')
 
     ! determine data model behavior based on the mode
-    call t_startf('drof_datamode')
+    call ESMF_TraceRegionEnter('drof_datamode')
     select case (trim(datamode))
     case('copyall')
        ! zero out "special values" of export fields
@@ -453,7 +446,7 @@ contains
        select case (trim(datamode))
        case('copyall')
           call dshr_restart_write(rpfile, case_name, 'drof', inst_suffix, target_ymd, target_tod, &
-               logunit, mpicom, my_task, sdat)
+               logunit, my_task, sdat)
        end select
     end if
 
@@ -463,8 +456,8 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
-    call t_stopf('drof_datamode')
-    call t_stopf('DROF_RUN')
+    call ESMF_TraceRegionExit('drof_datamode')
+    call ESMF_TraceRegionExit('DROF_RUN')
 
   end subroutine drof_comp_run
 

@@ -1,0 +1,3837 @@
+<?xml version="1.0"?>
+
+<?xml-stylesheet type="text/xsl" href="namelist_definition.xsl"?>
+
+<stream_data version="2.0" xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <!-- TODO: when should the mapalgo be nn? -->
+
+  <!--
+  Values to use by default for creation of DATM model datm namelists.
+
+  strm_year_first is the first year of the stream data that will be used
+  strm_year_last  is the last  year of the stream data that will be used
+  strm_year_align is the model year that will be aligned with stream data for year_first
+
+  Replace any instance of the following substring indicators with the appropriate values:
+  %y    => year from the range yearfirst to yearlast
+  %ym   => year-month from the range yearfirst to yearlast with all 12 months
+  %ymd  => year-month-day from the range yearfirst to yearlast with all 12 months
+
+  Each mode below, except for presaero, has a set of streams associated with it
+  The presaero stream, is associated with all modes
+
+  Currently the following data modes are supported:
+  CLM_QIAN              = Run with the CLM Qian dataset valid from 1948 to 2004 (force CLM)
+  CLM_QIAN_WISO         = Run with the CLM Qian dataset with isotopes valid from 2000 to 2004 (force CLM)
+  CLMCRUNCEPv7          = Run with the CLM CRU NCEP V7 forcing valid from 1900 to 2010 (force CLM)
+  CLMGSWP3v1            = Run with the CLM GSWP3 V1 forcing (force CLM)
+  CLMNLDAS2             = Run with the CLM NLDAS2 regional forcing valid from 1980 to 2018 (force CLM)
+  1PT                   = Run with supplied single point data (force CLM)
+  CORE2_NYF             = CORE2 normal year forcing (for forcing POP and CICE)
+  CORE2_IAF             = CORE2 intra-annual year forcing (for forcing POP and CICE)
+  CORE_IAF_JRA          = JRA55 intra-annual year forcing (for forcing POP and CICE)
+  CORE_IAF_JRA_1p4_2018 = JRA55 intra-annual year forcing, v1.4, through 2018 (for forcing POP and CICE)
+  ERA5                  = ERA5 intra-annual year forcing
+  CPLHIST               = Streams for lnd or ocn/ice forcing used for spinup
+
+  Currently the following optional streams are supported
+  presaero              = Prescribed aerosol forcing
+  topo                  = Surface topography
+  co2tseries            = Time series of prescribed CO2 forcing
+  Anomaly.Forcing	= Time series of correction terms
+  BC                    = Bias Correction for a stream to a given set of observations
+
+
+  ========================
+  datm_mode CLM single point (DATM%1PT in env_run.xml)
+  ========================
+  1PT (currently 3 grids - 1x1_mexicocityMEX, 1x1_vancouverCAN, 1x1_urbanc_alpha)
+
+  ========================
+  datm_mode CLMNLDAS2: (DATM%GSWP3v1 in env_run.xml)
+  ========================
+  CLMGSWP3v1.Solar
+  CLMGSWP3v1.Precip
+  CLMGSWP3v1.TPQW
+
+  ========================
+  datm_mode CLMCRUNCEPv7: (DATM%CRUv7 in env_run.xml)
+  ========================
+  CLMCRUNCEPv7.Solar
+  CLMCRUNCEPv7.Precip
+  CLMCRUNCEPv7.TPQW
+
+  ========================
+  datm_mode CLMNLDAS2: (DATM%NLDAS2 in env_run.xml)
+  ========================
+  CLMNLDAS2.Solar
+  CLMNLDAS2.Precip
+  CLMNLDAS2.TPQW
+
+  ========================
+  datm_mode CORE2_NYF: (DATM%NYF in env_run.xml)
+  ========================
+  CORE2_NYF.GISS
+  CORE2_NYF.GXGXS
+  CORE2_NYF.NCEP
+
+  ========================
+  datm_mode CORE2_IAF: (DATM%IAF in env_run.xml)
+  ========================
+  Note for CORE2_IAF:
+  The most current versions of forcing files(those recommended for use)
+  are duplicated below and stored at /ccsm/ocn/iaf/):
+  gcgcs.prec.T62.current, giss.lwdn.T62.current,
+  giss.swdn.T62.current, giss.swup.T62.current,
+  ncep.dn10.T62.current, ncep.q_10.T62.current
+  ncep.slp_.T62.current, ncep.t_10.T62.current,
+  ncep.u_10.T62.current, ncep.v_10.T62.current
+
+  CORE2_IAF.GCGCS.PREC
+  CORE2_IAF.GISS.LWDN
+  CORE2_IAF.GISS.SWDN
+  CORE2_IAF.GISS.SWUP
+  CORE2_IAF.NCEP.DN10
+  CORE2_IAF.NCEP.Q_10
+  CORE2_IAF.NCEP.SLP_
+  CORE2_IAF.NCEP.T_10
+  CORE2_IAF.NCEP.U_10
+  CORE2_IAF.NCEP.V_10
+  CORE2_IAF.CORE2.ArcFactor
+
+  ========================
+  datm_mode: CORE_IAF_JRA (DATM%JRA in env_run.xml)
+  ========================
+  CORE_IAF_JRA.PREC
+  CORE_IAF_JRA.LWDN
+  CORE_IAF_JRA.SWDN
+  CORE_IAF_JRA.Q_10
+  CORE_IAF_JRA.SLP_
+  CORE_IAF_JRA.T_10
+  CORE_IAF_JRA.U_10
+  CORE_IAF_JRA.V_10
+  CORE_IAF_JRA.CORE2.ArcFactor
+
+  ========================
+  datm_mode: CPLHIST
+  ========================
+  CPLHISTForcing.Solar
+  CPLHISTForcing.nonSolarFlux
+  CPLHISTForcing.State3hr
+  CPLHISTForcing.State1hr
+
+  ========================
+  optional stream co2tseries (turned on and stream specified by xml variable DATM_CO2_TSERIES)
+  - DATM_CO2_TSERIES is set by the 4 character time prefix in config_component.xml
+  ========================
+  co2tseries.20tr
+  co2tseries.20tr.latbnd
+  co2tseries.omip
+  co2tseries.SSP1-1.9
+  co2tseries.SSP1-2.6
+  co2tseries.SSP2-4.5
+  co2tseries.SSP3-7.0
+  co2tseries.SSP4-3.4
+  co2tseries.SSP4-6.0
+  co2tseries.SSP5-3.4
+  co2tseries.SSP5-8.5
+  co2tseries.SSP1-1.9.latbnd
+  co2tseries.SSP1-2.6.latbnd
+  co2tseries.SSP2-4.5.latbnd
+  co2tseries.SSP3-7.0.latbnd
+  co2tseries.SSP4-3.4.latbnd
+  co2tseries.SSP4-6.0.latbnd
+  co2tseries.SSP5-3.4.latbnd
+  co2tseries.SSP5-8.5.latbnd
+
+  ========================
+  optional stream presaero (turned on and stream specified by xml variable DATM_PRESAERO)
+  - DATM_PRESAERO is set by the 4 character time prefix in config_component.xml
+  ========================
+  presaero.clim_1850
+  presaero.clim_2000
+  presaero.clim_2010
+  presaero.trans_1850-2000
+  presaero.SSP1-1.9
+  presaero.SSP1-2.6
+  presaero.SSP2-4.5
+  presaero.SSP3-7.0
+  presaero.SSP4-3.4
+  presaero.SSP4-6.0
+  presaero.SSP5-3.4
+  presaero.SSP5-8.5
+  presaero.cplhist
+
+  ========================
+  optional stream topo (turned on and stream specified by xml variable DATM_TOPO)
+  ========================
+  topo.observed
+  topo.cplhist
+
+  ========================
+  optional streams anonomly forcing (turned on and set my datm_nml variable anomoly_forcing
+  ========================
+  Anomaly.Forcing.Humidity
+  Anomaly.Forcing.Longwave
+  Anomaly.Forcing.Precip
+  Anomaly.Forcing.Pressure
+  Anomaly.Forcing.Shortwave
+  Anomaly.Forcing.Temperature
+  Anomaly.Forcing.Uwind
+  Anomaly.Forcing.Vwind
+
+  ========================
+  optional streams bias correction (turned on and set my datm_nml variable bias_correct)
+  ========================
+  BC.CRUNCEP.CMAP.Precip
+  BC.CRUNCEP.GPCP.Precip
+  BC.QIAN.Precip
+  -->
+
+  <!-- ===================================  -->
+  <!-- datm_mode CLMGSWP3v1                 -->
+  <!-- ===================================  -->
+
+  <stream_entry name="CLMGSWP3v1.Solar">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT_CLMFORC/atm_forcing.datm7.GSWP3.0.5d.v1.c170516/clmforc.GSWP3.c2011.0.5x0.5.TPQWL.SCRIP.210520_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1901" last_year="2014">$DIN_LOC_ROOT_CLMFORC/atm_forcing.datm7.GSWP3.0.5d.v1.c170516/Solar/clmforc.GSWP3.c2011.0.5x0.5.Solr.%ym.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>FSDS Faxa_swdn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo> 
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_CLMNCEP_YR_START</stream_year_first>
+    <stream_year_last>$DATM_CLMNCEP_YR_END</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>coszen</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CLMGSWP3v1.Precip">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT_CLMFORC/atm_forcing.datm7.GSWP3.0.5d.v1.c170516/clmforc.GSWP3.c2011.0.5x0.5.TPQWL.SCRIP.210520_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1901" last_year="2014">$DIN_LOC_ROOT_CLMFORC/atm_forcing.datm7.GSWP3.0.5d.v1.c170516/Precip/clmforc.GSWP3.c2011.0.5x0.5.Prec.%ym.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>PRECTmms Faxa_precn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_CLMNCEP_YR_START</stream_year_first>
+    <stream_year_last>$DATM_CLMNCEP_YR_END</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>nearest</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CLMGSWP3v1.TPQW">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT_CLMFORC/atm_forcing.datm7.GSWP3.0.5d.v1.c170516/clmforc.GSWP3.c2011.0.5x0.5.TPQWL.SCRIP.210520_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1901" last_year="2014">$DIN_LOC_ROOT_CLMFORC/atm_forcing.datm7.GSWP3.0.5d.v1.c170516/TPHWL/clmforc.GSWP3.c2011.0.5x0.5.TPQWL.%ym.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>TBOT     Sa_tbot</var>
+      <var>WIND     Sa_wind</var>
+      <var>QBOT     Sa_shum</var>
+      <var>PSRF     Sa_pbot</var>
+      <var>FLDS     Faxa_lwdn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_CLMNCEP_YR_START</stream_year_first>
+    <stream_year_last>$DATM_CLMNCEP_YR_END</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <!-- ===================================  -->
+  <!-- datm_mode CLMCRUNCEPv7               -->
+  <!-- ===================================  -->
+
+  <stream_entry name="CLMCRUNCEPv7.Solar">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.cruncep_qianFill.0.5d.v7.c160715/clmforc.cruncep.V7.c2016.0.5d.ESMFmesh_260520.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1901" last_year="2016">$DIN_LOC_ROOT_CLMFORC/atm_forcing.datm7.cruncep_qianFill.0.5d.v7.c160715/Solar6Hrly/clmforc.cruncep.V7.c2016.0.5d.Solr.%ym.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>FSDS     Faxa_swdn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_CLMNCEP_YR_START</stream_year_first>
+    <stream_year_last>$DATM_CLMNCEP_YR_END</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>coszen</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CLMCRUNCEPv7.Precip">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.cruncep_qianFill.0.5d.v7.c160715/clmforc.cruncep.V7.c2016.0.5d.ESMFmesh_260520.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1901" last_year="2016">$DIN_LOC_ROOT_CLMFORC/atm_forcing.datm7.cruncep_qianFill.0.5d.v7.c160715/Precip6Hrly/clmforc.cruncep.V7.c2016.0.5d.Prec.%ym.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>PRECTmms Faxa_precn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_CLMNCEP_YR_START</stream_year_first>
+    <stream_year_last>$DATM_CLMNCEP_YR_END</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>nearest</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CLMCRUNCEPv7.TPQW">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.cruncep_qianFill.0.5d.v7.c160715/clmforc.cruncep.V7.c2016.0.5d.ESMFmesh_260520.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1901" last_year="2016">$DIN_LOC_ROOT_CLMFORC/atm_forcing.datm7.cruncep_qianFill.0.5d.v7.c160715/TPHWL6Hrly/clmforc.cruncep.V7.c2016.0.5d.TPQWL.%ym.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>TBOT     Sa_tbot</var>
+      <var>WIND     Sa_wind</var>
+      <var>QBOT     Sa_shum</var>
+      <var>PSRF     Sa_pbot</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_CLMNCEP_YR_START</stream_year_first>
+    <stream_year_last>$DATM_CLMNCEP_YR_END</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <!-- ===================================  -->
+  <!-- CLM_QIAN streams                     -->
+  <!-- ===================================  -->
+
+  <stream_entry name="CLM_QIAN.Solar">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.Qian.T62.c080727/clmforc.Qian.c2006.T62.ESMFmesh_120620.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1948" last_year="2004">$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.Qian.T62.c080727/Solar6Hrly/clmforc.Qian.c2006.T62.Solr.%ym.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>FSDS     Faxa_swdn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_CLMNCEP_YR_START</stream_year_first>
+    <stream_year_last>$DATM_CLMNCEP_YR_END</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>coszen</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CLM_QIAN.Precip">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.Qian.T62.c080727/clmforc.Qian.c2006.T62.ESMFmesh_120620.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1948" last_year="2004">$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.Qian.T62.c080727/Precip6Hrly/clmforc.Qian.c2006.T62.Prec.%ym.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>PRECTmms Faxa_precn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_CLMNCEP_YR_START</stream_year_first>
+    <stream_year_last>$DATM_CLMNCEP_YR_END</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>nearest</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CLM_QIAN.TPQW">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.Qian.T62.c080727/clmforc.Qian.c2006.T62.ESMFmesh_120620.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1948" last_year="2004">$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.Qian.T62.c080727/TmpPrsHumWnd3Hrly/clmforc.Qian.c2006.T62.TPQW.%ym.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>TBOT Sa_tbot</var>
+      <var>WIND Sa_wind</var>
+      <var>QBOT Sa_shum</var>
+      <var>PSRF Sa_pbot</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_CLMNCEP_YR_START</stream_year_first>
+    <stream_year_last>$DATM_CLMNCEP_YR_END</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <!-- ===================================  -->
+  <!-- CLM_QIAN_WISO streams                     -->
+  <!-- ===================================  -->
+
+  <stream_entry name="CLM_QIAN_WISO.Solar">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.Qian.T62.c080727/clmforc.Qian.c2006.T62.ESMFmesh_120620.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1948" last_year="2004">$DIN_LOC_ROOT/atm/datm7/atm_forcing_iso.datm7.Qian.T62.c080727/Solar6Hrly/clmforc.Qian.c2006.T62.Solr.%ym.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>FSDS Faxaswdn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
+    <stream_year_first>2000</stream_year_first>
+    <stream_year_last>2004</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>coszen</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CLM_QIAN_WISO.Precip">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.Qian.T62.c080727/clmforc.Qian.c2006.T62.ESMFmesh_120620.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/atm_forcing_iso.datm7.Qian.T62.c080727/Precip6Hrly/clmforc.Qian.c2006.T62.Prec.%ym.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>PRECTmms Faxa_precn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
+    <stream_year_first>2000</stream_year_first>
+    <stream_year_last>2004</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>nearest</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CLM_QIAN_WISO.TPQW">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.Qian.T62.c080727/clmforc.Qian.c2006.T62.ESMFmesh_120620.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1948" last_year="2004">$DIN_LOC_ROOT/atm/datm7/atm_forcing_iso.datm7.Qian.T62.c080727/TmpPrsHumWnd3Hrly/clmforc.Qian.c2006.T62.TPQW.%ym.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>TBOT     Sa_tbot</var>
+      <var>WIND     Sa_wind</var>
+      <var>QBOT     Sa_shum</var>
+      <var>PSRF     Sa_pbot</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
+    <stream_year_first>2000</stream_year_first>
+    <stream_year_last>2004</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <!-- ===================-->
+  <!-- datm_mode CLMNLDAS2-->
+  <!-- ===================-->
+
+  <stream_entry name="CLMNLDAS2.Solar">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.NLDAS2.0.125d.v1/ctsmforc.NLDAS2.0.125d.v1.ESMFmesh_120620.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1980" last_year="2018">$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.NLDAS2.0.125d.v1/Solar/ctsmforc.NLDAS2.0.125d.v1.Solr.%ym.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>FSDS     Faxa_swdn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_CLMNCEP_YR_START</stream_year_first>
+    <stream_year_last>$DATM_CLMNCEP_YR_END</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>coszen</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CLMNLDAS2.Precip">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.NLDAS2.0.125d.v1/ctsmforc.NLDAS2.0.125d.v1.ESMFmesh_120620.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1980" last_year="2018">$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.NLDAS2.0.125d.v1/Precip/ctsmforc.NLDAS2.0.125d.v1.Prec.%ym.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>PRECTmms Faxa_precn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_CLMNCEP_YR_START</stream_year_first>
+    <stream_year_last>$DATM_CLMNCEP_YR_END</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>nearest</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CLMNLDAS2.TPQW">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.NLDAS2.0.125d.v1/ctsmforc.NLDAS2.0.125d.v1.ESMFmesh_120620.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1980" last_year="2018">$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.NLDAS2.0.125d.v1/TPQWL/ctsmforc.NLDAS2.0.125d.v1.TPQWL.%ym.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>TBOT Sa_tbot</var>
+      <var>WIND Sa_wind</var>
+      <var>QBOT Sa_shum</var>
+      <var>PSRF Sa_pbot</var>
+      <var>FLDS Faxa_lwdn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_CLMNCEP_YR_START</stream_year_first>
+    <stream_year_last>$DATM_CLMNCEP_YR_END</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <!-- ===================-->
+  <!-- datm_mode 1PT      -->
+  <!-- ===================-->
+
+  <stream_entry name="1PT.mexicocityMEX">
+    <stream_meshfile>
+      <meshfile>none</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file >$DIN_LOC_ROOT/atm/datm7/CLM1PT_data/mexicocityMEX.c080124/clm1pt-1993-12.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>ZBOT     Sa_z</var>
+      <var>TBOT     Sa_tbot</var>
+      <var>RH       Sa_rh</var>
+      <var>WIND     Sa_wind</var>
+      <var>PSRF     Sa_pbot</var>
+      <var>PRECTmms Faxa_precn</var>
+      <var>FSDS     Faxa_swdn</var>
+      <var>FSDSdir  Faxa_swdndr</var>
+      <var>FSDSdif  Faxa_swdndf</var>
+      <var>FLDS     Faxa_lwdn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>none</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
+    <stream_year_first>1993</stream_year_first>
+    <stream_year_last >1993</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>nearest</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="1PT.vancouverCAN">
+    <stream_meshfile>
+      <meshfile>none</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/CLM1PT_data/vancouverCAN.c080124/clm1pt-1992-08.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>ZBOT     Sa_z</var>
+      <var>TBOT     Sa_tbot</var>
+      <var>RH       Sa_rh</var>
+      <var>WIND     Sa_wind</var>
+      <var>PSRF     Sa_pbot</var>
+      <var>PRECTmms Faxa_precn</var>
+      <var>FSDS     Faxa_swdn</var>
+      <var>FSDSdir  Faxa_swdndr</var>
+      <var>FSDSdif  Faxa_swdndf</var>
+      <var>FLDS     Faxa_lwdn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>none</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
+    <stream_year_first>1992</stream_year_first>
+    <stream_year_last >1992</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>nearest</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="1PT.urbanc_alpha">
+    <stream_meshfile>
+      <meshfile>none</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/CLM1PT_data/urbanc_alpha.c080416/clm1pt-0001-08.nc</file>
+      <file>$DIN_LOC_ROOT/atm/datm7/CLM1PT_data/urbanc_alpha.c080416/clm1pt-0001-09.nc</file>
+      <file>$DIN_LOC_ROOT/atm/datm7/CLM1PT_data/urbanc_alpha.c080416/clm1pt-0001-10.nc</file>
+      <file>$DIN_LOC_ROOT/atm/datm7/CLM1PT_data/urbanc_alpha.c080416/clm1pt-0001-11.nc</file>
+      <file>$DIN_LOC_ROOT/atm/datm7/CLM1PT_data/urbanc_alpha.c080416/clm1pt-0001-12.nc</file>
+      <file>$DIN_LOC_ROOT/atm/datm7/CLM1PT_data/urbanc_alpha.c080416/clm1pt-0002-01.nc</file>
+      <file>$DIN_LOC_ROOT/atm/datm7/CLM1PT_data/urbanc_alpha.c080416/clm1pt-0002-02.nc</file>
+      <file>$DIN_LOC_ROOT/atm/datm7/CLM1PT_data/urbanc_alpha.c080416/clm1pt-0002-03.nc</file>
+      <file>$DIN_LOC_ROOT/atm/datm7/CLM1PT_data/urbanc_alpha.c080416/clm1pt-0002-04.nc</file>
+      <file>$DIN_LOC_ROOT/atm/datm7/CLM1PT_data/urbanc_alpha.c080416/clm1pt-0002-05.nc</file>
+      <file>$DIN_LOC_ROOT/atm/datm7/CLM1PT_data/urbanc_alpha.c080416/clm1pt-0002-06.nc</file>
+      <file>$DIN_LOC_ROOT/atm/datm7/CLM1PT_data/urbanc_alpha.c080416/clm1pt-0002-07.nc</file>
+      <file>$DIN_LOC_ROOT/atm/datm7/CLM1PT_data/urbanc_alpha.c080416/clm1pt-0002-08.nc</file>
+      <file>$DIN_LOC_ROOT/atm/datm7/CLM1PT_data/urbanc_alpha.c080416/clm1pt-0002-09.nc</file>
+      <file>$DIN_LOC_ROOT/atm/datm7/CLM1PT_data/urbanc_alpha.c080416/clm1pt-0002-10.nc</file>
+      <file>$DIN_LOC_ROOT/atm/datm7/CLM1PT_data/urbanc_alpha.c080416/clm1pt-0002-11.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>ZBOT     Sa_z</var>
+      <var>TBOT     Sa_tbot</var>
+      <var>RH       Sa_rh</var>
+      <var>WIND     Sa_wind</var>
+      <var>PSRF     Sa_pbot</var>
+      <var>PRECTmms Faxa_precn</var>
+      <var>FSDS     Faxa_swdn</var>
+      <var>FSDSdir  Faxa_swdndr</var>
+      <var>FSDSdif  Faxa_swdndf</var>
+      <var>FLDS     Faxa_lwdn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>none</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
+    <stream_year_first>0001</stream_year_first>
+    <stream_year_last >0002</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>nearest</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <!-- ===================      -->
+  <!-- bias correction streams  -->
+  <!-- ===================      -->
+
+  <stream_entry name="BC.QIAN.Precip">
+    <stream_meshfile>
+      <meshfile><!-- $DIN_LOC_ROOT/atm/datm7/bias_correction/precip/gpcp/qian/bias_correction.Prec.%y.nc --></meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/bias_correction/precip/gpcp/qian/bias_correction.Prec.%y.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>BC_PREC  Faxa_precsf</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1979</stream_year_align>
+    <stream_year_first>1979</stream_year_first>
+    <stream_year_last>2004</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>nearest</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="BC.CRUNCEP.GPCP.Precip">
+    <stream_meshfile>
+      <meshfile><!-- $DIN_LOC_ROOT/atm/datm7/clm_output/cruncep_precip_1deg/gpcp_1deg_bias_correction/bias_correction.Prec.%y.nc --></meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/clm_output/cruncep_precip_1deg/gpcp_1deg_bias_correction/bias_correction.Prec.%y.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>BC_PREC  Faxa_precsf</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1979</stream_year_align>
+    <stream_year_first>1979</stream_year_first>
+    <stream_year_last>2012</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>nearest</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="BC.CRUNCEP.CMAP.Precip">
+    <stream_meshfile>
+      <meshfile><!-- $DIN_LOC_ROOT/atm/datm7/bias_correction/precip/cmap/cruncep/bias_correction.Prec.%y.nc --></meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/bias_correction/precip/cmap/cruncep/bias_correction.Prec.%y.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>BC_PREC  Faxa_precsf</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1979</stream_year_align>
+    <stream_year_first>1979</stream_year_first>
+    <stream_year_last>2010</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>nearest</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <!-- ===================      -->
+  <!-- anomoly forcing streams  -->
+  <!-- ===================      -->
+
+  <stream_entry name="Anomaly.Forcing.Precip">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/domain.permafrostRCN_P2.c2013.nc/domain.permafrostRCN_P2_ESMFmesh_120620.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/af.pr.ccsm4.rcp45.2006-2300.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>pr    Faxa_prec_af</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>2006</stream_year_align>
+    <stream_year_first>2006</stream_year_first>
+    <stream_year_last>2300</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>nearest</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="Anomaly.Forcing.Temperature">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/domain.permafrostRCN_P2.c2013.nc/domain.permafrostRCN_P2_ESMFmesh_120620.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/af.tas.ccsm4.rcp45.2006-2300.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>tas   Sa_tbot_af</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>2006</stream_year_align>
+    <stream_year_first>2006</stream_year_first>
+    <stream_year_last>2300</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>nearest</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="Anomaly.Forcing.Pressure">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/domain.permafrostRCN_P2.c2013.nc/domain.permafrostRCN_P2_ESMFmesh_120620.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/af.ps.ccsm4.rcp45.2006-2300.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>ps    Sa_pbot_af</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>2006</stream_year_align>
+    <stream_year_first>2006</stream_year_first>
+    <stream_year_last>2300</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>nearest</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="Anomaly.Forcing.Humidity">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/domain.permafrostRCN_P2.c2013.nc/domain.permafrostRCN_P2_ESMFmesh_120620.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/af.huss.ccsm4.rcp45.2006-2300.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>huss  Sa_shum_af</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>2006</stream_year_align>
+    <stream_year_first>2300</stream_year_first>
+    <stream_year_last>2300</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>nearest</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="Anomaly.Forcing.Uwind">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/domain.permafrostRCN_P2.c2013.nc/domain.permafrostRCN_P2_ESMFmesh_120620.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/af.uas.ccsm4.rcp45.2006-2300.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>uas   Sa_u_af</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>2006</stream_year_align>
+    <stream_year_first>2006</stream_year_first>
+    <stream_year_last>2300</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>nearest</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="Anomaly.Forcing.Vwind">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/domain.permafrostRCN_P2.c2013.nc/domain.permafrostRCN_P2_ESMFmesh_120620.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/af.vas.ccsm4.rcp45.2006-2300.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>vas   Sa_v_af</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>2006</stream_year_align>
+    <stream_year_first>2006</stream_year_first>
+    <stream_year_last>2300</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>nearest</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="Anomaly.Forcing.Shortwave">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/domain.permafrostRCN_P2.c2013.nc/domain.permafrostRCN_P2_ESMFmesh_120620.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/af.rsds.ccsm4.rcp45.2006-2300.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>rsds  Faxa_swdn_af</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>2006</stream_year_align>
+    <stream_year_first>2006</stream_year_first>
+    <stream_year_last>2300</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>nearest</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="Anomaly.Forcing.Longwave">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/domain.permafrostRCN_P2.c2013.nc/domain.permafrostRCN_P2_ESMFmesh_120620.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/af.rlds.ccsm4.rcp45.2006-2300.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>rlds  Faxa_lwdn_af</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>2006</stream_year_align>
+    <stream_year_first>2006</stream_year_first>
+    <stream_year_last>2300</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>nearest</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <!-- =================== -->
+  <!-- datm_mode CORE2_NYF -->
+  <!-- =================== -->
+
+  <stream_entry name="CORE2_NYF.GISS">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/NYF/nyf.giss.T62.051007.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>lwdn  Faxa_lwdn</var>
+      <var>swdn  Faxa_swdn</var>
+      <var>swup  Faxa_swup</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1</stream_year_first>
+    <stream_year_last>1</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE2_NYF.GXGXS">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/NYF/nyf.gxgxs.T62.051007.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>prc  Faxa_prec</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1</stream_year_first>
+    <stream_year_last>1</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE2_NYF.NCEP">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/NYF/nyf.ncep.T62.050923.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>dn10  Sa_dens</var>
+      <var>slp_  Sa_pslv</var>
+      <var>q_10  Sa_shum</var>
+      <var>t_10  Sa_tbot</var>
+      <var>u_10  Sa_u</var>
+      <var>v_10  Sa_v</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1</stream_year_first>
+    <stream_year_last>1</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <!-- =================== -->
+  <!-- datm_mode CORE2_IAF -->
+  <!-- =================== -->
+
+  <stream_entry name="CORE2_IAF.NCEP.DENS.SOFS">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/ocn/iaf/ncep.SOFS.2010.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+    <var>dn10  Sa_dens</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>2010</stream_year_first>
+    <stream_year_last>2011</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE2_IAF.NCEP.PSLV.SOFS">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/ocn/iaf/ncep.SOFS.2010.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>slp_  Sa_pslv</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>2010</stream_year_first>
+    <stream_year_last>2011</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE2_IAF.PREC.SOFS.DAILY">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/ocn/iaf/SOFS.daily.03-09.2010.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>prec  Faxa_prec</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>2010</stream_year_first>
+    <stream_year_last>2011</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE2_IAF.LWDN.SOFS.DAILY">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/ocn/iaf/SOFS.daily.03-09.2010.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>lwdn  Faxa_lwdn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>2010</stream_year_first>
+    <stream_year_last>2011</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE2_IAF.SWDN.SOFS.DAILY">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/ocn/iaf/SOFS.daily.03-09.2010.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>swdn  Faxa_swdn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>2010</stream_year_first>
+    <stream_year_last>2011</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE2_IAF.SWUP.SOFS.DAILY">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/ocn/iaf/SOFS.daily.03-09.2010.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>swup  Faxa_swup</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>2010</stream_year_first>
+    <stream_year_last>2011</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE2_IAF.SHUM.SOFS.6HOUR">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/ocn/iaf/SOFS.6hour.03-09.2010.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>q3_5  Faxa_shum</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>2010</stream_year_first>
+    <stream_year_last>2011</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE2_IAF.TBOT.SOFS.6HOUR">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/ocn/iaf/SOFS.6hour.03-09.2010.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>t3_5  Sa_tbot</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>2010</stream_year_first>
+    <stream_year_last>2011</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE2_IAF.U.SOFS.6HOUR">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/ocn/iaf/SOFS.6hour.03-09.2010.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>u3_5  Sa_u</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>2010</stream_year_first>
+    <stream_year_last>2011</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE2_IAF.V.SOFS.6HOUR">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/ocn/iaf/SOFS.6hour.03-09.2010.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>v3_5  Sa_v</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>2010</stream_year_first>
+    <stream_year_last>2011</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE2_IAF.GCGCS.PREC">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1948" last_year="2007">$DIN_LOC_ROOT/ocn/iaf/gcgcs.prec.T62.%y.nc</file>
+      <file first_year="2008" last_year="2009">$DIN_LOC_ROOT/ocn/iaf/gcgcs.prec.T62.%y.20120412.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>prc  Faxa_prec</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1948</stream_year_first>
+    <stream_year_last>2009</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE2_IAF.GISS.LWDN">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1948" last_year="2007">$DIN_LOC_ROOT/ocn/iaf/giss.lwdn.T62.%y.nc</file>
+      <file first_year="2008" last_year="2009">$DIN_LOC_ROOT/ocn/iaf/giss.lwdn.T62.%y.20120412.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>lwdn  Faxa_lwdn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1948</stream_year_first>
+    <stream_year_last>2009</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE2_IAF.GISS.SWDN">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1948" last_year="2007">$DIN_LOC_ROOT/ocn/iaf/giss.swdn.T62.%y.nc</file>
+      <file first_year="2008" last_year="2009">$DIN_LOC_ROOT/ocn/iaf/giss.swdn.T62.%y.20120412.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>swdn  Faxa_swdn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1948</stream_year_first>
+    <stream_year_last>2009</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE2_IAF.GISS.SWUP">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1948" last_year="2007">$DIN_LOC_ROOT/ocn/iaf/giss.swup.T62.%y.nc</file>
+      <file first_year="2008" last_year="2009">$DIN_LOC_ROOT/ocn/iaf/giss.swup.T62.%y.20120412.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>swup  Faxa_swup</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1948</stream_year_first>
+    <stream_year_last>2009</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE2_IAF.NCEP.DN10">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1948" last_year="2004">$DIN_LOC_ROOT/ocn/iaf/ncep.dn10.T62.%y.nc</file>
+      <file first_year="2005" last_year="2005">$DIN_LOC_ROOT/ocn/iaf/ncep.dn10.T62.%y.20120414.nc</file>
+      <file first_year="2006" last_year="2007">$DIN_LOC_ROOT/ocn/iaf/ncep.dn10.T62.%y.nc</file>
+      <file first_year="2008" last_year="2009">$DIN_LOC_ROOT/ocn/iaf/ncep.dn10.T62.%y.20120412.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>dn10  Sa_dens</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1948</stream_year_first>
+    <stream_year_last>2009</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE2_IAF.NCEP.Q_10">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1948" last_year="2004">$DIN_LOC_ROOT/ocn/iaf/ncep.q_10.T62.%y.nc</file>
+      <file first_year="2005" last_year="2005">$DIN_LOC_ROOT/ocn/iaf/ncep.q_10.T62.2005.20120414.nc</file>
+      <file first_year="2006" last_year="2007">$DIN_LOC_ROOT/ocn/iaf/ncep.q_10.T62.%y.nc</file>
+      <file first_year="2008" last_year="2009">$DIN_LOC_ROOT/ocn/iaf/ncep.q_10.T62.%y.20120412.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>q_10  Sa_shum</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1948</stream_year_first>
+    <stream_year_last>2009</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE2_IAF.NCEP.SLP_">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1948" last_year="2004">$DIN_LOC_ROOT/ocn/iaf/ncep.slp_.T62.%y.nc</file>
+      <file first_year="2005" last_year="2005">$DIN_LOC_ROOT/ocn/iaf/ncep.slp_.T62.2005.20120414.nc</file>
+      <file first_year="2006" last_year="2007">$DIN_LOC_ROOT/ocn/iaf/ncep.slp_.T62.%y.nc</file>
+      <file first_year="2008" last_year="2009">$DIN_LOC_ROOT/ocn/iaf/ncep.slp_.T62.%y.20120412.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>slp_  Sa_pslv</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1948</stream_year_first>
+    <stream_year_last>2009</stream_year_last>
+    <stream_offset> 0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE2_IAF.NCEP.T_10">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1948" last_year="2004">$DIN_LOC_ROOT/ocn/iaf/ncep.t_10.T62.%y.nc</file>
+      <file first_year="2005" last_year="2005">$DIN_LOC_ROOT/ocn/iaf/ncep.t_10.T62.2005.20120414.nc</file>
+      <file first_year="2006" last_year="2007">$DIN_LOC_ROOT/ocn/iaf/ncep.t_10.T62.%y.nc</file>
+      <file first_year="2008" last_year="2009">$DIN_LOC_ROOT/ocn/iaf/ncep.t_10.T62.%y.20120412.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>t_10  Sa_tbot</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1948</stream_year_first>
+    <stream_year_last>2009</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE2_IAF.NCEP.U_10">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1948" last_year="2004">$DIN_LOC_ROOT/ocn/iaf/ncep.u_10.T62.%y.nc</file>
+      <file first_year="2005" last_year="2005">$DIN_LOC_ROOT/ocn/iaf/ncep.u_10.T62.2005.20120414.nc</file>
+      <file first_year="2006" last_year="2007">$DIN_LOC_ROOT/ocn/iaf/ncep.u_10.T62.%y.nc</file>
+      <file first_year="2008" last_year="2009">$DIN_LOC_ROOT/ocn/iaf/ncep.u_10.T62.%y.20120412.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>u_10  Sa_u</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1948</stream_year_first>
+    <stream_year_last>2009</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE2_IAF.NCEP.V_10">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1948" last_year="2004">$DIN_LOC_ROOT/ocn/iaf/ncep.v_10.T62.%y.nc</file>
+      <file first_year="2005" last_year="2005">$DIN_LOC_ROOT/ocn/iaf/ncep.v_10.T62.2005.20120414.nc</file>
+      <file first_year="2006" last_year="2007">$DIN_LOC_ROOT/ocn/iaf/ncep.v_10.T62.%y.nc</file>
+      <file first_year="2008" last_year="2009">$DIN_LOC_ROOT/ocn/iaf/ncep.v_10.T62.%y.20120412.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>v_10  Sa_v</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1948</stream_year_first>
+    <stream_year_last>2009</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE2_IAF.CORE2.ArcFactor">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/CORE2/CORE2.t_10.ArcFactor.T62.1997-2004.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>TarcFactor tarcf</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1948</stream_year_first>
+    <stream_year_last>2009</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <!-- =================== -->
+  <!-- datm_mode CORE2_IAF 01col-->
+  <!-- =================== -->
+
+  <!-- <stream_entry name="CORE2_IAF_01col">  -->
+  <!-- fill this in -->
+  <!-- </stream_entry> -->
+
+  <!-- ===================     -->
+  <!-- datm_mode CORE2_IAF_JRA -->
+  <!-- ===================     -->
+
+  <stream_entry name="CORE_IAF_JRA.PREC">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1958" last_year="2016">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap/JRA.v1.3.prec.TL319.%y.171019.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>prec  Faxa_prec</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1958</stream_year_first>
+    <stream_year_last>2016</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE_IAF_JRA.LWDN">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1958" last_year="2016">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap/JRA.v1.3.lwdn.TL319.%y.171019.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>lwdn  Faxa_lwdn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1958</stream_year_first>
+    <stream_year_last>2016</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE_IAF_JRA.SWDN">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1958" last_year="2016">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap/JRA.v1.3.swdn.TL319.%y.171019.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>swdn  Faxa_swdn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1958</stream_year_first>
+    <stream_year_last>2016</stream_year_last>
+    <stream_offset>-5400</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>coszen</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE_IAF_JRA.Q_10">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1958" last_year="2016">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap/JRA.v1.3.q_10.TL319.%y.171019.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>q_10  Sa_shum</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1958</stream_year_first>
+    <stream_year_last>2016</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE_IAF_JRA.SLP_">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1958" last_year="2016">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap/JRA.v1.3.slp.TL319.%y.171019.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>slp   Sa_pslv</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1958</stream_year_first>
+    <stream_year_last>2016</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE_IAF_JRA.T_10">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1958" last_year="2016">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap/JRA.v1.3.t_10.TL319.%y.171019.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>t_10  Sa_tbot</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1958</stream_year_first>
+    <stream_year_last>2016</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE_IAF_JRA.U_10">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1958" last_year="2016">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap/JRA.v1.3.u_10.TL319.%y.171019.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>u_10  Sa_u</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1958</stream_year_first>
+    <stream_year_last>2016</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE_IAF_JRA.V_10">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1958" last_year="2016">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap/JRA.v1.3.v_10.TL319.%y.171019.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>v_10  Sa_v</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1958</stream_year_first>
+    <stream_year_last>2016</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE_IAF_JRA.CORE2.ArcFactor">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/CORE2/CORE2.t_10.ArcFactor.T62.1997-2004.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>TarcFactor tarcf</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1958</stream_year_first>
+    <stream_year_last>2016</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <!-- ===================-->
+  <!--  ERA5 stream       -->
+  <!-- ===================-->
+
+  <stream_entry name="ERA5_HOURLY">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/TL639_200618_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/ERA5/ERA5.TL639.2019.01.200618.nc</file>
+      <file>$DIN_LOC_ROOT/atm/datm7/ERA5/ERA5.TL639.2019.02.200618.nc</file>
+      <file>$DIN_LOC_ROOT/atm/datm7/ERA5/ERA5.TL639.2019.03.200618.nc</file>
+      <file>$DIN_LOC_ROOT/atm/datm7/ERA5/ERA5.TL639.2019.04.200618.nc</file>
+      <file>$DIN_LOC_ROOT/atm/datm7/ERA5/ERA5.TL639.2019.05.200618.nc</file>
+      <file>$DIN_LOC_ROOT/atm/datm7/ERA5/ERA5.TL639.2019.06.200618.nc</file>
+      <file>$DIN_LOC_ROOT/atm/datm7/ERA5/ERA5.TL639.2019.07.200618.nc</file>
+      <file>$DIN_LOC_ROOT/atm/datm7/ERA5/ERA5.TL639.2019.08.200618.nc</file>
+      <file>$DIN_LOC_ROOT/atm/datm7/ERA5/ERA5.TL639.2019.09.200618.nc</file>
+      <file>$DIN_LOC_ROOT/atm/datm7/ERA5/ERA5.TL639.2019.10.200618.nc</file>
+      <file>$DIN_LOC_ROOT/atm/datm7/ERA5/ERA5.TL639.2019.11.200618.nc</file>
+      <file>$DIN_LOC_ROOT/atm/datm7/ERA5/ERA5.TL639.2019.12.200618.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>u10   Sa_u</var>
+      <var>v10   Sa_v</var>
+      <var>t2m   Sa_tbot</var>
+      <var>skt   Sa_tskn</var>
+      <var>d2m   Sa_tdew</var>
+      <var>msl   Sa_pslv</var>
+      <var>sp    Sa_pbot</var>
+      <var>tp    Faxa_rain</var>
+      <var>cp    Faxa_rainc</var>
+      <var>lsp   Faxa_rainl</var>
+      <var>csf   Faxa_snowc</var>
+      <var>lsf   Faxa_snowl</var>
+      <var>ssrd  Faxa_swdn</var>
+      <var>ssr   Faxa_swnet</var>
+      <var>strd  Faxa_lwdn</var>
+      <var>str   Faxa_lwnet</var>
+      <var>aluvp Faxa_swvdr</var>
+      <var>aluvd Faxa_swvdf</var>
+      <var>alnip Faxa_swndr</var>
+      <var>alnid Faxa_swndf</var>
+      <var>sshf  Faxa_sen</var>
+      <var>slhf  Faxa_lat</var>
+      <var>ewss  Faxa_taux</var>
+      <var>nsss  Faxa_tauy</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <!-- <stream_vectors>u:v taux:tauy</stream_vectors> -->
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1900</stream_year_align>
+    <stream_year_first>2019</stream_year_first>
+    <stream_year_last>2019</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <!-- ===================-->
+  <!--  co2 streams       -->
+  <!-- ===================-->
+
+  <!-- currently all co2 time series are single point and have no mesh -->
+
+  <stream_entry name="co2tseries.20tr">
+    <stream_meshfile>
+      <meshfile>none</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_global_simyr_1750-2014_CMIP6_c180929.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>CO2   Sa_co2diag</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>none</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1850</stream_year_align>
+    <stream_year_first>1850</stream_year_first>
+    <stream_year_last>2014</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>extend</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="co2tseries.omip.iaf">
+    <stream_meshfile>
+      <meshfile>none</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_global_ssp585_simyr_1750-2020_CMIP6_c200324.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>CO2 Sa_co2diag</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>none</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>213</stream_year_align> <!-- 6*(2009-1948+1)-(2009-1850) -->
+    <stream_year_first>1850</stream_year_first>
+    <stream_year_last>2010</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="co2tseries.omip.jra">
+    <stream_meshfile>
+      <meshfile>none</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_global_ssp585_simyr_1750-2020_CMIP6_c200324.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>CO2 Sa_co2diag</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>none</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>198</stream_year_align> <!-- 6*(2018-1958+1)-(2018-1850) -->
+    <stream_year_first>1850</stream_year_first>
+    <stream_year_last>2019</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="co2tseries.SSP1-1.9.latbnd">
+    <stream_meshfile>
+      <meshfile>none</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_lat-bandsSSP1-1.9_simyr_2014-2500_CMIP6_c190514.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>CO2   Sa_co2diag</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>none</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>2015</stream_year_align>
+    <stream_year_first>2015</stream_year_first>
+    <stream_year_last>2500</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>extend</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="co2tseries.SSP1-2.6.latbnd">
+    <stream_meshfile>
+      <meshfile>none</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_lat-bandsSSP1-2.6__simyr_2014-2500_CMIP6_c190506.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>CO2   Sa_co2diag</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>none</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>2015</stream_year_align>
+    <stream_year_first>2015</stream_year_first>
+    <stream_year_last>2500</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>extend</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="co2tseries.SSP2-4.5.latbnd">
+    <stream_meshfile>
+      <meshfile>none</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_lat-bandsSSP2-4.5__simyr_2014-2500_CMIP6_c190506.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>CO2   Sa_co2diag</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>none</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>2015</stream_year_align>
+    <stream_year_first>2015</stream_year_first>
+    <stream_year_last>2500</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>extend</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="co2tseries.SSP3-7.0.latbnd">
+    <stream_meshfile>
+      <meshfile>none</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/CO2/co2_datm_lat-bandsSSP3-7.0__simyr_2014-2500_CMIP6_c190506.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>CO2   Sa_co2diag</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>none</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>2015</stream_year_align>
+    <stream_year_first>2015</stream_year_first>
+    <stream_year_last>2500</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>extend</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="co2tseries.SSP4-3.4.latbnd">
+    <stream_meshfile>
+      <meshfile>none</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_lat-bandsSSP4-3.4_simyr_2014-2500_CMIP6_c190514.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>CO2   Sa_co2diag</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>none</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>2015</stream_year_align>
+    <stream_year_first>2015</stream_year_first>
+    <stream_year_last>2500</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>extend</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="co2tseries.SSP4-6.0.latbnd">
+    <stream_meshfile>
+      <meshfile>none</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_lat-bandsSSP4-6.0__simyr_2014-2500_CMIP6_c190506.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>CO2   Sa_co2diag</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>none</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>2015</stream_year_align>
+    <stream_year_first>2015</stream_year_first>
+    <stream_year_last>2500</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>extend</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="co2tseries.SSP5-3.4.latbnd">
+    <stream_meshfile>
+      <meshfile>none</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_lat-bandsSSP5-3.4__simyr_2014-2500_CMIP6_c190506.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>CO2   Sa_co2diag</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>none</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>2015</stream_year_align>
+    <stream_year_first>2015</stream_year_first>
+    <stream_year_last>2500</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>extend</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="co2tseries.SSP5-8.5.latbnd">
+    <stream_meshfile>
+      <meshfile>none</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_lat-bandsSSP5-8.5__simyr_2014-2500_CMIP6_c190506.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>CO2   Sa_co2diag</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>none</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>2015</stream_year_align>
+    <stream_year_first>2015</stream_year_first>
+    <stream_year_last>2500</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>extend</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="co2tseries.SSP1-1.9">
+    <stream_meshfile>
+      <meshfile>none</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_globalSSP1-1.9_simyr_2014-2501_CMIP6_c190514.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>CO2   Sa_co2diag</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>none</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>2015</stream_year_align>
+    <stream_year_first>2015</stream_year_first>
+    <stream_year_last>2500</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>extend</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="co2tseries.SSP1-2.6">
+    <stream_meshfile>
+      <meshfile>none</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_globalSSP1-2.6__simyr_2014-2501_CMIP6_c190506.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>CO2   Sa_co2diag</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>none</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>2015</stream_year_align>
+    <stream_year_first>2015</stream_year_first>
+    <stream_year_last>2500</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>extend</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="co2tseries.SSP2-4.5">
+    <stream_meshfile>
+      <meshfile>none</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_globalSSP2-4.5__simyr_2014-2501_CMIP6_c190506.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>CO2   Sa_co2diag</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>none</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>2015</stream_year_align>
+    <stream_year_first>2015</stream_year_first>
+    <stream_year_last>2500</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>extend</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="co2tseries.SSP3-7.0">
+    <stream_meshfile>
+      <meshfile>none</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_globalSSP3-7.0__simyr_2014-2501_CMIP6_c190506.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>CO2   Sa_co2diag</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>none</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>2015</stream_year_align>
+    <stream_year_first>2015</stream_year_first>
+    <stream_year_last>2500</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>extend</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="co2tseries.SSP4-3.4">
+    <stream_meshfile>
+      <meshfile>none</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_globalSSP4-3.4_simyr_2014-2501_CMIP6_c190514.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>CO2   Sa_co2diag</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>none</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>2015</stream_year_align>
+    <stream_year_first>2015</stream_year_first>
+    <stream_year_last>2500</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>extend</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="co2tseries.SSP4-6.0">
+    <stream_meshfile>
+      <meshfile>none</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_globalSSP4-6.0__simyr_2014-2501_CMIP6_c190506.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>CO2   Sa_co2diag</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>none</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>2015</stream_year_align>
+    <stream_year_first>2015</stream_year_first>
+    <stream_year_last>2500</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>extend</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="co2tseries.SSP5-3.4">
+    <stream_meshfile>
+      <meshfile>none</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_globalSSP5-3.4__simyr_2014-2501_CMIP6_c190506.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>CO2   Sa_co2diag</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>none</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>2015</stream_year_align>
+    <stream_year_first>2015</stream_year_first>
+    <stream_year_last>2500</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>extend</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="co2tseries.SSP5-8.5">
+    <stream_meshfile>
+      <meshfile>none</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_globalSSP5-8.5__simyr_2014-2501_CMIP6_c190506.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>CO2   Sa_co2diag</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>none</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>2015</stream_year_align>
+    <stream_year_first>2015</stream_year_first>
+    <stream_year_last>2500</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>extend</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <!-- ===================-->
+  <!--  presaero streams  -->
+  <!-- ===================-->
+
+  <stream_entry name="presaero.clim_1850">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/aero/aerosoldep_WACCM.ensmean_monthly_hist_1849-2015_0.9x1.25_CMIP6_c180926.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>BCDEPWET   Faxa_bcphiwet</var>
+      <var>BCPHODRY   Faxa_bcphodry</var>
+      <var>BCPHIDRY   Faxa_bcphidry</var>
+      <var>OCDEPWET   Faxa_ocphiwet</var>
+      <var>OCPHIDRY   Faxa_ocphidry</var>
+      <var>OCPHODRY   Faxa_ocphodry</var>
+      <var>DSTX01WD   Faxa_dstwet1</var>
+      <var>DSTX01DD   Faxa_dstdry1</var>
+      <var>DSTX02WD   Faxa_dstwet2</var>
+      <var>DSTX02DD   Faxa_dstdry2</var>
+      <var>DSTX03WD   Faxa_dstwet3</var>
+      <var>DSTX03DD   Faxa_dstdry3</var>
+      <var>DSTX04WD   Faxa_dstwet4</var>
+      <var>DSTX04DD   Faxa_dstdry4</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1850</stream_year_first>
+    <stream_year_last>1850</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="presaero.clim_2000">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/aero/aerosoldep_WACCM.ensmean_monthly_hist_1849-2015_0.9x1.25_CMIP6_c180926.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>BCDEPWET   Faxa_bcphiwet</var>
+      <var>BCPHODRY   Faxa_bcphodry</var>
+      <var>BCPHIDRY   Faxa_bcphidry</var>
+      <var>OCDEPWET   Faxa_ocphiwet</var>
+      <var>OCPHIDRY   Faxa_ocphidry</var>
+      <var>OCPHODRY   Faxa_ocphodry</var>
+      <var>DSTX01WD   Faxa_dstwet1</var>
+      <var>DSTX01DD   Faxa_dstdry1</var>
+      <var>DSTX02WD   Faxa_dstwet2</var>
+      <var>DSTX02DD   Faxa_dstdry2</var>
+      <var>DSTX03WD   Faxa_dstwet3</var>
+      <var>DSTX03DD   Faxa_dstdry3</var>
+      <var>DSTX04WD   Faxa_dstwet4</var>
+      <var>DSTX04DD   Faxa_dstdry4</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>2000</stream_year_first>
+    <stream_year_last>2000</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="presaero.clim_2010">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/aero/aerosoldep_WACCM.ensmean_monthly_hist_1849-2015_0.9x1.25_CMIP6_c180926.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>BCDEPWET   Faxa_bcphiwet</var>
+      <var>BCPHODRY   Faxa_bcphodry</var>
+      <var>BCPHIDRY   Faxa_bcphidry</var>
+      <var>OCDEPWET   Faxa_ocphiwet</var>
+      <var>OCPHIDRY   Faxa_ocphidry</var>
+      <var>OCPHODRY   Faxa_ocphodry</var>
+      <var>DSTX01WD   Faxa_dstwet1</var>
+      <var>DSTX01DD   Faxa_dstdry1</var>
+      <var>DSTX02WD   Faxa_dstwet2</var>
+      <var>DSTX02DD   Faxa_dstdry2</var>
+      <var>DSTX03WD   Faxa_dstwet3</var>
+      <var>DSTX03DD   Faxa_dstdry3</var>
+      <var>DSTX04WD   Faxa_dstwet4</var>
+      <var>DSTX04DD   Faxa_dstdry4</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>2010</stream_year_first>
+    <stream_year_last>2010</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="presaero.trans_1850-2000">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/aero/aerosoldep_WACCM.ensmean_monthly_hist_1849-2015_0.9x1.25_CMIP6_c180926.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>BCDEPWET   Faxa_bcphiwet</var>
+      <var>BCPHODRY   Faxa_bcphodry</var>
+      <var>BCPHIDRY   Faxa_bcphidry</var>
+      <var>OCDEPWET   Faxa_ocphiwet</var>
+      <var>OCPHIDRY   Faxa_ocphidry</var>
+      <var>OCPHODRY   Faxa_ocphodry</var>
+      <var>DSTX01WD   Faxa_dstwet1</var>
+      <var>DSTX01DD   Faxa_dstdry1</var>
+      <var>DSTX02WD   Faxa_dstwet2</var>
+      <var>DSTX02DD   Faxa_dstdry2</var>
+      <var>DSTX03WD   Faxa_dstwet3</var>
+      <var>DSTX03DD   Faxa_dstdry3</var>
+      <var>DSTX04WD   Faxa_dstwet4</var>
+      <var>DSTX04DD   Faxa_dstdry4</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1849</stream_year_align>
+    <stream_year_first>1849</stream_year_first>
+    <stream_year_last>2014</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="presaero.SSP1-2.6">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/aero/aerodep_clm_SSP126_b.e21.BSSP126cmip6.f09_g17.CMIP6-SSP1-2.6.001_2014-2101_monthly_0.9x1.25_c190523.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>BCDEPWET   Faxa_bcphiwet</var>
+      <var>BCPHODRY   Faxa_bcphodry</var>
+      <var>BCPHIDRY   Faxa_bcphidry</var>
+      <var>OCDEPWET   Faxa_ocphiwet</var>
+      <var>OCPHIDRY   Faxa_ocphidry</var>
+      <var>OCPHODRY   Faxa_ocphodry</var>
+      <var>DSTX01WD   Faxa_dstwet1</var>
+      <var>DSTX01DD   Faxa_dstdry1</var>
+      <var>DSTX02WD   Faxa_dstwet2</var>
+      <var>DSTX02DD   Faxa_dstdry2</var>
+      <var>DSTX03WD   Faxa_dstwet3</var>
+      <var>DSTX03DD   Faxa_dstdry3</var>
+      <var>DSTX04WD   Faxa_dstwet4</var>
+      <var>DSTX04DD   Faxa_dstdry4</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>2015</stream_year_align>
+    <stream_year_first>2015</stream_year_first>
+    <stream_year_last>2101</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="presaero.SSP2-4.5">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/aero/aerodep_clm_SSP245_b.e21.BWSSP245cmip6.f09_g17.CMIP6-SSP2-4.5-WACCM.001_2014-2101_monthly_0.9x1.25_c190401.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>BCDEPWET   Faxa_bcphiwet</var>
+      <var>BCPHODRY   Faxa_bcphodry</var>
+      <var>BCPHIDRY   Faxa_bcphidry</var>
+      <var>OCDEPWET   Faxa_ocphiwet</var>
+      <var>OCPHIDRY   Faxa_ocphidry</var>
+      <var>OCPHODRY   Faxa_ocphodry</var>
+      <var>DSTX01WD   Faxa_dstwet1</var>
+      <var>DSTX01DD   Faxa_dstdry1</var>
+      <var>DSTX02WD   Faxa_dstwet2</var>
+      <var>DSTX02DD   Faxa_dstdry2</var>
+      <var>DSTX03WD   Faxa_dstwet3</var>
+      <var>DSTX03DD   Faxa_dstdry3</var>
+      <var>DSTX04WD   Faxa_dstwet4</var>
+      <var>DSTX04DD   Faxa_dstdry4</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>2015</stream_year_align>
+    <stream_year_first>2015</stream_year_first>
+    <stream_year_last>2101</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="presaero.SSP3-7.0">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/aero/aerodep_clm_SSP370_b.e21.BWSSP370cmip6.f09_g17.CMIP6-SSP3-7.0-WACCM.001_2014-2101_monthly_0.9x1.25_c190402.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>BCDEPWET   Faxa_bcphiwet</var>
+      <var>BCPHODRY   Faxa_bcphodry</var>
+      <var>BCPHIDRY   Faxa_bcphidry</var>
+      <var>OCDEPWET   Faxa_ocphiwet</var>
+      <var>OCPHIDRY   Faxa_ocphidry</var>
+      <var>OCPHODRY   Faxa_ocphodry</var>
+      <var>DSTX01WD   Faxa_dstwet1</var>
+      <var>DSTX01DD   Faxa_dstdry1</var>
+      <var>DSTX02WD   Faxa_dstwet2</var>
+      <var>DSTX02DD   Faxa_dstdry2</var>
+      <var>DSTX03WD   Faxa_dstwet3</var>
+      <var>DSTX03DD   Faxa_dstdry3</var>
+      <var>DSTX04WD   Faxa_dstwet4</var>
+      <var>DSTX04DD   Faxa_dstdry4</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>2015</stream_year_align>
+    <stream_year_first>2015</stream_year_first>
+    <stream_year_last>2101</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="presaero.SSP5-3.4">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>null</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>BCDEPWET   Faxa_bcphiwet</var>
+      <var>BCPHODRY   Faxa_bcphodry</var>
+      <var>BCPHIDRY   Faxa_bcphidry</var>
+      <var>OCDEPWET   Faxa_ocphiwet</var>
+      <var>OCPHIDRY   Faxa_ocphidry</var>
+      <var>OCPHODRY   Faxa_ocphodry</var>
+      <var>DSTX01WD   Faxa_dstwet1</var>
+      <var>DSTX01DD   Faxa_dstdry1</var>
+      <var>DSTX02WD   Faxa_dstwet2</var>
+      <var>DSTX02DD   Faxa_dstdry2</var>
+      <var>DSTX03WD   Faxa_dstwet3</var>
+      <var>DSTX03DD   Faxa_dstdry3</var>
+      <var>DSTX04WD   Faxa_dstwet4</var>
+      <var>DSTX04DD   Faxa_dstdry4</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>2015</stream_year_align>
+    <stream_year_first>2015</stream_year_first>
+    <stream_year_last>2101</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="presaero.SSP5-8.5">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/aero/aerodep_clm_SSP585_b.e21.BSSP585cmip6.f09_g17.CMIP6-SSP5-8.5.001_2014-2101_monthly_0.9x1.25_c190419.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>BCDEPWET   Faxa_bcphiwet</var>
+      <var>BCPHODRY   Faxa_bcphodry</var>
+      <var>BCPHIDRY   Faxa_bcphidry</var>
+      <var>OCDEPWET   Faxa_ocphiwet</var>
+      <var>OCPHIDRY   Faxa_ocphidry</var>
+      <var>OCPHODRY   Faxa_ocphodry</var>
+      <var>DSTX01WD   Faxa_dstwet1</var>
+      <var>DSTX01DD   Faxa_dstdry1</var>
+      <var>DSTX02WD   Faxa_dstwet2</var>
+      <var>DSTX02DD   Faxa_dstdry2</var>
+      <var>DSTX03WD   Faxa_dstwet3</var>
+      <var>DSTX03DD   Faxa_dstdry3</var>
+      <var>DSTX04WD   Faxa_dstwet4</var>
+      <var>DSTX04DD   Faxa_dstdry4</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>2015</stream_year_align>
+    <stream_year_first>2015</stream_year_first>
+    <stream_year_last>2101</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <!-- ===================-->
+  <!--  cplhist forcing streams -->
+  <!-- ===================-->
+
+  <stream_entry name="topo.cplhist">
+    <stream_meshfile>
+      <meshfile>$ATM_DOMAIN_MESH</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.ha2x3h.%ym.nc</file>
+   </stream_datafiles>
+    <stream_datavars>
+      <var>a2x3h_Sa_topo  Sa_topo</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DATM_CPLHIST_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_CPLHIST_YR_START</stream_year_first>
+    <stream_year_last>$DATM_CPLHIST_YR_END</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>nearest</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>3.0</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode></stream_entry>
+
+  <stream_entry name="presaero.cplhist">
+    <stream_meshfile>
+      <meshfile>$ATM_DOMAIN_MESH</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.ha2x1d.%ym.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>a2x1d_Faxa_bcphiwet  Faxa_bcphiwet</var>
+      <var>a2x1d_Faxa_bcphodry  Faxa_bcphodry</var>
+      <var>a2x1d_Faxa_bcphidry  Faxa_bcphidry</var>
+      <var>a2x1d_Faxa_ocphiwet  Faxa_ocphiwet</var>
+      <var>a2x1d_Faxa_ocphidry  Faxa_ocphidry</var>
+      <var>a2x1d_Faxa_ocphodry  Faxa_ocphodry</var>
+      <var>a2x1d_Faxa_dstwet1   Faxa_dstwet1</var>
+      <var>a2x1d_Faxa_dstdry1   Faxa_dstdry1</var>
+      <var>a2x1d_Faxa_dstwet2   Faxa_dstwet2</var>
+      <var>a2x1d_Faxa_dstdry2   Faxa_dstdry2</var>
+      <var>a2x1d_Faxa_dstwet3   Faxa_dstwet3</var>
+      <var>a2x1d_Faxa_dstdry3   Faxa_dstdry3</var>
+      <var>a2x1d_Faxa_dstwet4   Faxa_dstwet4</var>
+      <var>a2x1d_Faxa_dstdry4   Faxa_dstdry4</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DATM_CPLHIST_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_CPLHIST_YR_START</stream_year_first>
+    <stream_year_last>$DATM_CPLHIST_YR_END</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>nearest</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>3.0</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CPLHISTForcing.Solar">
+    <stream_meshfile>
+      <meshfile>$ATM_DOMAIN_MESH</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.ha2x1hi.%ym.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>a2x1hi_Faxa_swndr Faxa_swndr</var>
+      <var>a2x1hi_Faxa_swvdr Faxa_swvdr</var>
+      <var>a2x1hi_Faxa_swndf Faxa_swndf</var>
+      <var>a2x1hi_Faxa_swvdf Faxa_swvdf</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DATM_CPLHIST_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_CPLHIST_YR_START</stream_year_first>
+    <stream_year_last>$DATM_CPLHIST_YR_END</stream_year_last>
+    <stream_offset>2700</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>nearest</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>3.0</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CPLHISTForcing.nonSolarFlux">
+    <stream_meshfile>
+      <meshfile>$ATM_DOMAIN_MESH</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.ha2x3h.%ym.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>a2x3h_Faxa_rainc Faxa_rainc</var>
+      <var>a2x3h_Faxa_rainl Faxa_rainl</var>
+      <var>a2x3h_Faxa_snowc Faxa_snowc</var>
+      <var>a2x3h_Faxa_snowl Faxa_snowl</var>
+      <var>a2x3h_Faxa_lwdn  Faxa_lwdn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DATM_CPLHIST_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_CPLHIST_YR_START</stream_year_first>
+    <stream_year_last>$DATM_CPLHIST_YR_END</stream_year_last>
+    <stream_offset>900</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>nearest</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>3.0</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CPLHISTForcing.State3hr">
+    <stream_meshfile>
+      <meshfile>$ATM_DOMAIN_MESH</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.ha2x3h.%ym.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>a2x3h_Sa_z       Sa_z</var>
+      <var>a2x3h_Sa_tbot    Sa_tbot</var>
+      <var>a2x3h_Sa_ptem    Sa_ptem</var>
+      <var>a2x3h_Sa_shum    Sa_shum</var>
+      <var>a2x3h_Sa_pbot    Sa_pbot</var>
+      <var>a2x3h_Sa_dens    Sa_dens</var>
+      <var>a2x3h_Sa_pslv    Sa_pslv</var>
+      <var>a2x3h_Sa_co2diag Sa_co2diag</var>
+      <var>a2x3h_Sa_co2prog Sa_co2prog</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DATM_CPLHIST_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_CPLHIST_YR_START</stream_year_first>
+    <stream_year_last>$DATM_CPLHIST_YR_END</stream_year_last>
+    <stream_offset>900</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>3.0</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CPLHISTForcing.State1hr">
+    <stream_meshfile>
+      <meshfile>$ATM_DOMAIN_MESH</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.ha2x1h.%ym.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>a2x1h_Sa_u  Sa_u</var>
+      <var>a2x1h_Sa_v  Sa_v</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DATM_CPLHIST_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_CPLHIST_YR_START</stream_year_first>
+    <stream_year_last>$DATM_CPLHIST_YR_END</stream_year_last>
+    <stream_offset>900</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>3.0</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <!-- ===================-->
+  <!-- topo streams -->
+  <!-- ===================-->
+
+  <stream_entry name="topo.observed">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/topo_forcing/topodata_0.9x1.SCRIP.210520_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/topo_forcing/topodata_0.9x1.25_USGS_070110_stream_c151201.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>TOPO Sa_topo</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1</stream_year_first>
+    <stream_year_last>1</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <!-- is arbitrary here since we only have one time slice; however, -->
+      <!-- setting this to 'linear' gives roundoff-level differences between time -->
+      <!-- steps, which is undesirable unless we truly want linear interpolation -->
+      <!-- between multiple input mapalgos -->
+      <tintalgo>lower</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+      <taxmode model_grid="1x1">extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+      <dtlimit model_grid="1x1">1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+</stream_data>

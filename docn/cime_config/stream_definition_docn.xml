@@ -1,0 +1,185 @@
+<?xml version="1.0"?>
+
+<?xml-stylesheet type="text/xsl" href="namelist_definition.xsl"?>
+
+<stream_data version="2.0" xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <stream_entry name="prescribed">  
+    <stream_meshfile >
+      <meshfile model_grid="_oi%T31">$DIN_LOC_ROOT/share/meshes/T31_040122_ESMFmesh.nc</meshfile>
+      <meshfile model_grid="_oi%1.9x2.5">$DIN_LOC_ROOT/share/meshes/fv1.9x2.5_141008_ESMFmesh.nc</meshfile>
+      <meshfile model_grid="_oi%0.9x1.25">$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
+      <meshfile model_grid="_oi%0.47x0.63">$DIN_LOC_ROOT/share/meshes/fv0.47x0.63_141008_ESMFmesh.nc</meshfile>
+      <meshfile model_grid="_oi%0.23x0.31"><!-- fill this in --></meshfile>
+      <meshfile model_grid="_oi%4x5">$DIN_LOC_ROOT/share/meshes/fv4x5_050615_polemod_ESMFmesh.nc</meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_1x1_clim_c101029_ESMFmesh_120520.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$SSTICE_DATA_FILENAME</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>SST_cpl So_t</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$SSTICE_YEAR_ALIGN</stream_year_align>
+    <stream_year_first>$SSTICE_YEAR_START</stream_year_first>
+    <stream_year_last>$SSTICE_YEAR_END</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="interannual">  
+    <stream_meshfile>
+      <meshfile >$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_1x1_clim_c101029_ESMFmesh_120520.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_1x1_1850_2014_c150416.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>SST_cpl So_t</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1850</stream_year_first>
+    <stream_year_last>2014</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="som">  
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/ocn/docn7/SOM/pop_frc.1x1d.SCRIP.030620_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/ocn/docn7/SOM/pop_frc.1x1d.090130.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>T     So_t</var>
+      <var>S     So_s</var>
+      <var>U     So_u</var>
+      <var>V     So_v</var>
+      <var>dhdx  So_dhdx</var>
+      <var>dhdy  So_dhdy</var>
+      <var>hblt  So_h</var>
+      <var>qdp   So_qbot</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1</stream_year_first>
+    <stream_year_last>1</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="som_aquap">  
+    <stream_meshfile>
+      <meshfile model_grid="_oi%1.9x2.5">$DIN_LOC_ROOT/share/meshes/fv1.9x2.5_141008_ESMFmesh.nc</meshfile>
+      <meshfile model_grid="_oi%0.9x1.25">$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/fv1.9x2.5_141008_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file model_grid="oi%1.9x2.5" >$DIN_LOC_ROOT/ocn/docn7/SOM/default.som.forcing.aquaplanet.Qflux0_h30_sstQOBS.2degFV_c20170421.nc</file>
+      <file model_grid="oi%0.9x1.25">$DIN_LOC_ROOT/ocn/docn7/SOM/default.som.forcing.aquaplanet.Qflux0_h30_sstQOBS.1degFV_c20170421.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>T     So_t</var>
+      <var>S     So_s</var>
+      <var>U     So_u</var>
+      <var>V     So_v</var>
+      <var>dhdx  So_dhdx</var>
+      <var>dhdy  So_dhdy</var>
+      <var>hblt  So_h</var>
+      <var>qdp   So_qbot</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1</stream_year_first>
+    <stream_year_last>1</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="aquapfile">  
+    <stream_meshfile>
+      <meshfile model_grid="_oi%0.9x1.25">%DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file model_grid="_oi%0.9x1.25">sst_c4aquasom_0.9x1.25_clim.c170512.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>SST_cpl  So_t</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>0</stream_year_align>
+    <stream_year_first>0</stream_year_first>
+    <stream_year_last>0</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+</stream_data>

@@ -1,0 +1,3 @@
+[submodule "fox"]
+	path = fox
+	url = https://github.com/ESMCI/fox.git

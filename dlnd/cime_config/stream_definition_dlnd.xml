@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+
+<?xml-stylesheet type="text/xsl" href="namelist_definition.xsl"?>
+
+  <!--
+      %glc => GLC elevation class from the range 0 to GLC_NEC, obtained from the GLC_NEC xml variable
+      %y   => year from the range yearfirst to yearlast
+              obtained from values of <strm_year_start> -> <strm_year_end> below
+      %ym  => year-month from the range yearfirst to yearlast with all 12 months
+              obtained from values of <strm_year_start> -> <strm_year_end> below
+      %ymd => year-month-day from the range yearfirst to yearlast with all 12 months
+               obtained from values of <strm_year_start> -> <strm_year_end> below
+  -->
+
+<stream_data version="2.0" xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <stream_entry name="sno.cplhist">
+    <stream_meshfile>
+      <meshfile>$LND_DOMAIN_MESH</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="0001" last_year="0030">$DLND_CPLHIST_DIR/$DLND_CPLHIST_CASE.cpl.hl2x1yr_glc.%y-01-01.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>l2x1yr_glc_Sl_tsrf%glc     Sl_tsrf_elev%glc  </var>
+      <var>l2x1yr_glc_Sl_topo%glc     Sl_topo_elev%glc  </var>
+      <var>l2x1yr_glc_Flgl_qice%glc   Flgl_qice_elev%glc</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DLND_CPLHIST_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DLND_CPLHIST_YR_START</stream_year_first>
+    <stream_year_last>$DLND_CPLHIST_YR_END</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>lower</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+</stream_data>

@@ -25,7 +25,6 @@ module lnd_comp_nuopc
   use dshr_dfield_mod   , only : dfield_type, dshr_dfield_add, dshr_dfield_copy
   use dshr_fldlist_mod  , only : fldlist_type, dshr_fldlist_add, dshr_fldlist_realize
   use glc_elevclass_mod , only : glc_elevclass_as_string, glc_elevclass_init
-  use perf_mod          , only : t_startf, t_stopf, t_adj_detailf, t_barrierf
 
   implicit none
   private ! except
@@ -73,7 +72,6 @@ module lnd_comp_nuopc
   integer                  :: ny_global                           ! global ny dimension of model mesh
 
   ! linked lists
-  type(fldList_type) , pointer :: fldsImport => null()
   type(fldList_type) , pointer :: fldsExport => null()
   type(dfield_type)  , pointer :: dfields    => null()
 
@@ -272,14 +270,13 @@ contains
     integer         :: current_mon  ! model month
     integer         :: current_day  ! model day
     integer         :: current_tod  ! model sec into model date
-    character(CL)   :: cvalue       ! temporary
     character(len=*),parameter :: subname=trim(modName)//':(InitializeRealize) '
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
 
     ! Initialize sdat
-    call t_startf('dlnd_strdata_init')
+    call ESMF_TraceRegionEnter('dlnd_strdata_init')
     call dshr_mesh_init(gcomp, nullstr, logunit, 'LND', nx_global, ny_global, &
          model_meshfile, model_maskfile, model_createmesh_fromfile, model_mesh, &
          model_mask, model_frac, restart_read, rc=rc)
@@ -288,7 +285,7 @@ contains
     xmlfilename = 'dlnd.streams'//trim(inst_suffix)//'.xml'
     call shr_strdata_init_from_xml(sdat, xmlfilename, model_mesh, clock, 'LND', logunit, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call t_stopf('dlnd_strdata_init')
+    call ESMF_TraceRegionExit('dlnd_strdata_init')
 
     ! Realize the actively coupled fields, now that a mesh is established and
     ! initialize dfields data type (to map streams to export state fields)
@@ -376,10 +373,10 @@ contains
        call ESMF_AlarmRingerOff( alarm, rc=rc )
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-       call t_startf('dlnd_restart')
+       call ESMF_TraceRegionEnter('dlnd_restart')
        call dshr_restart_write(rpfile, case_name, 'dlnd', inst_suffix, next_ymd, next_tod, &
-            logunit, mpicom, my_task, sdat)
-       call t_stopf('dlnd_restart')
+            logunit, my_task, sdat)
+       call ESMF_TraceRegionExit('dlnd_restart')
     endif
 
     ! write diagnostics
@@ -512,7 +509,7 @@ contains
 
     rc = ESMF_SUCCESS
 
-    call t_startf('DLND_RUN')
+    call ESMF_TraceRegionEnter('DLND_RUN')
 
     !--------------------
     ! set module pointers
@@ -561,29 +558,27 @@ contains
     !--------------------
 
     ! time and spatially interpolate to model time and grid
-    call t_barrierf('dlnd_BARRIER',mpicom)
-    call t_startf('dlnd_strdata_advance')
+    call ESMF_TraceRegionEnter('dlnd_strdata_advance')
     call shr_strdata_advance(sdat, target_ymd, target_tod, logunit, 'dlnd', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call t_stopf('dlnd_strdata_advance')
+    call ESMF_TraceRegionExit('dlnd_strdata_advance')
 
     ! copy all fields from streams to export state as default
     ! This automatically will update the fields in the export state
-    call t_barrierf('dlnd_comp_strdata_copy_BARRIER', mpicom)
-    call t_startf('dlnd_strdata_copy')
+    call ESMF_TraceRegionEnter('dlnd_strdata_copy')
     call dshr_dfield_copy(dfields, sdat, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call t_stopf('dlnd_strdata_copy')
+    call ESMF_TraceRegionExit('dlnd_strdata_copy')
 
     ! determine data model behavior based on the mode
-    call t_startf('dlnd_datamode')
+    call ESMF_TraceRegionEnter('dlnd_datamode')
     select case (trim(datamode))
     case('copyall')
        ! do nothing extra
     end select
 
-    call t_stopf('dlnd_datamode')
-    call t_stopf('DLND_RUN')
+    call ESMF_TraceRegionExit('dlnd_datamode')
+    call ESMF_TraceRegionExit('DLND_RUN')
 
   end subroutine dlnd_comp_run
 

@@ -4,23 +4,36 @@
 
 <entry_id version="2.0">
 
-  <!--
-      Values to use by default for creation of DOCN model docn namelists.
-      The element names are the same as the corresponding namelist
-      variables.  Values that depend on the model configuration use
-      attributes to express the dependency.  The recognized attributes
-      are: grid, docn_presaero and all configuration
-      attributes from the config_cache.xml file (with keys converted to upper-case).
+  <!-- Values to use by default for creation of DOCN model docn namelists. -->
 
-      Replace any instance of the following substring indicators with the appropriate values:
-      %y    = year from the range yearfirst to yearlast
-      %ym   = year-month from the range yearfirst to yearlast with all 12 months
-      %ymd  = year-month-day from the range yearfirst to yearlast with all 12 months
-  -->
-
-  <!-- =========================================  -->
-  <!--- docn_nml datamode                         -->
-  <!-- =========================================  -->
+  <entry id="streamslist">
+    <type>char(100)</type>
+    <category>streams</category>
+    <group>streams_file</group>
+    <desc>
+      List of streams that docn supports.
+      The following are supported: prescribed, aquapfile, som, som_aquqp, interannual, and blank.
+      The streamslist 
+    </desc>
+    <values>
+      <value docn_mode="prescribed">prescribed</value>
+      <value docn_mode="interannual">interannual</value>
+      <value docn_mode="som">som</value>
+      <value docn_mode="som_aquap">som_aquap</value>
+      <value docn_mode="sst_aquap_file">aquapfile</value>
+      <value docn_mode="sst_aquap_constant">''</value>
+      <value docn_mode="sst_aquap1">''</value>
+      <value docn_mode="sst_aquap2">''</value>
+      <value docn_mode="sst_aquap3">''</value>
+      <value docn_mode="sst_aquap4">''</value>
+      <value docn_mode="sst_aquap5">''</value>
+      <value docn_mode="sst_aquap6">''</value>
+      <value docn_mode="sst_aquap7">''</value>
+      <value docn_mode="sst_aquap8">''</value>
+      <value docn_mode="sst_aquap9">''</value>
+      <value docn_mode="sst_aquap10">''</value>
+    </values>
+  </entry>
 
   <entry id="datamode">
     <type>char</type>
@@ -95,310 +108,6 @@
       <value docn_mode="sst_aquap_constant$">sst_aquap_constant</value>
     </values>
   </entry>
-
-  <!-- ========================================================================================  -->
-  <!-- Stream xml file variables                                                                 -->
-  <!-- ========================================================================================  -->
-
-  <entry id="streamslist">
-    <type>char(100)</type>
-    <category>streams</category>
-    <group>streams_file</group>
-    <desc>
-      List of streams that docn supports.
-      The following are supported: prescribed, aquapfile, som, som_aquqp, interannual, and blank.
-      The streamslist 
-    </desc>
-    <values>
-      <value docn_mode="prescribed">prescribed</value>
-      <value docn_mode="interannual">interannual</value>
-      <value docn_mode="som">som</value>
-      <value docn_mode="som_aquap">som_aquap</value>
-      <value docn_mode="sst_aquap_file">aquapfile</value>
-      <value docn_mode="sst_aquap_constant">''</value>
-      <value docn_mode="sst_aquap1">''</value>
-      <value docn_mode="sst_aquap2">''</value>
-      <value docn_mode="sst_aquap3">''</value>
-      <value docn_mode="sst_aquap4">''</value>
-      <value docn_mode="sst_aquap5">''</value>
-      <value docn_mode="sst_aquap6">''</value>
-      <value docn_mode="sst_aquap7">''</value>
-      <value docn_mode="sst_aquap8">''</value>
-      <value docn_mode="sst_aquap9">''</value>
-      <value docn_mode="sst_aquap10">''</value>
-    </values>
-  </entry>
-
-  <entry id="strm_mesh" skip_default_entry="true">
-    <type>char</type>
-    <category>streams</category>
-    <group>streams_file</group>
-    <desc>Stream mesh files</desc>
-    <values>
-      <value stream="prescribed" grid="_oi%T31">
-	$DIN_LOC_ROOT/share/meshes/T31_040122_ESMFmesh.nc
-      </value>
-      <value stream="prescribed" grid="_oi%1.9x2.5">
-	$DIN_LOC_ROOT/share/meshes/fv1.9x2.5_141008_ESMFmesh.nc
-      </value>
-      <value stream="prescribed"  grid="_oi%0.9x1.25">
-	$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc
-      </value>
-      <value stream="prescribed" grid="_oi%0.47x0.63">
-	$DIN_LOC_ROOT/share/meshes/fv0.47x0.63_141008_ESMFmesh.nc
-      </value>
-      <value stream="prescribed" grid="_oi%0.23x0.31">
-        <!-- fill this in -->
-      </value>
-      <value stream="prescribed" grid="oi%4x5">
-	$DIN_LOC_ROOT/share/meshes/fv4x5_050615_polemod_ESMFmesh.nc
-      </value>
-      <value stream="prescribed">
-	$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_1x1_clim_c101029_ESMFmesh_120520.nc
-      </value>
-      <value stream="som">
-	$DIN_LOC_ROOT/ocn/docn7/SOM/pop_frc.1x1d.SCRIP.030620_ESMFmesh.nc 
-     </value>
-      <value stream="som_aquap" grid="_oi%1.9x2.5">
-	$DIN_LOC_ROOT/share/meshes/fv1.9x2.5_141008_ESMFmesh.nc
-      </value>
-      <value stream="som_aquap" grid="_oi%0.9x1.25">
-	$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc
-      </value>
-      <value stream="aquapfile" grid="_oi%0.9x1.25">
-	$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc
-      </value>
-    </values>
-  </entry>
-
-  <entry id="strm_datfil" skip_default_entry="true">
-    <type>char</type>
-    <category>streams</category>
-    <group>derived</group>
-    <desc>does not appear in namelist - only used to set domain and data information</desc>
-    <values>
-      <value stream="prescribed" >
-	$SSTICE_DATA_FILENAME
-      </value>
-      <value stream="som">
-	$DIN_LOC_ROOT/ocn/docn7/SOM/pop_frc.1x1d.090130.nc
-      </value>
-      <value stream="som_aquap" grid="oi%1.9x2.5">
-        $DIN_LOC_ROOT/ocn/docn7/SOM/default.som.forcing.aquaplanet.Qflux0_h30_sstQOBS.2degFV_c20170421.nc
-      </value>
-      <value stream="som_aquap" grid="oi%0.9x1.25">
-        $DIN_LOC_ROOT/ocn/docn7/SOM/default.som.forcing.aquaplanet.Qflux0_h30_sstQOBS.1degFV_c20170421.nc
-      </value>
-      <value stream="aquapfile" grid="_oi%0.9x1.25">
-        sst_c4aquasom_0.9x1.25_clim.c170512.nc
-      </value>
-    </values>
-  </entry>
-
-  <entry id="strm_datvar">
-    <type>char</type>
-    <category>streams</category>
-    <group>streams_file</group>
-    <desc>Stream data variable name(s).</desc>
-    <values>
-      <value stream="som">
-        T     So_t
-        S     So_s
-        U     So_u
-        V     So_v
-        dhdx  So_dhdx
-        dhdy  So_dhdy
-        hblt  So_h
-        qdp   So_qbot
-      </value>
-      <value stream="som_aquap">
-        T     So_t
-        S     So_s
-        U     So_u
-        V     So_v
-        dhdx  So_dhdx
-        dhdy  So_dhdy
-        hblt  So_h
-        qdp   So_qbot
-      </value>
-      <value stream="interannual">
-        SST_cpl So_t
-      </value>
-      <value stream="prescribed">
-        SST_cpl So_t
-      </value>
-      <value stream="aquapfile">
-        SST_cpl So_t
-      </value>
-    </values>
-  </entry>
-
-  <entry id="strm_offset">
-    <type>integer</type>
-    <category>streams</category>
-    <group>streams_file</group>
-    <desc>Stream offset.</desc>
-    <values>
-      <value>0</value>
-    </values>
-  </entry>
-
-  <entry id="strm_year_align">
-    <type>integer</type>
-    <category>streams</category>
-    <group>streams_file</group>
-    <desc>Simulation year to align stream to.</desc>
-    <values>
-      <value>-999</value>
-      <value stream="prescribed">$SSTICE_YEAR_ALIGN</value>
-      <value stream="aquapfile">0</value>
-      <value stream="som">1</value>
-      <value stream="interannual">1</value>
-    </values>
-  </entry>
-
-  <entry id="strm_year_start">
-    <type>integer</type>
-    <category>streams</category>
-    <group>streams_file</group>
-    <desc>First year of stream.</desc>
-    <values>
-      <value>-999</value>
-      <value stream="prescribed">$SSTICE_YEAR_START</value>
-      <value stream="aquapfile">0</value>
-      <value stream="som">1</value>
-      <value stream="interannual">1850</value>
-    </values>
-  </entry>
-
-  <entry id="strm_year_end">
-    <type>integer</type>
-    <category>streams</category>
-    <group>streams_file</group>
-    <desc>Last year of stream.</desc>
-    <values>
-      <value>-999</value>
-      <value stream="prescribed">$SSTICE_YEAR_END</value>
-      <value stream="aquapfile">0</value>
-      <value stream="som">1</value>
-      <value stream="interannual">2014</value>
-    </values>
-  </entry>
-
-  <entry id="mapalgo" per_stream_entry="true">
-    <type>char(30)</type>
-    <category>streams</category>
-    <group>streams_file</group>
-    <valid_values>bilinear,nn</valid_values>
-    <desc>
-      type of mapping from stream mesh -> model mesh
-    </desc>
-    <values>
-      <value>bilinear</value>
-    </values>
-  </entry>
-
-  <entry id="tintalgo" per_stream_entry="true">
-    <type>char(30)</type>
-    <category>streams</category>
-    <group>streams_file</group>
-    <valid_values>coszen,nearest,linear,lower,upper</valid_values>
-    <desc>
-      time interpolation options of stream time to model time
-      valid values: lower,upper,nearest,linear,coszen
-      lower   = Use lower time-value
-      upper   = Use upper time-value
-      nearest = Use the nearest time-value
-      linear  = Linearly interpolate between the two time-values
-      coszen  = Scale according to the cosine of the solar zenith angle (for solar)
-    </desc>
-    <values>
-      <value>linear</value>
-    </values>
-  </entry>
-
-  <entry id="taxmode" per_stream_entry="true">
-    <type>char(30)</type>
-    <category>streams</category>
-    <group>streams_file</group>
-    <valid_values>extend,cycle,limit</valid_values>
-    <desc>
-      specifies how to handle data outside the specified stream time
-      axis.  valid options are to cycle the data based on the first,
-      last, and align settings associated with the stream dataset, to
-      extend the first and last valid value indefinitely, or to limit
-      the interpolated data to fall only between the least and
-      greatest valid value of the time array.
-      valid values: cycle,extend,limit
-      ==> extend = extrapolate before and after the period by using the first or last value.
-      ==> cycle = cycle between the range of data
-      ==> limit = restrict to the period for which the data is valid
-    </desc>
-    <values>
-      <value>cycle</value>
-    </values>
-  </entry>
-
-  <entry id="readmode" per_stream_entry="true">
-    <type>char(30)</type>
-    <category>streams</category>
-    <group>streams_file</group>
-    <valid_values>single,full_file</valid_values>
-    <desc>
-      mode of reading temporal stream dataset.  valid options are
-      "single" (read temporal dataset one at a time) or "full_file"
-      (read all entires of temporal dataset in a given netcdf file)
-      valid values: single,full_file
-    </desc>
-    <values>
-      <value>single</value>
-    </values>
-  </entry>
-
-  <entry id="dtlimit" per_stream_entry="true">
-    <type>real(30)</type>
-    <category>streams</category>
-    <group>streams_file</group>
-    <desc>
-      delta time ratio limits placed on the  time interpolation associated
-      with the array of streams.  this real
-      value causes the model to stop if the ratio of the running maximum
-      delta time divided by the minimum delta time is greater than the
-      dtlimit for that stream.  for instance, with daily data, the delta
-      time should be exactly one day throughout the dataset and the computed
-      maximum divided by minimum delta time should always be 1.0.  for
-      monthly data, the delta time should be between 28 and 31 days and the
-      maximum ratio should be about 1.1.  the running value of the delta
-      time is computed as data is read and any wraparound or cycling is also
-      included.  this input helps trap missing data or errors in cycling.
-      to turn off trapping, set the value to 1.0e30 or something similar.
-    </desc>
-    <values>
-      <value>1.5e0</value>
-    </values>
-  </entry>
-
-  <entry id="vectors">
-    <type>char</type>
-    <category>streams</category>
-    <group>streams_file</group>
-    <desc>
-      list of paired colon delimited field names that should be treated as
-      vectors when carrying out spatial interpolation.  unlike other
-      character arrays in this namelist, this array is completely decoupled
-      from the list of streams.  this is a list of vector pairs that span
-      all input streams where different fields of the vector pair could
-      appear in different streams.
-      for example, vectors = 'u:v','taux:tauy'.
-    </desc>
-    <values>
-      <value>null</value>
-    </values>
-  </entry>
-
-  <!-- =========================================  -->
-  <!--- docn_nml other variables                  -->
-  <!-- =========================================  -->
 
   <entry id="model_meshfile"> 
     <type>char</type>

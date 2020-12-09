@@ -40,7 +40,6 @@ module dshr_mod
   use shr_pio_mod      , only : shr_pio_getiosys, shr_pio_getiotype, shr_pio_getioformat
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_init_from_xml, SHR_STRDATA_GET_STREAM_COUNT
   use dshr_methods_mod , only : chkerr
-  use perf_mod         , only : t_startf, t_stopf
   use pio
 
   implicit none
@@ -225,12 +224,9 @@ contains
 
     ! local variables
     type(ESMF_VM)                  :: vm
-    type(ESMF_Mesh)                :: mesh_global
     type(ESMF_Calendar)            :: esmf_calendar           ! esmf calendar
-    type(ESMF_CalKind_Flag)        :: esmf_caltype            ! esmf calendar type
     type(ESMF_DistGrid)            :: distGrid
     integer, pointer               :: model_gindex(:)         ! model global index spzce
-    character(CS)                  :: calendar                ! calendar name
     integer                        :: mpicom
     integer                        :: my_task
     logical                        :: scol_mode
@@ -821,7 +817,6 @@ contains
     type(ESMF_Time)         :: CurrTime         ! Current Time
     type(ESMF_Time)         :: NextAlarm        ! Next restart alarm time
     type(ESMF_TimeInterval) :: AlarmInterval    ! Alarm interval
-    integer                 :: sec
     character(len=*), parameter :: &   ! Clock and alarm options
          optNONE           = "none"      , &
          optNever          = "never"     , &
@@ -1135,8 +1130,7 @@ contains
 
     ! local variables
     integer :: year, mon, day ! year, month, day as integers
-    integer :: tdate          ! temporary date
-    integer :: date           ! coded-date (yyyymmdd)
+    integer :: tdate
     integer         , parameter :: SecPerDay = 86400 ! Seconds per day
     character(len=*), parameter :: subname='(dshr_time_init)'
     !-------------------------------------------------------------------------------
@@ -1147,9 +1141,9 @@ contains
        call shr_sys_abort( subname//'ERROR yymmdd is a negative number or time-of-day out of bounds' )
     end if
 
-    tdate = abs(date)
+    tdate = abs(ymd)
     year = int(tdate/10000)
-    if (date < 0) year = -year
+    if (ymd < 0) year = -year
     mon = int( mod(tdate,10000)/  100)
     day = mod(tdate,  100)
 
@@ -1234,7 +1228,7 @@ contains
 
   !===============================================================================
   subroutine dshr_restart_write(rpfile, case_name, model_name, inst_suffix, ymd, tod, &
-       logunit, mpicom, my_task, sdat, fld, fldname)
+       logunit, my_task, sdat, fld, fldname)
 
     ! Write restart file
 
@@ -1249,7 +1243,6 @@ contains
     integer                     , intent(in)    :: tod       ! model sec into model date
     integer                     , intent(in)    :: logunit
     integer                     , intent(in)    :: my_task
-    integer                     , intent(in)    :: mpicom
     type(shr_strdata_type)      , intent(inout) :: sdat
     real(r8)         , optional , pointer       :: fld(:)
     character(len=*) , optional , intent(in)    :: fldname
@@ -1263,7 +1256,6 @@ contains
     type(var_desc_t)  :: varid
     type(io_desc_t)   :: pio_iodesc
     integer           :: rcode
-    integer           :: yy, mm, dd
     character(*), parameter :: F00   = "('(dshr_restart_write) ',2a,2(i0,2x))"
     !-------------------------------------------------------------------------------
 
@@ -1345,7 +1337,7 @@ contains
     integer,          intent(inout)  :: rc
 
     ! local variables
-    integer           :: mytask, ierr, len
+    integer           :: mytask
     type(ESMF_VM)     :: vm
     type(ESMF_Field)  :: field
     real(r8), pointer :: farrayptr(:,:)
@@ -1572,6 +1564,7 @@ contains
     if ( eccen  == SHR_ORB_UNDEF_REAL .or. obliqr == SHR_ORB_UNDEF_REAL .or. &
          mvelpp == SHR_ORB_UNDEF_REAL .or. lambm0 == SHR_ORB_UNDEF_REAL) then
        write (msgstr, *) subname//' ERROR: orb params incorrect'
+       write (logunit, *) msgstr
        call ESMF_LogSetError(ESMF_RC_NOT_VALID, msg=msgstr, line=__LINE__, file=__FILE__, rcToReturn=rc)
        return  ! bail out
     endif
@@ -1596,7 +1589,6 @@ contains
     real(R8) :: nextsw_cday
     real(R8) :: julday
     integer  :: liradsw
-    integer  :: yy,mm,dd
     character(*),parameter :: subName =  '(getNextRadCDay) '
     !-------------------------------------------------------------------------------
 
