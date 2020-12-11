@@ -89,16 +89,22 @@ contains
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'So_t'     , fldptr1=So_t     , rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
-    call dshr_state_getfldptr(exportState, 'So_s'     , fldptr1=So_s     , rc=rc)
+    call dshr_state_getfldptr(exportState, 'So_s'     , fldptr1=So_s     , allowNullReturn=.true., rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
-    call dshr_state_getfldptr(exportState, 'So_u'     , fldptr1=So_u     , rc=rc)
+    call dshr_state_getfldptr(exportState, 'So_u'     , fldptr1=So_u     , allowNullReturn=.true., rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
-    call dshr_state_getfldptr(exportState, 'So_v'     , fldptr1=So_v     , rc=rc)
+    call dshr_state_getfldptr(exportState, 'So_v'     , fldptr1=So_v     , allowNullReturn=.true., rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
 
-    So_u(:) = 0.0_r8
-    So_v(:) = 0.0_r8
-    So_s(:) = ocnsalt
+    if (associated(So_u)) then
+      So_u(:) = 0.0_r8
+    end if
+    if (associated(So_v)) then
+      So_v(:) = 0.0_r8
+    end if
+    if (associated(So_s)) then
+      So_s(:) = ocnsalt
+    end if
     So_t(:) = TkFrz
 
     ! Set export state ocean fraction (So_omask)
