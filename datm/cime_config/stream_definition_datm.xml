@@ -627,7 +627,7 @@
   </stream_entry>
 
   <!-- ===================-->
-  <!-- datm_mode CLMNLDAS2-->
+  <!-- datm_mode CLMNLDAS2 - ASSUME that model grid must be the forcing data grid-->
   <!-- ===================-->
 
   <stream_entry name="CLMNLDAS2.Solar">
@@ -642,8 +642,7 @@
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
-      <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
+      <mapalgo>redist</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
@@ -655,11 +654,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -676,8 +673,7 @@
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
-      <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
+      <mapalgo>redist</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
@@ -689,11 +685,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -714,8 +708,7 @@
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
-      <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
+      <mapalgo>redist</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
@@ -727,11 +720,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
