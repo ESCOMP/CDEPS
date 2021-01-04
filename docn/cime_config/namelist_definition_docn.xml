@@ -124,19 +124,21 @@
     </values>
   </entry>
 
-  <entry id="model_maskfile">
+  <entry id="model_maskfile"> 
     <type>char</type>
     <category>streams</category>
     <input_pathname>abs</input_pathname>
     <group>docn_nml</group>
     <desc>
-      file specifying model mask if not obtained from input model mesh
+      MESH for ocn mask
     </desc>
     <values>
+      <!-- TODO: need to move thes to config_grids.xml -->
       <value>$OCN_DOMAIN_MESH</value>
-      <value scol_mode='true'>$OCN_DOMAIN_PATH/$OCN_DOMAIN_FILE</value>
-      <value create_mesh='true'>$OCN_DOMAIN_PATH/$OCN_DOMAIN_FILE</value>
-      <value set_model_maskfile='true'>$OCN_DOMAIN_PATH/$OCN_DOMAIN_FILE</value>
+      <value mask_grid="gx3v7">$DIN_LOC_ROOT/share/meshes/gx1v6_090205_ESMFmesh.nc</value>
+      <value mask_grid="gx1v7">$DIN_LOC_ROOT/share/meshes/gx1v7_151008_ESMFmesh.nc</value>
+      <value mask_grid="tx0.66v1">$DIN_LOC_ROOT/share/meshes/tx0.66v1_190314_ESMFmesh.nc</value>
+      <value mask_grid="tx0.1v2">$DIN_LOC_ROOT/share/meshes/tx0.25v1_190204_ESMFmesh.nc</value>
     </values>
   </entry>
 

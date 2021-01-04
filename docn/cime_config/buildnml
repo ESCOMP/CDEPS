@@ -52,6 +52,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     atm_nx = case.get_value("ATM_NX")
     atm_ny = case.get_value("ATM_NY")
     model_grid = case.get_value("GRID")
+    mask_grid = case.get_value('MASK_GRID')
 
     # Check for incompatible options.
     expect(ocn_grid != "null",
@@ -64,12 +65,11 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     # Initialize namelist defaults
     config = {}
     config['model_grid'] = model_grid
+    config['mask_grid'] = mask_grid
     config['ocn_grid'] = ocn_grid
     config['docn_mode'] = docn_mode
     config['create_mesh'] = 'true' if case.get_value("OCN_DOMAIN_MESH") == 'create_mesh' else 'false'
-    aquaplanet_mode = True if 'AQ' in case.get_value('COMPSET') else False
     scol_mode = True if case.get_value('PTS_MODE') else False
-    config['set_model_maskfile'] = 'true' if scol_mode or (ocn_nx==atm_nx and ocn_ny==atm_ny and not aquaplanet_mode) else 'false'
 
     nmlgen.init_defaults(infile, config)
 
