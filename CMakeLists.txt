@@ -27,7 +27,11 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 message("CMAKE_MODULE_PATH is ${CMAKE_MODULE_PATH}")
 
-find_package(ESMF REQUIRED)
+if (TARGET esmf)
+  message("Target esmf is already found. Skip find_package ...")
+else()
+  find_package(ESMF REQUIRED)
+endif()
 
 if (DEFINED ENV{PIO_ROOT})
   message("PIO_ROOT is $ENV{PIO_ROOT}")
@@ -58,5 +62,32 @@ foreach(COMP datm dice dlnd docn drof dwav)
   add_subdirectory("${COMP}")
 endforeach(COMP)
 
-install(TARGETS streams dshr
-	LIBRARY DESTINATION lib)
+target_include_directories(streams PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/share>
+                                          $<INSTALL_INTERFACE:mod>)
+target_include_directories(streams PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/fox/include>
+                                          $<INSTALL_INTERFACE:mod>)
+target_include_directories(dshr PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/share>
+                                       $<INSTALL_INTERFACE:mod>)
+target_include_directories(dshr PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/fox/include>
+                                       $<INSTALL_INTERFACE:mod>)
+target_include_directories(dshr PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/streams>
+                                       $<INSTALL_INTERFACE:mod>)
+foreach(COMP datm dice dlnd docn drof dwav)
+target_include_directories(${COMP} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/share>
+                                       $<INSTALL_INTERFACE:mod>)
+target_include_directories(${COMP} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/streams>
+                                       $<INSTALL_INTERFACE:mod>)
+target_include_directories(${COMP} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/dshr>
+                                       $<INSTALL_INTERFACE:mod>)
+endforeach(COMP)
+
+foreach(COMP datm docn streams dshr cdeps_share FoX_dom FoX_wxml FoX_sax FoX_common FoX_utils FoX_fsys)
+  install(TARGETS ${COMP} 
+          EXPORT  ${COMP}
+          LIBRARY DESTINATION lib
+          COMPONENT Library)
+  install(EXPORT      ${COMP} 
+          DESTINATION lib/cmake)
+endforeach(COMP)
+
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/mod DESTINATION ${CMAKE_INSTALL_PREFIX}/CDEPS)
