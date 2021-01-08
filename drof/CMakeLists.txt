@@ -13,6 +13,7 @@ message("DROF srcfiles are ${SRCFILES}")
 
 add_library(drof ${SRCFILES})
 
+add_dependencies(drof dshr streams)
 target_include_directories (drof PUBLIC ${ESMF_F90COMPILEPATHS})
 target_include_directories (drof PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/dshr")
 target_include_directories (drof PUBLIC "${CMAKE_SOURCE_DIR}")

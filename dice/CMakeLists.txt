@@ -15,6 +15,7 @@ message("DICE srcfiles are ${SRCFILES}")
 
 add_library(dice ${SRCFILES})
 
+add_dependencies(dice dshr streams)
 target_include_directories (dice PUBLIC ${ESMF_F90COMPILEPATHS})
 target_include_directories (dice PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/dshr")
 target_include_directories (dice PUBLIC "${CMAKE_SOURCE_DIR}")

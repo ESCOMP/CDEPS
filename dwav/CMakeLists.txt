@@ -13,6 +13,7 @@ message("DWAV srcfiles are ${SRCFILES}")
 
 add_library(dwav ${SRCFILES})
 
+add_dependencies(dwav dshr streams)
 target_include_directories (dwav PUBLIC ${ESMF_F90COMPILEPATHS})
 target_include_directories (dwav PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/dshr")
 target_include_directories (dwav PUBLIC "${CMAKE_SOURCE_DIR}")
