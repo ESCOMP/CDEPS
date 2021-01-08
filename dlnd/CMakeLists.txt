@@ -9,11 +9,13 @@ foreach(FILE ${SRCFILES})
   endif()
 endforeach()
 
+message("DLND srcfiles are ${SRCFILES}")
+
 add_library(dlnd ${SRCFILES})
 
 target_include_directories (dlnd PUBLIC ${ESMF_F90COMPILEPATHS})
-target_include_directories (dlnd PUBLIC "${CMAKE_BINARY_DIR}/dshr")
+target_include_directories (dlnd PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/dshr")
 target_include_directories (dlnd PUBLIC "${CMAKE_SOURCE_DIR}")
-target_include_directories (dlnd PUBLIC "${CMAKE_BINARY_DIR}/share")
-target_include_directories (dlnd PUBLIC "${CMAKE_BINARY_DIR}/streams")
+target_include_directories (dlnd PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/share")
+target_include_directories (dlnd PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/streams")
 target_include_directories (dlnd PUBLIC "${PIO_Fortran_INCLUDE_DIR}")
