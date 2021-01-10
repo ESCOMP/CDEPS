@@ -26,21 +26,31 @@ module atm_comp_nuopc
   use dshr_mod         , only : dshr_orbital_init, dshr_orbital_update
   use dshr_dfield_mod  , only : dfield_type, dshr_dfield_add, dshr_dfield_copy
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add, dshr_fldlist_realize
+
   use datm_datamode_core2_mod   , only : datm_datamode_core2_advertise
   use datm_datamode_core2_mod   , only : datm_datamode_core2_init_pointers
   use datm_datamode_core2_mod   , only : datm_datamode_core2_advance
   use datm_datamode_core2_mod   , only : datm_datamode_core2_restart_write
   use datm_datamode_core2_mod   , only : datm_datamode_core2_restart_read
+
   use datm_datamode_jra_mod     , only : datm_datamode_jra_advertise
   use datm_datamode_jra_mod     , only : datm_datamode_jra_init_pointers
   use datm_datamode_jra_mod     , only : datm_datamode_jra_advance
   use datm_datamode_jra_mod     , only : datm_datamode_jra_restart_write
   use datm_datamode_jra_mod     , only : datm_datamode_jra_restart_read
+
   use datm_datamode_clmncep_mod , only : datm_datamode_clmncep_advertise
   use datm_datamode_clmncep_mod , only : datm_datamode_clmncep_init_pointers
   use datm_datamode_clmncep_mod , only : datm_datamode_clmncep_advance
   use datm_datamode_clmncep_mod , only : datm_datamode_clmncep_restart_write
   use datm_datamode_clmncep_mod , only : datm_datamode_clmncep_restart_read
+
+  use datm_datamode_cplhist_mod , only : datm_datamode_cplhist_advertise
+  use datm_datamode_cplhist_mod , only : datm_datamode_cplhist_init_pointers
+  use datm_datamode_cplhist_mod , only : datm_datamode_cplhist_advance
+  use datm_datamode_cplhist_mod , only : datm_datamode_cplhist_restart_write
+  use datm_datamode_cplhist_mod , only : datm_datamode_cplhist_restart_read
+
   use datm_datamode_era5_mod    , only : datm_datamode_era5_advertise
   use datm_datamode_era5_mod    , only : datm_datamode_era5_init_pointers
   use datm_datamode_era5_mod    , only : datm_datamode_era5_advance
@@ -284,6 +294,7 @@ contains
          trim(datamode) == 'CORE2_IAF'    .or. &
          trim(datamode) == 'CORE_IAF_JRA' .or. &
          trim(datamode) == 'CLMNCEP'      .or. &
+         trim(datamode) == 'CPLHIST'      .or. &
          trim(datamode) == 'ERA5') then
     else
        call shr_sys_abort(' ERROR illegal datm datamode = '//trim(datamode))
@@ -300,6 +311,10 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('CLMNCEP')
        call datm_datamode_clmncep_advertise(exportState, fldsExport, flds_scalar_name, &
+            flds_co2, flds_wiso, flds_presaero, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    case ('CPLHIST')
+       call datm_datamode_cplhist_advertise(exportState, fldsExport, flds_scalar_name, &
             flds_co2, flds_wiso, flds_presaero, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('ERA5')
@@ -538,6 +553,9 @@ contains
        case('CLMNCEP')
           call datm_datamode_clmncep_init_pointers(importState, exportState, sdat, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       case('CPLHIST')
+          call datm_datamode_cplhist_init_pointers(importState, exportState, sdat, rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('ERA5')
           call datm_datamode_era5_init_pointers(exportState, sdat, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -552,6 +570,8 @@ contains
              call datm_datamode_jra_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
           case('CLMNCEP')
              call datm_datamode_clmncep_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
+          case('CPLHIST')
+             call datm_datamode_cplhist_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
           case('ERA5')
              call datm_datamode_era5_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
           end select
@@ -594,6 +614,9 @@ contains
     case('CLMNCEP')
        call datm_datamode_clmncep_advance(masterproc, logunit, mpicom,  rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    case('CPLHIST')
+       call datm_datamode_cplhist_advance(masterproc, logunit, mpicom,  rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('ERA5')
        call datm_datamode_era5_advance(exportstate, masterproc, logunit, mpicom, target_ymd, &
             target_tod, sdat%model_calendar, rc)
@@ -613,6 +636,10 @@ contains
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('CLMNCEP')
           call datm_datamode_clmncep_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
+               logunit, my_task, sdat)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       case('CPLHIST')
+          call datm_datamode_cplhist_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
                logunit, my_task, sdat)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('ERA5')

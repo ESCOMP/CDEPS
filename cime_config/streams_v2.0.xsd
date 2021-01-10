@@ -6,9 +6,10 @@
   <!-- ======================== -->
 
   <xs:attribute name="name"       type="xs:string"/>
-  <xs:attribute name="first_year" type="xs:integer"/>
-  <xs:attribute name="last_year"  type="xs:integer"/>
+  <xs:attribute name="first_year" type="xs:string"/>
+  <xs:attribute name="last_year"  type="xs:string"/>
   <xs:attribute name="model_grid" type="xs:string"/>
+  <xs:attribute name="compset"    type="xs:string"/>
   <xs:attribute name="version"    type="xs:string"/>
 
   <!-- ======================== -->
@@ -16,9 +17,9 @@
   <!-- ======================== -->
 
   <xs:element name="stream_lev_dimname" type="xs:string"/>
-  <xs:element name="stream_year_first"  type="xs:string"/> 
-  <xs:element name="stream_year_last"   type="xs:string"/> 
-  <xs:element name="stream_year_align"  type="xs:string"/> 
+  <xs:element name="stream_year_first"  type="xs:string"/>
+  <xs:element name="stream_year_last"   type="xs:string"/>
+  <xs:element name="stream_year_align"  type="xs:string"/>
   <xs:element name="stream_offset"      type="xs:integer"/>
 
   <xs:element name="stream_readmode">
@@ -32,13 +33,13 @@
 
   <xs:element name="stream_vectors">
     <xs:simpleType>
-      <xs:list itemType="xs:string"/> 
+      <xs:list itemType="xs:string"/>
     </xs:simpleType>
   </xs:element>
 
   <xs:element name="var">
     <xs:simpleType>
-      <xs:list itemType="xs:string"/> 
+      <xs:list itemType="xs:string"/>
     </xs:simpleType>
   </xs:element>
 
@@ -76,6 +77,7 @@
       <xs:simpleContent>
         <xs:extension base="xs:string">
           <xs:attribute name="model_grid" type="xs:string" />
+          <xs:attribute name="compset" type="xs:string" />
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
@@ -100,6 +102,7 @@
       <xs:simpleContent>
         <xs:extension base="taxmodeType">
           <xs:attribute ref="model_grid"/>
+          <xs:attribute ref="compset"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
@@ -125,6 +128,7 @@
       <xs:simpleContent>
         <xs:extension base="mapalgoType">
           <xs:attribute ref="model_grid"/>
+          <xs:attribute ref="compset"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
@@ -142,6 +146,7 @@
       <xs:simpleContent>
         <xs:extension base="xs:string">
           <xs:attribute ref="model_grid"/>
+          <xs:attribute ref="compset"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
