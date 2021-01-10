@@ -218,11 +218,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -252,11 +250,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -290,11 +286,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -316,7 +310,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
@@ -328,11 +321,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -350,7 +341,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
@@ -362,11 +352,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -399,11 +387,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -437,11 +423,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -471,11 +455,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -508,11 +490,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -546,11 +526,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -580,11 +558,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -617,11 +593,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -895,11 +869,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -929,11 +901,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -963,11 +933,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -1001,11 +969,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -1035,11 +1001,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -1069,11 +1033,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -1103,11 +1065,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -1137,11 +1097,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -1171,11 +1129,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -1205,11 +1161,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -1239,11 +1193,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -1279,11 +1231,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -1313,11 +1263,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -1352,11 +1300,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -1390,11 +1336,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -1424,11 +1368,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -1458,11 +1400,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -1492,11 +1432,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -1526,11 +1464,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -1560,11 +1496,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -1594,11 +1528,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -1628,11 +1560,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -1662,11 +1592,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -1696,11 +1624,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -1731,11 +1657,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -1766,11 +1690,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -1801,11 +1723,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -1836,11 +1756,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -1873,11 +1791,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -1910,11 +1826,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -1947,11 +1861,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -1984,11 +1896,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -2021,11 +1931,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -2058,11 +1966,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -2092,7 +1998,6 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.e30</dtlimit>
@@ -2137,11 +2042,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -2171,11 +2074,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -2205,11 +2106,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -2239,11 +2138,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -2273,11 +2170,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -2307,11 +2202,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -2341,11 +2234,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -2375,11 +2266,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -2409,7 +2298,6 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.e30</dtlimit>
@@ -2481,11 +2369,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -2509,7 +2395,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>none</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>1850</stream_year_align>
@@ -2521,7 +2406,6 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>extend</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.e30</dtlimit>
@@ -2542,7 +2426,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>none</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>213</stream_year_align> <!-- 6*(2009-1948+1)-(2009-1850) -->
@@ -2553,12 +2436,10 @@
       <tintalgo>linear</tintalgo>
     </stream_tintalgo>
     <stream_taxmode>
-      <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
+      <taxmode>extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
-      <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
+      <dtlimit>1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -2576,7 +2457,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>none</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>198</stream_year_align> <!-- 6*(2018-1958+1)-(2018-1850) -->
@@ -2587,12 +2467,10 @@
       <tintalgo>linear</tintalgo>
     </stream_tintalgo>
     <stream_taxmode>
-      <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
+      <taxmode>extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
-      <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
+      <dtlimit>1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -2622,7 +2500,6 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>extend</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.e30</dtlimit>
@@ -2655,7 +2532,6 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>extend</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.e30</dtlimit>
@@ -2688,7 +2564,6 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>extend</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.e30</dtlimit>
@@ -2721,7 +2596,6 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>extend</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.e30</dtlimit>
@@ -2754,7 +2628,6 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>extend</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.e30</dtlimit>
@@ -2787,7 +2660,6 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>extend</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.e30</dtlimit>
@@ -2820,7 +2692,6 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>extend</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.e30</dtlimit>
@@ -2853,7 +2724,6 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>extend</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.e30</dtlimit>
@@ -2886,7 +2756,6 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>extend</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.e30</dtlimit>
@@ -2919,7 +2788,6 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>extend</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.e30</dtlimit>
@@ -2952,7 +2820,6 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>extend</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.e30</dtlimit>
@@ -2985,7 +2852,6 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>extend</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.e30</dtlimit>
@@ -3018,7 +2884,6 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>extend</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.e30</dtlimit>
@@ -3051,7 +2916,6 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>extend</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.e30</dtlimit>
@@ -3084,7 +2948,6 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>extend</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.e30</dtlimit>
@@ -3117,7 +2980,6 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>extend</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.e30</dtlimit>
@@ -3156,7 +3018,6 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
       <mapalgo model_grid="1x1">nn</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -3168,11 +3029,11 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
+      <taxmode compset="DATM%1PT">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
+      <dtlimit compset="DATM%1PT">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -3204,7 +3065,6 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
       <mapalgo model_grid="1x1">nn</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -3216,11 +3076,11 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
+      <taxmode compset="DATM%1PT">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
+      <dtlimit compset="DATM%1PT">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -3252,7 +3112,6 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
       <mapalgo model_grid="1x1">nn</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -3264,11 +3123,11 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
+      <taxmode compset="DATM%1PT">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
+      <dtlimit compset="DATM%1PT">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -3311,11 +3170,11 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
+      <taxmode compset="DATM%1PT">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
+      <dtlimit compset="DATM%1PT">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -3358,11 +3217,11 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
+      <taxmode compset="DATM%1PT">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
+      <dtlimit compset="DATM%1PT">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -3405,11 +3264,11 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
+      <taxmode compset="DATM%1PT">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
+      <dtlimit compset="DATM%1PT">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -3452,10 +3311,11 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
+      <taxmode compset="DATM%1PT">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
+      <dtlimit compset="DATM%1PT">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -3498,11 +3358,11 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
+      <taxmode compset="DATM%1PT">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
+      <dtlimit compset="DATM%1PT">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -3582,7 +3442,6 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>3.0</dtlimit>
@@ -3627,7 +3486,6 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>3.0</dtlimit>
@@ -3663,7 +3521,6 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>3.0</dtlimit>
@@ -3700,7 +3557,6 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>3.0</dtlimit>
@@ -3741,7 +3597,6 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>3.0</dtlimit>
@@ -3775,7 +3630,6 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>3.0</dtlimit>
@@ -3816,11 +3670,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode model_grid="1x1">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit model_grid="1x1">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
