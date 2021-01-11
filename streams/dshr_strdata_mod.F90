@@ -856,9 +856,7 @@ contains
 
           select case(sdat%stream(ns)%readmode)
           case ('single')
-             call shr_strdata_readLBUB(sdat, ns, &
-                  ymdmod(ns), todmod, &
-                  newData(ns), trim(lstr)//'_readLBUB', rc=rc)
+             call shr_strdata_readLBUB(sdat, ns, ymdmod(ns), todmod, newData(ns), trim(lstr)//'_readLBUB', rc=rc)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
           case ('full_file')
              ! TODO: need to put in capability to read all stream data at once
@@ -1203,7 +1201,7 @@ contains
     ! if model current date is outside of model lower or upper bound - find the stream bounds
     if (rDateM < rDateLB .or. rDateM > rDateUB) then
        call ESMF_TraceRegionEnter(trim(istr)//'_fbound')
-       call shr_stream_findBounds(stream, mDate, mSec,  &
+       call shr_stream_findBounds(stream, mDate, mSec,  sdat%masterproc, &
             sdat%pstrm(ns)%ymdLB, dDateLB, sdat%pstrm(ns)%todLB, n_lb, filename_lb, &
             sdat%pstrm(ns)%ymdUB, dDateUB, sdat%pstrm(ns)%todUB, n_ub, filename_ub)
        call ESMF_TraceRegionExit(trim(istr)//'_fbound')

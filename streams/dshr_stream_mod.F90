@@ -26,7 +26,7 @@ module dshr_stream_mod
   use shr_cal_mod      , only : shr_cal_advDate
   use shr_cal_mod      , only : shr_cal_advdateint
   use dshr_methods_mod , only : chkerr
-  use pio              , only : pio_noerr, pio_seterrorhandling, pio_inq_att, pio_openfile
+  use pio              , only : pio_noerr, pio_seterrorhandling, pio_inq_att, pio_openfile, pio_closefile
   use pio              , only : file_desc_t, pio_inq_varid, iosystem_desc_t, pio_file_is_open
   use pio              , only : pio_nowrite, pio_inquire_dimension, pio_inquire_variable, pio_bcast_error
   use pio              , only : pio_get_att, pio_get_var
@@ -120,7 +120,7 @@ module dshr_stream_mod
 contains
 !===============================================================================
 
-  subroutine shr_stream_init_from_xml(xmlfilename, streamdat, mastertask, logunit, compname, rc)
+  subroutine shr_stream_init_from_xml(xmlfilename, streamdat, isroot_task, logunit, compname, rc)
 
     use FoX_DOM
     use ESMF, only : ESMF_VM, ESMF_VMGetCurrent, ESMF_VMBroadCast, ESMF_SUCCESS
@@ -154,10 +154,10 @@ contains
 
     ! input/output variables
     type(shr_stream_streamType) , intent(inout), pointer :: streamdat(:)
-    character(len=*)            , intent(in)             :: xmlfilename
-    logical                     , intent(in)             :: mastertask
     integer                     , intent(in)             :: logunit
+    logical                     , intent(in)             :: isroot_task
     character(len=*)            , intent(in)             :: compname
+    character(len=*), optional  , intent(in)             :: xmlfilename
     integer                     , intent(out)            :: rc
 
     ! local variables
@@ -176,7 +176,7 @@ contains
 
     nstrms = 0
 
-    if (mastertask) then
+    if (isroot_task) then
 
        Sdoc => parseFile(xmlfilename, iostat=status)
        if (status /= 0) then
@@ -185,7 +185,7 @@ contains
        streamlist => getElementsByTagname(Sdoc, "stream_info")
        nstrms = getLength(streamlist)
 
-       ! allocate an array of shr_stream_streamtype objects on just mastertask
+       ! allocate an array of shr_stream_streamtype objects on just isroot_task
        allocate(streamdat(nstrms))
 
        ! fill in non-default values for the streamdat attributes
@@ -291,7 +291,7 @@ contains
     call ESMF_VMBroadCast(vm, tmp, 1, 0, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     nstrms = tmp(1)
-    if (.not. mastertask) then
+    if (.not. isroot_task) then
        allocate(streamdat(nstrms))
     endif
 
@@ -311,7 +311,7 @@ contains
        streamdat(i)%yearLast  = tmp(4)
        streamdat(i)%yearAlign = tmp(5)
        streamdat(i)%offset    = tmp(6)
-       if(.not. mastertask) then
+       if(.not. isroot_task) then
           allocate(streamdat(i)%file(streamdat(i)%nfiles))
           allocate(streamdat(i)%varlist(streamdat(i)%nvars))
        endif
@@ -457,7 +457,7 @@ contains
   end subroutine shr_stream_init_from_inline
 
   !===============================================================================
-  subroutine shr_stream_findBounds(strm, mDateIn, secIn, &
+  subroutine shr_stream_findBounds(strm, mDateIn, secIn, isroot_task, &
        mDateLB, dDateLB, secLB, n_lb, fileLB,  mDateUB, dDateUB, secUB, n_ub, fileUB)
 
     !-------------------------------------------------------------------------------
@@ -471,19 +471,20 @@ contains
     !-------------------------------------------------------------------------------
 
     ! input/output parameters:
-    type(shr_stream_streamType) ,intent(inout):: strm    ! data stream to query
-    integer                     ,intent(in)   :: mDateIn ! model date (yyyymmdd)
-    integer                     ,intent(in)   ::   secIn ! elapsed sec on model date
-    integer                     ,intent(out)  :: mDateLB ! model date    of LB
-    integer                     ,intent(out)  :: dDateLB ! data  date    of LB
-    integer                     ,intent(out)  ::   secLB ! elap sec      of LB
-    integer                     ,intent(out)  ::    n_lb ! t-coord index of LB
-    character(*)                ,intent(out)  ::  fileLB ! file containing  LB
-    integer                     ,intent(out)  :: mDateUB ! model date    of UB
-    integer                     ,intent(out)  :: dDateUB ! data  date    of UB
-    integer                     ,intent(out)  ::   secUB ! elap sec      of UB
-    integer                     ,intent(out)  ::    n_ub ! t-coord index of UB
-    character(*)                ,intent(out)  ::  fileUB ! file containing  UB
+    type(shr_stream_streamType) ,intent(inout):: strm        ! data stream to query
+    integer                     ,intent(in)   :: mDateIn     ! model date (yyyymmdd)
+    integer                     ,intent(in)   :: secIn       ! elapsed sec on model date
+    logical                     ,intent(in)   :: isroot_task ! is mpi task root communicator task
+    integer                     ,intent(out)  :: mDateLB     ! model date    of LB
+    integer                     ,intent(out)  :: dDateLB     ! data  date    of LB
+    integer                     ,intent(out)  :: secLB       ! elap sec      of LB
+    integer                     ,intent(out)  :: n_lb        ! t-coord index of LB
+    character(*)                ,intent(out)  :: fileLB      ! file containing  LB
+    integer                     ,intent(out)  :: mDateUB     ! model date    of UB
+    integer                     ,intent(out)  :: dDateUB     ! data  date    of UB
+    integer                     ,intent(out)  :: secUB       ! elap sec      of UB
+    integer                     ,intent(out)  :: n_ub        ! t-coord index of UB
+    character(*)                ,intent(out)  :: fileUB      ! file containing  UB
 
     ! local variables
     integer  :: dDateIn       ! model date mapped onto a data date
@@ -572,7 +573,7 @@ contains
     if (.not. strm%found_lvd) then
        A:    do k=1,strm%nFiles
           if (.not. strm%file(k)%haveData) then
-             call shr_stream_readtCoord(strm, k, rCode)
+             call shr_stream_readtCoord(strm, k, isroot_task, rCode)
              if ( rCode /= 0 )then
                 call shr_sys_abort(trim(subName)//" ERROR: readtCoord1")
              end if
@@ -661,7 +662,7 @@ contains
              B: do k=strm%nFiles,1,-1
                 !--- read data for file number k ---
                 if (.not. strm%file(k)%haveData) then
-                   call shr_stream_readtCoord(strm, k, rCode)
+                   call shr_stream_readtCoord(strm, k, isroot_task, rCode)
                    if ( rCode /= 0 )then
                       call shr_sys_abort(trim(subName)//" ERROR: readtCoord2")
                    end if
@@ -771,7 +772,7 @@ contains
        C:    do k=strm%k_lvd,strm%nFiles
           !--- read data for file number k ---
           if (.not. strm%file(k)%haveData) then
-             call shr_stream_readtCoord(strm, k, rCode)
+             call shr_stream_readtCoord(strm, k, isroot_task, rCode)
              if ( rCode /= 0 )then
                 call shr_sys_abort(trim(subName)//" ERROR: readtCoord3")
              end if
@@ -905,14 +906,15 @@ contains
   end subroutine shr_stream_findBounds
 
   !===============================================================================
-  subroutine shr_stream_readTCoord(strm, k, rc)
+  subroutine shr_stream_readTCoord(strm, k, isroot_task, rc)
 
     ! Read in time coordinates with possible offset (require that time coordinate is 'time')
 
     ! input/output parameters:
-    type(shr_stream_streamType)  ,intent(inout) :: strm ! data stream to query
-    integer         ,intent(in)                 :: k    ! stream file index
-    integer,optional,intent(out)                :: rc   ! return code
+    type(shr_stream_streamType) ,intent(inout) :: strm ! data stream to query
+    integer                     ,intent(in)    :: k    ! stream file index
+    logical                     ,intent(in)    :: isroot_task
+    integer,optional            ,intent(out)   :: rc   ! return code
 
     ! local variables
     character(CL)          :: fileName    ! filename to read
@@ -921,7 +923,6 @@ contains
     integer                :: din,dout
     integer                :: sin,sout,offin
     integer                :: lrc
-
     integer                :: vid,ndims,rcode
     integer,allocatable    :: dids(:)
     character(CS)          :: units,calendar
@@ -932,15 +933,20 @@ contains
     integer                :: old_handle    ! previous setting of pio error handling
     real(R8)               :: nsec          ! elapsed secs on calendar date
     real(R8),allocatable   :: tvar(:)
-    character(*),parameter :: subname = '(shr_stream_readTCoord) '
-    character(*),parameter :: F01   = "('(shr_stream_readTCoord) ',a,2i7)"
+    character(*),parameter :: subname = ' (shr_stream_readTCoord) '
     !-------------------------------------------------------------------------------
 
     lrc = 0
-    if(.not. pio_file_is_open(strm%file(k)%fileid)) then
-       fileName  = trim(strm%file(k)%name)
-       rcode = pio_openfile(strm%pio_subsystem, strm%file(k)%fileid, strm%pio_iotype, &
-            filename, pio_nowrite)
+
+    ! set filename to read
+    fileName  = trim(strm%file(k)%name)
+
+    ! open file if needed
+    if (.not. pio_file_is_open(strm%file(k)%fileid)) then
+       if (isroot_task) then
+          write(strm%logunit, '(a)') trim(subname)//' opening stream filename = '//trim(filename)
+       end if
+       rcode = pio_openfile(strm%pio_subsystem, strm%file(k)%fileid, strm%pio_iotype, filename, pio_nowrite)
     endif
 
     rCode = pio_inq_varid(strm%file(k)%fileid, 'time', vid)
@@ -953,7 +959,7 @@ contains
     deallocate(dids)
 
     ! allocate memory for date and secs
-    if(.not. allocated(strm%file(k)%date)) then
+    if (.not. allocated(strm%file(k)%date)) then
        allocate(strm%file(k)%date(nt), strm%file(k)%secs(nt))
     else if(size(strm%file(k)%date) .ne. nt) then
        deallocate(strm%file(k)%date, strm%file(k)%secs)
@@ -997,10 +1003,17 @@ contains
     enddo
     deallocate(tvar)
 
+    ! close file
+    if (isroot_task) then
+       write(strm%logunit, '(a)') trim(subname)//' closing stream filename = '//trim(filename)
+    end if
+    call pio_closefile(strm%file(k)%fileid)
+
     ! if offset is not zero, adjust strm%file(k)%date(n) and strm%file(k)%secs(n)
     if (strm%offset /= 0) then
        if (size(strm%file(k)%date) /= size(strm%file(k)%secs)) then
-          write(strm%logunit,F01) "Incompatable date and secs sizes",size(strm%file(k)%date),size(strm%file(k)%secs)
+          write(strm%logunit,'(a,2i7)') trim(subname)//" Incompatable date and secs sizes",&
+               size(strm%file(k)%date), size(strm%file(k)%secs)
           call shr_sys_abort()
        endif
        num = size(strm%file(k)%date)
@@ -1186,24 +1199,27 @@ contains
     ! Returns calendar name
 
     ! input/output parameters:
-    type(shr_stream_streamType) ,intent(inout)  :: strm     ! data stream
-    integer                     ,intent(in)  :: k        ! file to query
-    character(*)                ,intent(out) :: calendar ! calendar name
+    type(shr_stream_streamType) ,intent(inout) :: strm     ! data stream
+    integer                     ,intent(in)    :: k        ! file to query
+    character(*)                ,intent(out)   :: calendar ! calendar name
 
     ! local
     integer                :: vid, n
     character(CL)          :: fileName,lcal
     integer                :: old_handle
     integer                :: rCode
-    character(*),parameter :: subName = '(shr_stream_getCalendar) '
+    character(*),parameter :: subName = ' (shr_stream_getCalendar) '
     !-------------------------------------------------------------------------------
 
     lcal = ' '
     calendar = ' '
     if (k > strm%nfiles) call shr_sys_abort(subname//' ERROR: k gt nfiles')
 
-    if(.not. pio_file_is_open(strm%file(k)%fileid)) then
-       fileName  = strm%file(k)%name
+    fileName  = strm%file(k)%name
+
+    if (.not. pio_file_is_open(strm%file(k)%fileid)) then
+       ! TODO: add isroot_task
+       !write(strm%logunit, '(a)') trim(subname)//' opening stream filename = '//trim(filename)
        rcode = pio_openfile(strm%pio_subsystem, strm%file(k)%fileid, strm%pio_iotype, trim(filename))
     endif
 
@@ -1221,6 +1237,10 @@ contains
     if (ichar(lcal(n:n)) == 0 ) lcal(n:n) = ' '
     call shr_string_leftalign_and_convert_tabs(lcal)
     calendar = trim(shr_cal_calendarName(trim(lcal)))
+    
+    ! TODO: add isroot_task
+    !write(strm%logunit, '(a)') trim(subname)//' closing stream filename = '//trim(filename)
+    call pio_closefile(strm%file(k)%fileid)
 
   end subroutine shr_stream_getCalendar
 
@@ -1379,20 +1399,26 @@ contains
 
   end subroutine shr_stream_getNFiles
 
+  !===============================================================================
   subroutine shr_stream_restIO(pioid, streams, mode)
+
     use pio, only : pio_def_dim, pio_def_var, pio_put_var, pio_get_var, file_desc_t, var_desc_t
     use pio, only : pio_int, pio_char
-    type(file_desc_t), intent(inout) :: pioid
-    type(shr_stream_streamType), intent(inout) :: streams(:)
-    character(len=*), intent(in) :: mode  ! read, write, define
 
-    type(var_desc_t) :: varid, tvarid, dvarid, ntvarid, hdvarid
-    integer :: rcode
-    integer :: dimid_stream, dimid_files,dimid_nt, dimid_str
-    integer :: n, k, maxnfiles=0
-    integer :: maxnt = 0
+    ! input/out variables
+    type(file_desc_t)           , intent(inout) :: pioid
+    type(shr_stream_streamType) , intent(inout) :: streams(:)
+    character(len=*)            , intent(in)    :: mode  ! read, write, define
+
+    ! local variables
+    type(var_desc_t)     :: varid, tvarid, dvarid, ntvarid, hdvarid
+    integer              :: rcode
+    integer              :: dimid_stream, dimid_files,dimid_nt, dimid_str
+    integer              :: n, k, maxnfiles=0
+    integer              :: maxnt = 0
     integer, allocatable :: tmp(:)
-    character(len=CL) :: fname
+    character(len=CL)    :: fname
+    !-------------------------------------------------------------------------------
 
     if (mode .eq. 'define') then
        rcode = pio_def_dim(pioid, 'strlen',   CL, dimid_str)
