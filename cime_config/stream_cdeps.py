@@ -99,8 +99,12 @@ class StreamCDEPS(GenericXML):
                         stream_datafiles = child.xml_element.text
                         stream_datafiles = self._resolve_values(case, stream_datafiles)
                         if 'first_year' in child.xml_element.attrib and 'last_year' in child.xml_element.attrib:
-                            stream_year_first= int(child.xml_element.get('first_year'))
-                            stream_year_last = int(child.xml_element.get('last_year'))
+                            value = child.xml_element.get('first_year') 
+                            value = self._resolve_values(case, value)
+                            stream_year_first= int(value)
+                            value = child.xml_element.get('last_year') 
+                            value = self._resolve_values(case, value)
+                            stream_year_last = int(value)
                             year_first = max(stream_year_first, data_year_first)
                             year_last = min(stream_year_last, data_year_last)
                             stream_datafiles = self._sub_paths(stream_datafiles, year_first, year_last)
@@ -117,6 +121,7 @@ class StreamCDEPS(GenericXML):
                       or node_name == 'stream_taxmode' 
                       or node_name == 'stream_dtlimit'):
                     attributes['model_grid'] = case.get_value("GRID")
+                    attributes['compset'] = case.get_value("COMPSET")
                     value = self._get_value_match(node, node_name[7:], attributes=attributes)
                     value = self._resolve_values(case, value)
                     value = value.strip()
