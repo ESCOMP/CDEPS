@@ -18,6 +18,11 @@
   %ym   => year-month from the range yearfirst to yearlast with all 12 months
   %ymd  => year-month-day from the range yearfirst to yearlast with all 12 months
 
+  ****** 
+  NOTE:
+  any <file></file> entry that has %y, %ym or %ymd MUST have first_year and last_year syntax
+  ****** 
+
   Each mode below, except for presaero, has a set of streams associated with it
   The presaero stream, is associated with all modes
 
@@ -538,7 +543,7 @@
       <meshfile>$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.Qian.T62.c080727/clmforc.Qian.c2006.T62.ESMFmesh_120620.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file>$DIN_LOC_ROOT/atm/datm7/atm_forcing_iso.datm7.Qian.T62.c080727/Precip6Hrly/clmforc.Qian.c2006.T62.Prec.%ym.nc</file>
+      <file  first_year="1948" last_year="2004">$DIN_LOC_ROOT/atm/datm7/atm_forcing_iso.datm7.Qian.T62.c080727/Precip6Hrly/clmforc.Qian.c2006.T62.Prec.%ym.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>PRECTmms Faxa_precn</var>
@@ -710,7 +715,7 @@
       <meshfile>none</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file >$DIN_LOC_ROOT/atm/datm7/CLM1PT_data/mexicocityMEX.c080124/clm1pt-1993-12.nc</file>
+      <file>$DIN_LOC_ROOT/atm/datm7/CLM1PT_data/mexicocityMEX.c080124/clm1pt-1993-12.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>ZBOT     Sa_z</var>
@@ -846,10 +851,10 @@
 
   <stream_entry name="BC.QIAN.Precip">
     <stream_meshfile>
-      <meshfile><!-- $DIN_LOC_ROOT/atm/datm7/bias_correction/precip/gpcp/qian/bias_correction.Prec.%y.nc --></meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/bias_correction_gpcp_qian.Prec_ESMFmesh_cdf5_110121.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file>$DIN_LOC_ROOT/atm/datm7/bias_correction/precip/gpcp/qian/bias_correction.Prec.%y.nc</file>
+      <file first_year="1979" last_year="2004">$DIN_LOC_ROOT/atm/datm7/bias_correction/precip/gpcp/qian/bias_correction.Prec.%y.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>BC_PREC  Faxa_precsf</var>
@@ -878,10 +883,10 @@
 
   <stream_entry name="BC.CRUNCEP.GPCP.Precip">
     <stream_meshfile>
-      <meshfile><!-- $DIN_LOC_ROOT/atm/datm7/clm_output/cruncep_precip_1deg/gpcp_1deg_bias_correction/bias_correction.Prec.%y.nc --></meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/bias_correction_gpcp_cruncep.Prec_ESMFmesh_cdf5_110121.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file>$DIN_LOC_ROOT/atm/datm7/clm_output/cruncep_precip_1deg/gpcp_1deg_bias_correction/bias_correction.Prec.%y.nc</file>
+      <file first_year="1979" last_year="2012">$DIN_LOC_ROOT/atm/datm7/clm_output/cruncep_precip_1deg/gpcp_1deg_bias_correction/bias_correction.Prec.%y.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>BC_PREC  Faxa_precsf</var>
@@ -910,10 +915,10 @@
 
   <stream_entry name="BC.CRUNCEP.CMAP.Precip">
     <stream_meshfile>
-      <meshfile><!-- $DIN_LOC_ROOT/atm/datm7/bias_correction/precip/cmap/cruncep/bias_correction.Prec.%y.nc --></meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/bias_correction_gpcp_cmap.Prec_ESMFmesh_cdf5_110121.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file>$DIN_LOC_ROOT/atm/datm7/bias_correction/precip/cmap/cruncep/bias_correction.Prec.%y.nc</file>
+      <file first_year="1979" last_year="2010">$DIN_LOC_ROOT/atm/datm7/bias_correction/precip/cmap/cruncep/bias_correction.Prec.%y.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>BC_PREC  Faxa_precsf</var>
@@ -3422,7 +3427,7 @@
       <meshfile>$ATM_DOMAIN_MESH</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file>$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.ha2x3h.%ym.nc</file>
+      <file first_year="$DATM_CPLHIST_YR_START" last_year="$DATM_CPLHIST_YR_END">$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.ha2x3h.%ym.nc</file>
    </stream_datafiles>
     <stream_datavars>
       <var>a2x3h_Sa_topo  Sa_topo</var>
@@ -3453,7 +3458,7 @@
       <meshfile>$ATM_DOMAIN_MESH</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file>$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.ha2x1d.%ym.nc</file>
+      <file first_year="$DATM_CPLHIST_YR_START" last_year="$DATM_CPLHIST_YR_END">$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.ha2x1d.%ym.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>a2x1d_Faxa_bcphiwet  Faxa_bcphiwet</var>
@@ -3498,7 +3503,7 @@
       <meshfile>$ATM_DOMAIN_MESH</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file>$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.ha2x1hi.%ym.nc</file>
+      <file first_year="$DATM_CPLHIST_YR_START" last_year="$DATM_CPLHIST_YR_END">$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.ha2x1hi.%ym.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>a2x1hi_Faxa_swndr Faxa_swndr</var>
@@ -3533,7 +3538,7 @@
       <meshfile>$ATM_DOMAIN_MESH</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file>$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.ha2x3h.%ym.nc</file>
+      <file first_year="$DATM_CPLHIST_YR_START" last_year="$DATM_CPLHIST_YR_END">$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.ha2x3h.%ym.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>a2x3h_Faxa_rainc Faxa_rainc</var>
@@ -3569,7 +3574,7 @@
       <meshfile>$ATM_DOMAIN_MESH</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file>$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.ha2x3h.%ym.nc</file>
+      <file first_year="$DATM_CPLHIST_YR_START" last_year="$DATM_CPLHIST_YR_END">$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.ha2x3h.%ym.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>a2x3h_Sa_z       Sa_z</var>
@@ -3609,7 +3614,7 @@
       <meshfile>$ATM_DOMAIN_MESH</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file>$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.ha2x1h.%ym.nc</file>
+      <file first_year="$DATM_CPLHIST_YR_START" last_year="$DATM_CPLHIST_YR_END">$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.ha2x1h.%ym.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>a2x1h_Sa_u  Sa_u</var>
