@@ -65,10 +65,10 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     # Initialize namelist defaults
     config = {}
     config['model_grid'] = model_grid
-    config['mask_grid'] = mask_grid
     config['ocn_grid'] = ocn_grid
     config['docn_mode'] = docn_mode
     config['create_mesh'] = 'true' if case.get_value("OCN_DOMAIN_MESH") == 'create_mesh' else 'false'
+    config['aqua_planet'] = 'true' if 'aquap' in docn_mode else 'false'
     scol_mode = True if case.get_value('PTS_MODE') else False
 
     nmlgen.init_defaults(infile, config)

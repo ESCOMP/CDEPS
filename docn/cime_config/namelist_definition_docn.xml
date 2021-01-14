@@ -133,12 +133,8 @@
       MESH for ocn mask
     </desc>
     <values>
-      <!-- TODO: need to move these to config_grids.xml -->
-      <value>$OCN_DOMAIN_MESH</value>
-      <value mask_grid="gx3v7">$DIN_LOC_ROOT/share/meshes/gx1v6_090205_ESMFmesh.nc</value>
-      <value mask_grid="gx1v7">$DIN_LOC_ROOT/share/meshes/gx1v7_151008_ESMFmesh.nc</value>
-      <value mask_grid="tx0.66v1">$DIN_LOC_ROOT/share/meshes/tx0.66v1_190314_ESMFmesh.nc</value>
-      <value mask_grid="tx0.1v2">$DIN_LOC_ROOT/share/meshes/tx0.25v1_190204_ESMFmesh.nc</value>
+      <value>$MASK_MESH</value>
+      <value aqua_planet="true">$ATM_DOMAIN_MESH</value>
     </values>
   </entry>
 

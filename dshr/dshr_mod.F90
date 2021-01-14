@@ -1601,6 +1601,7 @@ contains
     integer                :: n, spatialDim
     real(r8)               :: fminval = 0.001_r8
     real(r8)               :: fmaxval = 1._r8
+    real(r8)               :: lfrac,ofrac
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -1652,21 +1653,26 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_FieldGet(field_dst, farrayptr=dataptr1d, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
-    frac_dst(:) = dataptr1d(:)
+
     do n = 1,lsize_dst
+       lfrac = 1._r8 - dataptr1d(n)
+       if (lfrac > fmaxval) lfrac = 1._r8
+       if (lfrac < fminval) lfrac = 0._r8
+       ofrac = 1._r8 - lfrac
        if (compname == 'LND') then
-          frac_dst(n) = 1._r8 - frac_dst(n)
-       end if
-       if (frac_dst(n) > fmaxval) then
-          frac_dst(n) = 1._r8
-       end if
-       if (frac_dst(n) < fminval) then
-          frac_dst(n) = 0._r8
-       end if
-       if (frac_dst(n) /= 0._r8) then
-          mask_dst(n) = 1
-       else
-          mask_dst(n) = 0
+          frac_dst(n) = lfrac
+          if (lfrac /= 0._r8) then
+             mask_dst(n) = 1
+          else
+             mask_dst(n) = 0
+          end if
+       else if (compname == 'OCN' .or. compname == 'ICE') then
+          frac_dst(n) = ofrac
+          if (ofrac == 0._r8) then
+             mask_dst(n) = 0
+          else
+             mask_dst(n) = 1
+          end if
        end if
     enddo
 
