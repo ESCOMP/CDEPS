@@ -85,6 +85,9 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
 
     # Determine streams
     streamlist = nmlgen.get_streams()
+    if type(streamlist) == type(str()):
+        streamlist = []
+
     if datm_presaero != "none":
         streamlist.append("presaero.{}".format(datm_presaero))
     if datm_topo != "none":
@@ -97,7 +100,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     anomaly_forcing = nmlgen.get_value("anomaly_forcing")
     if anomaly_forcing[0] is not None:
         streamlist += anomaly_forcing
-    
+
     # Generate datm.streams.xml
     stream_file = os.path.join(_CDEPS_CONFIG,os.pardir, "datm","cime_config","stream_definition_datm.xml")
     schema_file = os.path.join(_CDEPS_CONFIG,"streams_v2.0.xsd")
