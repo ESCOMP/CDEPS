@@ -1,6 +1,6 @@
 module datm_datamode_era5_mod
 
-  use ESMF
+  use ESMF             , only : ESMF_State, ESMF_SUCCESS, ESMF_LogWrite, ESMF_LOGMSG_INFO
   use NUOPC            , only : NUOPC_Advertise
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_sys_mod      , only : shr_sys_abort
@@ -60,7 +60,7 @@ module datm_datamode_era5_mod
   real(r8) , parameter :: tKFrz    = SHR_CONST_TKFRZ
   real(r8) , parameter :: rdair    = SHR_CONST_RDAIR ! dry air gas constant ~ J/K/kg
   real(r8) , parameter :: rhofw    = SHR_CONST_RHOFW ! density of fresh water ~ kg/m^3
-  
+
   character(*), parameter :: nullstr = 'undefined'
   character(*), parameter :: rpfile  = 'rpointer.atm'
   character(*), parameter :: u_FILE_u = &
@@ -248,7 +248,7 @@ contains
 
        !--- calculate wind speed ---
        if (associated(Sa_wspd)) then
-         Sa_wspd(n) = sqrt(Sa_u(n)*Sa_u(n)+Sa_v(n)*Sa_v(n)) 
+         Sa_wspd(n) = sqrt(Sa_u(n)*Sa_u(n)+Sa_v(n)*Sa_v(n))
        end if
 
        !--- temperature ---
@@ -316,7 +316,7 @@ contains
   !===============================================================================
   subroutine datm_datamode_era5_restart_write(case_name, inst_suffix, ymd, tod, &
        logunit, my_task, sdat)
-    
+
     ! input/output variables
     character(len=*)            , intent(in)    :: case_name
     character(len=*)            , intent(in)    :: inst_suffix
