@@ -4,7 +4,14 @@ module ice_comp_nuopc
   ! This is the NUOPC cap for DICE
   !----------------------------------------------------------------------------
 
-  use ESMF
+  use ESMF                 , only : ESMF_Mesh, ESMF_GridComp, ESMF_State, ESMF_Clock
+  use ESMF                 , only : ESMF_SUCCESS, ESMF_Time, ESMF_LogWrite, ESMF_LOGMSG_INFO
+  use ESMF                 , only : ESMF_TraceRegionEnter, ESMF_TraceRegionExit
+  use ESMF                 , only : ESMF_Alarm, ESMF_TimeInterval, ESMF_TimeIntervalGet
+  use ESMF                 , only : ESMF_AlarmIsRinging, ESMF_METHOD_INITIALIZE
+  use ESMF                 , only : ESMF_ClockGet, ESMF_TimeGet, ESMF_MethodRemove, ESMF_MethodAdd
+  use ESMF                 , only : ESMF_GridCompSetEntryPoint, operator(+), ESMF_AlarmRingerOff
+  use ESMF                 , only : ESMF_ClockGetAlarm
   use NUOPC                , only : NUOPC_CompDerive, NUOPC_CompSetEntryPoint, NUOPC_CompSpecialize
   use NUOPC                , only : NUOPC_CompAttributeGet, NUOPC_Advertise
   use NUOPC_Model          , only : model_routine_SS        => SetServices
