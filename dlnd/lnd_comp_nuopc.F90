@@ -212,7 +212,6 @@ contains
           write(logunit,F00)' model_maskfile = ',trim(model_maskfile)
        end if
        write(logunit ,*)' datamode              = ',datamode
-       write(logunit ,*)' model_meshfile        = ',trim(model_meshfile)
        write(logunit ,*)' nx_global             = ',nx_global
        write(logunit ,*)' ny_global             = ',ny_global
        write(logunit ,*)' restfilm              = ',trim(restfilm)

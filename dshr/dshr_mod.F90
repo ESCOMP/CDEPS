@@ -273,7 +273,8 @@ contains
     ! (1) if asked to create the mesh
     !     - create mesh from input file given by model_createmesh_fromfile
     !     - if single column find the nearest neighbor in model_createmesh_fromfile
-    ! (2) if not single column - obtain the mesh directly from the mesh input
+    ! (2) if not single column - obtain the mesh directly from the mesh input 
+    !     - reset the model mesh if the model maskfile is not equal to the model mesh file 
 
     if (trim(model_meshfile) == nullstr) then
 
@@ -319,7 +320,7 @@ contains
           scol_lat  = shr_const_spval
        end if
 
-       ! Now create the model meshfile using the model_maskfile as the input file
+       ! Now create the model meshfile
        call dshr_mesh_create(trim(model_createmesh_fromfile), scol_mode, scol_lon, scol_lat, &
             trim(compname), my_task, logunit, model_mesh, model_mask, model_frac, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -330,61 +331,20 @@ contains
        model_mesh = ESMF_MeshCreate(trim(model_meshfile), fileformat=ESMF_FILEFORMAT_ESMFMESH, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-       ! TODO: need a check that the mask file has the same grid as the model mesh
        ! Reset the model mesh mask if the mask file is different from the mesh file
        if (trim(model_meshfile) /= trim(model_maskfile)) then
 
-          pio_subsystem => shr_pio_getiosys(trim(compname))
-          io_type       =  shr_pio_getiotype(trim(compname))
-          io_format     =  shr_pio_getioformat(trim(compname))
-
-          ! obtain lsize and model_gindex
-          call ESMF_MeshGet(model_mesh, elementdistGrid=distGrid, rc=rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          call ESMF_DistGridGet(distGrid, localDe=0, elementCount=lsize, rc=rc)
+          ! obtain the model mask by mapping the mesh created by reading in the model_maskfile to the
+          ! model mesh and then reset the model mesh mask
+          call dshr_set_modelmask(model_mesh, model_maskfile, compname, model_mask, model_frac, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-          ! allocate memory for model_mask and model_frac
-          allocate(model_frac(lsize))
-          allocate(model_mask(lsize))
-
-          ! get model_gindex (allocate memory first)
-          allocate(model_gindex(lsize))
-          call ESMF_DistGridGet(distGrid, localDe=0, seqIndexList=model_gindex, rc=rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-          ! obtain model mask and model frac from separate model_maskfile
-          rcode = pio_openfile(pio_subsystem, pioid, io_type, trim(model_maskfile), pio_nowrite)
-          call pio_seterrorhandling(pioid, PIO_BCAST_ERROR)
-          rcode = pio_inq_varid(pioid, 'mask', varid)
-          if ( rcode /= PIO_NOERR ) then
-             call shr_sys_abort(' ERROR: variable mask not found in file '//trim(model_maskfile))
+          if (masterproc) then
+             write(logunit,F00) trim(subname)// " obtained "//trim(compname)//" mesh from "// &
+                  trim(model_meshfile)
+             write(logunit,F00) trim(subname)// " obtained "//trim(compname)//" mask from "// &
+                  trim(model_maskfile)
           end if
-          call pio_seterrorhandling(pioid, PIO_INTERNAL_ERROR)
-          call pio_initdecomp(pio_subsystem, pio_int, (/model_nxg, model_nyg/), model_gindex, pio_iodesc)
-          call pio_read_darray(pioid, varid, pio_iodesc, model_mask, rcode)
-          call pio_freedecomp(pio_subsystem, pio_iodesc)
-
-          ! obtain model model frac from separate model_maskfile
-          call pio_seterrorhandling(pioid, PIO_BCAST_ERROR)
-          rcode = pio_inq_varid(pioid, 'frac', varid)
-          if ( rcode /= PIO_NOERR ) then
-             call shr_sys_abort(' ERROR: variable frac not found in file '//trim(model_maskfile))
-          end if
-          call pio_seterrorhandling(pioid, PIO_INTERNAL_ERROR)
-          call pio_initdecomp(pio_subsystem, pio_double, (/model_nxg, model_nyg/), model_gindex, pio_iodesc)
-          call pio_read_darray(pioid, varid, pio_iodesc, model_frac, rcode)
-          call pio_freedecomp(pio_subsystem, pio_iodesc)
-
-          ! close file
-          call pio_closefile(pioid)
-
-          ! deallocate pointers
-          deallocate(model_gindex)
-
-          ! reset the model mesh mask
-          call ESMF_MeshSet(model_mesh, elementMask=model_mask, rc=rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
        else ! model_meshfile and model_maskfile are the same
 
@@ -407,13 +367,13 @@ contains
           call ESMF_ArrayDestroy(elemMaskArray, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
+          if (masterproc) then
+             write(logunit,F00) trim(subname)// " obtained "//trim(compname)//" mesh and mask from "// &
+                  trim(model_meshfile)
+          end if
        end if
-
     end if
 
-    if (masterproc) then
-       write(logunit,F00) trim(subname)// " obtaining "//trim(compname)//" mesh from "// trim(model_meshfile)
-    end if
 
   end subroutine dshr_mesh_init
 
@@ -1607,5 +1567,128 @@ contains
     getNextRadCDay_i8 = nextsw_cday
 
   end function getNextRadCDay_i8
+
+  !===============================================================================
+  subroutine dshr_set_modelmask(mesh_dst, meshfile_mask, compname, mask_dst, frac_dst, rc)
+
+    use ESMF, only : ESMF_FieldRegridStore, ESMF_FieldRegrid, ESMF_FIELDCREATE
+    use ESMF, only : ESMF_REGRIDMETHOD_CONSERVE, ESMF_NORMTYPE_DSTAREA, ESMF_UNMAPPEDACTION_IGNORE
+    use ESMF, only : ESMF_TYPEKIND_R8, ESMF_MESHLOC_ELEMENT
+    use ESMF, only : ESMF_RouteHandleDestroy, ESMF_FieldDestroy
+
+    ! input/out variables
+    type(ESMF_Mesh)     , intent(in)  :: mesh_dst
+    character(len=*)    , intent(in)  :: meshfile_mask
+    character(len=*)    , intent(in)  :: compname
+    integer , pointer   , intent(out) :: mask_dst(:)
+    real(r8), pointer   , intent(out) :: frac_dst(:)
+    integer             , intent(out) :: rc
+
+    ! local variables:
+    type(ESMF_Mesh)        :: mesh_mask
+    type(ESMF_Field)       :: field_mask
+    type(ESMF_Field)       :: field_dst
+    type(ESMF_RouteHandle) :: rhandle
+    integer                :: srcMaskValue = 0
+    integer                :: dstMaskValue = -987987 ! spval for RH mask values
+    integer                :: srcTermProcessing_Value = 0
+    logical                :: checkflag = .false.
+    real(r8) , pointer     :: mask_src(:) ! on mesh created from meshfile_mask
+    real(r8) , pointer     :: dataptr1d(:)
+    type(ESMF_DistGrid)    :: distgrid_mask
+    type(ESMF_Array)       :: elemMaskArray
+    integer                :: lsize_mask, lsize_dst
+    integer                :: n, spatialDim
+    real(r8)               :: fminval = 0.001_r8
+    real(r8)               :: fmaxval = 1._r8
+    real(r8)               :: lfrac,ofrac
+    !-------------------------------------------------------------------------------
+
+    rc = ESMF_SUCCESS
+
+    mesh_mask = ESMF_MeshCreate(trim(meshfile_mask), fileformat=ESMF_FILEFORMAT_ESMFMESH, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    call ESMF_MeshGet(mesh_dst, spatialDim=spatialDim, numOwnedElements=lsize_dst, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    allocate(mask_dst(lsize_dst))
+    allocate(frac_dst(lsize_dst))
+
+    ! create fields on source and destination meshes
+    field_mask = ESMF_FieldCreate(mesh_mask, ESMF_TYPEKIND_R8, meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    field_dst = ESMF_FieldCreate(mesh_dst, ESMF_TYPEKIND_R8, meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    ! create route handle to map source mask (assume ocean) to destination mesh (assume atm/lnd)
+    call ESMF_FieldRegridStore(field_mask, field_dst, routehandle=rhandle, &
+         srcMaskValues=(/srcMaskValue/), dstMaskValues=(/dstMaskValue/), &
+         regridmethod=ESMF_REGRIDMETHOD_CONSERVE, normType=ESMF_NORMTYPE_DSTAREA, &
+         srcTermProcessing=srcTermProcessing_Value, &
+         ignoreDegenerate=.true., unmappedaction=ESMF_UNMAPPEDACTION_IGNORE, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+
+    ! fill in values for field_mask with mask on source mesh
+    call ESMF_MeshGet(mesh_mask, elementdistGrid=distgrid_mask, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_DistGridGet(distgrid_mask, localDe=0, elementCount=lsize_mask, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    allocate(mask_src(lsize_mask))
+    elemMaskArray = ESMF_ArrayCreate(distgrid_mask, mask_src, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    ! The following call fills in the values of mask_src
+    call ESMF_MeshGet(mesh_mask, elemMaskArray=elemMaskArray, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    ! The following call fills in the values of field_mask
+    call ESMF_FieldGet(field_mask, farrayptr=dataptr1d, rc=rc)
+    dataptr1d(:) = mask_src(:)
+
+    ! map source mask to destination mesh - to obtain destination mask and frac
+    call ESMF_FieldRegrid(field_mask, field_dst, routehandle=rhandle, &
+         termorderflag=ESMF_TERMORDER_SRCSEQ, checkflag=checkflag, zeroregion=ESMF_REGION_TOTAL, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+
+    ! now determine mask_dst and frac_dst 
+    call ESMF_MeshGet(mesh_dst, spatialDim=spatialDim, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_FieldGet(field_dst, farrayptr=dataptr1d, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+
+    do n = 1,lsize_dst
+       lfrac = 1._r8 - dataptr1d(n)
+       if (lfrac > fmaxval) lfrac = 1._r8
+       if (lfrac < fminval) lfrac = 0._r8
+       ofrac = 1._r8 - lfrac
+       if (compname == 'LND') then
+          frac_dst(n) = lfrac
+          if (lfrac /= 0._r8) then
+             mask_dst(n) = 1
+          else
+             mask_dst(n) = 0
+          end if
+       else if (compname == 'OCN' .or. compname == 'ICE') then
+          frac_dst(n) = ofrac
+          if (ofrac == 0._r8) then
+             mask_dst(n) = 0
+          else
+             mask_dst(n) = 1
+          end if
+       end if
+    enddo
+
+    ! reset the model mesh mask
+    call ESMF_MeshSet(mesh_dst, elementMask=mask_dst, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    ! deallocate memory
+    call ESMF_RouteHandleDestroy(rhandle, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_FieldDestroy(field_mask, rc=rc) 
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_FieldDestroy(field_dst, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    deallocate(mask_src)
+
+  end subroutine dshr_set_modelmask
 
 end module dshr_mod
