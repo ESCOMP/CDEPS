@@ -122,7 +122,8 @@ contains
 
   subroutine shr_stream_init_from_xml(xmlfilename, streamdat, mastertask, logunit, compname, rc)
 
-    use FoX_DOM
+    use FoX_DOM, only : extractDataContent, destroy, Node, NodeList, parseFile, getElementsByTagname
+    use FoX_DOM, only : getLength, item
     use ESMF, only : ESMF_VM, ESMF_VMGetCurrent, ESMF_VMBroadCast, ESMF_SUCCESS
 
     ! ---------------------------------------------------------------------
@@ -140,7 +141,7 @@ contains
     !    <yearAlign></yearAlign>
     !    <stream_vectors></stream_vectors>
     !    <stream_mesh_file></stream_mesh_file>
-    !    <stream_lev_dimname></stream_lev_dimname> 
+    !    <stream_lev_dimname></stream_lev_dimname>
     !    <stream_data_files>
     !      <file></file>
     !    </stream_data_files>
