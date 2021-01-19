@@ -1,9 +1,11 @@
 project(datm Fortran)
 set(SRCFILES atm_comp_nuopc.F90
              datm_datamode_clmncep_mod.F90
+             datm_datamode_cplhist_mod.F90
              datm_datamode_core2_mod.F90
              datm_datamode_jra_mod.F90
              datm_datamode_era5_mod.F90)
+
 
 foreach(FILE ${SRCFILES})
   if(EXISTS "${CASEROOT}/SourceMods/src.datm/${FILE}")

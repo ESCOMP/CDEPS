@@ -61,7 +61,6 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     config = {}
     config['dlnd_mode'] = dlnd_mode
     config['create_mesh'] = 'true' if case.get_value("LND_DOMAIN_MESH") == 'create_mesh' else 'false'
-    config['set_model_maskfile'] = 'true' if dlnd_mode == 'SCPL' or dlnd_mode == 'LCPL' else 'false'
 
     # Do not allow single column mode for drof
     scol_mode = True if case.get_value('PTS_MODE') else False
