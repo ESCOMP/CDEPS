@@ -2,7 +2,16 @@ module dshr_methods_mod
 
   ! Share methods for data model functionality
 
-  use ESMF
+  use ESMF         , only : ESMF_State, ESMF_Field, ESMF_StateGet, ESMF_FieldBundle
+  use ESMF         , only : ESMF_LogWrite, ESMF_SUCCESS, ESMF_FAILURE
+  use ESMF         , only : ESMF_StateRemove, ESMF_StateGet, ESMF_RouteHandle
+  use ESMF         , only : ESMF_Region_Flag, ESMF_FieldStatus_Flag, ESMF_LOGMSG_INFO
+  use ESMF         , only : ESMF_MAXSTR, ESMF_LOGMSG_ERROR, ESMF_LOGERR_PASSTHRU
+  use ESMF         , only : ESMF_FieldBundleGet, ESMF_FieldBundleAdd, ESMF_FieldGet
+  use ESMF         , only : ESMF_REGION_TOTAL, ESMF_END_ABORT, ESMF_ITEMORDER_ADDORDER
+  use ESMF         , only : ESMF_LogFoundError, ESMF_FieldRegrid, ESMF_Finalize, ESMF_FIELDSTATUS_COMPLETE
+  use ESMF         , only : ESMF_TERMORDER_SRCSEQ, operator(/=)
+  use ESMF         , only : ESMF_TraceRegionEnter, ESMF_TraceRegionExit
   use shr_kind_mod , only : r8=>shr_kind_r8, cs=>shr_kind_cs, cl=>shr_kind_cl
 
   implicit none
