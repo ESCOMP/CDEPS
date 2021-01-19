@@ -3,8 +3,20 @@ module dshr_strdata_mod
   ! holds data and methods to advance data models
   ! Obtain the model domain and the stream domain for each stream
 
-  use ESMF
-
+  use ESMF             , only : ESMF_Mesh, ESMF_RouteHandle, ESMF_Field, ESMF_FieldBundle
+  use ESMF             , only : ESMF_Clock, ESMF_VM, ESMF_VMGet, ESMF_VMGetCurrent
+  use ESMF             , only : ESMF_DistGrid, ESMF_SUCCESS, ESMF_MeshGet, ESMF_DistGridGet
+  use ESMF             , only : ESMF_VMBroadCast, ESMF_MeshIsCreated, ESMF_MeshCreate
+  use ESMF             , only : ESMF_Calendar, ESMF_CALKIND_NOLEAP, ESMF_CALKIND_GREGORIAN
+  use ESMF             , only : ESMF_CalKind_Flag, ESMF_Time, ESMF_TimeInterval
+  use ESMF             , only : ESMF_TimeIntervalGet, ESMF_TYPEKIND_R8, ESMF_FieldCreate
+  use ESMF             , only : ESMF_FILEFORMAT_ESMFMESH, ESMF_FieldCreate
+  use ESMF             , only : ESMF_FieldBundleCreate, ESMF_MESHLOC_ELEMENT, ESMF_FieldBundleAdd
+  use ESMF             , only : ESMF_POLEMETHOD_ALLAVG, ESMF_EXTRAPMETHOD_NEAREST_STOD, ESMF_REGRIDMETHOD_BILINEAR, ESMF_REGRIDMETHOD_NEAREST_STOD
+  use ESMF             , only : ESMF_ClockGet, operator(-), operator(==), ESMF_CALKIND_NOLEAP
+  use ESMF             , only : ESMF_FieldReGridStore, ESMF_FieldRedistStore, ESMF_UNMAPPEDACTION_IGNORE
+  use ESMF             , only : ESMF_TERMORDER_SRCSEQ, ESMF_FieldRegrid, ESMF_FieldFill
+  use ESMF             , only : ESMF_REGION_TOTAL, ESMF_FieldGet, ESMF_TraceRegionExit, ESMF_TraceRegionEnter
   use shr_kind_mod     , only : r8=>shr_kind_r8, r4=>shr_kind_r4, i2=>shr_kind_I2
   use shr_kind_mod     , only : cs=>shr_kind_cs, cl=>shr_kind_cl, cxx=>shr_kind_cxx
   use shr_sys_mod      , only : shr_sys_abort
@@ -403,7 +415,7 @@ contains
        ! Determine field names for stream fields with both stream file names and data model names
        nvars = sdat%stream(ns)%nvars
 
-       ! Allocate memory 
+       ! Allocate memory
        allocate(sdat%pstrm(ns)%fldList_model(nvars))
        call shr_stream_getModelFieldList(sdat%stream(ns), sdat%pstrm(ns)%fldlist_model)
        allocate(sdat%pstrm(ns)%fldlist_stream(nvars))
@@ -1297,7 +1309,7 @@ contains
     integer                  :: pio_iovartype
     real(r8), pointer        :: nv_coords(:), nu_coords(:)
     real(r8), pointer        :: data_u_dst(:), data_v_dst(:)
-    real(r8)                 :: lat, lon 
+    real(r8)                 :: lat, lon
     real(r8)                 :: sinlat, sinlon
     real(r8)                 :: coslat, coslon
     real(r8)                 :: scale_factor, add_offset
@@ -1679,7 +1691,7 @@ contains
           data_u_dst(i) =  coslon * dataptr2d_dst(1,i) + sinlon * dataptr2d_dst(2,i)
           data_v_dst(i) = -sinlon * dataptr2d_dst(1,i) + coslon * dataptr2d_dst(2,i)
        enddo
-       
+
        deallocate(dataptr)
     endif
 
