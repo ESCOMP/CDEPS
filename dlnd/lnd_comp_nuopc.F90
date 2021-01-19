@@ -4,7 +4,13 @@ module lnd_comp_nuopc
   ! This is the NUOPC cap for DLND
   !----------------------------------------------------------------------------
 
-  use ESMF
+  use ESMF              , only : ESMF_Mesh, ESMF_GridComp, ESMF_SUCCESS, ESMF_LOGMSG_INFO
+  use ESMF              , only : ESMF_LogWrite, ESMF_TraceRegionExit, ESMF_TraceRegionEnter
+  use ESMF              , only : ESMF_Clock, ESMF_Alarm, ESMF_State, ESMF_ClockGet, ESMF_timeGet
+  use ESMF              , only : ESMF_Time, ESMF_TimeInterval, ESMF_METHOD_INITIALIZE
+  use ESMF              , only : ESMF_MethodAdd, ESMF_MethodRemove
+  use ESMF              , only : ESMF_ClockGetAlarm, ESMF_AlarmIsRinging, ESMF_AlarmRingerOff
+  use ESMF              , only : ESMF_GridCompSetEntryPoint, operator(+)
   use NUOPC             , only : NUOPC_CompDerive, NUOPC_CompSetEntryPoint, NUOPC_CompSpecialize
   use NUOPC             , only : NUOPC_CompAttributeGet, NUOPC_Advertise
   use NUOPC_Model       , only : model_routine_SS        => SetServices
