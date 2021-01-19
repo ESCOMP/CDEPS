@@ -1,6 +1,6 @@
 module docn_datamode_aquaplanet_mod
 
-  use ESMF
+  use ESMF             , only : ESMF_SUCCESS, ESMF_State, ESMF_Mesh, ESMF_MeshGet, ESMF_LogWrite, ESMF_LOGMSG_INFO
   use NUOPC            , only : NUOPC_Advertise
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_const_mod    , only : shr_const_TkFrz, shr_const_pi
@@ -22,7 +22,7 @@ module docn_datamode_aquaplanet_mod
   real(r8), pointer    :: So_v(:)      => null()
 
   ! model mesh lats and lons in radians
-  real(r8), pointer    :: rlon(:), rlat(:) 
+  real(r8), pointer    :: rlon(:), rlat(:)
 
   ! parameters
   real(r8) , parameter :: tkfrz = shr_const_tkfrz ! freezing point, fresh water (kelvin)

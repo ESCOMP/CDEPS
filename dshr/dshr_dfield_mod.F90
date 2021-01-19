@@ -1,6 +1,7 @@
 module dshr_dfield_mod
 
-  use ESMF
+  use ESMF             , only : ESMF_State, ESMF_FieldBundle, ESMF_MAXSTR, ESMF_SUCCESS
+  use ESMF             , only : ESMF_FieldBundleGet, ESMF_ITEMORDER_ADDORDER, ESMF_Field
   use shr_kind_mod     , only : r8=>shr_kind_r8, cs=>shr_kind_cs, cl=>shr_kind_cl, cxx=>shr_kind_cxx
   use shr_sys_mod      , only : shr_sys_abort
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_get_stream_count, shr_strdata_get_stream_fieldbundle
@@ -120,7 +121,7 @@ contains
     end if
 
   end subroutine dshr_dfield_add_1d
- 
+
   !===============================================================================
   subroutine dshr_dfield_add_1d_stateptr(dfields, sdat, state_fld, strm_fld, state, state_ptr, logunit, masterproc, rc)
 

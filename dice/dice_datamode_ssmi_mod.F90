@@ -1,6 +1,8 @@
 module dice_datamode_ssmi_mod
 
-  use ESMF
+  use ESMF                 , only : ESMF_State, ESMF_LogWrite, ESMF_Array, ESMF_MeshGet
+  use ESMF                 , only : ESMF_SUCCESS, ESMF_LOGMSG_INFO, ESMF_DistGrid
+  use ESMF                 , only : ESMF_ArrayCreate, ESMF_ArrayDestroy
   use NUOPC                , only : NUOPC_Advertise
   use shr_kind_mod         , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_sys_mod          , only : shr_sys_abort
@@ -12,7 +14,6 @@ module dice_datamode_ssmi_mod
   use dshr_mod             , only : dshr_restart_read, dshr_restart_write
   use dice_flux_atmice_mod , only : dice_flux_atmice
   use dshr_fldlist_mod     , only : fldlist_type, dshr_fldlist_add
-  use pio
 
   implicit none
   private ! except

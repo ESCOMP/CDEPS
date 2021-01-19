@@ -4,10 +4,11 @@ module dshr_tInterp_mod
   ! data model shared time interpolation factor routines
   !---------------------------------------------------------------
 
-  use ESMF
+  use ESMF             , only : ESMF_Time, ESMF_TimeInterval, ESMF_TimeIntervalGet
+  use ESMF             , only : ESMF_SUCCESS, operator(<), operator(-), operator(>), operator(==)
   use shr_kind_mod     , only : i8=>shr_kind_i8, r8=>shr_kind_r8, cs=>shr_kind_cs, cl=>shr_kind_cl, shr_kind_in
   use shr_sys_mod      , only : shr_sys_abort
-  use shr_cal_mod      , only : shr_cal_timeSet, shr_cal_advDateInt, shr_cal_date2julian 
+  use shr_cal_mod      , only : shr_cal_timeSet, shr_cal_advDateInt, shr_cal_date2julian
   use shr_orb_mod      , only : shr_orb_cosz, shr_orb_decl, SHR_ORB_UNDEF_REAL
   use shr_const_mod    , only : SHR_CONST_PI
   use dshr_methods_mod , only : chkerr
@@ -179,10 +180,10 @@ contains
     real(r8)     ,intent(in)    :: obliqr     ! orb param
     integer      ,intent(in)    :: modeldt    ! model time step in secs
     character(*) ,intent(in)    :: calendar   ! calendar type
-    integer      ,intent(out)   :: rc         ! error status  
+    integer      ,intent(out)   :: rc         ! error status
 
     ! local variables
-    real(R8), allocatable   :: cosz(:)           ! local cos of the zenith angle 
+    real(R8), allocatable   :: cosz(:)           ! local cos of the zenith angle
     integer                 :: lsize             ! size of local data
     type(ESMF_Time)         :: reday1, reday2    ! LB, UB time
     type(ESMF_TimeInterval) :: timeint           ! time interval
@@ -295,15 +296,15 @@ contains
 
     lsize = size(lon)
     if (lsize < 1 .or. size(lat) /= lsize .or. size(cosz) /= lsize) then
-       write(6,*)'ERROR: lsize,size(lat),size(cosz) =  ',lsize,size(lat),size(cosz) 
+       write(6,*)'ERROR: lsize,size(lat),size(cosz) =  ',lsize,size(lat),size(cosz)
        call shr_sys_abort(subname//' ERROR: lon lat cosz sizes disagree')
     endif
 
     call shr_cal_date2julian(ymd, tod, calday, calendar)
     call shr_orb_decl( calday, eccen, mvelpp, lambm0, obliqr, declin, eccf )
     do n = 1,lsize
-       lonr = lon(n) * deg2rad 
-       latr = lat(n) * deg2rad 
+       lonr = lon(n) * deg2rad
+       latr = lat(n) * deg2rad
        cosz(n) = max(solZenMin, shr_orb_cosz( calday, latr, lonr, declin))
     end do
 
