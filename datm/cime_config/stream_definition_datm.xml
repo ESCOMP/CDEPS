@@ -18,10 +18,10 @@
   %ym   => year-month from the range yearfirst to yearlast with all 12 months
   %ymd  => year-month-day from the range yearfirst to yearlast with all 12 months
 
-  ****** 
+  ******
   NOTE:
   any <file></file> entry that has %y, %ym or %ymd MUST have first_year and last_year syntax
-  ****** 
+  ******
 
   Each mode below, except for presaero, has a set of streams associated with it
   The presaero stream, is associated with all modes
@@ -195,6 +195,49 @@
   -->
 
   <!-- ===================================  -->
+  <!-- datm_mode NEON                       -->
+  <!-- ===================================  -->
+
+  <stream_entry name="NEON.$NEONSITE">
+    <stream_meshfile>
+      <meshfile></meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="2018" last_year="2019">/glade/work/jedwards/sandboxes/NEON/inputdata/single_point/datmdata_NEON/$NEONSITE/%ym.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>PRECTmms precn</var>
+      <var>FSDS     swdn </var>
+      <var>ZBOT     z    </var>
+      <var>TBOT     tbot </var>
+      <var>WIND     wind </var>
+      <var>RH       rh   </var>
+      <var>PSRF     pbot </var>
+      <var>FLDS     lwdn </var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+      <mapalgo model_grid="1x1">nn</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>2018</stream_year_align>
+    <stream_year_first>2018</stream_year_first>
+    <stream_year_last>2019</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>coszen</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <!-- ===================================  -->
   <!-- datm_mode CLMGSWP3v1                 -->
   <!-- ===================================  -->
 
@@ -209,7 +252,7 @@
       <var>FSDS Faxa_swdn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
-    <stream_mapalgo> 
+    <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
