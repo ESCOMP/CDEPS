@@ -72,19 +72,15 @@ target_include_directories(dshr PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_
                                        $<INSTALL_INTERFACE:mod>)
 target_include_directories(dshr PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/streams>
                                        $<INSTALL_INTERFACE:mod>)
-foreach(COMP datm dice dlnd docn drof dwav)
-target_include_directories(${COMP} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/share>
-                                       $<INSTALL_INTERFACE:mod>)
-target_include_directories(${COMP} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/streams>
-                                       $<INSTALL_INTERFACE:mod>)
-target_include_directories(${COMP} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/dshr>
-                                       $<INSTALL_INTERFACE:mod>)
-endforeach(COMP)
 
-foreach(COMP datm dice dlnd docn drof dwav streams dshr cdeps_share FoX_dom FoX_wxml FoX_sax FoX_common FoX_utils FoX_fsys)
-  if(NOT BLD_STANDALONE AND ${COMP} STREQUAL "cdeps_share")
-    continue()
-  endif()
+foreach(COMP datm dice dlnd docn drof dwav)
+  target_include_directories(${COMP} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/share>
+                                            $<INSTALL_INTERFACE:mod>)
+  target_include_directories(${COMP} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/streams>
+                                            $<INSTALL_INTERFACE:mod>)
+  target_include_directories(${COMP} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/dshr>
+                                            $<INSTALL_INTERFACE:mod>)
+
   install(TARGETS ${COMP} 
           EXPORT  ${COMP}
           LIBRARY DESTINATION lib
@@ -93,6 +89,18 @@ foreach(COMP datm dice dlnd docn drof dwav streams dshr cdeps_share FoX_dom FoX_
           DESTINATION lib/cmake)
 endforeach(COMP)
 
-if (NOT DEFINED ENV{DESTDIR})
+foreach(DEPS streams dshr cdeps_share FoX_dom FoX_wxml FoX_sax FoX_common FoX_utils FoX_fsys)
+  if(NOT BLD_STANDALONE AND ${DEPS} STREQUAL "cdeps_share")
+     continue()
+  endif()
+  install(TARGETS ${DEPS} 
+          EXPORT  ${DEPS}
+          LIBRARY DESTINATION lib
+          COMPONENT Library)
+  install(EXPORT      ${DEPS} 
+          DESTINATION lib/cmake)
+endforeach(COMP)
+
+if(BLD_STANDALONE)
   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/mod DESTINATION ${CMAKE_INSTALL_PREFIX}/CDEPS)
 endif()
