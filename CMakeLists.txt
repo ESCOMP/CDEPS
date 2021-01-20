@@ -100,7 +100,3 @@ foreach(DEPS streams dshr cdeps_share FoX_dom FoX_wxml FoX_sax FoX_common FoX_ut
   install(EXPORT      ${DEPS} 
           DESTINATION lib/cmake)
 endforeach(COMP)
-
-if(BLD_STANDALONE)
-  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/mod DESTINATION ${CMAKE_INSTALL_PREFIX}/CDEPS)
-endif()
