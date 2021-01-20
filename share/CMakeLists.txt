@@ -22,6 +22,8 @@ add_library(cdeps_share  ${GenF90_SRCS}
 
 target_include_directories (cdeps_share PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${ESMF_F90COMPILEPATHS} ${PIO_Fortran_INCLUDE_DIRS})
 
+install(TARGETS cdeps_share
+        LIBRARY DESTINATION lib)
 
 #===== genf90 =====
 if (DEFINED GENF90_PATH)

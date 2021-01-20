@@ -81,7 +81,10 @@ target_include_directories(${COMP} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINA
                                        $<INSTALL_INTERFACE:mod>)
 endforeach(COMP)
 
-foreach(COMP datm docn streams dshr cdeps_share FoX_dom FoX_wxml FoX_sax FoX_common FoX_utils FoX_fsys)
+foreach(COMP datm dice dlnd docn drof dwav streams dshr cdeps_share FoX_dom FoX_wxml FoX_sax FoX_common FoX_utils FoX_fsys)
+  if(NOT BLD_STANDALONE AND ${COMP} STREQUAL "cdeps_share")
+    continue()
+  endif()
   install(TARGETS ${COMP} 
           EXPORT  ${COMP}
           LIBRARY DESTINATION lib
@@ -90,4 +93,6 @@ foreach(COMP datm docn streams dshr cdeps_share FoX_dom FoX_wxml FoX_sax FoX_com
           DESTINATION lib/cmake)
 endforeach(COMP)
 
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/mod DESTINATION ${CMAKE_INSTALL_PREFIX}/CDEPS)
+if (NOT DEFINED ENV{DESTDIR})
+  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/mod DESTINATION ${CMAKE_INSTALL_PREFIX}/CDEPS)
+endif()
