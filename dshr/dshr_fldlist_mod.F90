@@ -1,7 +1,11 @@
 module dshr_fldlist_mod
 
-  use NUOPC
-  use ESMF
+  use NUOPC            , only : NUOPC_IsConnected, NUOPC_Realize
+  use ESMF             , only : ESMF_State, ESMF_Mesh, ESMF_Field, ESMF_Grid, ESMF_GridCreate
+  use ESMF             , only : ESMF_SUCCESS, ESMF_LogWrite, ESMF_LOGMSG_INFO
+  use ESMF             , only : ESMF_LOGERR_PASSTHRU, ESMF_LogFoundError
+  use ESMF             , only : ESMF_MESHLOC_ELEMENT, ESMF_TYPEKIND_R8, ESMF_StateRemove
+  use ESMF             , only : ESMF_Distgrid, ESMF_DistGridCreate, ESMF_FieldCreate
   use shr_kind_mod     , only : r8=>shr_kind_r8, cs=>shr_kind_cs, cl=>shr_kind_cl, cxx=>shr_kind_cxx
   use dshr_methods_mod , only : chkerr
 

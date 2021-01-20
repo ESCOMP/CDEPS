@@ -1,6 +1,9 @@
 module docn_datamode_som_mod
 
-  use ESMF
+  use ESMF             , only : ESMF_SUCCESS, ESMF_State, ESMF_Clock, ESMF_StateGet, ESMF_StateItem_Flag
+  use ESMF             , only : ESMF_TimeInterval, ESMF_ClockGet, ESMF_TimeIntervalGet
+  use ESMF             , only : ESMF_LOGMSG_INFO, ESMF_STATEITEM_NOTFOUND, operator(/=)
+  use ESMF             , only : ESMF_LogWrite
   use NUOPC            , only : NUOPC_Advertise
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_sys_mod      , only : shr_sys_abort
@@ -14,7 +17,6 @@ module docn_datamode_som_mod
   use dshr_strdata_mod , only : shr_strdata_type
   use dshr_mod         , only : dshr_restart_read, dshr_restart_write
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
-  use pio
 
   implicit none
   private ! except
@@ -193,7 +195,7 @@ contains
     call dshr_state_getfldptr(exportState, 'Fioo_q'     , fldptr1=Fioo_q     , rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
 
-    ! For So_fswpen is only needed for diurnal cycle calculation of atm/ocn fluxes 
+    ! For So_fswpen is only needed for diurnal cycle calculation of atm/ocn fluxes
     ! Currently this is not implemented in cmeps
     call ESMF_StateGet(exportState, 'So_fswpen', itemFlag, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -221,7 +223,7 @@ contains
     ! input/output variables
     type(ESMF_State)       , intent(inout) :: importState
     type(ESMF_State)       , intent(inout) :: exportState
-    type(ESMF_Clock)       , intent(in)    :: clock 
+    type(ESMF_Clock)       , intent(in)    :: clock
     logical                , intent(in)    :: restart_read
     character(len=*)       , intent(in)    :: datamode
     integer                , intent(out)   :: rc
@@ -278,7 +280,7 @@ contains
 
              ! compute ice formed or melt potential
              Fioo_q(n) = (tfreeze(n) - So_t(n))*(cpsw*rhosw*strm_h(n))/dt ! ice formed q>0
-             
+
              ! reset temp
              if (reset_temp) then
                 So_t(n)  = max(tfreeze(n),So_t(n))
@@ -299,7 +301,7 @@ contains
   !===============================================================================
   subroutine docn_datamode_som_restart_write(case_name, inst_suffix, ymd, tod, &
        logunit, my_task, sdat)
-    
+
     ! write restart file
 
     ! input/output variables

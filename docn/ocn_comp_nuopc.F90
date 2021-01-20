@@ -4,7 +4,13 @@ module ocn_comp_nuopc
   ! This is the NUOPC cap for DOCN
   !----------------------------------------------------------------------------
 
-  use ESMF
+  use ESMF             , only : ESMF_Mesh, ESMF_GridComp, ESMF_State, ESMF_Clock, ESMF_Time
+  use ESMF             , only : ESMF_SUCCESS, ESMF_LogWrite, ESMF_LOGMSG_INFO, ESMF_METHOD_INITIALIZE
+  use ESMF             , only : ESMF_TraceRegionEnter, ESMF_TraceRegionExit, ESMF_ClockGet
+  use ESMF             , only : ESMF_TimeGet, ESMF_TimeInterval, ESMF_Field, ESMF_MAXSTR
+  use ESMF             , only : ESMF_Alarm, ESMF_MethodRemove, ESMF_MethodAdd
+  use ESMF             , only : ESMF_GridCompSetEntryPoint, ESMF_ClockGetAlarm, ESMF_AlarmIsRinging
+  use ESMF             , only : ESMF_StateGet, operator(+), ESMF_AlarmRingerOff, ESMF_LogWrite
   use NUOPC            , only : NUOPC_CompDerive, NUOPC_CompSetEntryPoint, NUOPC_CompSpecialize
   use NUOPC            , only : NUOPC_Advertise, NUOPC_CompAttributeGet
   use NUOPC_Model      , only : model_routine_SS        => SetServices

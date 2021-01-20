@@ -1,6 +1,19 @@
 module datm_datamode_core2_mod
 
-  use ESMF
+  use ESMF             , only : ESMF_State, ESMF_Field, ESMF_FieldBundle
+  use ESMF             , only : ESMF_DistGrid, ESMF_RouteHandle, ESMF_MeshCreate
+  use ESMF             , only : ESMF_Mesh, ESMF_MeshGet, ESMF_MeshCreate
+  use ESMF             , only : ESMF_SUCCESS, ESMF_LogWrite, ESMF_FILEFORMAT_ESMFMESH
+  use ESMF             , only : ESMF_FieldBundleCreate, ESMF_FieldCreate, ESMF_MESHLOC_ELEMENT
+  use ESMF             , only : ESMF_FieldBundleAdd, ESMF_LOGMSG_INFO, ESMF_TYPEKIND_R8
+  use ESMF             , only : ESMF_RouteHandleDestroy, ESMF_EXTRAPMETHOD_NEAREST_STOD
+  use ESMF             , only : ESMF_POLEMETHOD_ALLAVG, ESMF_REGRIDMETHOD_BILINEAR
+  use ESMF             , only : ESMF_DistGridGet, ESMF_FieldRegridStore, ESMF_FieldRedistStore
+  use pio              , only : Var_Desc_t, file_desc_t, io_desc_t, pio_read_darray, pio_freedecomp
+  use pio              , only : pio_openfile, PIO_NOWRITE, pio_seterrorhandling, PIO_BCAST_ERROR
+  use pio              , only : pio_initdecomp, pio_inq_dimlen, pio_inq_varid
+  use pio              , only : pio_inq_varndims, pio_inq_vardimid, pio_double
+  use pio              , only : pio_closefile
   use NUOPC            , only : NUOPC_Advertise
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_sys_mod      , only : shr_sys_abort
@@ -11,7 +24,6 @@ module datm_datamode_core2_mod
   use dshr_mod         , only : dshr_restart_read, dshr_restart_write
   use dshr_strdata_mod , only : shr_strdata_type
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
-  use pio
 
   implicit none
   private ! except
@@ -369,7 +381,7 @@ contains
   !===============================================================================
   subroutine datm_datamode_core2_restart_write(case_name, inst_suffix, ymd, tod, &
        logunit, my_task, sdat)
-    
+
     ! input/output variables
     character(len=*)            , intent(in)    :: case_name
     character(len=*)            , intent(in)    :: inst_suffix
@@ -405,7 +417,7 @@ contains
   subroutine datm_get_adjustment_factors(sdat, fileName_mesh, fileName_data, windF, winddF, qsatF, rc)
 
     ! input/output variables
-    type(shr_strdata_type) , intent(in)  :: sdat 
+    type(shr_strdata_type) , intent(in)  :: sdat
     character(*)           , intent(in)  :: fileName_mesh ! file name string
     character(*)           , intent(in)  :: fileName_data ! file name string
     real(R8)               , pointer     :: windF(:)      ! wind adjustment factor
