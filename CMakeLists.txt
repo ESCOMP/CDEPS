@@ -99,4 +99,4 @@ foreach(DEPS streams dshr cdeps_share FoX_dom FoX_wxml FoX_sax FoX_common FoX_ut
           COMPONENT Library)
   install(EXPORT      ${DEPS} 
           DESTINATION lib/cmake)
-endforeach(COMP)
+endforeach(DEPS)
