@@ -1,6 +1,7 @@
 module datm_datamode_clmncep_mod
 
-  use ESMF
+  use ESMF             , only : ESMF_SUCCESS, ESMF_LogWrite, ESMF_State, ESMF_StateItem_Flag
+  use ESMF             , only : ESMF_STATEITEM_NOTFOUND, ESMF_LOGMSG_INFO, ESMF_StateGet, operator(/=)
   use NUOPC            , only : NUOPC_Advertise
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_sys_mod      , only : shr_sys_abort
@@ -100,7 +101,7 @@ module datm_datamode_clmncep_mod
   real(r8) , parameter :: stebol   = SHR_CONST_STEBOL   ! Stefan-Boltzmann constant ~ W/m^2/K^4
   real(r8) , parameter :: rdair    = SHR_CONST_RDAIR    ! dry air gas constant   ~ J/K/kg
 
-  
+
   character(*), parameter :: nullstr = 'null'
   character(*), parameter :: rpfile  = 'rpointer.atm'
   character(*), parameter :: u_FILE_u = &
@@ -302,13 +303,13 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (itemflag /= ESMF_STATEITEM_NOTFOUND) then
        atm_prognostic = .true.
-       call dshr_state_getfldptr(importState, 'Sx_anidr', fldptr1=Sx_anidr, rc=rc) 
+       call dshr_state_getfldptr(importState, 'Sx_anidr', fldptr1=Sx_anidr, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call dshr_state_getfldptr(importState, 'Sx_anidf', fldptr1=Sx_anidf, rc=rc) 
+       call dshr_state_getfldptr(importState, 'Sx_anidf', fldptr1=Sx_anidf, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call dshr_state_getfldptr(importState, 'Sx_avsdr', fldptr1=Sx_avsdr, rc=rc) 
+       call dshr_state_getfldptr(importState, 'Sx_avsdr', fldptr1=Sx_avsdr, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call dshr_state_getfldptr(importState, 'Sx_avsdf', fldptr1=Sx_avsdf, rc=rc) 
+       call dshr_state_getfldptr(importState, 'Sx_avsdf', fldptr1=Sx_avsdf, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
@@ -490,7 +491,7 @@ contains
     ! bias correction / anomaly forcing ( start block )
     ! modify atmospheric input fields if streams exist
     !----------------------------------------------------------
-    
+
     ! bias correct precipitation relative to observed
     ! (via bias_correct nameslist option)
     if (associated(strm_precsf)) then
@@ -541,7 +542,7 @@ contains
   !===============================================================================
   subroutine datm_datamode_clmncep_restart_write(case_name, inst_suffix, ymd, tod, &
        logunit, my_task, sdat)
-    
+
     ! input/output variables
     character(len=*)            , intent(in)    :: case_name
     character(len=*)            , intent(in)    :: inst_suffix
