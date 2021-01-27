@@ -1,12 +1,10 @@
-module datm_datamode_cfsr_mod
+module datm_datamode_cplhist_mod
 
-  use ESMF
+  use ESMF             , only : ESMF_SUCCESS, ESMF_LOGMSG_INFO, ESMF_LogWrite, ESMF_State
+  use ESMF             , only : ESMF_StateItem_Flag
   use NUOPC            , only : NUOPC_Advertise
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_sys_mod      , only : shr_sys_abort
-  use shr_precip_mod   , only : shr_precip_partition_rain_snow_ramp
-  use shr_mpi_mod      , only : shr_mpi_max
-  use shr_const_mod    , only : shr_const_tkfrz, shr_const_rhofw, shr_const_rdair
   use dshr_methods_mod , only : dshr_state_getfldptr, chkerr
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_get_stream_pointer
   use dshr_mod         , only : dshr_restart_read, dshr_restart_write
@@ -16,38 +14,35 @@ module datm_datamode_cfsr_mod
   implicit none
   private ! except
 
-  public  :: datm_datamode_cfsr_advertise
-  public  :: datm_datamode_cfsr_init_pointers
-  public  :: datm_datamode_cfsr_advance
-  public  :: datm_datamode_cfsr_restart_write
-  public  :: datm_datamode_cfsr_restart_read
+  public  :: datm_datamode_cplhist_advertise
+  public  :: datm_datamode_cplhist_init_pointers
+  public  :: datm_datamode_cplhist_advance
+  public  :: datm_datamode_cplhist_restart_write
+  public  :: datm_datamode_cplhist_restart_read
 
   ! export state data
   real(r8), pointer :: Sa_z(:)              => null()
   real(r8), pointer :: Sa_u(:)              => null()
   real(r8), pointer :: Sa_v(:)              => null()
   real(r8), pointer :: Sa_tbot(:)           => null()
+  real(r8), pointer :: Sa_ptem(:)           => null()
   real(r8), pointer :: Sa_shum(:)           => null()
+  real(r8), pointer :: Sa_shum_wiso(:,:)    => null() ! water isotopes
+  real(r8), pointer :: Sa_dens(:)           => null()
   real(r8), pointer :: Sa_pbot(:)           => null()
+  real(r8), pointer :: Sa_pslv(:)           => null()
   real(r8), pointer :: Faxa_lwdn(:)         => null()
-  real(r8), pointer :: Faxa_rain(:)         => null()
-  real(r8), pointer :: Faxa_snow(:)         => null()
+  real(r8), pointer :: Faxa_rainc(:)        => null()
+  real(r8), pointer :: Faxa_rainl(:)        => null()
+  real(r8), pointer :: Faxa_snowc(:)        => null()
+  real(r8), pointer :: Faxa_snowl(:)        => null()
   real(r8), pointer :: Faxa_swndr(:)        => null()
   real(r8), pointer :: Faxa_swndf(:)        => null()
   real(r8), pointer :: Faxa_swvdr(:)        => null()
   real(r8), pointer :: Faxa_swvdf(:)        => null()
+  real(r8), pointer :: Faxa_swnet(:)        => null()
 
-  ! stream data
-  real(r8), pointer :: strm_mask(:)      => null()
-
-  real(r8) :: tbotmax ! units detector
-  real(r8) :: maskmax ! units detector
-
-  real(r8) , parameter :: tKFrz    = SHR_CONST_TKFRZ
-  real(r8) , parameter :: rdair    = SHR_CONST_RDAIR ! dry air gas constant ~ J/K/kg
-  real(r8) , parameter :: rhofw    = SHR_CONST_RHOFW ! density of fresh water ~ kg/m^3
-  
-  character(*), parameter :: nullstr = 'undefined'
+  character(*), parameter :: nullstr = 'null'
   character(*), parameter :: rpfile  = 'rpointer.atm'
   character(*), parameter :: u_FILE_u = &
        __FILE__
@@ -56,12 +51,15 @@ module datm_datamode_cfsr_mod
 contains
 !===============================================================================
 
-  subroutine datm_datamode_cfsr_advertise(exportState, fldsexport, &
-       flds_scalar_name, rc)
+  subroutine datm_datamode_cplhist_advertise(exportState, fldsexport, flds_scalar_name, &
+       flds_co2, flds_wiso, presaero, rc)
 
     ! input/output variables
     type(esmf_State)   , intent(inout) :: exportState
     type(fldlist_type) , pointer       :: fldsexport
+    logical            , intent(in)    :: flds_co2
+    logical            , intent(in)    :: flds_wiso
+    logical            , intent(in)    :: presaero
     character(len=*)   , intent(in)    :: flds_scalar_name
     integer            , intent(out)   :: rc
 
@@ -72,47 +70,71 @@ contains
     rc = ESMF_SUCCESS
 
     call dshr_fldList_add(fldsExport, trim(flds_scalar_name))
+    call dshr_fldList_add(fldsExport, 'Sa_topo'    )
     call dshr_fldList_add(fldsExport, 'Sa_z'       )
     call dshr_fldList_add(fldsExport, 'Sa_u'       )
     call dshr_fldList_add(fldsExport, 'Sa_v'       )
+    call dshr_fldList_add(fldsExport, 'Sa_ptem'    )
+    call dshr_fldList_add(fldsExport, 'Sa_dens'    )
+    call dshr_fldList_add(fldsExport, 'Sa_pslv'    )
     call dshr_fldList_add(fldsExport, 'Sa_tbot'    )
     call dshr_fldList_add(fldsExport, 'Sa_pbot'    )
     call dshr_fldList_add(fldsExport, 'Sa_shum'    )
-    call dshr_fldList_add(fldsExport, 'Faxa_rain'  )
-    call dshr_fldList_add(fldsExport, 'Faxa_snow' )
+    call dshr_fldList_add(fldsExport, 'Faxa_rainc' )
+    call dshr_fldList_add(fldsExport, 'Faxa_rainl' )
+    call dshr_fldList_add(fldsExport, 'Faxa_snowc' )
+    call dshr_fldList_add(fldsExport, 'Faxa_snowl' )
     call dshr_fldList_add(fldsExport, 'Faxa_swndr' )
     call dshr_fldList_add(fldsExport, 'Faxa_swvdr' )
     call dshr_fldList_add(fldsExport, 'Faxa_swndf' )
     call dshr_fldList_add(fldsExport, 'Faxa_swvdf' )
+    call dshr_fldList_add(fldsExport, 'Faxa_swnet' )
     call dshr_fldList_add(fldsExport, 'Faxa_lwdn'  )
+    call dshr_fldList_add(fldsExport, 'Faxa_swdn'  )
+    if (flds_co2) then
+       call dshr_fldList_add(fldsExport, 'Sa_co2prog')
+       call dshr_fldList_add(fldsExport, 'Sa_co2diag')
+    end if
+    if (presaero) then
+       call dshr_fldList_add(fldsExport, 'Faxa_bcph'   , ungridded_lbound=1, ungridded_ubound=3)
+       call dshr_fldList_add(fldsExport, 'Faxa_ocph'   , ungridded_lbound=1, ungridded_ubound=3)
+       call dshr_fldList_add(fldsExport, 'Faxa_dstwet' , ungridded_lbound=1, ungridded_ubound=4)
+       call dshr_fldList_add(fldsExport, 'Faxa_dstdry' , ungridded_lbound=1, ungridded_ubound=4)
+    end if
+    if (flds_wiso) then
+       call dshr_fldList_add(fldsExport, 'Faxa_rainc_wiso', ungridded_lbound=1, ungridded_ubound=3)
+       call dshr_fldList_add(fldsExport, 'Faxa_rainl_wiso', ungridded_lbound=1, ungridded_ubound=3)
+       call dshr_fldList_add(fldsExport, 'Faxa_snowc_wiso', ungridded_lbound=1, ungridded_ubound=3)
+       call dshr_fldList_add(fldsExport, 'Faxa_snowl_wiso', ungridded_lbound=1, ungridded_ubound=3)
+       call dshr_fldList_add(fldsExport, 'Faxa_shum_wiso' , ungridded_lbound=1, ungridded_ubound=3)
+    end if
 
     fldlist => fldsExport ! the head of the linked list
     do while (associated(fldlist))
        call NUOPC_Advertise(exportState, standardName=fldlist%stdname, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call ESMF_LogWrite('(datm_comp_advertise): Fr_atm '//trim(fldList%stdname), ESMF_LOGMSG_INFO)
+       call ESMF_LogWrite('(datm_comp_advertise): Fr_atm'//trim(fldList%stdname), ESMF_LOGMSG_INFO)
        fldList => fldList%next
     enddo
 
-  end subroutine datm_datamode_cfsr_advertise
+  end subroutine datm_datamode_cplhist_advertise
 
   !===============================================================================
-  subroutine datm_datamode_cfsr_init_pointers(exportState, sdat, rc)
+  subroutine datm_datamode_cplhist_init_pointers(importState, exportState, sdat, rc)
 
     ! input/output variables
+    type(ESMF_State)       , intent(inout) :: importState
     type(ESMF_State)       , intent(inout) :: exportState
     type(shr_strdata_type) , intent(in)    :: sdat
     integer                , intent(out)   :: rc
 
     ! local variables
+    type(ESMF_StateItem_Flag) :: itemFlag
     character(len=*), parameter :: subname='(datm_init_pointers): '
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
 
-    ! initialize pointers for module level stream arrays
-    call shr_strdata_get_stream_pointer( sdat, 'Sa_mask'   , strm_mask , rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
     ! get export state pointers
     call dshr_state_getfldptr(exportState, 'Sa_z'       , fldptr1=Sa_z       , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -124,11 +146,21 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Sa_pbot'    , fldptr1=Sa_pbot    , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call dshr_state_getfldptr(exportState, 'Sa_pslv'    , fldptr1=Sa_pslv    , rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call dshr_state_getfldptr(exportState, 'Sa_ptem'    , fldptr1=Sa_ptem    , rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Sa_shum'    , fldptr1=Sa_shum    , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call dshr_state_getfldptr(exportState, 'Faxa_rain'  , fldptr1=Faxa_rain  , rc=rc)
+    call dshr_state_getfldptr(exportState, 'Sa_dens'    , fldptr1=Sa_dens    , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call dshr_state_getfldptr(exportState, 'Faxa_snow'  , fldptr1=Faxa_snow  , rc=rc)
+    call dshr_state_getfldptr(exportState, 'Faxa_rainc' , fldptr1=Faxa_rainc , rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call dshr_state_getfldptr(exportState, 'Faxa_rainl' , fldptr1=Faxa_rainl , rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call dshr_state_getfldptr(exportState, 'Faxa_snowc' , fldptr1=Faxa_snowc , rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call dshr_state_getfldptr(exportState, 'Faxa_snowl' , fldptr1=Faxa_snowl , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Faxa_swvdr' , fldptr1=Faxa_swvdr , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -138,73 +170,36 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Faxa_swndf' , fldptr1=Faxa_swndf , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call dshr_state_getfldptr(exportState, 'Faxa_swnet' , fldptr1=Faxa_swnet , rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Faxa_lwdn'  , fldptr1=Faxa_lwdn  , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-  end subroutine datm_datamode_cfsr_init_pointers
+  end subroutine datm_datamode_cplhist_init_pointers
 
   !===============================================================================
-  subroutine datm_datamode_cfsr_advance(exportstate, masterproc, logunit, mpicom, target_ymd, target_tod, model_calendar, rc)
+  subroutine datm_datamode_cplhist_advance(masterproc, logunit, mpicom, rc)
 
     ! input/output variables
-    type(ESMF_State)       , intent(inout) :: exportState
     logical                , intent(in)    :: masterproc
     integer                , intent(in)    :: logunit
     integer                , intent(in)    :: mpicom
-    integer                , intent(in)    :: target_ymd
-    integer                , intent(in)    :: target_tod
-    character(len=*)       , intent(in)    :: model_calendar
     integer                , intent(out)   :: rc
 
     ! local variables
-    logical  :: first_time = .true.
-    integer  :: n                   ! indices
-    integer  :: lsize               ! size of attr vect
-    real(r8) :: rtmp
-    real(r8) :: tbot, pbot
-!    real(r8) :: vp
-    real(r8) :: e, qsat
-    character(len=*), parameter :: subname='(datm_datamode_cfsr_advance): '
+    character(len=*), parameter :: subname='(datm_datamode_cplhist_advance): '
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
 
-    lsize = size(strm_mask)
+    ! For now - do nothing special
 
-    if (first_time) then
-       ! determine tbotmax (see below for use)
-       rtmp = maxval(Sa_tbot(:))
-       call shr_mpi_max(rtmp, tbotmax, mpicom, 'datm_tbot', all=.true.)
-       if (masterproc) write(logunit,*) trim(subname),' tbotmax = ',tbotmax
-
-       ! determine maskmax (see below for use)
-       rtmp = maxval(strm_mask(:))
-       call shr_mpi_max(rtmp, maskmax, mpicom, 'datm_mask', all=.true.)
-       if (masterproc) write(logunit,*) trim(subname),' maskmax = ',maskmax
-
-       ! reset first_time
-       first_time = .false.
-    end if
-
-    do n = 1, lsize
-
-       !--- temperature ---
-       if (tbotmax < 50.0_r8) Sa_tbot(n) = Sa_tbot(n) + tkFrz
-       ! Limit very cold forcing to 180K
-       Sa_tbot(n) = max(180._r8, Sa_tbot(n))
-!       Sa_ptem(n) = Sa_tbot(n)
-    end do
-
-    !----------------------------------------------------------
-    ! unit conversions (temporal resolution is 6-hourly)
-    !----------------------------------------------------------
-
-  end subroutine datm_datamode_cfsr_advance
+  end subroutine datm_datamode_cplhist_advance
 
   !===============================================================================
-  subroutine datm_datamode_cfsr_restart_write(case_name, inst_suffix, ymd, tod, &
+  subroutine datm_datamode_cplhist_restart_write(case_name, inst_suffix, ymd, tod, &
        logunit, my_task, sdat)
-    
+
     ! input/output variables
     character(len=*)            , intent(in)    :: case_name
     character(len=*)            , intent(in)    :: inst_suffix
@@ -218,10 +213,10 @@ contains
     call dshr_restart_write(rpfile, case_name, 'datm', inst_suffix, ymd, tod, &
          logunit, my_task, sdat)
 
-  end subroutine datm_datamode_cfsr_restart_write
+  end subroutine datm_datamode_cplhist_restart_write
 
   !===============================================================================
-  subroutine datm_datamode_cfsr_restart_read(rest_filem, inst_suffix, logunit, my_task, mpicom, sdat)
+  subroutine datm_datamode_cplhist_restart_read(rest_filem, inst_suffix, logunit, my_task, mpicom, sdat)
 
     ! input/output arguments
     character(len=*)            , intent(inout) :: rest_filem
@@ -234,6 +229,6 @@ contains
 
     call dshr_restart_read(rest_filem, rpfile, inst_suffix, nullstr, logunit, my_task, mpicom, sdat)
 
-  end subroutine datm_datamode_cfsr_restart_read
+  end subroutine datm_datamode_cplhist_restart_read
 
-end module datm_datamode_cfsr_mod
+end module datm_datamode_cplhist_mod

@@ -1,19 +1,13 @@
 module dice_flux_atmice_mod
 
   use shr_kind_mod, only : r8=>shr_kind_r8, cxx=>shr_kind_cxx, cl=>shr_kind_cl, cs=>shr_kind_cs
-  use shr_const_mod   ! shared constants
-  use shr_sys_mod     ! shared system routines
-
+  ! shared constants
+  use shr_const_mod, only : loc_zvir => shr_const_zvir, loc_cpdair => shr_const_cpdair
+  use shr_const_mod, only : loc_cpvir => shr_const_cpvir, loc_karman => shr_const_karman
+  use shr_const_mod, only : loc_g => shr_const_g, loc_latvap => shr_const_latvap
+  use shr_const_mod, only : loc_latice => shr_const_latice, loc_stebol => shr_const_stebol
+  use shr_const_mod, only : spval => shr_const_spval
   implicit none
-
-  real(R8) :: loc_zvir   = shr_const_zvir
-  real(R8) :: loc_cpdair = shr_const_cpdair
-  real(R8) :: loc_cpvir  = shr_const_cpvir
-  real(R8) :: loc_karman = shr_const_karman
-  real(R8) :: loc_g      = shr_const_g
-  real(R8) :: loc_latvap = shr_const_latvap
-  real(R8) :: loc_latice = shr_const_latice
-  real(R8) :: loc_stebol = shr_const_stebol
 
   integer,parameter :: dbug = 0 ! internal debug level
 
@@ -68,7 +62,6 @@ contains
     real(R8),parameter :: umin   =  1.0_R8            ! minimum wind speed (m/s)
     real(R8),parameter :: zref   = 10.0_R8            ! ref height           ~ m
     real(R8),parameter :: ztref  =  2.0_R8            ! ref height for air T ~ m
-    real(R8),parameter :: spval  = shr_const_spval    ! special value
     real(R8),parameter :: zzsice = 0.0005_R8          ! ice surface roughness
 
     !--- local variables --------------------------------

@@ -1,6 +1,7 @@
 module datm_datamode_jra_mod
 
-  use ESMF
+  use ESMF             , only : ESMF_State, ESMF_SUCCESS, ESMF_LogWrite, ESMF_LOGMSG_INFO
+  use ESMF             , only : ESMF_MeshGet
   use NUOPC            , only : NUOPC_Advertise
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_sys_mod      , only : shr_sys_abort
@@ -11,7 +12,6 @@ module datm_datamode_jra_mod
   use dshr_mod         , only : dshr_restart_read, dshr_restart_write
   use dshr_strdata_mod , only : shr_strdata_type
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
-  use pio
 
   implicit none
   private ! except
@@ -223,7 +223,7 @@ contains
        Sa_pbot(n) = Sa_pslv(n)
        Sa_ptem(n) = Sa_tbot(n)
 
-       ! density computation for JRA55 forcing 
+       ! density computation for JRA55 forcing
        Sa_dens(n) = Sa_pbot(n)/(rdair*Sa_tbot(n)*(1 + 0.608*Sa_shum(n)))
 
        ! precipitation data
@@ -253,7 +253,7 @@ contains
   !===============================================================================
   subroutine datm_datamode_jra_restart_write(case_name, inst_suffix, ymd, tod, &
        logunit, my_task, sdat)
-    
+
     ! input/output variables
     character(len=*)            , intent(in)    :: case_name
     character(len=*)            , intent(in)    :: inst_suffix

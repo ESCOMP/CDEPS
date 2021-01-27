@@ -4,7 +4,15 @@ module atm_comp_nuopc
   ! This is the NUOPC cap for DATM
   !----------------------------------------------------------------------------
 
-  use ESMF
+  use ESMF             , only : ESMF_Mesh, ESMF_GridComp, ESMF_SUCCESS, ESMF_LogWrite
+  use ESMF             , only : ESMF_GridCompSetEntryPoint, ESMF_METHOD_INITIALIZE
+  use ESMF             , only : ESMF_MethodRemove, ESMF_State, ESMF_Clock, ESMF_TimeInterval
+  use ESMF             , only : ESMF_State, ESMF_Field, ESMF_LOGMSG_INFO, ESMF_ClockGet
+  use ESMF             , only : ESMF_Time, ESMF_Alarm, ESMF_TimeGet, ESMF_TimeInterval
+  use ESMF             , only : operator(+), ESMF_TimeIntervalGet, ESMF_ClockGetAlarm
+  use ESMF             , only : ESMF_AlarmIsRinging, ESMF_AlarmRingerOff, ESMF_StateGet
+  use ESMF             , only : ESMF_FieldGet, ESMF_MAXSTR
+  use ESMF             , only : ESMF_TraceRegionEnter, ESMF_TraceRegionExit
   use NUOPC            , only : NUOPC_CompDerive, NUOPC_CompSetEntryPoint, NUOPC_CompSpecialize
   use NUOPC            , only : NUOPC_CompAttributeGet, NUOPC_Advertise
   use NUOPC_Model      , only : model_routine_SS        => SetServices
@@ -26,26 +34,42 @@ module atm_comp_nuopc
   use dshr_mod         , only : dshr_orbital_init, dshr_orbital_update
   use dshr_dfield_mod  , only : dfield_type, dshr_dfield_add, dshr_dfield_copy
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add, dshr_fldlist_realize
+
   use datm_datamode_core2_mod   , only : datm_datamode_core2_advertise
   use datm_datamode_core2_mod   , only : datm_datamode_core2_init_pointers
   use datm_datamode_core2_mod   , only : datm_datamode_core2_advance
   use datm_datamode_core2_mod   , only : datm_datamode_core2_restart_write
   use datm_datamode_core2_mod   , only : datm_datamode_core2_restart_read
+
   use datm_datamode_jra_mod     , only : datm_datamode_jra_advertise
   use datm_datamode_jra_mod     , only : datm_datamode_jra_init_pointers
   use datm_datamode_jra_mod     , only : datm_datamode_jra_advance
   use datm_datamode_jra_mod     , only : datm_datamode_jra_restart_write
   use datm_datamode_jra_mod     , only : datm_datamode_jra_restart_read
+
   use datm_datamode_clmncep_mod , only : datm_datamode_clmncep_advertise
   use datm_datamode_clmncep_mod , only : datm_datamode_clmncep_init_pointers
   use datm_datamode_clmncep_mod , only : datm_datamode_clmncep_advance
   use datm_datamode_clmncep_mod , only : datm_datamode_clmncep_restart_write
   use datm_datamode_clmncep_mod , only : datm_datamode_clmncep_restart_read
+
+  use datm_datamode_cplhist_mod , only : datm_datamode_cplhist_advertise
+  use datm_datamode_cplhist_mod , only : datm_datamode_cplhist_init_pointers
+  use datm_datamode_cplhist_mod , only : datm_datamode_cplhist_advance
+  use datm_datamode_cplhist_mod , only : datm_datamode_cplhist_restart_write
+  use datm_datamode_cplhist_mod , only : datm_datamode_cplhist_restart_read
+
   use datm_datamode_era5_mod    , only : datm_datamode_era5_advertise
   use datm_datamode_era5_mod    , only : datm_datamode_era5_init_pointers
   use datm_datamode_era5_mod    , only : datm_datamode_era5_advance
   use datm_datamode_era5_mod    , only : datm_datamode_era5_restart_write
   use datm_datamode_era5_mod    , only : datm_datamode_era5_restart_read
+  use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_advertise
+  use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_init_pointers
+  use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_advance
+  use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_restart_write
+  use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_restart_read
+
   use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_advertise
   use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_init_pointers
   use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_advance
@@ -289,6 +313,7 @@ contains
          trim(datamode) == 'CORE2_IAF'    .or. &
          trim(datamode) == 'CORE_IAF_JRA' .or. &
          trim(datamode) == 'CLMNCEP'      .or. &
+         trim(datamode) == 'CPLHIST'      .or. &
          trim(datamode) == 'CFSR'         .or. &
          trim(datamode) == 'ERA5') then
     else
@@ -306,6 +331,10 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('CLMNCEP')
        call datm_datamode_clmncep_advertise(exportState, fldsExport, flds_scalar_name, &
+            flds_co2, flds_wiso, flds_presaero, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    case ('CPLHIST')
+       call datm_datamode_cplhist_advertise(exportState, fldsExport, flds_scalar_name, &
             flds_co2, flds_wiso, flds_presaero, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('ERA5')
@@ -547,6 +576,9 @@ contains
        case('CLMNCEP')
           call datm_datamode_clmncep_init_pointers(importState, exportState, sdat, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       case('CPLHIST')
+          call datm_datamode_cplhist_init_pointers(importState, exportState, sdat, rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('ERA5')
           call datm_datamode_era5_init_pointers(exportState, sdat, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -564,6 +596,8 @@ contains
              call datm_datamode_jra_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
           case('CLMNCEP')
              call datm_datamode_clmncep_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
+          case('CPLHIST')
+             call datm_datamode_cplhist_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
           case('ERA5')
              call datm_datamode_era5_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
           case('CFSR')
@@ -608,6 +642,9 @@ contains
     case('CLMNCEP')
        call datm_datamode_clmncep_advance(masterproc, logunit, mpicom,  rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    case('CPLHIST')
+       call datm_datamode_cplhist_advance(masterproc, logunit, mpicom,  rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('ERA5')
        call datm_datamode_era5_advance(exportstate, masterproc, logunit, mpicom, target_ymd, &
             target_tod, sdat%model_calendar, rc)
@@ -631,6 +668,10 @@ contains
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('CLMNCEP')
           call datm_datamode_clmncep_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
+               logunit, my_task, sdat)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       case('CPLHIST')
+          call datm_datamode_cplhist_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
                logunit, my_task, sdat)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('ERA5')

@@ -56,11 +56,10 @@
     <input_pathname>abs</input_pathname>
     <group>dlnd_nml</group>
     <desc>
-      file specifying model mask if not obtained from input model mesh
+      file specifying file to use to obtain model mask
     </desc>
     <values>
-      <value>$LND_DOMAIN_MESH</value>
-      <value set_model_maskfile='true'>$LND_DOMAIN_PATH/$LND_DOMAIN_FILE</value>
+      <value>$MASK_MESH</value>
     </values>
   </entry>
 

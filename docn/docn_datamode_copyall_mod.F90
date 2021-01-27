@@ -1,6 +1,6 @@
 module docn_datamode_copyall_mod
 
-  use ESMF
+  use ESMF             , only : ESMF_State, ESMF_LOGMSG_INFO, ESMF_LogWrite, ESMF_SUCCESS
   use NUOPC            , only : NUOPC_Advertise
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_const_mod    , only : shr_const_TkFrz, shr_const_pi, shr_const_ocn_ref_sal
@@ -89,16 +89,22 @@ contains
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'So_t'     , fldptr1=So_t     , rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
-    call dshr_state_getfldptr(exportState, 'So_s'     , fldptr1=So_s     , rc=rc)
+    call dshr_state_getfldptr(exportState, 'So_s'     , fldptr1=So_s     , allowNullReturn=.true., rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
-    call dshr_state_getfldptr(exportState, 'So_u'     , fldptr1=So_u     , rc=rc)
+    call dshr_state_getfldptr(exportState, 'So_u'     , fldptr1=So_u     , allowNullReturn=.true., rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
-    call dshr_state_getfldptr(exportState, 'So_v'     , fldptr1=So_v     , rc=rc)
+    call dshr_state_getfldptr(exportState, 'So_v'     , fldptr1=So_v     , allowNullReturn=.true., rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
 
-    So_u(:) = 0.0_r8
-    So_v(:) = 0.0_r8
-    So_s(:) = ocnsalt
+    if (associated(So_u)) then
+      So_u(:) = 0.0_r8
+    end if
+    if (associated(So_v)) then
+      So_v(:) = 0.0_r8
+    end if
+    if (associated(So_s)) then
+      So_s(:) = ocnsalt
+    end if
     So_t(:) = TkFrz
 
     ! Set export state ocean fraction (So_omask)
@@ -125,7 +131,7 @@ contains
   !===============================================================================
   subroutine docn_datamode_copyall_restart_write(case_name, inst_suffix, ymd, tod, &
        logunit, my_task, sdat)
-    
+
     ! input/output variables
     character(len=*)            , intent(in)    :: case_name
     character(len=*)            , intent(in)    :: inst_suffix

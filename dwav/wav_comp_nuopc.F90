@@ -4,7 +4,13 @@ module wav_comp_nuopc
   ! This is the NUOPC cap for DWAV
   !----------------------------------------------------------------------------
 
-  use ESMF
+  use ESMF             , only : ESMF_SUCCESS, ESMF_TraceRegionExit, ESMF_TraceRegionEnter
+  use ESMF             , only : ESMF_State, ESMF_Clock, ESMF_Alarm, ESMF_LogWrite, ESMF_Time
+  use ESMF             , only : ESMF_ClockGetAlarm, ESMF_LOGMSG_INFO
+  use ESMF             , only : ESMF_Mesh, ESMF_GridComp, ESMF_TimeInterval, ESMF_GridCompSetEntryPoint
+  use ESMF             , only : ESMF_METHOD_INITIALIZE, ESMF_MethodAdd, ESMF_MethodRemove
+  use ESMF             , only : ESMF_ClockGet, ESMF_TimeGet, operator(+), ESMF_AlarmRingerOff
+  use ESMF             , only : ESMF_AlarmIsRinging
   use NUOPC            , only : NUOPC_CompDerive, NUOPC_CompSetEntryPoint, NUOPC_CompSpecialize
   use NUOPC            , only : NUOPC_CompAttributeGet, NUOPC_Advertise
   use NUOPC_Model      , only : model_routine_SS        => SetServices
