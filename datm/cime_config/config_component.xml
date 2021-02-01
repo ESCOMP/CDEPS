@@ -159,46 +159,7 @@
     <desc>case name used to determine stream filenames when DATM_MODE is CPLHIST</desc>
   </entry>
 
-  <entry id="DATM_CPLHIST_YR_ALIGN">
-    <type>integer</type>
-    <valid_values></valid_values>
-    <default_value>-999</default_value>
-    <group>run_component_datm</group>
-    <file>env_run.xml</file>
-    <desc>
-      Simulation year corresponding to DATM_CPLHIST_YR_START (only used
-      when DATM_MODE is CPLHIST). A common usage is to set this to
-      RUN_STARTDATE. With this setting, the forcing in the first year of
-      the run will be the forcing of year DATM_CPLHIST_YR_START. Another
-      use case is to align the calendar of transient forcing with the
-      model calendar. For example, setting
-      DATM_CPLHIST_YR_ALIGN=DATM_CPLHIST_YR_START will lead to the
-      forcing calendar being the same as the model calendar. The forcing
-      for a given model year would be the forcing of the same year. This
-      would be appropriate in transient runs where the model calendar is
-      setup to span the same year range as the forcing data.
-    </desc>
-  </entry>
-
-  <entry id="DATM_CPLHIST_YR_START">
-    <type>integer</type>
-    <valid_values></valid_values>
-    <default_value>-999</default_value>
-    <group>run_component_datm</group>
-    <file>env_run.xml</file>
-    <desc>starting year to loop data over (only used when DATM_MODE is CPLHIST)</desc>
-  </entry>
-
-  <entry id="DATM_CPLHIST_YR_END">
-    <type>integer</type>
-    <valid_values></valid_values>
-    <default_value>-999</default_value>
-    <group>run_component_datm</group>
-    <file>env_run.xml</file>
-    <desc>ending year to loop data over (only used when DATM_MODE is CPLHIST)</desc>
-  </entry>
-
-  <entry id="DATM_CLMNCEP_YR_ALIGN">
+  <entry id="DATM_YR_ALIGN">
     <type>integer</type>
     <valid_values></valid_values>
     <default_value>1</default_value>
@@ -209,26 +170,38 @@
       <value compset="HIST.*_DATM%QIA">1895</value>
       <value compset="HIST.*_DATM%CRU">1901</value>
       <value compset="HIST.*_DATM%GSW">1901</value>
-      <value compset="HIST.*_DATM%NLDAS2">$DATM_CLMNCEP_YR_START</value>
+      <value compset="HIST.*_DATM%NLDAS2">$DATM_YR_START</value>
       <value compset="20TR.*_DATM%QIA">1895</value>
       <value compset="20TR.*_DATM%CRU">1901</value>
       <value compset="20TR.*_DATM%GSW">1901</value>
-      <value compset="SSP.*_DATM%QIA">$DATM_CLMNCEP_YR_START</value>
-      <value compset="SSP.*_DATM%CRU">$DATM_CLMNCEP_YR_START</value>
-      <value compset="SSP.*_DATM%GSW">$DATM_CLMNCEP_YR_START</value>
+      <value compset="SSP.*_DATM%QIA">$DATM_YR_START</value>
+      <value compset="SSP.*_DATM%CRU">$DATM_YR_START</value>
+      <value compset="SSP.*_DATM%GSW">$DATM_YR_START</value>
       <value compset="1850.*_DATM%CRU">1</value>
       <value compset="1850.*_DATM%GSW">1</value>
-      <value compset="2000.*_DATM">$DATM_CLMNCEP_YR_START</value>
-      <value compset="2003.*_DATM">$DATM_CLMNCEP_YR_START</value>
-      <value compset="2010.*_DATM">$DATM_CLMNCEP_YR_START</value>
-      <value compset="4804.*_DATM">$DATM_CLMNCEP_YR_START</value>
+      <value compset="2000.*_DATM">$DATM_YR_START</value>
+      <value compset="2003.*_DATM">$DATM_YR_START</value>
+      <value compset="2010.*_DATM">$DATM_YR_START</value>
+      <value compset="4804.*_DATM">$DATM_YR_START</value>
     </values>
     <group>run_component_datm</group>
     <file>env_run.xml</file>
-    <desc>year align</desc>
+    <desc>
+      Simulation year corresponding to DATM_YR_START. A common usage
+      is to set this to RUN_STARTDATE. With this setting, the forcing
+      in the first year of the run will be the forcing of year
+      DATM_YR_START. Another use case is to align the calendar
+      of transient forcing with the model calendar. For example,
+      setting DATM_YR_ALIGN=DATM_YR_START will lead to
+      the forcing calendar being the same as the model calendar. The
+      forcing for a given model year would be the forcing of the same
+      year. This would be appropriate in transient runs where the
+      model calendar is setup to span the same year range as the
+      forcing data.
+    </desc>
   </entry>
 
-  <entry id="DATM_CLMNCEP_YR_START">
+  <entry id="DATM_YR_START">
     <type>integer</type>
     <valid_values></valid_values>
     <default_value>2004</default_value>
@@ -270,7 +243,7 @@
     <desc>starting year to loop data over</desc>
   </entry>
 
-  <entry id="DATM_CLMNCEP_YR_END">
+  <entry id="DATM_YR_END">
     <type>integer</type>
     <valid_values></valid_values>
     <default_value>2004</default_value>

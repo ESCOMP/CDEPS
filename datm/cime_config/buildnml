@@ -74,8 +74,8 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     config['datm_co2_tseries'] = datm_co2_tseries
     config['datm_presaero'] = datm_presaero
     config['cime_model'] = get_model()
-    config['scol_mode'] = 'true' if case.get_value('PTS_MODE') else 'false'
-    config['create_mesh'] = 'true' if case.get_value("ATM_DOMAIN_MESH") == 'create_mesh' else 'false'
+    config['mode'] = 'scol' if case.get_value('PTS_MODE') else 'false'
+    config['mode'] = 'create_mesh' if case.get_value("ATM_DOMAIN_MESH") == 'create_mesh'
 
     nmlgen.init_defaults(infile, config)
 
