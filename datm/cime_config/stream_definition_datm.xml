@@ -195,12 +195,12 @@
   -->
 
   <!-- ===================================  -->
-  <!-- datm_mode NEON                       -->
+  <!-- datm_mode 1PT NEON                   -->
   <!-- ===================================  -->
 
   <stream_entry name="NEON.$NEONSITE">
     <stream_meshfile>
-      <meshfile></meshfile>
+      <meshfile>none</meshfile>
     </stream_meshfile>
     <stream_datafiles>
       <file first_year="2018" last_year="2019">/glade/work/jedwards/sandboxes/NEON/inputdata/single_point/datmdata_NEON/$NEONSITE/%ym.nc</file>
@@ -217,8 +217,7 @@
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
-      <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
+      <mapalgo>none</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2018</stream_year_align>

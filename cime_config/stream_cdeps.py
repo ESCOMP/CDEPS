@@ -42,7 +42,7 @@ _stream_nuopc_file_template = """
  </stream_info>
 
 """
-        
+
 class StreamCDEPS(GenericXML):
 
     def __init__(self, infile, schema):
@@ -65,7 +65,7 @@ class StreamCDEPS(GenericXML):
         # write contents of stream file
         for stream_name in stream_names:
             if stream_name:
-                self.stream_nodes = super(StreamCDEPS,self).get_child("stream_entry", {"name" : stream_name}, 
+                self.stream_nodes = super(StreamCDEPS,self).get_child("stream_entry", {"name" : stream_name},
                                                                      err_msg="No stream_entry {} found".format(stream_name))
 
             # determine stream_year_first and stream_year_list
@@ -99,10 +99,10 @@ class StreamCDEPS(GenericXML):
                         stream_datafiles = child.xml_element.text
                         stream_datafiles = self._resolve_values(case, stream_datafiles)
                         if 'first_year' in child.xml_element.attrib and 'last_year' in child.xml_element.attrib:
-                            value = child.xml_element.get('first_year') 
+                            value = child.xml_element.get('first_year')
                             value = self._resolve_values(case, value)
                             stream_year_first= int(value)
-                            value = child.xml_element.get('last_year') 
+                            value = child.xml_element.get('last_year')
                             value = self._resolve_values(case, value)
                             stream_year_last = int(value)
                             year_first = max(stream_year_first, data_year_first)
@@ -110,15 +110,15 @@ class StreamCDEPS(GenericXML):
                             stream_datafiles = self._sub_paths(stream_datafiles, year_first, year_last)
                             stream_datafiles = stream_datafiles.strip()
                         #endif
-                        if stream_vars[node_name]: 
+                        if stream_vars[node_name]:
                             stream_vars[node_name] += "\n      " + self._add_xml_delimiter(stream_datafiles.split("\n"), "file")
                         else:
                             stream_vars[node_name] = self._add_xml_delimiter(stream_datafiles.split("\n"), "file")
 
                 elif (   node_name == 'stream_meshfile'
-                      or node_name == 'stream_mapalgo' 
-                      or node_name == 'stream_tintalgo' 
-                      or node_name == 'stream_taxmode' 
+                      or node_name == 'stream_mapalgo'
+                      or node_name == 'stream_tintalgo'
+                      or node_name == 'stream_taxmode'
                       or node_name == 'stream_dtlimit'):
                     attributes['model_grid'] = case.get_value("GRID")
                     attributes['compset'] = case.get_value("COMPSET")
@@ -130,7 +130,7 @@ class StreamCDEPS(GenericXML):
                 elif node_name.strip():
                     # Get the other dependencies
                     stream_dict = self._add_value_to_dict(stream_vars, case, node)
-                        
+
             # append to stream xml file
             stream_file_text = _stream_nuopc_file_template.format(**stream_vars)
             with open(streams_xml_file, 'a') as stream_file:
@@ -193,7 +193,7 @@ class StreamCDEPS(GenericXML):
 
     def _get_value_match(self, node, child_name, attributes=None, exact_match=False):
         '''
-        Get the first best match for multiple tags in child_name based on the 
+        Get the first best match for multiple tags in child_name based on the
         attributes input
 
         <values...>
@@ -396,5 +396,3 @@ class StreamCDEPS(GenericXML):
             #endif
         #endfor
         return "\n      ".join(list_to_deliminate)
-
-
