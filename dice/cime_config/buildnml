@@ -63,12 +63,15 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     config = {}
     config['ice_grid'] = ice_grid
     config['dice_mode'] = dice_mode
+    config['set_model_maskfile'] = 'false'
     if case.get_value('PTS_MODE'):
         config['mode'] = 'single_column'
+        config['set_model_maskfile'] = 'true'
     else:
         config['mode'] = case.get_value("ICE_DOMAIN_MESH")
 
-    config['set_model_maskfile'] = 'true' if scol_mode or (ice_nx==atm_nx and ice_ny==atm_ny) else 'false'
+    if (ice_nx==atm_nx and ice_ny==atm_ny):
+        config['set_model_maskfile'] = 'true'
 
     # Initialize nmlgen
     nmlgen.init_defaults(infile, config)
