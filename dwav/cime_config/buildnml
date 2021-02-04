@@ -61,8 +61,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     config['dwav_mode'] = dwav_mode
 
     # do not allow single column mode for dwav
-    scol_mode = True if case.get_value('PTS_MODE') else False
-    expect(not scol_mode, 
+    expect(not case.get_value('PTS_MODE'),
            "for, DWAV single column mode is not allowed")
 
     # Initialize nmlgen
