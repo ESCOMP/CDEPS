@@ -206,14 +206,14 @@
       <file first_year="2018" last_year="2019">/glade/work/jedwards/sandboxes/NEON/inputdata/single_point/datmdata_NEON/$NEONSITE/%ym.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>PRECTmms precn</var>
-      <var>FSDS     swdn </var>
-      <var>ZBOT     z    </var>
-      <var>TBOT     tbot </var>
-      <var>WIND     wind </var>
-      <var>RH       rh   </var>
-      <var>PSRF     pbot </var>
-      <var>FLDS     lwdn </var>
+      <var>PRECTmms Faxa_precn</var>
+      <var>FSDS     Faxa_swdn </var>
+      <var>ZBOT     Sa_z    </var>
+      <var>TBOT     Sa_tbot </var>
+      <var>WIND     Sa_wind </var>
+      <var>RH       Sa_rh   </var>
+      <var>PSRF     Sa_pbot </var>
+      <var>FLDS     Faxa_lwdn </var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -225,13 +225,13 @@
     <stream_year_last>2019</stream_year_last>
     <stream_offset>0</stream_offset>
     <stream_tintalgo>
-      <tintalgo>coszen</tintalgo>
+      <tintalgo>linear</tintalgo>
     </stream_tintalgo>
     <stream_taxmode>
-      <taxmode>cycle</taxmode>
+      <taxmode>extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
-      <dtlimit>1.5</dtlimit>
+      <dtlimit>1e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>

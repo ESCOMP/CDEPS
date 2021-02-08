@@ -112,7 +112,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     if anomaly_forcing[0] is not None:
         streamlist += anomaly_forcing
     if '$' in streamlist:
-        print("streamlist is {}".format(streamlist)
+        print("streamlist is {}".format(streamlist))
 
     # Generate datm.streams.xml
     stream_file = os.path.join(_CDEPS_CONFIG,os.pardir, "datm","cime_config","stream_definition_datm.xml")

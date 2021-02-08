@@ -64,7 +64,11 @@ class StreamCDEPS(GenericXML):
             stream_file.write('<file id="stream" version="2.0">\n')
         # write contents of stream file
         for stream_name in stream_names:
-            if stream_name:
+            if stream_name.startswith("NEON."):
+                self.stream_nodes = super(StreamCDEPS,self).get_child("stream_entry", {"name" : "NEON.$NEONSITE"},
+                                                                     err_msg="No stream_entry {} found".format(stream_name))
+
+            elif stream_name:
                 self.stream_nodes = super(StreamCDEPS,self).get_child("stream_entry", {"name" : stream_name},
                                                                      err_msg="No stream_entry {} found".format(stream_name))
 
