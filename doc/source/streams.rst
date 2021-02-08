@@ -219,15 +219,15 @@ where:
   over the forcing data for 1901-1920, and then run the model for years
   1901-2010 using the forcing data from 1901-2010. To do this, initially set::
 
-    ./xmlchange DATM_CLMNCEP_YR_ALIGN=1901
-    ./xmlchange DATM_CLMNCEP_YR_START=1901
-    ./xmlchange DATM_CLMNCEP_YR_END=1920
+    ./xmlchange DATM_YR_ALIGN=1901
+    ./xmlchange DATM_YR_START=1901
+    ./xmlchange DATM_YR_END=1920
 
   When the model has completed year 1900, set::
 
-    ./xmlchange DATM_CLMNCEP_YR_ALIGN=1901
-    ./xmlchange DATM_CLMNCEP_YR_START=1901
-    ./xmlchange DATM_CLMNCEP_YR_END=2010
+    ./xmlchange DATM_YR_ALIGN=1901
+    ./xmlchange DATM_YR_START=1901
+    ./xmlchange DATM_YR_END=2010
 
   With this setup, the correlation between model run year and forcing year
   looks like this::
@@ -235,7 +235,7 @@ where:
     RUN   Year : 1850 ... 1860 1861 ... 1870 ... 1880 1881 ... 1890 ... 1900 1901 ... 2010
     FORCE Year : 1910 ... 1920 1901 ... 1910 ... 1920 1901 ... 1910 ... 1920 1901 ... 2010
 
-  Setting ``DATM_CLMNCEP_YR_ALIGN`` to 1901 tells the code that you want
+  Setting ``DATM_YR_ALIGN`` to 1901 tells the code that you want
   to align model year 1901 with forcing data year 1901, and then it
   calculates what the forcing year should be if the model starts in year 1850.
 

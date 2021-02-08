@@ -52,6 +52,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     atm_nx = case.get_value("ATM_NX")
     atm_ny = case.get_value("ATM_NY")
     model_grid = case.get_value("GRID")
+    mask_grid = case.get_value('MASK_GRID')
 
     # Check for incompatible options.
     expect(ocn_grid != "null",
@@ -67,9 +68,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     config['ocn_grid'] = ocn_grid
     config['docn_mode'] = docn_mode
     config['create_mesh'] = 'true' if case.get_value("OCN_DOMAIN_MESH") == 'create_mesh' else 'false'
-    aquaplanet_mode = True if 'AQ' in case.get_value('COMPSET') else False
-    scol_mode = True if case.get_value('PTS_MODE') else False
-    config['set_model_maskfile'] = 'true' if scol_mode or (ocn_nx==atm_nx and ocn_ny==atm_ny and not aquaplanet_mode) else 'false'
+    config['aqua_planet'] = 'true' if 'aquap' in docn_mode else 'false'
 
     nmlgen.init_defaults(infile, config)
 
@@ -85,7 +84,6 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     #endif
     if generate_stream_file:
         streamlist = nmlgen.get_streams()
-        print "DEBUG: streamlist is ",streamlist
         stream_file = os.path.join(_CDEPS_CONFIG,os.pardir, "docn","cime_config","stream_definition_docn.xml")
         schema_file = os.path.join(_CDEPS_CONFIG,"streams_v2.0.xsd")
         streams = StreamCDEPS(stream_file, schema_file)

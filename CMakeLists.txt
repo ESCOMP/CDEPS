@@ -27,13 +27,22 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 message("CMAKE_MODULE_PATH is ${CMAKE_MODULE_PATH}")
 
-find_package(ESMF REQUIRED)
-if (DEFINED PIO)
-  set(PIO_PATH ${PIO})
+if (TARGET esmf)
+  message("Target esmf is already found. Skip find_package ...")
 else()
-  set(PIO_PATH $ENV{PIO})
+  find_package(ESMF REQUIRED)
 endif()
-find_package(PIO REQUIRED COMPONENT C Fortran PATH ${PIO_PATH})
+
+if (DEFINED ENV{PIO_ROOT})
+  message("PIO_ROOT is $ENV{PIO_ROOT}")
+else()
+  if (DEFINED PIO)
+    set(PIO_PATH ${PIO})
+  else()
+    set(PIO_PATH $ENV{PIO})
+  endif()
+  find_package(PIO REQUIRED COMPONENT C Fortran PATH ${PIO_PATH})
+endif()
 
 if (NOT DEFINED MPILIB OR NOT ${MPILIB} STREQUAL "mpi-serial")
   find_package(MPI REQUIRED)
@@ -53,6 +62,44 @@ foreach(COMP datm dice dlnd docn drof dwav)
   add_subdirectory("${COMP}")
 endforeach(COMP)
 
-install(TARGETS streams dshr
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib)
+
+target_include_directories(streams PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/share>
+                                          $<INSTALL_INTERFACE:mod>)
+target_include_directories(streams PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/fox/include>
+                                          $<INSTALL_INTERFACE:mod>)
+target_include_directories(dshr PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/share>
+                                       $<INSTALL_INTERFACE:mod>)
+target_include_directories(dshr PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/fox/include>
+                                       $<INSTALL_INTERFACE:mod>)
+target_include_directories(dshr PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/streams>
+                                       $<INSTALL_INTERFACE:mod>)
+
+foreach(COMP datm dice dlnd docn drof dwav)
+  target_include_directories(${COMP} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/share>
+                                            $<INSTALL_INTERFACE:mod>)
+  target_include_directories(${COMP} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/streams>
+                                            $<INSTALL_INTERFACE:mod>)
+  target_include_directories(${COMP} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/dshr>
+                                            $<INSTALL_INTERFACE:mod>)
+
+  install(TARGETS ${COMP} 
+          EXPORT  ${COMP}
+          LIBRARY DESTINATION lib
+          ARCHIVE DESTINATION lib
+          COMPONENT Library)
+  install(EXPORT      ${COMP} 
+          DESTINATION lib/cmake)
+endforeach(COMP)
+
+foreach(DEPS streams dshr cdeps_share FoX_dom FoX_wxml FoX_sax FoX_common FoX_utils FoX_fsys)
+  if(NOT BLD_STANDALONE AND ${DEPS} STREQUAL "cdeps_share")
+     continue()
+  endif()
+  install(TARGETS ${DEPS} 
+          EXPORT  ${DEPS}
+          LIBRARY DESTINATION lib
+          ARCHIVE DESTINATION lib
+          COMPONENT Library)
+  install(EXPORT      ${DEPS} 
+          DESTINATION lib/cmake)
+endforeach(DEPS)

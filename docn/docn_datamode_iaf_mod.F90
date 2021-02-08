@@ -1,6 +1,6 @@
 module docn_datamode_iaf_mod
 
-  use ESMF
+  use ESMF             , only : ESMF_SUCCESS, ESMF_LOGMSG_INFO, ESMF_LogWrite, ESMF_State
   use NUOPC            , only : NUOPC_Advertise
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_sys_mod      , only : shr_sys_abort
@@ -179,7 +179,7 @@ contains
   !===============================================================================
   subroutine docn_datamode_iaf_restart_write(case_name, inst_suffix, ymd, tod, &
        logunit, my_task, sdat)
-    
+
     ! write restart file
 
     ! input/output variables

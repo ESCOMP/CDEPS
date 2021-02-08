@@ -3,8 +3,21 @@ module dshr_strdata_mod
   ! holds data and methods to advance data models
   ! Obtain the model domain and the stream domain for each stream
 
-  use ESMF
-
+  use ESMF             , only : ESMF_Mesh, ESMF_RouteHandle, ESMF_Field, ESMF_FieldBundle
+  use ESMF             , only : ESMF_Clock, ESMF_VM, ESMF_VMGet, ESMF_VMGetCurrent
+  use ESMF             , only : ESMF_DistGrid, ESMF_SUCCESS, ESMF_MeshGet, ESMF_DistGridGet
+  use ESMF             , only : ESMF_VMBroadCast, ESMF_MeshIsCreated, ESMF_MeshCreate
+  use ESMF             , only : ESMF_Calendar, ESMF_CALKIND_NOLEAP, ESMF_CALKIND_GREGORIAN
+  use ESMF             , only : ESMF_CalKind_Flag, ESMF_Time, ESMF_TimeInterval
+  use ESMF             , only : ESMF_TimeIntervalGet, ESMF_TYPEKIND_R8, ESMF_FieldCreate
+  use ESMF             , only : ESMF_FILEFORMAT_ESMFMESH, ESMF_FieldCreate
+  use ESMF             , only : ESMF_FieldBundleCreate, ESMF_MESHLOC_ELEMENT, ESMF_FieldBundleAdd
+  use ESMF             , only : ESMF_POLEMETHOD_ALLAVG, ESMF_EXTRAPMETHOD_NEAREST_STOD, ESMF_REGRIDMETHOD_BILINEAR, ESMF_REGRIDMETHOD_NEAREST_STOD
+  use ESMF             , only : ESMF_ClockGet, operator(-), operator(==), ESMF_CALKIND_NOLEAP
+  use ESMF             , only : ESMF_FieldReGridStore, ESMF_FieldRedistStore, ESMF_UNMAPPEDACTION_IGNORE
+  use ESMF             , only : ESMF_TERMORDER_SRCSEQ, ESMF_FieldRegrid, ESMF_FieldFill
+  use ESMF             , only : ESMF_REGION_TOTAL, ESMF_FieldGet, ESMF_TraceRegionExit, ESMF_TraceRegionEnter
+  use ESMF             , only : ESMF_LOGMSG_INFO, ESMF_LogWrite
   use shr_kind_mod     , only : r8=>shr_kind_r8, r4=>shr_kind_r4, i2=>shr_kind_I2
   use shr_kind_mod     , only : cs=>shr_kind_cs, cl=>shr_kind_cl, cxx=>shr_kind_cxx
   use shr_sys_mod      , only : shr_sys_abort
@@ -78,7 +91,7 @@ module dshr_strdata_mod
      integer                             :: stream_ub                       ! index of the Upperbound (UB) in fldlist_stream
      type(ESMF_Field)                    :: field_stream                    ! a field on the stream data domain
      type(ESMF_Field)                    :: stream_vector                   ! a vector field on the stream data domain
-     type(ESMF_FieldBundle), allocatable :: fldbun_data(:)                  ! stream field bundle interpolated to model grid
+     type(ESMF_FieldBundle), allocatable :: fldbun_data(:)                  ! stream field bundle interpolated to model grid spatially
      type(ESMF_FieldBundle)              :: fldbun_model                    ! stream n field bundle interpolated to model grid and time
      integer                             :: ucomp = -1                      ! index of vector u in stream
      integer                             :: vcomp = -1                      ! index of vector v in stream
@@ -174,8 +187,8 @@ contains
     integer       :: localPet
     character(len=*), parameter  :: subname='(shr_strdata_init_from_xml)'
     ! ----------------------------------------------
-
     rc = ESMF_SUCCESS
+    call ESMF_LogWrite(subname//' called', ESMF_LOGMSG_INFO)
 
     ! Initialize log unit
     sdat%logunit = logunit
@@ -291,6 +304,7 @@ contains
     integer               :: spatialDim         ! number of dimension in mesh
     integer               :: numOwnedElements   ! local size of mesh
     real(r8), allocatable :: ownedElemCoords(:) ! mesh lat and lons
+    character(len=*), parameter  :: subname='(shr_strdata_init_model_domain)'
     ! ----------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -361,9 +375,7 @@ contains
     integer                      :: nvars
     integer                      :: i, stream_nlev, index
     character(CL)                :: stream_vectors
-    character(len=*), parameter  :: subname='(shr_strdata_mod:shr_sdat_init)'
-    character(*)    , parameter  :: F00 = "('(shr_sdat_init) ',a)"
-    character(*)    , parameter  :: F01  = "('(shr_sdat) ',a,2x,i8)"
+    character(len=*), parameter  :: subname='(shr_sdat_init)'
     ! ----------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -387,14 +399,14 @@ contains
        if (filename /= 'none' .and. masterproc) then
           inquire(file=trim(filename),exist=fileExists)
           if (.not. fileExists) then
-             write(sdat%logunit,F00) "ERROR: file does not exist: ", trim(fileName)
+             write(sdat%logunit,'(a)') "ERROR: file does not exist: "//trim(fileName)
              call shr_sys_abort(subName//"ERROR: file does not exist: "//trim(fileName))
           end if
        endif
        if(filename /= 'none') then
           stream_mesh = ESMF_MeshCreate(trim(filename), fileformat=ESMF_FILEFORMAT_ESMFMESH, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        endif
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
        ! Determine the number of stream levels
        call shr_strdata_get_stream_nlev(sdat, ns, rc=rc)
@@ -403,7 +415,7 @@ contains
        ! Determine field names for stream fields with both stream file names and data model names
        nvars = sdat%stream(ns)%nvars
 
-       ! Allocate memory 
+       ! Allocate memory
        allocate(sdat%pstrm(ns)%fldList_model(nvars))
        call shr_stream_getModelFieldList(sdat%stream(ns), sdat%pstrm(ns)%fldlist_model)
        allocate(sdat%pstrm(ns)%fldlist_stream(nvars))
@@ -492,39 +504,42 @@ contains
           end if
        endif
 
-       ! TODO: why not just use fldbun_model rather than fldbun_data
-
+       ! Why not use fldbun_model rather than fldbun_data?
        index = sdat%pstrm(ns)%stream_lb
        call dshr_fldbun_getFieldN(sdat%pstrm(ns)%fldbun_data(index), 1, lfield_dst, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
 
-       if (trim(sdat%stream(ns)%mapalgo) == "bilinear") then
-          call ESMF_FieldRegridStore(sdat%pstrm(ns)%field_stream, lfield_dst, &
-               routehandle=sdat%pstrm(ns)%routehandle, &
-               regridmethod=ESMF_REGRIDMETHOD_BILINEAR,  &
-               polemethod=ESMF_POLEMETHOD_ALLAVG, &
-               extrapMethod=ESMF_EXTRAPMETHOD_NEAREST_STOD, &
-               dstMaskValues = (/0/), &  ! ignore destination points where the mask is 0
-               srcMaskValues = (/0/), &  ! ignore source points where the mask is 0
-               srcTermProcessing=srcTermProcessing_Value, ignoreDegenerate=.true., rc=rc)
-          if (chkerr(rc,__LINE__,u_FILE_u)) return
-       else if (trim(sdat%stream(ns)%mapalgo) == 'redist') then
-          call ESMF_FieldRedistStore(sdat%pstrm(ns)%field_stream, lfield_dst, &
-               routehandle=sdat%pstrm(ns)%routehandle, &
-               ignoreUnmatchedIndices = .true., rc=rc)
-          if (chkerr(rc,__LINE__,u_FILE_u)) return
-       else if (trim(sdat%stream(ns)%mapalgo) == 'nn') then
-          call ESMF_FieldReGridStore(sdat%pstrm(ns)%field_stream, lfield_dst, &
-               routehandle=sdat%pstrm(ns)%routehandle, &
-               regridmethod=ESMF_REGRIDMETHOD_NEAREST_STOD, &
-               dstMaskValues = (/0/), &  ! ignore destination points where the mask is 0
-               srcMaskValues = (/0/), &  ! ignore source points where the mask is 0
-               srcTermProcessing=srcTermProcessing_Value, ignoreDegenerate=.true., &
-               unmappedaction=ESMF_UNMAPPEDACTION_IGNORE, rc=rc)
-       else if (trim(sdat%stream(ns)%mapalgo) == 'none') then
-          ! single point stream data, no action required.
+       if (.not.  ESMF_MeshIsCreated(stream_mesh)) then
+          sdat%stream(ns)%mapalgo = 'none'
        else
-          call shr_sys_abort('ERROR: map algo '//trim(sdat%stream(ns)%mapalgo)//' is not supported')
+          if (trim(sdat%stream(ns)%mapalgo) == "bilinear") then
+             call ESMF_FieldRegridStore(sdat%pstrm(ns)%field_stream, lfield_dst, &
+                  routehandle=sdat%pstrm(ns)%routehandle, &
+                  regridmethod=ESMF_REGRIDMETHOD_BILINEAR,  &
+                  polemethod=ESMF_POLEMETHOD_ALLAVG, &
+                  extrapMethod=ESMF_EXTRAPMETHOD_NEAREST_STOD, &
+                  dstMaskValues = (/0/), &  ! ignore destination points where the mask is 0
+                  srcMaskValues = (/0/), &  ! ignore source points where the mask is 0
+                  srcTermProcessing=srcTermProcessing_Value, ignoreDegenerate=.true., rc=rc)
+             if (chkerr(rc,__LINE__,u_FILE_u)) return
+          else if (trim(sdat%stream(ns)%mapalgo) == 'redist') then
+             call ESMF_FieldRedistStore(sdat%pstrm(ns)%field_stream, lfield_dst, &
+                  routehandle=sdat%pstrm(ns)%routehandle, &
+                  ignoreUnmatchedIndices = .true., rc=rc)
+             if (chkerr(rc,__LINE__,u_FILE_u)) return
+          else if (trim(sdat%stream(ns)%mapalgo) == 'nn') then
+             call ESMF_FieldReGridStore(sdat%pstrm(ns)%field_stream, lfield_dst, &
+                  routehandle=sdat%pstrm(ns)%routehandle, &
+                  regridmethod=ESMF_REGRIDMETHOD_NEAREST_STOD, &
+                  dstMaskValues = (/0/), &  ! ignore destination points where the mask is 0
+                  srcMaskValues = (/0/), &  ! ignore source points where the mask is 0
+                  srcTermProcessing=srcTermProcessing_Value, ignoreDegenerate=.true., &
+                  unmappedaction=ESMF_UNMAPPEDACTION_IGNORE, rc=rc)
+          else if (trim(sdat%stream(ns)%mapalgo) == 'none') then
+             ! single point stream data, no action required.
+          else
+             call shr_sys_abort('ERROR: map algo '//trim(sdat%stream(ns)%mapalgo)//' is not supported')
+          end if
        end if
 
     end do ! end of loop over streams
@@ -854,9 +869,7 @@ contains
 
           select case(sdat%stream(ns)%readmode)
           case ('single')
-             call shr_strdata_readLBUB(sdat, ns, &
-                  ymdmod(ns), todmod, &
-                  newData(ns), trim(lstr)//'_readLBUB', rc=rc)
+             call shr_strdata_readLBUB(sdat, ns, ymdmod(ns), todmod, newData(ns), trim(lstr)//'_readLBUB', rc=rc)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
           case ('full_file')
              ! TODO: need to put in capability to read all stream data at once
@@ -1201,7 +1214,7 @@ contains
     ! if model current date is outside of model lower or upper bound - find the stream bounds
     if (rDateM < rDateLB .or. rDateM > rDateUB) then
        call ESMF_TraceRegionEnter(trim(istr)//'_fbound')
-       call shr_stream_findBounds(stream, mDate, mSec,  &
+       call shr_stream_findBounds(stream, mDate, mSec,  sdat%masterproc, &
             sdat%pstrm(ns)%ymdLB, dDateLB, sdat%pstrm(ns)%todLB, n_lb, filename_lb, &
             sdat%pstrm(ns)%ymdUB, dDateUB, sdat%pstrm(ns)%todUB, n_ub, filename_ub)
        call ESMF_TraceRegionExit(trim(istr)//'_fbound')
@@ -1297,7 +1310,7 @@ contains
     integer                  :: pio_iovartype
     real(r8), pointer        :: nv_coords(:), nu_coords(:)
     real(r8), pointer        :: data_u_dst(:), data_v_dst(:)
-    real(r8)                 :: lat, lon 
+    real(r8)                 :: lat, lon
     real(r8)                 :: sinlat, sinlon
     real(r8)                 :: coslat, coslon
     real(r8)                 :: scale_factor, add_offset
@@ -1345,6 +1358,7 @@ contains
 
     if (ESMF_MeshIsCreated(per_stream%stream_mesh)) then
        if (.not. per_stream%stream_pio_iodesc_set) then
+          if (sdat%masterproc) write(sdat%logunit,F00) 'setting pio descriptor : ',trim(filename)
           call shr_strdata_set_stream_iodesc(sdat, per_stream, trim(per_stream%fldlist_stream(1)), &
                pioid, rc=rc)
           if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -1374,7 +1388,7 @@ contains
 
     call ESMF_TraceRegionEnter(trim(istr)//'_readpio')
     if (sdat%masterproc) then
-       write(sdat%logunit,F02) 'file ' // trim(boundstr) //': ',trim(filename), nt
+       write(sdat%logunit,F02) 'reading file ' // trim(boundstr) //': ',trim(filename), nt
     endif
 
     if(per_stream%ucomp > 0 .and. per_stream%vcomp > 0) then
@@ -1679,7 +1693,7 @@ contains
           data_u_dst(i) =  coslon * dataptr2d_dst(1,i) + sinlon * dataptr2d_dst(2,i)
           data_v_dst(i) = -sinlon * dataptr2d_dst(1,i) + coslon * dataptr2d_dst(2,i)
        enddo
-       
+
        deallocate(dataptr)
     endif
 

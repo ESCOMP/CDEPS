@@ -119,24 +119,22 @@
     </desc>
     <values>
       <value>$OCN_DOMAIN_MESH</value>
-      <value scol_mode='true'>null</value>
-      <value create_mesh='true'>null</value>
+      <value mode='scol'>null</value>
+      <value mode='create_mesh'>null</value>
     </values>
   </entry>
 
-  <entry id="model_maskfile">
+  <entry id="model_maskfile"> 
     <type>char</type>
     <category>streams</category>
     <input_pathname>abs</input_pathname>
     <group>docn_nml</group>
     <desc>
-      file specifying model mask if not obtained from input model mesh
+      MESH for ocn mask
     </desc>
     <values>
-      <value>$OCN_DOMAIN_MESH</value>
-      <value scol_mode='true'>$OCN_DOMAIN_PATH/$OCN_DOMAIN_FILE</value>
-      <value create_mesh='true'>$OCN_DOMAIN_PATH/$OCN_DOMAIN_FILE</value>
-      <value set_model_maskfile='true'>$OCN_DOMAIN_PATH/$OCN_DOMAIN_FILE</value>
+      <value>$MASK_MESH</value>
+      <value aqua_planet="true">$ATM_DOMAIN_MESH</value>
     </values>
   </entry>
 
@@ -150,8 +148,8 @@
     </desc>
     <values>
       <value>null</value>
-      <value scol_mode='true'>$OCN_DOMAIN_PATH/$OCN_DOMAIN_FILE</value>
-      <value create_mesh='true'>$OCN_DOMAIN_PATH/$OCN_DOMAIN_FILE</value>
+      <value mode='scol'>$OCN_DOMAIN_PATH/$OCN_DOMAIN_FILE</value>
+      <value mode='create_mesh'>$OCN_DOMAIN_PATH/$OCN_DOMAIN_FILE</value>
     </values>
   </entry>
 

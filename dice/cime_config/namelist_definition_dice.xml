@@ -54,8 +54,8 @@
     <desc>file specifying model mesh</desc>
     <values>
       <value>$ICE_DOMAIN_MESH</value>
-      <value scol_mode='true'>null</value>
-      <value create_mesh='true'>null</value>
+      <value mode='scol'>null</value>
+      <value mode='create_mesh'>null</value>
     </values>
   </entry>
 
@@ -68,10 +68,7 @@
       file specifying model mask if not obtained from input model mesh
     </desc>
     <values>
-      <value>$ICE_DOMAIN_MESH</value>
-      <value scol_mode='true'>$ICE_DOMAIN_PATH/$ICE_DOMAIN_FILE</value>
-      <value create_mesh='true'>$ICE_DOMAIN_PATH/$ICE_DOMAIN_FILE</value>
-      <value set_model_maskfile='true'>$ICE_DOMAIN_PATH/$ICE_DOMAIN_FILE</value>
+      <value>$MASK_MESH</value>
     </values>
   </entry>
 
@@ -83,8 +80,8 @@
     <desc>file specifying if model mesh is to be created at runtime</desc>
     <values>
       <value>null</value>
-      <value scol_mode='true'>$ICE_DOMAIN_PATH/$ICE_DOMAIN_FILE</value>
-      <value create_mesh='true'>$ICE_DOMAIN_PATH/$ICE_DOMAIN_FILE</value>
+      <value mode='scol'>$ICE_DOMAIN_PATH/$ICE_DOMAIN_FILE</value>
+      <value mode='create_mesh'>$ICE_DOMAIN_PATH/$ICE_DOMAIN_FILE</value>
     </values>
   </entry>
 
