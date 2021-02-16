@@ -214,9 +214,9 @@
       <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
-    <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
-    <stream_year_first>$DATM_CLMNCEP_YR_START</stream_year_first>
-    <stream_year_last>$DATM_CLMNCEP_YR_END</stream_year_last>
+    <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_YR_START</stream_year_first>
+    <stream_year_last>$DATM_YR_END</stream_year_last>
     <stream_offset>0</stream_offset>
     <stream_tintalgo>
       <tintalgo>coszen</tintalgo>
@@ -246,9 +246,9 @@
       <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
-    <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
-    <stream_year_first>$DATM_CLMNCEP_YR_START</stream_year_first>
-    <stream_year_last>$DATM_CLMNCEP_YR_END</stream_year_last>
+    <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_YR_START</stream_year_first>
+    <stream_year_last>$DATM_YR_END</stream_year_last>
     <stream_offset>0</stream_offset>
     <stream_tintalgo>
       <tintalgo>nearest</tintalgo>
@@ -282,9 +282,9 @@
       <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
-    <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
-    <stream_year_first>$DATM_CLMNCEP_YR_START</stream_year_first>
-    <stream_year_last>$DATM_CLMNCEP_YR_END</stream_year_last>
+    <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_YR_START</stream_year_first>
+    <stream_year_last>$DATM_YR_END</stream_year_last>
     <stream_offset>0</stream_offset>
     <stream_tintalgo>
       <tintalgo>linear</tintalgo>
@@ -317,9 +317,9 @@
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
-    <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
-    <stream_year_first>$DATM_CLMNCEP_YR_START</stream_year_first>
-    <stream_year_last>$DATM_CLMNCEP_YR_END</stream_year_last>
+    <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_YR_START</stream_year_first>
+    <stream_year_last>$DATM_YR_END</stream_year_last>
     <stream_offset>0</stream_offset>
     <stream_tintalgo>
       <tintalgo>coszen</tintalgo>
@@ -348,9 +348,9 @@
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
-    <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
-    <stream_year_first>$DATM_CLMNCEP_YR_START</stream_year_first>
-    <stream_year_last>$DATM_CLMNCEP_YR_END</stream_year_last>
+    <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_YR_START</stream_year_first>
+    <stream_year_last>$DATM_YR_END</stream_year_last>
     <stream_offset>0</stream_offset>
     <stream_tintalgo>
       <tintalgo>nearest</tintalgo>
@@ -383,9 +383,9 @@
       <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
-    <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
-    <stream_year_first>$DATM_CLMNCEP_YR_START</stream_year_first>
-    <stream_year_last>$DATM_CLMNCEP_YR_END</stream_year_last>
+    <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_YR_START</stream_year_first>
+    <stream_year_last>$DATM_YR_END</stream_year_last>
     <stream_offset>0</stream_offset>
     <stream_tintalgo>
       <tintalgo>linear</tintalgo>
@@ -419,9 +419,9 @@
       <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
-    <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
-    <stream_year_first>$DATM_CLMNCEP_YR_START</stream_year_first>
-    <stream_year_last>$DATM_CLMNCEP_YR_END</stream_year_last>
+    <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_YR_START</stream_year_first>
+    <stream_year_last>$DATM_YR_END</stream_year_last>
     <stream_offset>0</stream_offset>
     <stream_tintalgo>
       <tintalgo>coszen</tintalgo>
@@ -451,9 +451,9 @@
       <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
-    <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
-    <stream_year_first>$DATM_CLMNCEP_YR_START</stream_year_first>
-    <stream_year_last>$DATM_CLMNCEP_YR_END</stream_year_last>
+    <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_YR_START</stream_year_first>
+    <stream_year_last>$DATM_YR_END</stream_year_last>
     <stream_offset>0</stream_offset>
     <stream_tintalgo>
       <tintalgo>nearest</tintalgo>
@@ -486,9 +486,9 @@
       <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
-    <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
-    <stream_year_first>$DATM_CLMNCEP_YR_START</stream_year_first>
-    <stream_year_last>$DATM_CLMNCEP_YR_END</stream_year_last>
+    <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_YR_START</stream_year_first>
+    <stream_year_last>$DATM_YR_END</stream_year_last>
     <stream_offset>0</stream_offset>
     <stream_tintalgo>
       <tintalgo>linear</tintalgo>
@@ -522,7 +522,7 @@
       <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
-    <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
+    <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
     <stream_year_first>2000</stream_year_first>
     <stream_year_last>2004</stream_year_last>
     <stream_offset>0</stream_offset>
@@ -554,7 +554,7 @@
       <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
-    <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
+    <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
     <stream_year_first>2000</stream_year_first>
     <stream_year_last>2004</stream_year_last>
     <stream_offset>0</stream_offset>
@@ -589,7 +589,7 @@
       <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
-    <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
+    <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
     <stream_year_first>2000</stream_year_first>
     <stream_year_last>2004</stream_year_last>
     <stream_offset>0</stream_offset>
@@ -624,9 +624,9 @@
       <mapalgo>redist</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
-    <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
-    <stream_year_first>$DATM_CLMNCEP_YR_START</stream_year_first>
-    <stream_year_last>$DATM_CLMNCEP_YR_END</stream_year_last>
+    <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_YR_START</stream_year_first>
+    <stream_year_last>$DATM_YR_END</stream_year_last>
     <stream_offset>0</stream_offset>
     <stream_tintalgo>
       <tintalgo>coszen</tintalgo>
@@ -655,9 +655,9 @@
       <mapalgo>redist</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
-    <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
-    <stream_year_first>$DATM_CLMNCEP_YR_START</stream_year_first>
-    <stream_year_last>$DATM_CLMNCEP_YR_END</stream_year_last>
+    <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_YR_START</stream_year_first>
+    <stream_year_last>$DATM_YR_END</stream_year_last>
     <stream_offset>0</stream_offset>
     <stream_tintalgo>
       <tintalgo>nearest</tintalgo>
@@ -690,9 +690,9 @@
       <mapalgo>redist</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
-    <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
-    <stream_year_first>$DATM_CLMNCEP_YR_START</stream_year_first>
-    <stream_year_last>$DATM_CLMNCEP_YR_END</stream_year_last>
+    <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_YR_START</stream_year_first>
+    <stream_year_last>$DATM_YR_END</stream_year_last>
     <stream_offset>0</stream_offset>
     <stream_tintalgo>
       <tintalgo>linear</tintalgo>
@@ -734,7 +734,7 @@
       <mapalgo>none</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
-    <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
+    <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
     <stream_year_first>1993</stream_year_first>
     <stream_year_last >1993</stream_year_last>
     <stream_offset>0</stream_offset>
@@ -774,7 +774,7 @@
       <mapalgo>none</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
-    <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
+    <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
     <stream_year_first>1992</stream_year_first>
     <stream_year_last >1992</stream_year_last>
     <stream_offset>0</stream_offset>
@@ -829,7 +829,7 @@
       <mapalgo>none</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
-    <stream_year_align>$DATM_CLMNCEP_YR_ALIGN</stream_year_align>
+    <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
     <stream_year_first>0001</stream_year_first>
     <stream_year_last >0002</stream_year_last>
     <stream_offset>0</stream_offset>
@@ -3427,7 +3427,7 @@
       <meshfile>$ATM_DOMAIN_MESH</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file first_year="$DATM_CPLHIST_YR_START" last_year="$DATM_CPLHIST_YR_END">$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.ha2x3h.%ym.nc</file>
+      <file first_year="$DATM_YR_START" last_year="$DATM_YR_END">$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.ha2x3h.%ym.nc</file>
    </stream_datafiles>
     <stream_datavars>
       <var>a2x3h_Sa_topo  Sa_topo</var>
@@ -3438,9 +3438,9 @@
       <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
-    <stream_year_align>$DATM_CPLHIST_YR_ALIGN</stream_year_align>
-    <stream_year_first>$DATM_CPLHIST_YR_START</stream_year_first>
-    <stream_year_last>$DATM_CPLHIST_YR_END</stream_year_last>
+    <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_YR_START</stream_year_first>
+    <stream_year_last>$DATM_YR_END</stream_year_last>
     <stream_offset>0</stream_offset>
     <stream_tintalgo>
       <tintalgo>nearest</tintalgo>
@@ -3458,7 +3458,7 @@
       <meshfile>$ATM_DOMAIN_MESH</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file first_year="$DATM_CPLHIST_YR_START" last_year="$DATM_CPLHIST_YR_END">$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.ha2x1d.%ym.nc</file>
+      <file first_year="$DATM_YR_START" last_year="$DATM_YR_END">$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.ha2x1d.%ym.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>a2x1d_Faxa_bcphiwet  Faxa_bcphiwet</var>
@@ -3482,9 +3482,9 @@
       <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
-    <stream_year_align>$DATM_CPLHIST_YR_ALIGN</stream_year_align>
-    <stream_year_first>$DATM_CPLHIST_YR_START</stream_year_first>
-    <stream_year_last>$DATM_CPLHIST_YR_END</stream_year_last>
+    <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_YR_START</stream_year_first>
+    <stream_year_last>$DATM_YR_END</stream_year_last>
     <stream_offset>0</stream_offset>
     <stream_tintalgo>
       <tintalgo>nearest</tintalgo>
@@ -3503,7 +3503,7 @@
       <meshfile>$ATM_DOMAIN_MESH</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file first_year="$DATM_CPLHIST_YR_START" last_year="$DATM_CPLHIST_YR_END">$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.ha2x1hi.%ym.nc</file>
+      <file first_year="$DATM_YR_START" last_year="$DATM_YR_END">$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.ha2x1hi.%ym.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>a2x1hi_Faxa_swndr Faxa_swndr</var>
@@ -3517,9 +3517,9 @@
       <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
-    <stream_year_align>$DATM_CPLHIST_YR_ALIGN</stream_year_align>
-    <stream_year_first>$DATM_CPLHIST_YR_START</stream_year_first>
-    <stream_year_last>$DATM_CPLHIST_YR_END</stream_year_last>
+    <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_YR_START</stream_year_first>
+    <stream_year_last>$DATM_YR_END</stream_year_last>
     <stream_offset>2700</stream_offset>
     <stream_tintalgo>
       <tintalgo>nearest</tintalgo>
@@ -3538,7 +3538,7 @@
       <meshfile>$ATM_DOMAIN_MESH</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file first_year="$DATM_CPLHIST_YR_START" last_year="$DATM_CPLHIST_YR_END">$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.ha2x3h.%ym.nc</file>
+      <file first_year="$DATM_YR_START" last_year="$DATM_YR_END">$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.ha2x3h.%ym.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>a2x3h_Faxa_rainc Faxa_rainc</var>
@@ -3553,9 +3553,9 @@
       <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
-    <stream_year_align>$DATM_CPLHIST_YR_ALIGN</stream_year_align>
-    <stream_year_first>$DATM_CPLHIST_YR_START</stream_year_first>
-    <stream_year_last>$DATM_CPLHIST_YR_END</stream_year_last>
+    <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_YR_START</stream_year_first>
+    <stream_year_last>$DATM_YR_END</stream_year_last>
     <stream_offset>900</stream_offset>
     <stream_tintalgo>
       <tintalgo>nearest</tintalgo>
@@ -3574,7 +3574,7 @@
       <meshfile>$ATM_DOMAIN_MESH</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file first_year="$DATM_CPLHIST_YR_START" last_year="$DATM_CPLHIST_YR_END">$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.ha2x3h.%ym.nc</file>
+      <file first_year="$DATM_YR_START" last_year="$DATM_YR_END">$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.ha2x3h.%ym.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>a2x3h_Sa_z       Sa_z</var>
@@ -3593,9 +3593,9 @@
       <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
-    <stream_year_align>$DATM_CPLHIST_YR_ALIGN</stream_year_align>
-    <stream_year_first>$DATM_CPLHIST_YR_START</stream_year_first>
-    <stream_year_last>$DATM_CPLHIST_YR_END</stream_year_last>
+    <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_YR_START</stream_year_first>
+    <stream_year_last>$DATM_YR_END</stream_year_last>
     <stream_offset>900</stream_offset>
     <stream_tintalgo>
       <tintalgo>linear</tintalgo>
@@ -3614,7 +3614,7 @@
       <meshfile>$ATM_DOMAIN_MESH</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file first_year="$DATM_CPLHIST_YR_START" last_year="$DATM_CPLHIST_YR_END">$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.ha2x1h.%ym.nc</file>
+      <file first_year="$DATM_YR_START" last_year="$DATM_YR_END">$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.ha2x1h.%ym.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>a2x1h_Sa_u  Sa_u</var>
@@ -3626,9 +3626,9 @@
       <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
-    <stream_year_align>$DATM_CPLHIST_YR_ALIGN</stream_year_align>
-    <stream_year_first>$DATM_CPLHIST_YR_START</stream_year_first>
-    <stream_year_last>$DATM_CPLHIST_YR_END</stream_year_last>
+    <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_YR_START</stream_year_first>
+    <stream_year_last>$DATM_YR_END</stream_year_last>
     <stream_offset>900</stream_offset>
     <stream_tintalgo>
       <tintalgo>linear</tintalgo>

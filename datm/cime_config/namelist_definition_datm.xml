@@ -133,8 +133,8 @@
     </desc>
     <values>
       <value>$ATM_DOMAIN_MESH</value>
-      <value scol_mode='true'>null</value>
-      <value create_mesh='true'>null</value>
+      <value mode='scol'>null</value>
+      <value mode='create_mesh'>null</value>
     </values>
   </entry>
 
@@ -148,8 +148,8 @@
     </desc>
     <values>
       <value>$ATM_DOMAIN_MESH</value>
-      <value scol_mode='true'>$ATM_DOMAIN_PATH/$ATM_DOMAIN_FILE</value>
-      <value create_mesh='true'>$ATM_DOMAIN_PATH/$ATM_DOMAIN_FILE</value>
+      <value mode='scol'>$ATM_DOMAIN_PATH/$ATM_DOMAIN_FILE</value>
+      <value mode='create_mesh'>$ATM_DOMAIN_PATH/$ATM_DOMAIN_FILE</value>
     </values>
   </entry>
 
@@ -163,8 +163,8 @@
     </desc>
     <values>
       <value>null</value>
-      <value scol_mode='true'>$ATM_DOMAIN_PATH/$ATM_DOMAIN_FILE</value>
-      <value create_mesh='true'>$ATM_DOMAIN_PATH/$ATM_DOMAIN_FILE</value>
+      <value mode='scol'>$ATM_DOMAIN_PATH/$ATM_DOMAIN_FILE</value>
+      <value mode='create_mesh'>$ATM_DOMAIN_PATH/$ATM_DOMAIN_FILE</value>
     </values>
   </entry>
 

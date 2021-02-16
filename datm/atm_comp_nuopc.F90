@@ -64,11 +64,6 @@ module atm_comp_nuopc
   use datm_datamode_era5_mod    , only : datm_datamode_era5_advance
   use datm_datamode_era5_mod    , only : datm_datamode_era5_restart_write
   use datm_datamode_era5_mod    , only : datm_datamode_era5_restart_read
-  use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_advertise
-  use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_init_pointers
-  use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_advance
-  use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_restart_write
-  use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_restart_read
 
   use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_advertise
   use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_init_pointers
