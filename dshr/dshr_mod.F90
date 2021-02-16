@@ -238,7 +238,6 @@ contains
 
     ! local variables
     type(ESMF_VM)                  :: vm
-    type(ESMF_Calendar)            :: esmf_calendar           ! esmf calendar
     type(ESMF_DistGrid)            :: distGrid
     integer, pointer               :: model_gindex(:)         ! model global index spzce
     integer                        :: mpicom
