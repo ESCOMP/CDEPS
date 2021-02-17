@@ -19,8 +19,8 @@ endif()
 add_dependencies(dshr streams)
 
 target_include_directories (dshr PRIVATE ${ESMF_F90COMPILEPATHS})
-target_include_directories (dshr PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/streams) 
-target_include_directories (dshr PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/share) 
+target_include_directories (dshr PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/../streams) 
+target_include_directories (dshr PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/../share) 
 target_include_directories (dshr PRIVATE "${PIO_Fortran_INCLUDE_DIR}")
 
 install(TARGETS dshr
