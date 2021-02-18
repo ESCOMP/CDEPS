@@ -9,7 +9,6 @@ add_library(cdeps_share  ${GenF90_SRCS}
 			 shr_timer_mod.F90
 			 shr_cal_mod.F90
                          shr_kind_mod.F90
-                         shr_pio_mod.F90
                          shr_sys_mod.F90
                          shr_abort_mod.F90
 			 shr_const_mod.F90

@@ -180,7 +180,7 @@ contains
 
     ! Obtain flds_scalar values, mpi values, multi-instance values and
     ! set logunit and set shr logging to my log file
-    call dshr_init(gcomp, mpicom, my_task, inst_index, inst_suffix, &
+    call dshr_init(gcomp, sdat, mpicom, my_task, inst_index, inst_suffix, &
          flds_scalar_name, flds_scalar_num, flds_scalar_index_nx, flds_scalar_index_ny, &
          logunit, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -301,7 +301,7 @@ contains
 
     ! Initialize mesh, restart flag, logunit
     call ESMF_TraceRegionEnter('dice_strdata_init')
-    call dshr_mesh_init(gcomp, nullstr, logunit, 'ICE', nx_global, ny_global, &
+    call dshr_mesh_init(gcomp, sdat, nullstr, logunit, 'ICE', nx_global, ny_global, &
          model_meshfile, model_maskfile, model_createmesh_fromfile, model_mesh, &
          model_mask, model_frac, restart_read, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
