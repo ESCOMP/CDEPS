@@ -30,7 +30,9 @@ module dshr_stream_mod
   use pio              , only : file_desc_t, pio_inq_varid, iosystem_desc_t, pio_file_is_open
   use pio              , only : pio_nowrite, pio_inquire_dimension, pio_inquire_variable, pio_bcast_error
   use pio              , only : pio_get_att, pio_get_var
+#ifdef CESMCOUPLED
   use shr_pio_mod      , only : shr_pio_getiosys, shr_pio_getiotype, shr_pio_getioformat
+#endif
 
   implicit none
   private ! default private

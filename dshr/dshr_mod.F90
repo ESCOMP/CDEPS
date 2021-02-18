@@ -38,7 +38,9 @@ module dshr_mod
   use shr_cal_mod      , only : shr_cal_datetod2string, shr_cal_date2julian
   use shr_const_mod    , only : shr_const_spval, shr_const_cday
   use shr_orb_mod      , only : shr_orb_params, SHR_ORB_UNDEF_INT, SHR_ORB_UNDEF_REAL
+#ifdef CESMCOUPLED
   use shr_pio_mod      , only : shr_pio_getiosys, shr_pio_getiotype, shr_pio_getioformat
+#endif
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_init_from_xml, SHR_STRDATA_GET_STREAM_COUNT
   use dshr_methods_mod , only : chkerr
   use pio
