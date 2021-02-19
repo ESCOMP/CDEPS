@@ -103,11 +103,12 @@ contains
   end subroutine dshr_model_initphase
 
   !===============================================================================
-  subroutine dshr_init(gcomp, sdat, mpicom, my_task, inst_index, inst_suffix, &
+  subroutine dshr_init(gcomp, compname, sdat, mpicom, my_task, inst_index, inst_suffix, &
        flds_scalar_name, flds_scalar_num, flds_scalar_index_nx, flds_scalar_index_ny, logunit, rc)
 
     ! input/output variables
     type(ESMF_GridComp)                   :: gcomp
+    character(len=*)      , intent(in)    :: compname  !e.g. ATM, OCN, ...
     type(shr_strdata_type), intent(inout) :: sdat
     integer               , intent(inout) :: mpicom
     integer               , intent(out)   :: my_task

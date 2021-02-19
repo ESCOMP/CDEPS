@@ -394,9 +394,9 @@ contains
 
     ! input/output variables
     type(shr_stream_streamType) ,pointer, intent(inout)  :: streamdat(:)           ! data streams (assume 1 below)
-    type(iosystem_desc_t)       , intent(in), pointer    :: pio_subsystem          ! data structure required for pio operations
-    integer                     , intent(in)             :: io_type                ! data format
-    integer                     , intent(in)             :: io_format              ! netcdf format
+    type(iosystem_desc_t)       ,pointer, intent(in)     :: pio_subsystem          ! data structure required for pio operations
+    integer                     ,intent(in)              :: io_type                ! data format
+    integer                     ,intent(in)              :: io_format              ! netcdf format
     character(*)                ,intent(in)              :: stream_meshFile        ! full pathname to stream mesh file
     character(*)                ,intent(in)              :: stream_lev_dimname     ! name of vertical dimension in stream
     character(*)                ,intent(in)              :: stream_mapalgo         ! stream mesh -> model mesh mapping type
