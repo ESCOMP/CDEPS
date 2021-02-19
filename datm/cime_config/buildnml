@@ -69,7 +69,13 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
 
     # Initialize namelist defaults
     config = {}
-    config['model_grid'] = model_grid
+    if 'CLM_USRDAT' in model_grid:
+        config['model_grid'] = 'CLM_USRDAT'
+        if case.get_value("NEONSITE"):
+            config['neon'] = "True"
+    else:
+        config['model_grid'] = model_grid
+
     config['datm_mode'] = datm_mode
     config['datm_co2_tseries'] = datm_co2_tseries
     config['datm_presaero'] = datm_presaero
@@ -88,6 +94,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
         else:
             config['single_column'] = 'false'
 
+    print("Config is {}".format(config))
     nmlgen.init_defaults(infile, config)
 
     # Generate datm_in

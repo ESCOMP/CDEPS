@@ -37,7 +37,7 @@
       <value datm_mode="1PT" model_grid="1x1_urbanc_alpha">
         1PT.urbanc_alpha
       </value>
-      <value datm_mode="1PT" model_grid="1x1_NEON">
+      <value datm_mode="1PT" model_grid="CLM_USRDAT" neon="True">
         NEON.$NEONSITE
       </value>
       <value datm_mode="CORE2_NYF" >
@@ -68,7 +68,7 @@
     <type>char</type>
     <category>datm</category>
     <group>datm_nml</group>
-    <valid_values>CLMNCEP,CORE2_NYF,CORE2_IAF,CORE_IAF_JRA,ERA5,CPLHIST</valid_values>
+    <valid_values>CLMNCEP,CORE2_NYF,CORE2_IAF,CORE_IAF_JRA,ERA5,CPLHIST,1PT</valid_values>
     <desc>
       general method that operates on the data.
       ----datamode = "CPLHIST"----
@@ -103,8 +103,6 @@
       ----datamode = "ERA5"----
       Fifth generation ECMWF atmospheric reanalysis of the global climate
       ----datamode = "CPLHIST" ----
-      ----datamode = "NEON" ----
-      NEON project tower site data
     </desc>
     <values>
       <value datm_mode="CLM">
