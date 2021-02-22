@@ -1536,43 +1536,6 @@ contains
   end subroutine dshr_orbital_update
 
   !===============================================================================
-  real(R8) function getNextRadCDay_i8( ymd, tod, stepno, dtime, iradsw, calendar )
-
-    !  Return the calendar day of the next radiation time-step.
-    !  General Usage: nextswday = getNextRadCDay(curr_date)
-
-    ! input/output variables
-    integer    , intent(in)    :: ymd
-    integer    , intent(in)    :: tod
-    integer(I8), intent(in)    :: stepno
-    integer    , intent(in)    :: dtime
-    integer    , intent(in)    :: iradsw
-    character(*),intent(in)    :: calendar
-
-    ! local variables
-    real(R8) :: nextsw_cday
-    real(R8) :: julday
-    integer  :: liradsw
-    character(*),parameter :: subName =  '(getNextRadCDay) '
-    !-------------------------------------------------------------------------------
-
-    liradsw = iradsw
-    if (liradsw < 0) liradsw  = nint((-liradsw *3600._r8)/dtime)
-    call shr_cal_date2julian(ymd,tod,julday,calendar)
-    if (liradsw > 1) then
-       if (mod(stepno+1,liradsw) == 0 .and. stepno > 0) then
-          nextsw_cday = julday + 2*dtime/shr_const_cday
-       else
-          nextsw_cday = -1._r8
-       end if
-    else
-       nextsw_cday = julday + dtime/shr_const_cday
-    end if
-    getNextRadCDay_i8 = nextsw_cday
-
-  end function getNextRadCDay_i8
-
-  !===============================================================================
   subroutine dshr_set_modelmask(mesh_dst, meshfile_mask, compname, mask_dst, frac_dst, rc)
 
     use ESMF, only : ESMF_FieldRegridStore, ESMF_FieldRegrid, ESMF_FIELDCREATE
