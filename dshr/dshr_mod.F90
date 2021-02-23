@@ -1806,8 +1806,10 @@ contains
        endif
        pio_root = min(pio_root, petCount-1)
     else
-       pio_root = -99
+       pio_root = 1 
     end if
+    if (my_task == master_task) write(logunit,*) trim(subname)//' : pio_root = ', &
+       pio_root
 
     ! pio_stride
     call NUOPC_CompAttributeGet(gcomp, name='pio_stride', value=cvalue, &
@@ -1818,6 +1820,8 @@ contains
     else
        pio_stride = -99
     end if
+    if (my_task == master_task) write(logunit,*) trim(subname)//' : pio_stride = ', &
+       pio_stride
 
     ! pio_numiotasks
     call NUOPC_CompAttributeGet(gcomp, name='pio_numiotasks', value=cvalue, &
@@ -1828,6 +1832,8 @@ contains
     else
        pio_numiotasks = -99
     end if
+    if (my_task == master_task) write(logunit,*) trim(subname)//' : pio_numiotasks = ', &
+       pio_numiotasks
 
     ! check for parallel IO, it requires at least two io pes
     if (petCount > 1 .and. pio_numiotasks == 1 .and. &
@@ -1835,18 +1841,27 @@ contains
         sdat%io_type .eq. PIO_IOTYPE_NETCDF4P)) then
        pio_numiotasks = 2
        pio_stride = min(pio_stride, petCount/2)
+       if (my_task == master_task) then
+          write(logunit,*) ' parallel io requires at least two io pes - following parameters are updated:'
+          write(logunit,*) trim(subname)//' : pio_stride = ', pio_stride
+          write(logunit,*) trim(subname)//' : pio_numiotasks = ', pio_numiotasks
+       end if
     endif
 
     ! check/set/correct io pio parameters
     if (pio_stride > 0 .and. pio_numiotasks < 0) then
        pio_numiotasks = max(1, petCount/pio_stride)
+       if (my_task == master_task) write(logunit,*) trim(subname)//' : update pio_numiotasks = ', pio_numiotasks
     else if(pio_numiotasks > 0 .and. pio_stride < 0) then
        pio_stride = max(1, petCount/pio_numiotasks)
+       if (my_task == master_task) write(logunit,*) trim(subname)//' : update pio_stride = ', pio_stride
     else if(pio_numiotasks < 0 .and. pio_stride < 0) then
        pio_stride = max(1,petCount/4)
        pio_numiotasks = max(1,petCount/pio_stride)
+       if (my_task == master_task) write(logunit,*) trim(subname)//' : update pio_numiotasks = ', pio_numiotasks
+       if (my_task == master_task) write(logunit,*) trim(subname)//' : update pio_stride = ', pio_stride
     end if
-    if(pio_stride == 1) then
+    if (pio_stride == 1) then
        pio_root = 0
     endif
 
@@ -1868,8 +1883,10 @@ contains
           pio_root = 0
        end if
        if (my_task == master_task) then
-          write(logunit,*) trim(subname)//' : pio_stride, iotasks or root out of bounds - &
-               resetting to defaults: ', pio_stride, pio_numiotasks, pio_root
+          write(logunit,*) 'pio_stride, iotasks or root out of bounds - resetting to defaults:'
+          write(logunit,*) trim(subname)//' : pio_root = ', pio_root
+          write(logunit,*) trim(subname)//' : pio_stride = ', pio_stride
+          write(logunit,*) trim(subname)//' : pio_numiotasks = ', pio_numiotasks
        end if
     end if
 
@@ -1896,13 +1913,6 @@ contains
     end if
     if (my_task == master_task) write(logunit,*) trim(subname)//' : pio_rearranger = ', &
        trim(cvalue), pio_rearranger
-
-    ! print out PIO init parameters
-    if (my_task == master_task) then
-       write(logunit,*) trim(subname)//' : pio_numiotasks = ', pio_numiotasks
-       write(logunit,*) trim(subname)//' : pio_stride = ', pio_stride
-       write(logunit,*) trim(subname)//' : pio_root = ', pio_root
-    end if
 
     ! init PIO
     allocate(sdat%pio_subsystem)
