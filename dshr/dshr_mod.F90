@@ -1714,6 +1714,7 @@ contains
     integer           :: pio_stride
     integer           :: pio_rearranger
     integer           :: pio_root
+    integer           :: pio_debug_level
     integer           :: pio_rearr_comm_type
     integer           :: pio_rearr_comm_fcd
     logical           :: pio_rearr_comm_enable_hs_comp2io
@@ -1736,6 +1737,7 @@ contains
     ! generate local mpi comm
     call ESMF_GridCompGet(gcomp, vm=vm, name=cname, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
     call ESMF_VMGet(vm, mpiCommunicator=mpicom, localPet=my_task, &
          petCount=petCount, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -1745,6 +1747,7 @@ contains
     call NUOPC_CompAttributeGet(gcomp, name='pio_netcdf_format', value=cvalue, &
          isPresent=isPresent, isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
     if (isPresent .and. isSet) then
        cvalue = ESMF_UtilStringUpperCase(cvalue)
        if (trim(cvalue) .eq. 'CLASSIC') then
@@ -1771,6 +1774,7 @@ contains
     call NUOPC_CompAttributeGet(gcomp, name='pio_typename', value=cvalue, &
          isPresent=isPresent, isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
     if (isPresent .and. isSet) then
        cvalue = ESMF_UtilStringUpperCase(cvalue)
        if (trim(cvalue) .eq. 'NETCDF') then
@@ -1799,6 +1803,7 @@ contains
     call NUOPC_CompAttributeGet(gcomp, name='pio_root', value=cvalue, &
          isPresent=isPresent, isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
     if (isPresent .and. isSet) then
        read(cvalue,*) pio_root
        if (pio_root < 0) then
@@ -1815,6 +1820,7 @@ contains
     call NUOPC_CompAttributeGet(gcomp, name='pio_stride', value=cvalue, &
          isPresent=isPresent, isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
     if (isPresent .and. isSet) then
        read(cvalue,*) pio_stride
     else
@@ -1827,6 +1833,7 @@ contains
     call NUOPC_CompAttributeGet(gcomp, name='pio_numiotasks', value=cvalue, &
         isPresent=isPresent, isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
     if (isPresent .and. isSet) then
        read(cvalue,*) pio_numiotasks
     else
@@ -1889,6 +1896,35 @@ contains
           write(logunit,*) trim(subname)//' : pio_numiotasks = ', pio_numiotasks
        end if
     end if
+
+    ! init PIO
+    allocate(sdat%pio_subsystem)
+    if (my_task == master_task) write(logunit,*) trim(subname)//' : calling pio init'
+    call pio_init(my_task, mpicom, pio_numiotasks, 0, pio_stride, &
+                  pio_rearranger, sdat%pio_subsystem, base=pio_root)
+
+    ! PIO debug related options
+    ! pio_debug_level
+    call NUOPC_CompAttributeGet(gcomp, name='pio_debug_level', value=cvalue, &
+         isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    if (isPresent .and. isSet) then
+       read(cvalue,*) pio_debug_level
+       if (pio_debug_level < 0 .or. pio_debug_level > 6) then
+         call ESMF_LogWrite(trim(subname)//': need to provide valid option for &
+              pio_debug_level (0-6)', ESMF_LOGMSG_INFO)
+         rc = ESMF_FAILURE
+         return
+       end if
+    else
+       pio_debug_level = 0
+    end if
+    if (my_task == master_task) write(logunit,*) trim(subname), &
+       ' : pio_debug_level = ',pio_debug_level
+
+    ! set PIO debug level
+    call pio_setdebuglevel(pio_debug_level)
 
     ! pio_rearranger
     call NUOPC_CompAttributeGet(gcomp, name='pio_rearranger', value=cvalue, &
