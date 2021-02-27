@@ -26,7 +26,9 @@ module dshr_strdata_mod
   use shr_cal_mod      , only : shr_cal_noleap, shr_cal_gregorian
   use shr_cal_mod      , only : shr_cal_date2ymd, shr_cal_ymd2date
   use shr_orb_mod      , only : shr_orb_decl, shr_orb_cosz, shr_orb_undef_real
+#ifdef CESMCOUPLED
   use shr_pio_mod      , only : shr_pio_getiosys, shr_pio_getiotype, shr_pio_getioformat
+#endif
   use shr_string_mod   , only : shr_string_listgetname, shr_string_listisvalid, shr_string_listgetnum
 
   use dshr_stream_mod  , only : shr_stream_streamtype, shr_stream_getModelFieldList, shr_stream_getStreamFieldList
@@ -184,7 +186,7 @@ contains
 
     ! local variables
     type(ESMF_VM) :: vm
-    integer       :: localPet
+    integer       :: i, localPet
     character(len=*), parameter  :: subname='(shr_strdata_init_from_xml)'
     ! ----------------------------------------------
     rc = ESMF_SUCCESS
@@ -193,10 +195,12 @@ contains
     ! Initialize log unit
     sdat%logunit = logunit
 
+#ifdef CESMCOUPLED
     ! Initialize sdat  pio
     sdat%pio_subsystem => shr_pio_getiosys(trim(compname))
     sdat%io_type       =  shr_pio_getiotype(trim(compname))
     sdat%io_format     =  shr_pio_getioformat(trim(compname))
+#endif
 
     call ESMF_VMGetCurrent(vm, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -206,7 +210,8 @@ contains
     ! Initialize sdat streams (read xml file for streams)
     sdat%masterproc = (localPet == master_task)
 
-    call shr_stream_init_from_xml(xmlfilename, sdat%stream, sdat%masterproc, sdat%logunit, trim(compname), rc=rc)
+    call shr_stream_init_from_xml(xmlfilename, sdat%stream, sdat%masterproc, sdat%logunit, &
+         sdat%pio_subsystem, sdat%io_type, sdat%io_format, trim(compname), rc=rc)
 
     allocate(sdat%pstrm(shr_strdata_get_stream_count(sdat)))
 
@@ -258,10 +263,12 @@ contains
     sdat%logunit = logunit
     sdat%masterproc = (my_task == master_task)
 
+#ifdef CESMCOUPLED
     ! Initialize sdat pio
     sdat%pio_subsystem => shr_pio_getiosys(trim(compname))
     sdat%io_type       =  shr_pio_getiotype(trim(compname))
     sdat%io_format     =  shr_pio_getioformat(trim(compname))
+#endif
 
     ! Initialize sdat%pstrm - ASSUME only 1 stream
     allocate(sdat%pstrm(1))
@@ -273,6 +280,7 @@ contains
 
     ! Initialize sdat stream - ASSUME only 1 stream
     call shr_stream_init_from_inline(sdat%stream, &
+         sdat%pio_subsystem, sdat%io_type, sdat%io_format, &
          stream_meshfile, stream_lev_dimname, stream_mapalgo, &
          stream_yearFirst, stream_yearLast, stream_yearAlign, &
          stream_offset, stream_taxmode, stream_tintalgo, stream_dtlimit, &
