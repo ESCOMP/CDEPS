@@ -79,6 +79,8 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     else:
         config['mode'] = case.get_value("ATM_DOMAIN_MESH")
 
+    print "DEBUG: datm_mode is ",datm_mode        
+
     nmlgen.init_defaults(infile, config)
 
     # Generate datm_in
@@ -89,6 +91,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     streamlist = nmlgen.get_streams()
     if type(streamlist) == type(str()):
         streamlist = []
+    print "DEBUG: streamlist is ",streamlist
 
     if datm_presaero != "none":
         streamlist.append("presaero.{}".format(datm_presaero))

@@ -320,7 +320,135 @@
       <meshfile>$DIN_LOC_ROOT/lnd/dlnd7/JRA55/JRA.v1.4.runoff.1958_ESMFmesh_cdf5_20201020.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file first_year="1958" last_year="2016">$DIN_LOC_ROOT/lnd/dlnd7/JRA55/JRA.v1.1.runoff.%y.170807.nc</file>
+      <file first_year="1958" last_year="2018">$DIN_LOC_ROOT/lnd/dlnd7/JRA55/JRA.v1.4.runoff.%y.190214.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>rofl Forr_rofl</var>
+      <var>rofi Forr_rofi</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1958</stream_year_first>
+    <stream_year_last>2018</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>upper</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>3.0</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="rof.iaf_jra_1p4_2018_ais0ice">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/lnd/dlnd7/JRA55/JRA.v1.4.runoff.1958_ESMFmesh_cdf5_20201020.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1958" last_year="2018">$DIN_LOC_ROOT/lnd/dlnd7/JRA55/JRA.v1.4.runoff.%y.no_rofi.190214.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>rofl Forr_rofl</var>
+      <var>rofi Forr_rofi</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1958</stream_year_first>
+    <stream_year_last>2018</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>upper</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>3.0</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="rof.iaf_jra_1p4_2018_ais0liq">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/lnd/dlnd7/JRA55/JRA.v1.4.runoff.1958_ESMFmesh_cdf5_20201020.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1958" last_year="2018">$DIN_LOC_ROOT/lnd/dlnd7/JRA55/JRA.v1.4.runoff.%y.no_rofl.190214.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>rofl Forr_rofl</var>
+      <var>rofi Forr_rofi</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1958</stream_year_first>
+    <stream_year_last>2018</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>upper</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>3.0</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="rof.iaf_jra_1p4_2018_ais0ice">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/lnd/dlnd7/JRA55/JRA.v1.4.runoff.1958_ESMFmesh_cdf5_20201020.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1958" last_year="2018">$DIN_LOC_ROOT/lnd/dlnd7/JRA55/JRA.v1.4.runoff.%y.no_rofi.190214.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>rofl Forr_rofl</var>
+      <var>rofi Forr_rofi</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1958</stream_year_first>
+    <stream_year_last>2018</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>upper</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>3.0</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="rof.iaf_jra_1p4_2018_ais0rof">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/lnd/dlnd7/JRA55/JRA.v1.4.runoff.1958_ESMFmesh_cdf5_20201020.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1958" last_year="2018">$DIN_LOC_ROOT/lnd/dlnd7/JRA55/JRA.v1.4.runoff.%y.no_rofi_no_rofl.190214.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>rofl Forr_rofl</var>
