@@ -73,13 +73,13 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     config['datm_mode'] = datm_mode
     config['datm_co2_tseries'] = datm_co2_tseries
     config['datm_presaero'] = datm_presaero
-    config['cime_model'] = get_model()
-    if case.get_value('PTS_MODE'):
-        config['mode'] = 'single_column'
-    else:
-        config['mode'] = case.get_value("ATM_DOMAIN_MESH")
 
-    print "DEBUG: datm_mode is ",datm_mode        
+    scol_lon = float(case.get_value('PTS_LON'))
+    scol_lat = float(case.get_value('PTS_LAT'))
+    if scol_lon >= 0. and scol_lat >= 0. and case.get_value("ATM_DOMAIN_FILE") != "UNSET":
+        config['single_column'] = 'true'
+    else:
+        config['single_column'] = 'false'
 
     nmlgen.init_defaults(infile, config)
 
@@ -91,7 +91,6 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     streamlist = nmlgen.get_streams()
     if type(streamlist) == type(str()):
         streamlist = []
-    print "DEBUG: streamlist is ",streamlist
 
     if datm_presaero != "none":
         streamlist.append("presaero.{}".format(datm_presaero))

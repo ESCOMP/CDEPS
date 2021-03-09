@@ -135,8 +135,7 @@
     </desc>
     <values>
       <value>$ATM_DOMAIN_MESH</value>
-      <value mode='scol'>null</value>
-      <value mode='create_mesh'>null</value>
+      <value single_column='true'>null</value> 
     </values>
   </entry>
 
@@ -150,23 +149,7 @@
     </desc>
     <values>
       <value>$ATM_DOMAIN_MESH</value>
-      <value mode='scol'>$ATM_DOMAIN_PATH/$ATM_DOMAIN_FILE</value>
-      <value mode='create_mesh'>$ATM_DOMAIN_PATH/$ATM_DOMAIN_FILE</value>
-    </values>
-  </entry>
-
-  <entry id="model_createmesh_fromfile">
-    <type>char</type>
-    <category>streams</category>
-    <input_pathname>abs</input_pathname>
-    <group>datm_nml</group>
-    <desc>
-      file specifying model mesh
-    </desc>
-    <values>
-      <value>null</value>
-      <value mode='scol'>$ATM_DOMAIN_PATH/$ATM_DOMAIN_FILE</value>
-      <value mode='create_mesh'>$ATM_DOMAIN_PATH/$ATM_DOMAIN_FILE</value>
+      <value single_column='true'>null</value> 
     </values>
   </entry>
 
@@ -179,6 +162,7 @@
     </desc>
     <values>
       <value>$ATM_NX</value>
+      <value single_column='true'>1</value> 
     </values>
   </entry>
 
@@ -191,8 +175,10 @@
     </desc>
     <values>
       <value>$ATM_NY</value>
+      <value single_column='true'>1</value> 
     </values>
   </entry>
+
   <entry id="bias_correct" skip_default_entry="true"><!--- anomaly forcing - bias correction -->
     <type>char</type>
     <category>datm</category>

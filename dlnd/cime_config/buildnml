@@ -63,7 +63,9 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     config['create_mesh'] = 'true' if case.get_value("LND_DOMAIN_MESH") == 'create_mesh' else 'false'
 
     # Do not allow single column mode for dlnd
-    expect(not case.get_value('PTS_MODE'),
+    scol_lon = float(case.get_value('PTS_LON'))
+    scol_lat = float(case.get_value('PTS_LAT'))
+    expect(scol_lon < 0. and scol_lat < 0.,
            "for DLND, single column mode is not allowed")
 
     # Initialize nmlgen
