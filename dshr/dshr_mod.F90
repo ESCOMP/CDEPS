@@ -433,6 +433,7 @@ contains
     real(r8)                       :: pos_scol_lon            ! temporary
     real(r8)                       :: scol_data(1)            ! temporary
     real(r8)                       :: scol_area               ! temporary
+    real(r8)                       :: scol_landfrac
     character(len=*), parameter    :: subname='(dshr_mesh_create)'
     ! ----------------------------------------------
 
@@ -540,19 +541,26 @@ contains
     ! in or reset the mesh
 
     if (compname /= 'ATM') then
-       ! get model_mask
-       allocate(model_mask(1))
-       rcode = pio_inq_varid(pioid, 'mask', varid)
-       call pio_check_err(rcode, 'pio_inq_varid for area in file '//trim(single_column_domainfile))
-       rcode = pio_get_var(pioid, varid, start, count, model_mask)
-       call pio_check_err(rcode, 'pio_get_var for area in file '//trim(single_column_domainfile))
-
-       ! get model_frac
+       ! get land frac
        allocate(model_frac(1))
        rcode = pio_inq_varid(pioid, 'frac', varid)
        call pio_check_err(rcode, 'pio_inq_varid for area in file '//trim(single_column_domainfile))
-       rcode = pio_get_var(pioid, varid, start, count, model_frac)
+       rcode = pio_get_var(pioid, varid, start, count, scol_landfrac)
        call pio_check_err(rcode, 'pio_get_var for area in file '//trim(single_column_domainfile))
+
+       ! get model frac
+       if (compname == 'OCN' .or. compname == 'ICE') then
+          model_frac(1) = 1._r8 - scol_landfrac
+       else if (compname == 'LND') then
+          model_frac(1) = scol_landfrac
+       end if
+
+       ! get model mask
+       if (model_frac(1) >= 0.) then
+          modell_mask(1) = 1._dbl_kind
+       else
+          model_mask(1) = 0._dbl_kind
+       end if
 
        ! set the model mesh mask
        call ESMF_MeshSet(model_mesh, elementMask=model_mask, rc=rc)
