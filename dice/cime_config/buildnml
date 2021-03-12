@@ -66,7 +66,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
 
     scol_lon = float(case.get_value('PTS_LON'))
     scol_lat = float(case.get_value('PTS_LAT'))
-    if scol_lon >= 0. and scol_lat >= 0. and case.get_value("ATM_DOMAIN_FILE") != "UNSET":
+    if scol_lon > -999.. and scol_lat >= -999. and case.get_value("ATM_DOMAIN_FILE") != "UNSET":
         config['single_column'] = 'true'
     else:
         config['single_column'] = 'false'

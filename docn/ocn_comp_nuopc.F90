@@ -11,6 +11,7 @@ module ocn_comp_nuopc
   use ESMF             , only : ESMF_Alarm, ESMF_MethodRemove, ESMF_MethodAdd
   use ESMF             , only : ESMF_GridCompSetEntryPoint, ESMF_ClockGetAlarm, ESMF_AlarmIsRinging
   use ESMF             , only : ESMF_StateGet, operator(+), ESMF_AlarmRingerOff, ESMF_LogWrite
+  use ESMF             , only : ESMF_Field, ESMF_FieldGet
   use NUOPC            , only : NUOPC_CompDerive, NUOPC_CompSetEntryPoint, NUOPC_CompSpecialize
   use NUOPC            , only : NUOPC_Advertise, NUOPC_CompAttributeGet
   use NUOPC_Model      , only : model_routine_SS        => SetServices
@@ -100,6 +101,7 @@ module ocn_comp_nuopc
   ! model mask and model fraction
   real(r8), pointer            :: model_frac(:) => null()
   integer , pointer            :: model_mask(:) => null()
+  logical                      :: valid_ocn = .true. ! used for single column logic
 
   ! constants
   logical                      :: aquaplanet = .false.
@@ -281,12 +283,17 @@ contains
     integer, intent(out) :: rc
 
     ! local variables
-    type(ESMF_Time) :: currTime
-    integer         :: current_ymd  ! model date
-    integer         :: current_year ! model year
-    integer         :: current_mon  ! model month
-    integer         :: current_day  ! model day
-    integer         :: current_tod  ! model sec into model date
+    type(ESMF_Time)        :: currTime
+    integer                :: current_ymd  ! model date
+    integer                :: current_year ! model year
+    integer                :: current_mon  ! model month
+    integer                :: current_day  ! model day
+    integer                :: current_tod  ! model sec into model date
+    type(ESMF_Field)       :: lfield
+    character(CL) ,pointer :: lfieldnamelist(:) => null()
+    integer                :: fieldcount
+    real(r8), pointer      :: fldptr(:)
+    integer                :: n
     character(len=*), parameter :: subname=trim(module_name)//':(InitializeRealize) '
     !-------------------------------------------------------------------------------
 
@@ -315,6 +322,30 @@ contains
     call dshr_fldlist_realize( importState, fldsImport, flds_scalar_name, flds_scalar_num, model_mesh, &
          subname//trim(modelname)//':Import', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    ! for single column, the target point might not be a valid ocn point
+    if (size(model_mask) == 1 .and. model_mask(1) == 0) then
+       valid_ocn = .false.
+       call ESMF_StateGet(exportState, itemCount=fieldCount, rc=rc)
+       if (chkerr(rc,__LINE__,u_FILE_u)) return
+       allocate(lfieldnamelist(fieldCount))
+       call ESMF_StateGet(exportState, itemNameList=lfieldnamelist, rc=rc)
+       if (chkerr(rc,__LINE__,u_FILE_u)) return
+       do n = 1, fieldCount
+          if (trim(lfieldnamelist(n)) /= flds_scalar_name) then
+             call ESMF_StateGet(exportState, itemName=trim(lfieldnamelist(n)), field=lfield, rc=rc)
+             if (chkerr(rc,__LINE__,u_FILE_u)) return
+             call ESMF_FieldGet(lfield, farrayPtr=fldptr, rc=rc)
+             if (ChkErr(rc,__LINE__,u_FILE_u)) return
+             fldptr(:) = 0._r8
+          end if
+       enddo
+       deallocate(lfieldnamelist)
+       ! *******************
+       ! *** RETURN HERE ***
+       ! *******************
+       RETURN
+    end if
 
     ! Get the time to interpolate the stream data to
     call ESMF_ClockGet(clock, currTime=currTime, rc=rc)
@@ -357,7 +388,12 @@ contains
     character(len=*),parameter :: subname=trim(module_name)//':(ModelAdvance) '
     !-------------------------------------------------------------------------------
 
+
     rc = ESMF_SUCCESS
+
+    if (.not. valid_ocn) then
+       RETURN
+    end if
 
     call memcheck(subname, 5, my_task == master_task)
 

@@ -11,7 +11,7 @@ module ice_comp_nuopc
   use ESMF                 , only : ESMF_AlarmIsRinging, ESMF_METHOD_INITIALIZE
   use ESMF                 , only : ESMF_ClockGet, ESMF_TimeGet, ESMF_MethodRemove, ESMF_MethodAdd
   use ESMF                 , only : ESMF_GridCompSetEntryPoint, operator(+), ESMF_AlarmRingerOff
-  use ESMF                 , only : ESMF_ClockGetAlarm
+  use ESMF                 , only : ESMF_ClockGetAlarm, ESMF_StateGet, ESMF_Field, ESMF_FieldGet
   use NUOPC                , only : NUOPC_CompDerive, NUOPC_CompSetEntryPoint, NUOPC_CompSpecialize
   use NUOPC                , only : NUOPC_CompAttributeGet, NUOPC_Advertise
   use NUOPC_Model          , only : model_routine_SS        => SetServices
@@ -89,6 +89,7 @@ module ice_comp_nuopc
   ! model mask and model fraction
   real(r8), pointer            :: model_frac(:) => null()
   integer , pointer            :: model_mask(:) => null()
+  logical                      :: valid_ice = .true.                  ! used for single column logic (ocn mask > 0)
 
   ! constants
   logical                      :: flds_i2o_per_cat                    ! .true. if select per ice thickness
@@ -113,6 +114,7 @@ contains
     !--------------------------------
 
     rc = ESMF_SUCCESS
+
     ! the NUOPC gcomp component will register the generic methods
     call NUOPC_CompDerive(gcomp, model_routine_SS, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -264,6 +266,11 @@ contains
     real(R8)                    :: cosarg        ! for setting ice temp pattern
     real(R8)                    :: jday, jday0   ! elapsed day counters
     integer                     :: model_dt      ! integer model timestep
+    type(ESMF_Field)            :: lfield
+    character(CL) ,pointer      :: lfieldnamelist(:) => null()
+    integer                     :: fieldcount
+    real(r8), pointer           :: fldptr(:)
+    integer                     :: n
     character(len=*), parameter :: F00   = "('ice_comp_nuopc: ')',8a)"
     character(len=*), parameter :: subname=trim(modName)//':(InitializeRealize) '
     !-------------------------------------------------------------------------------
@@ -290,6 +297,30 @@ contains
     call dshr_fldlist_realize( importState, fldsImport, flds_scalar_name, flds_scalar_num, model_mesh, &
          subname//':diceImport', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    ! for single column, the target point might not be a point where the ice/ocn mask is > 0
+    if (size(model_frac) == 1 .and. model_frac(1) == 0._r8) then
+       valid_ice = .false.
+       call ESMF_StateGet(exportState, itemCount=fieldCount, rc=rc)
+       if (chkerr(rc,__LINE__,u_FILE_u)) return
+       allocate(lfieldnamelist(fieldCount))
+       call ESMF_StateGet(exportState, itemNameList=lfieldnamelist, rc=rc)
+       if (chkerr(rc,__LINE__,u_FILE_u)) return
+       do n = 1, fieldCount
+          if (trim(lfieldnamelist(n)) /= flds_scalar_name) then
+             call ESMF_StateGet(exportState, itemName=trim(lfieldnamelist(n)), field=lfield, rc=rc)
+             if (chkerr(rc,__LINE__,u_FILE_u)) return
+             call ESMF_FieldGet(lfield, farrayPtr=fldptr, rc=rc)
+             if (ChkErr(rc,__LINE__,u_FILE_u)) return
+             fldptr(:) = 0._r8
+          end if
+       enddo
+       deallocate(lfieldnamelist)
+       ! *******************
+       ! *** RETURN HERE ***
+       ! *******************
+       RETURN
+    end if
 
     ! Get the time to interpolate the stream data to
     call ESMF_ClockGet(clock, currTime=currTime, timeStep=timeStep, rc=rc)
@@ -343,6 +374,10 @@ contains
     logical                 :: restart_write
     character(len=*),parameter :: subname=trim(modName)//':(ModelAdvance) '
     !-------------------------------------------------------------------------------
+
+    if (.not. valid_ice) then
+       RETURN
+    end if
 
     rc = ESMF_SUCCESS
 
