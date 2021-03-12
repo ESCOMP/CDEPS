@@ -145,7 +145,11 @@ contains
 
   integer function shr_strdata_get_stream_count(sdat)
     type(shr_strdata_type)     , intent(in) :: sdat
-    shr_strdata_get_stream_count = size(sdat%stream)
+    if(associated(sdat%stream)) then
+       shr_strdata_get_stream_count = size(sdat%stream)
+    else
+       shr_strdata_get_stream_count = 0
+    endif
   end function shr_strdata_get_stream_count
 
   !===============================================================================
