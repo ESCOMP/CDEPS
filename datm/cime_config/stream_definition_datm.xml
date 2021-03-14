@@ -211,7 +211,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo> 
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
@@ -243,7 +242,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
@@ -279,7 +277,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
@@ -380,7 +377,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
@@ -416,7 +412,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
@@ -448,7 +443,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
@@ -483,7 +477,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
@@ -519,7 +512,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
@@ -551,7 +543,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
@@ -586,7 +577,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
@@ -862,7 +852,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>1979</stream_year_align>
@@ -894,7 +883,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>1979</stream_year_align>
@@ -926,7 +914,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>1979</stream_year_align>
@@ -962,7 +949,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2006</stream_year_align>
@@ -994,7 +980,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2006</stream_year_align>
@@ -1026,7 +1011,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2006</stream_year_align>
@@ -1058,7 +1042,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2006</stream_year_align>
@@ -1090,7 +1073,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2006</stream_year_align>
@@ -1122,7 +1104,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2006</stream_year_align>
@@ -1154,7 +1135,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2006</stream_year_align>
@@ -1186,7 +1166,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2006</stream_year_align>
@@ -1224,7 +1203,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1256,7 +1234,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1293,7 +1270,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1329,7 +1305,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1361,7 +1336,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1393,7 +1367,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1425,7 +1398,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1457,7 +1429,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1489,7 +1460,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1521,7 +1491,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1553,7 +1522,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1585,7 +1553,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1617,7 +1584,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1650,7 +1616,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1683,7 +1648,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1716,7 +1680,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1749,7 +1712,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1784,7 +1746,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1819,7 +1780,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1854,7 +1814,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1889,7 +1848,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1924,7 +1882,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1959,7 +1916,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1991,7 +1947,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -2035,7 +1990,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -2067,7 +2021,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -2099,7 +2052,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -2131,7 +2083,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -2163,7 +2114,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -2195,7 +2145,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -2227,7 +2176,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -2259,7 +2207,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -2295,7 +2242,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -2327,7 +2273,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -2359,7 +2304,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -2391,7 +2335,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -2423,7 +2366,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -2455,7 +2397,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -2487,7 +2428,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -2519,7 +2459,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -2589,7 +2528,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <!-- <stream_vectors>u:v taux:tauy</stream_vectors> -->
     <stream_vectors>u:v</stream_vectors>
@@ -2721,7 +2659,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>none</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -2753,7 +2690,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>none</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -2785,7 +2721,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>none</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -2817,7 +2752,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>none</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -2849,7 +2783,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>none</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -2881,7 +2814,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>none</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -2913,7 +2845,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>none</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -2945,7 +2876,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>none</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -2977,7 +2907,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>none</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -3009,7 +2938,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>none</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -3041,7 +2969,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>none</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -3073,7 +3000,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>none</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -3105,7 +3031,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>none</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -3137,7 +3062,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>none</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -3169,7 +3093,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>none</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -3201,7 +3124,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>none</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -3250,7 +3172,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -3297,7 +3218,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -3344,7 +3264,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -3391,7 +3310,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>1849</stream_year_align>
@@ -3438,7 +3356,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -3485,7 +3402,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -3532,7 +3448,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -3579,7 +3494,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -3626,7 +3540,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -3663,7 +3576,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
@@ -3707,7 +3619,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
@@ -3742,7 +3653,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
@@ -3778,7 +3688,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
@@ -3818,7 +3727,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
@@ -3851,7 +3759,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
@@ -3887,7 +3794,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
