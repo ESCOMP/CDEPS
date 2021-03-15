@@ -238,7 +238,6 @@ contains
 
     ! local variables
     type(ESMF_VM)                  :: vm
-    type(ESMF_Calendar)            :: esmf_calendar           ! esmf calendar
     type(ESMF_DistGrid)            :: distGrid
     integer, pointer               :: model_gindex(:)         ! model global index spzce
     integer                        :: mpicom
@@ -1723,7 +1722,8 @@ contains
     logical           :: pio_rearr_comm_enable_hs_io2comp
     logical           :: pio_rearr_comm_enable_isend_io2comp
     integer           :: pio_rearr_comm_max_pend_req_io2comp
-    logical           :: isPresent, isSet, ret
+    logical           :: isPresent, isSet
+    integer           :: ret
     character(len=CL) :: cvalue
     character(len=CS) :: cname
     character(len=CL) :: logmsg
