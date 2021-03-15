@@ -89,7 +89,7 @@ def buildlib(bldroot, libroot, case, compname=None):
             expect(time_counter <= time_to_wait," Timeout waiting for {}".format(dwav_lib))
         print("HERE exeroot {} bldroot {}".format(exe_root, bldroot))
 
-        s,o,e = run_cmd("make install DESTDIR={}".format(libroot), from_dir=bldroot, verbose=True)
+        s,o,e = run_cmd("make install VERBOSE=1 DESTDIR={}".format(libroot), from_dir=bldroot, verbose=True)
         expect(not s,"ERROR from make output={}, error={}".format(o,e))
 
         # Link the CDEPS component directories to the location expected by cime

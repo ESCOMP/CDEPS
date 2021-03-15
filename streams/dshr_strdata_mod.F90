@@ -7,7 +7,7 @@ module dshr_strdata_mod
   use ESMF             , only : ESMF_Clock, ESMF_VM, ESMF_VMGet, ESMF_VMGetCurrent
   use ESMF             , only : ESMF_DistGrid, ESMF_SUCCESS, ESMF_MeshGet, ESMF_DistGridGet
   use ESMF             , only : ESMF_VMBroadCast, ESMF_MeshIsCreated, ESMF_MeshCreate
-  use ESMF             , only : ESMF_Calendar, ESMF_CALKIND_NOLEAP, ESMF_CALKIND_GREGORIAN
+  use ESMF             , only : ESMF_CALKIND_NOLEAP, ESMF_CALKIND_GREGORIAN
   use ESMF             , only : ESMF_CalKind_Flag, ESMF_Time, ESMF_TimeInterval
   use ESMF             , only : ESMF_TimeIntervalGet, ESMF_TYPEKIND_R8, ESMF_FieldCreate
   use ESMF             , only : ESMF_FILEFORMAT_ESMFMESH, ESMF_FieldCreate
@@ -145,7 +145,11 @@ contains
 
   integer function shr_strdata_get_stream_count(sdat)
     type(shr_strdata_type)     , intent(in) :: sdat
-    shr_strdata_get_stream_count = size(sdat%stream)
+    if(associated(sdat%stream)) then
+       shr_strdata_get_stream_count = size(sdat%stream)
+    else
+       shr_strdata_get_stream_count = 0
+    endif
   end function shr_strdata_get_stream_count
 
   !===============================================================================
@@ -366,7 +370,6 @@ contains
 
     ! local variables
     type(ESMF_Mesh), pointer     :: stream_mesh
-    type(ESMF_Calendar)          :: esmf_calendar   ! esmf calendar
     type(ESMF_CalKind_Flag)      :: esmf_caltype    ! esmf calendar type
     character(CS)                :: calendar        ! calendar name
     integer                      :: ns              ! stream index
