@@ -62,9 +62,17 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     config['drof_mode'] = drof_mode
 
     # Do not allow single column mode for drof
-    scol_lon = float(case.get_value('PTS_LON'))
-    scol_lat = float(case.get_value('PTS_LAT'))
-    expect(scol_lon < 0. and scol_lat < 0.,
+    scol_lon = -999.
+    scol_lat = -999.
+    if case.get_value('PTS_LON'):
+        scol_lon = float(case.get_value('PTS_LON'))
+    else: 
+        scol_lon = -999.
+    if case.get_value('PTS_LAT'):
+        scol_lat = float(case.get_value('PTS_LAT'))
+    else
+        scol_lat = -999.
+    expect(scol_lon > -999. and scol_lat > -999.,
            "for, DROF single column mode is not allowed")
 
     # Initialize nmlgen
