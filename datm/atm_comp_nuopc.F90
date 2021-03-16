@@ -23,7 +23,7 @@ module atm_comp_nuopc
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_const_mod    , only : shr_const_cday
   use shr_sys_mod      , only : shr_sys_abort
-  use shr_cal_mod      , only : shr_cal_ymd2date 
+  use shr_cal_mod      , only : shr_cal_ymd2date
   use shr_mpi_mod      , only : shr_mpi_bcast
   use dshr_methods_mod , only : dshr_state_diagnose, chkerr, memcheck
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_init_from_xml, shr_strdata_advance
@@ -732,14 +732,14 @@ contains
     ! Return the calendar day of the next radiation time-step.
     ! General Usage: nextswday = getNextRadCDay(curr_date) iradsw is
     ! the frequency to update the next shortwave.  in number of steps
-    ! (or hours if negative) Julian date.  
+    ! (or hours if negative) Julian date.
     ! -- values greater than 1 set
     !    the next radiation to the present time plus 2 timesteps every iradsw
-    ! -- values less than 0 turn set the next radiation to the  present time 
+    ! -- values less than 0 turn set the next radiation to the  present time
     !    plus two timesteps every -iradsw hours.
     ! -- if iradsw is zero, the next radiation time is the
     !    present time plus 1 timestep.
-    
+
     ! input/output variables
     real(r8)    , intent(in) :: julday
     integer     , intent(in) :: tod
@@ -758,7 +758,7 @@ contains
     ! ESMF_GetClock and is the number of times the ESMF_Clock has been
     ! advanced. The ESMF clock is actually advanced an additional time
     ! (in order to trigger alarms) in the routine dshr_set_runclock
-    ! which is the specialized routine for the model_lable_SetRunClock. 
+    ! which is the specialized routine for the model_lable_SetRunClock.
     ! This is called each time the ModelAdvance phase is called. Hence
     ! stepno is not used to trigger the calculation of nextsw_cday.
 
