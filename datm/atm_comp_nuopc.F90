@@ -741,11 +741,11 @@ contains
     !    present time plus 1 timestep.
     
     ! input/output variables
-    real(r8)    , intent(in)    :: julday
-    integer     , intent(in)    :: tod
-    integer(i8) , intent(inout) :: stepno
-    integer     , intent(in)    :: dtime
-    integer     , intent(in)    :: iradsw
+    real(r8)    , intent(in) :: julday
+    integer     , intent(in) :: tod
+    integer(i8) , intent(in) :: stepno
+    integer     , intent(in) :: dtime
+    integer     , intent(in) :: iradsw
 
     ! local variables
     real(R8) :: nextsw_cday
