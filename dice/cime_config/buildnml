@@ -73,7 +73,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     else:
         scol_lat = -999.
     if case.get_value('ATM_DOMAIN_FILE'):
-        if scol_lon > -999.. and scol_lat >= -999. and case.get_value("ATM_DOMAIN_FILE") != "UNSET":
+        if scol_lon > -999. and scol_lat >= -999. and case.get_value("ATM_DOMAIN_FILE") != "UNSET":
             config['single_column'] = 'true'
         else:
             config['single_column'] = 'false'
