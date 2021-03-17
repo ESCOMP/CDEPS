@@ -70,7 +70,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
         scol_lon = -999.
     if case.get_value('PTS_LAT'):
         scol_lat = float(case.get_value('PTS_LAT'))
-    else
+    else:
         scol_lat = -999.
     expect(scol_lon > -999. and scol_lat > -999.,
            "for, DROF single column mode is not allowed")
