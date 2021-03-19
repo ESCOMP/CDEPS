@@ -66,7 +66,6 @@ module rof_comp_nuopc
   character(CL)                :: dataMode = nullstr                  ! flags physics options wrt input data
   character(CL)                :: model_meshfile = nullstr            ! full pathname to model meshfile
   character(CL)                :: model_maskfile = nullstr            ! full pathname to obtain mask from
-  character(CL)                :: model_createmesh_fromfile = nullstr ! full pathname to obtain mask from
   character(CL)                :: restfilm = nullstr                  ! model restart file namelist
   integer                      :: nx_global
   integer                      :: ny_global
@@ -161,7 +160,7 @@ contains
     character(*)    ,parameter :: F02 = "('(rof_comp_nuopc) ',a,l6)"
     !-------------------------------------------------------------------------------
 
-    namelist / drof_nml / datamode, model_meshfile, model_maskfile, model_createmesh_fromfile, &
+    namelist / drof_nml / datamode, model_meshfile, model_maskfile, &
          restfilm, nx_global, ny_global
 
     rc = ESMF_SUCCESS
@@ -192,44 +191,17 @@ contains
 
        ! write namelist input to standard out
        write(logunit,F00)' datamode = ',trim(datamode)
-       if (model_createmesh_fromfile /= nullstr) then
-          write(logunit,F00)' model_create_meshfile_fromfile = ',trim(model_createmesh_fromfile)
-       else
-          write(logunit,F00)' model_meshfile = ',trim(model_meshfile)
-          write(logunit,F00)' model_maskfile = ',trim(model_maskfile)
-       end if
+       write(logunit,F00)' model_meshfile = ',trim(model_meshfile)
+       write(logunit,F00)' model_maskfile = ',trim(model_maskfile)
        write(logunit,F01)' nx_global = ',nx_global
        write(logunit,F01)' ny_global = ',ny_global
        write(logunit,F00)' restfilm = ',trim(restfilm)
-
-       ! check that files exists
-       if (model_createmesh_fromfile /= nullstr) then
-          inquire(file=trim(model_createmesh_fromfile), exist=exists)
-          if (.not.exists) then
-             write(logunit, *)' ERROR: model_createmesh_fromfile '//&
-                  trim(model_createmesh_fromfile)//' does not exist'
-             call shr_sys_abort(trim(subname)//' ERROR: model_createmesh_fromfile '//&
-                  trim(model_createmesh_fromfile)//' does not exist')
-          end if
-       else
-          inquire(file=trim(model_meshfile), exist=exists)
-          if (.not.exists) then
-             write(logunit, *)' ERROR: model_meshfile '//trim(model_meshfile)//' does not exist'
-             call shr_sys_abort(trim(subname)//' ERROR: model_meshfile '//trim(model_meshfile)//' does not exist')
-          end if
-          inquire(file=trim(model_maskfile), exist=exists)
-          if (.not.exists) then
-             write(logunit, *)' ERROR: model_maskfile '//trim(model_maskfile)//' does not exist'
-             call shr_sys_abort(trim(subname)//' ERROR: model_maskfile '//trim(model_maskfile)//' does not exist')
-          end if
-       end if
-    endif
+    end if
 
     ! broadcast namelist input
     call shr_mpi_bcast(datamode                  , mpicom, 'datamode')
     call shr_mpi_bcast(model_meshfile            , mpicom, 'model_meshfile')
     call shr_mpi_bcast(model_maskfile            , mpicom, 'model_maskfile')
-    call shr_mpi_bcast(model_createmesh_fromfile , mpicom, 'model_createmesh_fromfile')
     call shr_mpi_bcast(nx_global                 , mpicom, 'nx_global')
     call shr_mpi_bcast(ny_global                 , mpicom, 'ny_global')
     call shr_mpi_bcast(restfilm                  , mpicom, 'restfilm')
@@ -280,8 +252,7 @@ contains
     ! Initialize mesh, restart flag, logunit
     call ESMF_TraceRegionEnter('drof_strdata_init')
     call dshr_mesh_init(gcomp, sdat, nullstr, logunit, 'ROF', nx_global, ny_global, &
-         model_meshfile, model_maskfile, model_createmesh_fromfile, model_mesh, &
-         model_mask, model_frac, restart_read, rc=rc)
+         model_meshfile, model_maskfile, model_mesh, model_mask, model_frac, restart_read, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Initialize stream data type

@@ -60,9 +60,9 @@ module dshr_mod
   public  :: dshr_orbital_update
   public  :: dshr_orbital_init
 
-  private :: dshr_mesh_create
-  private :: dshr_alarm_init
-  private :: dshr_time_init
+  private :: dshr_mesh_create_scol ! create mesh for single column mode
+  private :: dshr_alarm_init       ! initialize alarms
+  private :: dshr_time_init        ! initialize time
 
   ! Note that gridTofieldMap = 2, therefore the ungridded dimension is innermost
 
@@ -212,8 +212,7 @@ contains
 
   !===============================================================================
   subroutine dshr_mesh_init(gcomp, sdat, nullstr, logunit, compname, model_nxg, model_nyg, &
-       model_meshfile, model_maskfile, model_createmesh_fromfile, model_mesh, &
-       model_mask, model_frac, read_restart, rc)
+       model_meshfile, model_maskfile, model_mesh, model_mask, model_frac, read_restart, rc)
 
     ! ----------------------------------------------
     ! Initialize model mesh
@@ -229,7 +228,6 @@ contains
     integer                    , intent(in)    :: model_nyg
     character(len=*)           , intent(in)    :: model_meshfile
     character(len=*)           , intent(in)    :: model_maskfile
-    character(len=*)           , intent(in)    :: model_createmesh_fromfile
     type(ESMF_Mesh)            , intent(out)   :: model_mesh
     integer , pointer          , intent(out)   :: model_mask(:)
     real(r8), pointer          , intent(out)   :: model_frac(:)
@@ -238,24 +236,19 @@ contains
 
     ! local variables
     type(ESMF_VM)                  :: vm
+    logical                        :: masterproc
     type(ESMF_DistGrid)            :: distGrid
-    integer, pointer               :: model_gindex(:)         ! model global index spzce
-    integer                        :: mpicom
     integer                        :: my_task
-    logical                        :: scol_mode
     real(r8)                       :: scol_lon
     real(r8)                       :: scol_lat
     character(CL)                  :: cvalue
-    integer                        :: lsize                   ! local size of mesh
-    integer                        :: petcount
+    integer                        :: lsize      ! local size of mesh
     type(ESMF_Array)               :: elemMaskArray
-    type(file_desc_t)              :: pioid
-    type(var_desc_t)               :: varid
-    integer                        :: rcode
     logical                        :: isPresent, isSet
-    logical                        :: masterproc
-    character(len=*), parameter    :: subname='(dshr_mod:dshr_mesh_init)'
+    logical                        :: exists     ! check for file existence
+    real(r8)                       :: scol_spval = -999._r8
     character(*)    , parameter    :: F00 ="('(dshr_mesh_init) ',a)"
+    character(len=*), parameter    :: subname='(dshr_mod:dshr_mesh_init)'
     ! ----------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -263,11 +256,11 @@ contains
     ! generate local mpi comm
     call ESMF_GridCompGet(gcomp, vm=vm, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_VMGet(vm, mpiCommunicator=mpicom, localPet=my_task, petcount=petcount, rc=rc)
+    call ESMF_VMGet(vm, localPet=my_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    masterproc = (my_task == master_task)
 
     ! Set restart flag
-    ! TODO: should this be a variable from the driver?
     call NUOPC_CompAttributeGet(gcomp, name='read_restart', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (isPresent .and. isSet) then
@@ -276,65 +269,43 @@ contains
        call shr_sys_abort(subname//' ERROR: read restart flag must be present')
     end if
 
-    masterproc = (my_task == master_task)
+    ! obtain the single column lon and lat
+    call NUOPC_CompAttributeGet(gcomp, name='scol_lon', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (isPresent .and. isSet) then
+       read(cvalue,*) scol_lon
+    else
+       scol_lon = scol_spval
+    end if
+    call NUOPC_CompAttributeGet(gcomp, name='scol_lat', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (isPresent .and. isSet) then
+       read(cvalue,*) scol_lat
+    else
+       scol_lat = scol_spval
+    end if
 
-    ! Obtain the data model mesh
-    ! (1) if asked to create the mesh
-    !     - create mesh from input file given by model_createmesh_fromfile
-    !     - if single column find the nearest neighbor in model_createmesh_fromfile
-    ! (2) if not single column - obtain the mesh directly from the mesh input 
-    !     - reset the model mesh if the model maskfile is not equal to the model mesh file 
+    if (scol_lon > scol_spval .and. scol_lat > scol_spval) then
 
-    if (trim(model_meshfile) == nullstr) then
-
-       ! Get single column values
-       call NUOPC_CompAttributeGet(gcomp, name='single_column', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       if (isPresent .and. isSet) then
-          read(cvalue,*) scol_mode
-          if (scol_mode) then
-             ! verify that ROF, WAV and LND are not trying to use single column mode
-             if (trim(compname) == 'ROF' .or. trim(compname) == 'LND' .or. trim(compname) == 'WAV') then
-                if (masterproc) then
-                   write(logunit,*) subname,' ERROR: '//trim(compname)//' does not support single column mode '
-                end if
-                call shr_sys_abort(subname//' ERROR: '//trim(compname)//' does not support single column mode ')
-             end if
-
-             ! verify that are only using 1 pe
-             if (petcount > 1) then
-                if (masterproc) then
-                   write(logunit,*) subname,' ERROR: single column mode must be run on one pe, petcount= ',petcount
-                end if
-                call shr_sys_abort(subname//' ERROR: single column mode must be run on 1 pe')
-             endif
-
-             ! obtain the single column lon and lat
-             call NUOPC_CompAttributeGet(gcomp, name='scmlon', value=cvalue, rc=rc)
-             if (ChkErr(rc,__LINE__,u_FILE_u)) return
-             read(cvalue,*) scol_lon
-             call NUOPC_CompAttributeGet(gcomp, name='scmlat', value=cvalue, rc=rc)
-             if (ChkErr(rc,__LINE__,u_FILE_u)) return
-             read(cvalue,*) scol_lat
-             if (my_task == master_task) then
-                write(logunit,*) ' single column mode, lon lat = ',scol_mode, scol_lon, scol_lat
-             end if
-          else
-             scol_lon  = shr_const_spval
-             scol_lat  = shr_const_spval
-          end if
-       else
-          scol_mode = .false.
-          scol_lon  = shr_const_spval
-          scol_lat  = shr_const_spval
-       end if
-
-       ! Now create the model meshfile
-       call dshr_mesh_create(trim(model_createmesh_fromfile), scol_mode, scol_lon, scol_lat, &
-            trim(compname), sdat, my_task, logunit, model_mesh, model_mask, model_frac, rc=rc)
+       ! This is simply a single point run
+       call dshr_mesh_create_scol(gcomp, compname, scol_lon, scol_lat, model_mesh, model_mask, model_frac, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     else
+
+       ! check that model_meshfile and model_maskfile exists
+       if (my_task == master_task) then
+          inquire(file=trim(model_meshfile), exist=exists)
+          if (.not.exists) then
+             write(logunit, *)' ERROR: model_meshfile '//trim(model_meshfile)//' does not exist'
+             call shr_sys_abort(trim(subname)//' ERROR: model_meshfile '//trim(model_meshfile)//' does not exist')
+          end if
+          inquire(file=trim(model_maskfile), exist=exists)
+          if (.not.exists) then
+             write(logunit, *)' ERROR: model_maskfile '//trim(model_maskfile)//' does not exist'
+             call shr_sys_abort(trim(subname)//' ERROR: model_maskfile '//trim(model_maskfile)//' does not exist')
+          end if
+       endif
 
        ! Read in the input model mesh
        model_mesh = ESMF_MeshCreate(trim(model_meshfile), fileformat=ESMF_FILEFORMAT_ESMFMESH, rc=rc)
@@ -383,285 +354,78 @@ contains
        end if
     end if
 
-
   end subroutine dshr_mesh_init
 
   !===============================================================================
-  subroutine dshr_mesh_create(filename, scol_mode, scol_lon, scol_lat, &
-       compname, sdat, my_task, logunit, model_mesh, model_mask, model_frac, rc)
+  subroutine dshr_mesh_create_scol(gcomp, compname, scol_lon, scol_lat, &
+       model_mesh, model_mask, model_frac, rc)
 
-    ! Create the model mesh from the domain file - for either single column mode
-    ! or for a regional grid
+    ! Create a single column mesh - the area is arbitrary
 
     ! input/output variables
-    character(len=*)      , intent(in)    :: filename
-    logical               , intent(in)    :: scol_mode
+    type(ESMF_GridComp)   , intent(inout) :: gcomp
+    character(len=*)      , intent(in)    :: compname
     real(r8)              , intent(inout) :: scol_lon
     real(r8)              , intent(inout) :: scol_lat
-    character(len=*)      , intent(in)    :: compname
-    type(shr_strdata_type), intent(in)    :: sdat
-    integer               , intent(in)    :: my_task
-    integer               , intent(in)    :: logunit
     type(ESMF_Mesh)       , intent(out)   :: model_mesh
-    integer , pointer     , intent(out)   :: model_mask(:)
-    real(r8), pointer     , intent(out)   :: model_frac(:)
+    integer , pointer     , intent(inout) :: model_mask(:)
+    real(r8), pointer     , intent(inout) :: model_frac(:)
     integer               , intent(out)   :: rc
 
     ! local variables
-    type(file_desc_t)              :: pioid
-    integer                        :: rcode                   ! error code
-    type(var_desc_t)               :: varid                   ! variable id
-    integer                        :: dimid                   ! dimension id
-    integer                        :: ni, nj, nv              ! dimension sizes
-    integer                        :: i,j
+    type(ESMF_Grid)                :: lgrid
+    character(CL)                  :: cvalue
     integer                        :: maxIndex(2)
     real(r8)                       :: mincornerCoord(2)
     real(r8)                       :: maxcornerCoord(2)
-    type(ESMF_Grid)                :: lgrid
-    integer                        :: spatialDim              ! number of dimension in mesh
-    integer                        :: numOwnedElements        ! number of elements owned by this PET
-    real(r8), pointer              :: ownedElemCoords(:)      ! mesh element coordinates owned by this PET
-    integer                        :: n                       ! index
-    integer                        :: start(2)                ! start index to read in for single column mode
-    integer                        :: count(2)                ! number of points to read in
-    real(r8), allocatable          :: xv(:,:,:), yv(:,:,:)    ! coordinates of vertices
-    real(r8), allocatable          :: xc(:,:), yc(:,:)        ! coordinates of centers
-    real(r8)                       :: scol_data(1)            ! temporary
-    integer , allocatable          :: mask(:)                 ! temporary
-    real(r8), allocatable          :: lats(:)                 ! temporary
-    real(r8), allocatable          :: lons(:)                 ! temporary
-    real(r8), allocatable          :: pos_lons(:)             ! temporary
-    real(r8)                       :: pos_scol_lon            ! temporary
-    real(r8)                       :: scol_area               ! temporary
-    character(len=*), parameter    :: subname='(dshr_mesh_create)'
+    character(len=*), parameter    :: subname='(dshr_mesh_create_single_column)'
     ! ----------------------------------------------
 
     rc = ESMF_SUCCESS
 
-    !-------------------------------------
-    ! open domain file and get dimensions
-    !-------------------------------------
+    allocate(model_mask(1))
+    allocate(model_frac(1))
 
-    rcode = pio_openfile(sdat%pio_subsystem, pioid, sdat%io_type, trim(filename), pio_nowrite)
-    call pio_check_err(rcode, 'error opening file '//trim(filename))
-    call PIO_seterrorhandling(pioid, PIO_BCAST_ERROR)
-
-    rcode = pio_inq_dimid(pioid, 'ni', dimid)
-    call pio_check_err(rcode, 'pio_inq_dimid for ni in file '//trim(filename))
-    rcode = pio_inquire_dimension(pioid, dimid, len=ni)
-    call pio_check_err(rcode, 'pio_inq_dimension for ni in file '//trim(filename))
-
-    rcode = pio_inq_dimid(pioid, 'nj', dimid)
-    call pio_check_err(rcode, 'pio_inq_dimid for nj in file '//trim(filename))
-    rcode = pio_inquire_dimension(pioid, dimid, len=nj)
-    call pio_check_err(rcode, 'pio_inq_dimension for nj in file '//trim(filename))
-
-    rcode = pio_inq_dimid(pioid, 'nv', dimid)
-    call pio_check_err(rcode, 'pio_inq_dimid for nv in file '//trim(filename))
-    rcode = pio_inquire_dimension(pioid, dimid, len=nv)
-    call pio_check_err(rcode, 'pio_inq_dimension for nv in file '//trim(filename))
-
-    !-------------------------------------
-    ! Single column model (size 1)
-    !-------------------------------------
-
-    if (scol_mode) then
-
-       ! get lons from domain file
-       rcode = pio_inq_varid(pioid, 'xc', varid)
-       call pio_check_err(rcode, 'pio_inq_varid for xc in file '//trim(filename))
-       allocate(xc(ni,nj))
-       rcode = pio_get_var(pioid, varid, xc)
-       call pio_check_err(rcode, 'pio_get_var for xc in file '//trim(filename))
-
-       ! get lats from domain file
-       rcode = pio_inq_varid(pioid, 'yc', varid)
-       call pio_check_err(rcode, 'pio_inq_varid for yc in file '//trim(filename))
-       allocate(yc(ni,nj))
-       rcode = pio_get_var(pioid, varid, yc)
-       call pio_check_err(rcode, 'pio_get_var for yc in file '//trim(filename))
-
-       ! find nearest neighbor indices of scol_lon and scol_lat in domain file
-       allocate(lats(nj))
-       allocate(lons(ni))
-       allocate(pos_lons(ni))
-       do i = 1,ni
-          lons(i) = xc(i,1)
-       end do
-       do j = 1,nj
-          lats(j) = yc(1,j)
-       end do
-       pos_lons(:)  = mod(lons(:)  + 360._r8, 360._r8)
-       pos_scol_lon = mod(scol_lon + 360._r8, 360._r8)
-       start(1) = (MINLOC(abs(pos_lons - pos_scol_lon), dim=1))
-       start(2) = (MINLOC(abs(lats      -scol_lat    ), dim=1))
-       count(:) = 1
-       deallocate(lons)
-       deallocate(lats)
-
-       ! read in value of nearest neighbor lon and RESET scol_lat
-       rcode = pio_inq_varid(pioid, 'xc' , varid)
-       call pio_check_err(rcode, 'pio_inq_varid for xc in file '//trim(filename))
-       rcode = pio_get_var(pioid, varid, start, count, scol_data)
-       call pio_check_err(rcode, 'pio_get_var for xc in file '//trim(filename))
-       scol_lon = scol_data(1)
-
-       ! read in value of nearest neighbor lon and RESET scol_lon
-       rcode = pio_inq_varid(pioid, 'yc' , varid)
-       call pio_check_err(rcode, 'pio_inq_varid for yc in file '//trim(filename))
-       rcode = pio_get_var(pioid, varid, start, count, scol_data)
-       call pio_check_err(rcode, 'pio_get_var for yc in file '//trim(filename))
-       scol_lat = scol_data(1)
-
-       ! get area of gridcell
-       rcode = pio_inq_varid(pioid, 'area', varid)
-       call pio_check_err(rcode, 'pio_inq_varid for area in file '//trim(filename))
-       rcode = pio_get_var(pioid, varid, start, count, scol_data)
-       call pio_check_err(rcode, 'pio_get_var for area in file '//trim(filename))
-       scol_area = scol_data(1)
-
-       ! create the single column grid
-       maxIndex(1)       = 1                     ! number of lons
-       maxIndex(2)       = 1                     ! number of lats
-       mincornerCoord(1) = scol_lon - scol_area/2._r8 ! min lon
-       mincornerCoord(2) = scol_lat - scol_area/2._r8 ! min lat
-       maxcornerCoord(1) = scol_lon + scol_area/2._r8 ! max lon
-       maxcornerCoord(2) = scol_lat + scol_area/2._r8 ! max lat
-
-       ! create the model grid
-       lgrid = ESMF_GridCreateNoPeriDimUfrm (maxindex=maxindex, &
-            mincornercoord=mincornercoord, maxcornercoord= maxcornercoord, &
-            staggerloclist=(/ESMF_STAGGERLOC_CENTER, ESMF_STAGGERLOC_CORNER/), rc=rc)
+    if (compname == 'ATM') then
+       model_frac(1) = 1._r8
+       model_mask(1) = 1
+    else if (compname == 'LND') then
+       call NUOPC_CompAttributeGet(gcomp, name='scol_lndmask', value=cvalue, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-       ! create the mesh from the grid
-       model_mesh = ESMF_MeshCreate(lgrid, rc=rc)
+       read(cvalue,*) model_mask(1)
+       call NUOPC_CompAttributeGet(gcomp, name='scol_lndfrac', value=cvalue, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-       ! For the ATM component - the fractions and masks are always 1 - don't read them
-       ! in or reset the mesh
-
-       if (compname /= 'ATM') then
-          ! get model_mask
-          allocate(model_mask(1))
-          rcode = pio_inq_varid(pioid, 'mask', varid)
-          call pio_check_err(rcode, 'pio_inq_varid for area in file '//trim(filename))
-          rcode = pio_get_var(pioid, varid, start, count, model_mask)
-          call pio_check_err(rcode, 'pio_get_var for area in file '//trim(filename))
-
-          ! get model_frac
-          allocate(model_frac(1))
-          rcode = pio_inq_varid(pioid, 'frac', varid)
-          call pio_check_err(rcode, 'pio_inq_varid for area in file '//trim(filename))
-          rcode = pio_get_var(pioid, varid, start, count, model_frac)
-          call pio_check_err(rcode, 'pio_get_var for area in file '//trim(filename))
-
-          ! set the model mesh mask
-          call ESMF_MeshSet(model_mesh, elementMask=model_mask, rc=rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       end if
-
+       read(cvalue,*) model_frac(1)
+    else if (compname == 'OCN' .or. compname == 'ICE') then
+       call NUOPC_CompAttributeGet(gcomp, name='scol_ocnmask', value=cvalue, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       read(cvalue,*) model_mask(1)
+       call NUOPC_CompAttributeGet(gcomp, name='scol_ocnfrac', value=cvalue, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       read(cvalue,*) model_frac(1)
+    else
+       call shr_sys_abort('ERROR: currently component '//trim(compname)//' is not supported for single column')
     end if
 
-    !-------------------------------------
-    ! Non single-column mode
-    !-------------------------------------
+    ! Use center and come up with arbitrary area delta lon and lat = .1 degree
+    maxIndex(1)       = 1                ! number of lons
+    maxIndex(2)       = 1                ! number of lats
+    mincornerCoord(1) = scol_lon - .1_r8 ! min lon
+    mincornerCoord(2) = scol_lat - .1_r8 ! min lat
+    maxcornerCoord(1) = scol_lon + .1_r8 ! max lon
+    maxcornerCoord(2) = scol_lat + .1_r8 ! max lat
 
-    if (.not. scol_mode) then
-
-       ! allocate xv and read it in
-       allocate(xv(nv,ni,nj))
-       rcode = pio_inq_varid(pioid, 'xv', varid)
-       call pio_check_err(rcode, 'pio_inq_varid for xv in file '//trim(filename))
-       rcode = pio_get_var(pioid, varid, xv)
-       call pio_check_err(rcode, 'pio_get_var for xv in file '//trim(filename))
-
-       ! allocate yv and read it in
-       allocate(yv(nv,ni,nj))
-       rcode = pio_inq_varid(pioid, 'yv', varid)
-       call pio_check_err(rcode, 'pio_inq_varid for yv in file '//trim(filename))
-       rcode = pio_get_var(pioid, varid, yv)
-       call pio_check_err(rcode, 'pio_get_var for yv in file '//trim(filename))
-
-       ! create grid from corner vertices
-       maxIndex(1)       = ni          ! number of lons
-       maxIndex(2)       = nj          ! number of lats
-       mincornerCoord(1) = xv(1,1,1)   ! min lon
-       mincornerCoord(2) = yv(1,1,1)   ! min lat
-       maxcornerCoord(1) = xv(3,ni,nj) ! max lon
-       maxcornerCoord(2) = yv(3,ni,nj) ! max lat
-
-       ! create the model grid
-       lgrid = ESMF_GridCreateNoPeriDimUfrm (maxindex=maxindex, &
-            mincornercoord=mincornercoord, maxcornercoord= maxcornercoord, &
-            staggerloclist=(/ESMF_STAGGERLOC_CENTER, ESMF_STAGGERLOC_CORNER/), rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-       ! create the mesh from the grid
-       model_mesh = ESMF_MeshCreate(lgrid, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-       ! For the ATM component - the fractions and masks are always 1 - don't read them
-       ! in or reset the mesh
-       if (compname /= 'ATM') then
-          ! allocate model_mask and read it in
-          allocate(model_mask(ni*nj))
-          rcode = pio_inq_varid(pioid, 'mask', varid)
-          call pio_check_err(rcode, 'pio_inq_varid for mask in file '//trim(filename))
-          rcode = pio_get_var(pioid, varid, model_mask)
-          call pio_check_err(rcode, 'pio_get_var for mask in file '//trim(filename))
-
-          ! allocate model_frac and read it in
-          allocate(model_frac(ni*nj))
-          rcode = pio_inq_varid(pioid, 'frac', varid)
-          call pio_check_err(rcode, 'pio_inq_varid for frac in file '//trim(filename))
-          rcode = pio_get_var(pioid, varid, model_frac)
-          call pio_check_err(rcode, 'pio_get_var for frac in file '//trim(filename))
-
-          ! reset the model mesh mask if not an atmosphere component
-          call ESMF_MeshSet(model_mesh, elementMask=mask, rc=rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       end if
-
-    end if
-
-    !-------------------------------------
-    ! close domain file and write diagnostic output
-    !-------------------------------------
-
-    call pio_seterrorhandling(pioid, PIO_INTERNAL_ERROR)
-    call pio_closefile(pioid)
-
-    call ESMF_MeshGet(model_mesh, numOwnedElements=numOwnedElements, spatialDim=spatialDim, rc=rc)
+    ! create the model grid
+    lgrid = ESMF_GridCreateNoPeriDimUfrm (maxindex=maxindex, &
+         mincornercoord=mincornercoord, maxcornercoord= maxcornercoord, &
+         staggerloclist=(/ESMF_STAGGERLOC_CENTER, ESMF_STAGGERLOC_CORNER/), rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    allocate(ownedElemCoords(spatialDim*numOwnedElements)) ! this is a pointer and must be deallocated
-    call ESMF_MeshGet(model_mesh, ownedElemCoords=ownedElemCoords)
+
+    ! create the mesh from the grid
+    model_mesh = ESMF_MeshCreate(lgrid, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    allocate(lons(numOwnedElements))
-    allocate(lats(numOwnedElements))
-    do n = 1, numOwnedElements
-       lons(n) = ownedElemCoords(2*n-1)
-       lats(n) = ownedElemCoords(2*n)
-    end do
-    if (my_task == master_task) then
-       write(logunit,*)' Mesh created from file ',trim(filename)
-       write(logunit,*)' mesh element lons = ',lons(:)
-       write(logunit,*)' mesh element lats = ',lats(:)
-    end if
-    deallocate(ownedElemCoords)
 
-  contains
-
-    subroutine pio_check_err(ierror, description)
-      integer     , intent(in) :: ierror
-      character(*), intent(in) :: description
-      if (ierror /= PIO_NOERR) then
-         write (*,'(6a)') 'ERROR ', trim(description)
-         call shr_sys_abort()
-      endif
-    end subroutine pio_check_err
-
-  end subroutine dshr_mesh_create
+  end subroutine dshr_mesh_create_scol
 
   !===============================================================================
   subroutine dshr_set_runclock(gcomp, rc)
@@ -1535,43 +1299,6 @@ contains
   end subroutine dshr_orbital_update
 
   !===============================================================================
-  real(R8) function getNextRadCDay_i8( ymd, tod, stepno, dtime, iradsw, calendar )
-
-    !  Return the calendar day of the next radiation time-step.
-    !  General Usage: nextswday = getNextRadCDay(curr_date)
-
-    ! input/output variables
-    integer    , intent(in)    :: ymd
-    integer    , intent(in)    :: tod
-    integer(I8), intent(in)    :: stepno
-    integer    , intent(in)    :: dtime
-    integer    , intent(in)    :: iradsw
-    character(*),intent(in)    :: calendar
-
-    ! local variables
-    real(R8) :: nextsw_cday
-    real(R8) :: julday
-    integer  :: liradsw
-    character(*),parameter :: subName =  '(getNextRadCDay) '
-    !-------------------------------------------------------------------------------
-
-    liradsw = iradsw
-    if (liradsw < 0) liradsw  = nint((-liradsw *3600._r8)/dtime)
-    call shr_cal_date2julian(ymd,tod,julday,calendar)
-    if (liradsw > 1) then
-       if (mod(stepno+1,liradsw) == 0 .and. stepno > 0) then
-          nextsw_cday = julday + 2*dtime/shr_const_cday
-       else
-          nextsw_cday = -1._r8
-       end if
-    else
-       nextsw_cday = julday + dtime/shr_const_cday
-    end if
-    getNextRadCDay_i8 = nextsw_cday
-
-  end function getNextRadCDay_i8
-
-  !===============================================================================
   subroutine dshr_set_modelmask(mesh_dst, meshfile_mask, compname, mask_dst, frac_dst, rc)
 
     use ESMF, only : ESMF_FieldRegridStore, ESMF_FieldRegrid, ESMF_FIELDCREATE
@@ -1651,7 +1378,7 @@ contains
          termorderflag=ESMF_TERMORDER_SRCSEQ, checkflag=checkflag, zeroregion=ESMF_REGION_TOTAL, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
 
-    ! now determine mask_dst and frac_dst 
+    ! now determine mask_dst and frac_dst
     call ESMF_MeshGet(mesh_dst, spatialDim=spatialDim, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_FieldGet(field_dst, farrayptr=dataptr1d, rc=rc)
@@ -1686,7 +1413,7 @@ contains
     ! deallocate memory
     call ESMF_RouteHandleDestroy(rhandle, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_FieldDestroy(field_mask, rc=rc) 
+    call ESMF_FieldDestroy(field_mask, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     call ESMF_FieldDestroy(field_dst, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -1742,7 +1469,7 @@ contains
          petCount=petCount, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    ! query component specific PIO attributes 
+    ! query component specific PIO attributes
     ! pio_netcdf_format
     call NUOPC_CompAttributeGet(gcomp, name='pio_netcdf_format', value=cvalue, &
          isPresent=isPresent, isSet=isSet, rc=rc)
@@ -1778,9 +1505,9 @@ contains
     if (isPresent .and. isSet) then
        cvalue = ESMF_UtilStringUpperCase(cvalue)
        if (trim(cvalue) .eq. 'NETCDF') then
-          sdat%io_type = PIO_IOTYPE_NETCDF 
+          sdat%io_type = PIO_IOTYPE_NETCDF
        else if (trim(cvalue) .eq. 'PNETCDF') then
-          sdat%io_type = PIO_IOTYPE_PNETCDF 
+          sdat%io_type = PIO_IOTYPE_PNETCDF
        else if (trim(cvalue) .eq. 'NETCDF4C') then
           sdat%io_type = PIO_IOTYPE_NETCDF4C
        else if (trim(cvalue) .eq. 'NETCDF4P') then
@@ -1811,7 +1538,7 @@ contains
        endif
        pio_root = min(pio_root, petCount-1)
     else
-       pio_root = 1 
+       pio_root = 1
     end if
     if (my_task == master_task) write(logunit,*) trim(subname)//' : pio_root = ', &
        pio_root
@@ -1956,8 +1683,8 @@ contains
     call pio_init(my_task, mpicom, pio_numiotasks, 0, pio_stride, &
                   pio_rearranger, sdat%pio_subsystem, base=pio_root)
 
-    ! query shared PIO rearranger attributes 
-    ! pio_rearr_comm_type 
+    ! query shared PIO rearranger attributes
+    ! pio_rearr_comm_type
     call NUOPC_CompAttributeGet(gcomp, name='pio_rearr_comm_type', value=cvalue, &
          isPresent=isPresent, isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -1979,7 +1706,7 @@ contains
        pio_rearr_comm_type = PIO_REARR_COMM_P2P
     end if
     if (my_task == master_task) write(logunit,*) trim(subname)// &
-       ' : pio_rearr_comm_type = ', trim(cvalue), pio_rearr_comm_type 
+       ' : pio_rearr_comm_type = ', trim(cvalue), pio_rearr_comm_type
 
     ! pio_rearr_comm_fcd
     call NUOPC_CompAttributeGet(gcomp, name='pio_rearr_comm_fcd', value=cvalue, &
@@ -2030,7 +1757,7 @@ contains
     else
        pio_rearr_comm_enable_isend_comp2io = .false.
     end if
-   
+
     ! pio_rearr_comm_max_pend_req_comp2io
     call NUOPC_CompAttributeGet(gcomp, name='pio_rearr_comm_max_pend_req_comp2io', &
          value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)

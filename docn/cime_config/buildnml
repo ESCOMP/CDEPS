@@ -67,8 +67,21 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     config['model_grid'] = model_grid
     config['ocn_grid'] = ocn_grid
     config['docn_mode'] = docn_mode
-    config['create_mesh'] = 'true' if case.get_value("OCN_DOMAIN_MESH") == 'create_mesh' else 'false'
     config['aqua_planet'] = 'true' if 'aquap' in docn_mode else 'false'
+
+    if case.get_value('PTS_LON'):
+        scol_lon = float(case.get_value('PTS_LON'))
+    else: 
+        scol_lon = -999.
+    if case.get_value('PTS_LAT'):
+        scol_lat = float(case.get_value('PTS_LAT'))
+    else:
+        scol_lat = -999.
+    if case.get_value('ATM_DOMAIN_FILE'):
+        if scol_lon > -999. and scol_lat > -999. and case.get_value("ATM_DOMAIN_FILE") != "UNSET":
+            config['single_column'] = 'true'
+        else:
+            config['single_column'] = 'false'
 
     nmlgen.init_defaults(infile, config)
 
