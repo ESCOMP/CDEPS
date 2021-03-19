@@ -396,7 +396,6 @@ contains
     endif
 
     nextsw_cday = getNextRadCDay(dayofYear, current_tod, stepno, idt, iradsw)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_SetScalar(nextsw_cday, flds_scalar_index_nextsw_cday, exportState, flds_scalar_name, flds_scalar_num, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
