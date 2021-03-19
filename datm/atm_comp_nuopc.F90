@@ -476,7 +476,6 @@ contains
     ! Use nextYMD and nextTOD here since since the component - clock is advance at the END of the time interval
 
     nextsw_cday = getNextRadCDay(dayofYear, next_tod, stepno, idt, iradsw)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     call dshr_state_SetScalar(nextsw_cday, flds_scalar_index_nextsw_cday, exportState, flds_scalar_name, flds_scalar_num, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -612,23 +611,18 @@ contains
        case('CORE2_NYF','CORE2_IAF')
           call datm_datamode_core2_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
                logunit, my_task, sdat)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('CORE_IAF_JRA')
           call datm_datamode_jra_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
                logunit, my_task, sdat)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('CLMNCEP')
           call datm_datamode_clmncep_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
                logunit, my_task, sdat)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('CPLHIST')
           call datm_datamode_cplhist_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
                logunit, my_task, sdat)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('ERA5')
           call datm_datamode_era5_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
                logunit, my_task, sdat)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end select
     end if
 
