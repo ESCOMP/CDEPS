@@ -60,11 +60,19 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     # Note: always use model mesh file to set mask for drof
     config = {}
     config['drof_mode'] = drof_mode
-    config['create_mesh'] = 'true' if case.get_value("ROF_DOMAIN_MESH") == 'create_mesh' else 'false'
 
     # Do not allow single column mode for drof
-    expect(not case.get_value('PTS_MODE'),
-           "for, DROF single column mode is not allowed")
+    if case.get_value('PTS_LON'):
+        scol_lon = float(case.get_value('PTS_LON'))
+    else: 
+        scol_lon = -999.
+    if case.get_value('PTS_LAT'):
+        scol_lat = float(case.get_value('PTS_LAT'))
+    else:
+        scol_lat = -999.
+    if (scol_lon > -999. and scol_lat > 999.):
+        expect(False,
+               "single column mode for DROF is not currently allowed")
 
     # Initialize nmlgen
     nmlgen.init_defaults(infile, config)

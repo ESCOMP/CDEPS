@@ -23,7 +23,7 @@ module atm_comp_nuopc
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_const_mod    , only : shr_const_cday
   use shr_sys_mod      , only : shr_sys_abort
-  use shr_cal_mod      , only : shr_cal_ymd2date, shr_cal_ymd2julian, shr_cal_date2julian
+  use shr_cal_mod      , only : shr_cal_ymd2date
   use shr_mpi_mod      , only : shr_mpi_bcast
   use dshr_methods_mod , only : dshr_state_diagnose, chkerr, memcheck
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_init_from_xml, shr_strdata_advance
@@ -103,7 +103,6 @@ module atm_comp_nuopc
   character(CL)                :: dataMode = nullstr                  ! flags physics options wrt input data
   character(CL)                :: model_meshfile = nullstr            ! full pathname to model meshfile
   character(CL)                :: model_maskfile = nullstr            ! full pathname to obtain mask from
-  character(CL)                :: model_createmesh_fromfile = nullstr ! full pathname to obtain mask from
   integer                      :: iradsw = 0                          ! radiation interval (input namelist)
   character(CL)                :: factorFn_mesh = 'null'              ! file containing correction factors mesh
   character(CL)                :: factorFn_data = 'null'              ! file containing correction factors data
@@ -206,7 +205,7 @@ contains
     !-------------------------------------------------------------------------------
 
     namelist / datm_nml / datamode, &
-         model_meshfile, model_maskfile, model_createmesh_fromfile, &
+         model_meshfile, model_maskfile, &
          nx_global, ny_global, restfilm, iradsw, factorFn_data, factorFn_mesh, &
          flds_presaero, flds_co2, flds_wiso, bias_correct, anomaly_forcing
 
@@ -240,7 +239,6 @@ contains
     call shr_mpi_bcast(datamode                  , mpicom, 'datamode')
     call shr_mpi_bcast(model_meshfile            , mpicom, 'model_meshfile')
     call shr_mpi_bcast(model_maskfile            , mpicom, 'model_maskfile')
-    call shr_mpi_bcast(model_createmesh_fromfile , mpicom, 'model_createmesh_fromfile')
     call shr_mpi_bcast(nx_global                 , mpicom, 'nx_global')
     call shr_mpi_bcast(ny_global                 , mpicom, 'ny_global')
     call shr_mpi_bcast(iradsw                    , mpicom, 'iradsw')
@@ -253,48 +251,20 @@ contains
 
     ! write namelist input to standard out
     if (my_task == master_task) then
-       write(logunit,F00)' case_name = ',trim(case_name)
-       write(logunit,F00)' datamode = ',trim(datamode)
-       if (model_createmesh_fromfile /= nullstr) then
-          write(logunit,F00)' model_create_meshfile_fromfile = ',trim(model_createmesh_fromfile)
-       else
-          write(logunit,F00)' model_meshfile = ',trim(model_meshfile)
-          write(logunit,F00)' model_maskfile = ',trim(model_maskfile)
-       end if
-       write(logunit,F01)' nx_global     = ',nx_global
-       write(logunit,F01)' ny_global     = ',ny_global
-       write(logunit,F00)' restfilm      = ',trim(restfilm)
-       write(logunit,F01)' iradsw        = ',iradsw
-       write(logunit,F00)' factorFn_data = ',trim(factorFn_data)
-       write(logunit,F00)' factorFn_mesh = ',trim(factorFn_mesh)
-       write(logunit,F02)' flds_presaero = ',flds_presaero
-       write(logunit,F02)' flds_co2      = ',flds_co2
-       write(logunit,F02)' flds_wiso     = ',flds_wiso
+       write(logunit,F00)' case_name      = ',trim(case_name)
+       write(logunit,F00)' datamode       = ',trim(datamode)
+       write(logunit,F00)' model_meshfile = ',trim(model_meshfile)
+       write(logunit,F00)' model_maskfile = ',trim(model_maskfile)
+       write(logunit,F01)' nx_global      = ',nx_global
+       write(logunit,F01)' ny_global      = ',ny_global
+       write(logunit,F00)' restfilm       = ',trim(restfilm)
+       write(logunit,F01)' iradsw         = ',iradsw
+       write(logunit,F00)' factorFn_data  = ',trim(factorFn_data)
+       write(logunit,F00)' factorFn_mesh  = ',trim(factorFn_mesh)
+       write(logunit,F02)' flds_presaero  = ',flds_presaero
+       write(logunit,F02)' flds_co2       = ',flds_co2
+       write(logunit,F02)' flds_wiso      = ',flds_wiso
     end if
-
-    ! check that files exists
-    if (my_task == master_task) then
-       if (model_createmesh_fromfile /= nullstr) then
-          inquire(file=trim(model_createmesh_fromfile), exist=exists)
-          if (.not.exists) then
-             write(logunit, *)' ERROR: model_createmesh_fromfile '//&
-                  trim(model_createmesh_fromfile)//' does not exist'
-             call shr_sys_abort(trim(subname)//' ERROR: model_createmesh_fromfile '//&
-                  trim(model_createmesh_fromfile)//' does not exist')
-          end if
-       else
-          inquire(file=trim(model_meshfile), exist=exists)
-          if (.not.exists) then
-             write(logunit, *)' ERROR: model_meshfile '//trim(model_meshfile)//' does not exist'
-             call shr_sys_abort(trim(subname)//' ERROR: model_meshfile '//trim(model_meshfile)//' does not exist')
-          end if
-          inquire(file=trim(model_maskfile), exist=exists)
-          if (.not.exists) then
-             write(logunit, *)' ERROR: model_maskfile '//trim(model_maskfile)//' does not exist'
-             call shr_sys_abort(trim(subname)//' ERROR: model_maskfile '//trim(model_maskfile)//' does not exist')
-          end if
-       end if
-    endif
 
     ! Validate sdat datamode
     if (masterproc) write(logunit,*) ' datm datamode = ',trim(datamode)
@@ -358,6 +328,7 @@ contains
     real(R8)                :: orbLambm0     ! orb mean long of perhelion (radians)
     real(R8)                :: orbObliqr     ! orb obliquity (radians)
     logical                 :: isPresent, isSet
+    real(R8)                :: dayofYear
     character(len=*), parameter :: subname=trim(modName)//':(InitializeRealize) '
     !-------------------------------------------------------------------------------
 
@@ -367,8 +338,7 @@ contains
     ! Initialize mesh, restart flag, compid, and logunit
     call ESMF_TraceRegionEnter('datm_strdata_init')
     call dshr_mesh_init(gcomp, sdat, nullstr, logunit, 'ATM', nx_global, ny_global, &
-         model_meshfile, model_maskfile, model_createmesh_fromfile, model_mesh, &
-         model_mask, model_frac, restart_read, rc=rc)
+         model_meshfile, model_maskfile, model_mesh, model_mask, model_frac, restart_read, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Initialize stream data type
@@ -389,7 +359,8 @@ contains
     ! Get the time to interpolate the stream data to
     call ESMF_ClockGet( clock, currTime=currTime, timeStep=timeStep, advanceCount=stepno, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_TimeGet(currTime, yy=current_year, mm=current_mon, dd=current_day, s=current_tod, rc=rc )
+    call ESMF_TimeGet(currTime, yy=current_year, mm=current_mon, dd=current_day, s=current_tod, &
+         dayofYear_r8=dayofYear, rc=rc )
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_cal_ymd2date(current_year, current_mon, current_day, current_ymd)
 
@@ -424,7 +395,7 @@ contains
        call shr_sys_abort(subname//'Need to set attribute ScalarFieldIdxNextSwCday')
     endif
 
-    nextsw_cday = getNextRadCDay( current_ymd, current_tod, stepno, idt, iradsw, sdat%model_calendar )
+    nextsw_cday = getNextRadCDay(dayofYear, current_tod, stepno, idt, iradsw)
     call dshr_state_SetScalar(nextsw_cday, flds_scalar_index_nextsw_cday, exportState, flds_scalar_name, flds_scalar_num, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
@@ -454,6 +425,7 @@ contains
     real(R8)                :: orbMvelpp     ! orb moving vernal eq (radians)
     real(R8)                :: orbLambm0     ! orb mean long of perhelion (radians)
     real(R8)                :: orbObliqr     ! orb obliquity (radians)
+    real(R8)                :: dayofYear
     character(len=*),parameter  :: subname=trim(modName)//':(ModelAdvance) '
     !-------------------------------------------------------------------------------
 
@@ -472,7 +444,7 @@ contains
     call ESMF_ClockGet( clock, currTime=currTime, timeStep=timeStep, advanceCount=stepno, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     nextTime = currTime + timeStep
-    call ESMF_TimeGet( nextTime, yy=yr, mm=mon, dd=day, s=next_tod, rc=rc )
+    call ESMF_TimeGet( nextTime, yy=yr, mm=mon, dd=day, s=next_tod, dayofYear_r8=dayofYear, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_cal_ymd2date(yr, mon, day, next_ymd)
 
@@ -502,7 +474,9 @@ contains
 
     ! Update nextsw_cday for scalar data
     ! Use nextYMD and nextTOD here since since the component - clock is advance at the END of the time interval
-    nextsw_cday = getNextRadCDay( next_ymd, next_tod, stepno, idt, iradsw, sdat%model_calendar )
+
+    nextsw_cday = getNextRadCDay(dayofYear, next_tod, stepno, idt, iradsw)
+
     call dshr_state_SetScalar(nextsw_cday, flds_scalar_index_nextsw_cday, exportState, flds_scalar_name, flds_scalar_num, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
@@ -637,23 +611,18 @@ contains
        case('CORE2_NYF','CORE2_IAF')
           call datm_datamode_core2_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
                logunit, my_task, sdat)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('CORE_IAF_JRA')
           call datm_datamode_jra_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
                logunit, my_task, sdat)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('CLMNCEP')
           call datm_datamode_clmncep_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
                logunit, my_task, sdat)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('CPLHIST')
           call datm_datamode_cplhist_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
                logunit, my_task, sdat)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('ERA5')
           call datm_datamode_era5_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
                logunit, my_task, sdat)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end select
     end if
 
@@ -751,31 +720,47 @@ contains
   end subroutine datm_comp_run
 
   !===============================================================================
-  real(R8) function getNextRadCDay( ymd, tod, stepno, dtime, iradsw, calendar )
+  real(R8) function getNextRadCDay( julday, tod, stepno, dtime, iradsw )
 
-    !  Return the calendar day of the next radiation time-step.
-    !  General Usage: nextswday = getNextRadCDay(curr_date)
+    ! Return the calendar day of the next radiation time-step.
+    ! General Usage: nextswday = getNextRadCDay(curr_date) iradsw is
+    ! the frequency to update the next shortwave.  in number of steps
+    ! (or hours if negative) Julian date.
+    ! -- values greater than 1 set
+    !    the next radiation to the present time plus 2 timesteps every iradsw
+    ! -- values less than 0 turn set the next radiation to the  present time
+    !    plus two timesteps every -iradsw hours.
+    ! -- if iradsw is zero, the next radiation time is the
+    !    present time plus 1 timestep.
 
     ! input/output variables
-    integer    , intent(in)    :: ymd
-    integer    , intent(in)    :: tod
-    integer(i8), intent(in)    :: stepno
-    integer    , intent(in)    :: dtime
-    integer    , intent(in)    :: iradsw
-    character(*),intent(in)    :: calendar
+    real(r8)    , intent(in) :: julday
+    integer     , intent(in) :: tod
+    integer(i8) , intent(in) :: stepno
+    integer     , intent(in) :: dtime
+    integer     , intent(in) :: iradsw
 
     ! local variables
     real(R8) :: nextsw_cday
-    real(R8) :: julday
     integer  :: liradsw
+    integer  :: delta_radsw
     character(*),parameter :: subName =  '(getNextRadCDay) '
     !-------------------------------------------------------------------------------
 
+    ! Note that stepno is obtained via the advancecount argument to
+    ! ESMF_GetClock and is the number of times the ESMF_Clock has been
+    ! advanced. The ESMF clock is actually advanced an additional time
+    ! (in order to trigger alarms) in the routine dshr_set_runclock
+    ! which is the specialized routine for the model_lable_SetRunClock.
+    ! This is called each time the ModelAdvance phase is called. Hence
+    ! stepno is not used to trigger the calculation of nextsw_cday.
+
     liradsw = iradsw
     if (liradsw < 0) liradsw  = nint((-liradsw *3600._r8)/dtime)
-    call shr_cal_date2julian(ymd,tod,julday,calendar)
+
     if (liradsw > 1) then
-       if (mod(stepno+1,liradsw) == 0 .and. stepno > 0) then
+       delta_radsw = liradsw * dtime
+       if (mod(tod+dtime,delta_radsw) == 0 .and. stepno > 0) then
           nextsw_cday = julday + 2*dtime/shr_const_cday
        else
           nextsw_cday = -1._r8
