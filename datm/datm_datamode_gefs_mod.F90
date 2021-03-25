@@ -1,4 +1,4 @@
-module datm_datamode_cfsr_mod
+module datm_datamode_gefs_mod
 
   use ESMF
   use NUOPC            , only : NUOPC_Advertise
@@ -16,11 +16,11 @@ module datm_datamode_cfsr_mod
   implicit none
   private ! except
 
-  public  :: datm_datamode_cfsr_advertise
-  public  :: datm_datamode_cfsr_init_pointers
-  public  :: datm_datamode_cfsr_advance
-  public  :: datm_datamode_cfsr_restart_write
-  public  :: datm_datamode_cfsr_restart_read
+  public  :: datm_datamode_gefs_advertise
+  public  :: datm_datamode_gefs_init_pointers
+  public  :: datm_datamode_gefs_advance
+  public  :: datm_datamode_gefs_restart_write
+  public  :: datm_datamode_gefs_restart_read
 !  private :: datm_eSat  ! determine saturation vapor pressure
 
   ! export state data
@@ -62,7 +62,7 @@ module datm_datamode_cfsr_mod
 contains
 !===============================================================================
 
-  subroutine datm_datamode_cfsr_advertise(exportState, fldsexport, &
+  subroutine datm_datamode_gefs_advertise(exportState, fldsexport, &
        flds_scalar_name, rc)
 
     ! input/output variables
@@ -105,10 +105,10 @@ contains
        fldList => fldList%next
     enddo
 
-  end subroutine datm_datamode_cfsr_advertise
+  end subroutine datm_datamode_gefs_advertise
 
   !===============================================================================
-  subroutine datm_datamode_cfsr_init_pointers(exportState, sdat, rc)
+  subroutine datm_datamode_gefs_init_pointers(exportState, sdat, rc)
 
     ! input/output variables
     type(ESMF_State)       , intent(inout) :: exportState
@@ -163,10 +163,10 @@ contains
     call dshr_state_getfldptr(exportState, 'Faxa_lwdn'  , fldptr1=Faxa_lwdn  , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-  end subroutine datm_datamode_cfsr_init_pointers
+  end subroutine datm_datamode_gefs_init_pointers
 
   !===============================================================================
-  subroutine datm_datamode_cfsr_advance(exportstate, masterproc, logunit, mpicom, target_ymd, target_tod, model_calendar, rc)
+  subroutine datm_datamode_gefs_advance(exportstate, masterproc, logunit, mpicom, target_ymd, target_tod, model_calendar, rc)
 
     ! input/output variables
     type(ESMF_State)       , intent(inout) :: exportState
@@ -186,7 +186,7 @@ contains
     real(r8) :: tbot, pbot
 !    real(r8) :: vp
     real(r8) :: e, qsat
-    character(len=*), parameter :: subname='(datm_datamode_cfsr_advance): '
+    character(len=*), parameter :: subname='(datm_datamode_gefs_advance): '
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -218,10 +218,10 @@ contains
        Sa_tbot(n) = max(180._r8, Sa_tbot(n))
     end do
 
-  end subroutine datm_datamode_cfsr_advance
+  end subroutine datm_datamode_gefs_advance
 
   !===============================================================================
-  subroutine datm_datamode_cfsr_restart_write(case_name, inst_suffix, ymd, tod, &
+  subroutine datm_datamode_gefs_restart_write(case_name, inst_suffix, ymd, tod, &
        logunit, my_task, sdat)
     
     ! input/output variables
@@ -237,10 +237,10 @@ contains
     call dshr_restart_write(rpfile, case_name, 'datm', inst_suffix, ymd, tod, &
          logunit, my_task, sdat)
 
-  end subroutine datm_datamode_cfsr_restart_write
+  end subroutine datm_datamode_gefs_restart_write
 
   !===============================================================================
-  subroutine datm_datamode_cfsr_restart_read(rest_filem, inst_suffix, logunit, my_task, mpicom, sdat)
+  subroutine datm_datamode_gefs_restart_read(rest_filem, inst_suffix, logunit, my_task, mpicom, sdat)
 
     ! input/output arguments
     character(len=*)            , intent(inout) :: rest_filem
@@ -253,6 +253,6 @@ contains
 
     call dshr_restart_read(rest_filem, rpfile, inst_suffix, nullstr, logunit, my_task, mpicom, sdat)
 
-  end subroutine datm_datamode_cfsr_restart_read
+  end subroutine datm_datamode_gefs_restart_read
 
-end module datm_datamode_cfsr_mod
+end module datm_datamode_gefs_mod

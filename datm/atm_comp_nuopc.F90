@@ -65,6 +65,12 @@ module atm_comp_nuopc
   use datm_datamode_era5_mod    , only : datm_datamode_era5_restart_write
   use datm_datamode_era5_mod    , only : datm_datamode_era5_restart_read
 
+  use datm_datamode_gefs_mod    , only : datm_datamode_gefs_advertise
+  use datm_datamode_gefs_mod    , only : datm_datamode_gefs_init_pointers
+  use datm_datamode_gefs_mod    , only : datm_datamode_gefs_advance
+  use datm_datamode_gefs_mod    , only : datm_datamode_gefs_restart_write
+  use datm_datamode_gefs_mod    , only : datm_datamode_gefs_restart_read
+
   use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_advertise
   use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_init_pointers
   use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_advance
@@ -309,6 +315,7 @@ contains
          trim(datamode) == 'CORE_IAF_JRA' .or. &
          trim(datamode) == 'CLMNCEP'      .or. &
          trim(datamode) == 'CPLHIST'      .or. &
+         trim(datamode) == 'GEFS'         .or. &
          trim(datamode) == 'CFSR'         .or. &
          trim(datamode) == 'ERA5') then
     else
@@ -334,6 +341,9 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('ERA5')
        call datm_datamode_era5_advertise(exportState, fldsExport, flds_scalar_name, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    case ('GEFS')
+       call datm_datamode_gefs_advertise(exportState, fldsExport, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('CFSR')
        call datm_datamode_cfsr_advertise(exportState, fldsExport, flds_scalar_name, rc)
@@ -577,6 +587,9 @@ contains
        case('ERA5')
           call datm_datamode_era5_init_pointers(exportState, sdat, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       case('GEFS')
+          call datm_datamode_gefs_init_pointers(exportState, sdat, rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('CFSR')
           call datm_datamode_cfsr_init_pointers(exportState, sdat, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -595,6 +608,8 @@ contains
              call datm_datamode_cplhist_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
           case('ERA5')
              call datm_datamode_era5_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
+          case('GEFS')
+             call datm_datamode_gefs_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
           case('CFSR')
              call datm_datamode_cfsr_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
           end select
@@ -644,6 +659,9 @@ contains
        call datm_datamode_era5_advance(exportstate, masterproc, logunit, mpicom, target_ymd, &
             target_tod, sdat%model_calendar, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    case('GEFS')
+       call datm_datamode_gefs_advance(exportstate, masterproc, logunit, mpicom, target_ymd, &
+            target_tod, sdat%model_calendar, rc)
     case('CFSR')
        call datm_datamode_cfsr_advance(exportstate, masterproc, logunit, mpicom, target_ymd, &
             target_tod, sdat%model_calendar, rc)
@@ -671,6 +689,10 @@ contains
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('ERA5')
           call datm_datamode_era5_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
+               logunit, my_task, sdat)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       case('GEFS')
+          call datm_datamode_gefs_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
                logunit, my_task, sdat)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('CFSR')
