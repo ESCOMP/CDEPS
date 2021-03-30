@@ -19,7 +19,7 @@
       <meshfile>$LND_DOMAIN_MESH</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file first_year="0001" last_year="0030">$DLND_CPLHIST_DIR/$DLND_CPLHIST_CASE.cpl.hl2x1yr_glc.%y-01-01.nc</file>
+      <file first_year="1971" last_year="2000">$DLND_CPLHIST_DIR/$DLND_CPLHIST_CASE.cpl.hl2x1yr_glc.%y-01-01.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>l2x1yr_glc_Sl_tsrf%glc     Sl_tsrf_elev%glc  </var>
