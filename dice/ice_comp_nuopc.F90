@@ -18,7 +18,7 @@ module ice_comp_nuopc
   use NUOPC_Model          , only : model_label_Advance     => label_Advance
   use NUOPC_Model          , only : model_label_SetRunClock => label_SetRunClock
   use NUOPC_Model          , only : model_label_Finalize    => label_Finalize
-  use NUOPC_Model          , only : NUOPC_ModelGet
+  use NUOPC_Model          , only : NUOPC_ModelGet, SetVM
   use shr_kind_mod         , only : r8=>shr_kind_r8, cxx=>shr_kind_cxx, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_const_mod        , only : shr_const_pi
   use shr_sys_mod          , only : shr_sys_abort
@@ -41,7 +41,7 @@ module ice_comp_nuopc
   private ! except
 
   public  :: SetServices
-
+  public  :: SetVM
   private :: InitializeAdvertise
   private :: InitializeRealize
   private :: ModelAdvance
