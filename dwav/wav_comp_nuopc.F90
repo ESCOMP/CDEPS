@@ -24,7 +24,7 @@ module wav_comp_nuopc
   use shr_mpi_mod      , only : shr_mpi_bcast
   use dshr_methods_mod , only : dshr_state_getfldptr, chkerr, memcheck, dshr_state_diagnose
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_advance
-  use dshr_strdata_mod , only : shr_strdata_init_from_xml
+  use dshr_strdata_mod , only : shr_strdata_init_from_config
   use dshr_mod         , only : dshr_model_initphase, dshr_init
   use dshr_mod         , only : dshr_state_setscalar, dshr_set_runclock, dshr_log_clock_advance
   use dshr_mod         , only : dshr_restart_read, dshr_restart_write, dshr_mesh_init
@@ -64,7 +64,7 @@ module wav_comp_nuopc
   character(*) , parameter     :: nullstr = 'null'
 
   ! dwav_in namelist input
-  character(CL)                :: xmlfilename = nullstr               ! filename to obtain namelist info from
+  character(CL)                :: streamfilename = nullstr            ! filename to obtain stream info from
   character(CL)                :: nlfilename = nullstr                ! filename to obtain namelist info from
   character(CL)                :: dataMode = nullstr                  ! flags physics options wrt input data
   character(CL)                :: model_meshfile = nullstr            ! full pathname to model meshfile
@@ -273,8 +273,11 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Initialize stream data type if not aqua planet
-    xmlfilename = 'dwav.streams'//trim(inst_suffix)//'.xml'
-    call shr_strdata_init_from_xml(sdat, xmlfilename, model_mesh, clock, 'WAV', logunit, rc=rc)
+    streamfilename = 'dwav.streams'//trim(inst_suffix)
+#ifndef DISABLE_FoX
+    streamfilename = trim(streamfilename)//'.xml'
+#endif
+    call shr_strdata_init_from_config(sdat, streamfilename, model_mesh, clock, 'WAV', logunit, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_TraceRegionExit('dwav_strdata_init')
 

@@ -26,7 +26,7 @@ module atm_comp_nuopc
   use shr_cal_mod      , only : shr_cal_ymd2date, shr_cal_ymd2julian, shr_cal_date2julian
   use shr_mpi_mod      , only : shr_mpi_bcast
   use dshr_methods_mod , only : dshr_state_diagnose, chkerr, memcheck
-  use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_init_from_xml, shr_strdata_advance
+  use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_init_from_config, shr_strdata_advance
   use dshr_strdata_mod , only : shr_strdata_get_stream_pointer, shr_strdata_setOrbs
   use dshr_mod         , only : dshr_model_initphase, dshr_init
   use dshr_mod         , only : dshr_state_setscalar, dshr_set_runclock, dshr_log_clock_advance
@@ -111,7 +111,7 @@ module atm_comp_nuopc
 
   ! datm_in namelist input
   character(CL)                :: nlfilename = nullstr                ! filename to obtain namelist info from
-  character(CL)                :: xmlfilename = nullstr               ! filename to obtain namelist info from
+  character(CL)                :: streamfilename = nullstr            ! filename to obtain stream info from
   character(CL)                :: dataMode = nullstr                  ! flags physics options wrt input data
   character(CL)                :: model_meshfile = nullstr            ! full pathname to model meshfile
   character(CL)                :: model_maskfile = nullstr            ! full pathname to obtain mask from
@@ -392,8 +392,11 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Initialize stream data type
-    xmlfilename = 'datm.streams'//trim(inst_suffix)//'.xml'
-    call shr_strdata_init_from_xml(sdat, xmlfilename, model_mesh, clock, 'ATM', logunit, rc=rc)
+    streamfilename = 'datm.streams'//trim(inst_suffix)
+#ifndef DISABLE_FoX
+    streamfilename = trim(streamfilename)//'.xml'
+#endif
+    call shr_strdata_init_from_config(sdat, streamfilename, model_mesh, clock, 'ATM', logunit, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_TraceRegionExit('datm_strdata_init')
 

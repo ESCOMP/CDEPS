@@ -27,7 +27,7 @@ module ice_comp_nuopc
   use dshr_mod             , only : dshr_model_initphase, dshr_init, dshr_mesh_init
   use dshr_mod             , only : dshr_state_setscalar, dshr_set_runclock, dshr_log_clock_advance
   use dshr_methods_mod     , only : dshr_state_diagnose, chkerr, memcheck
-  use dshr_strdata_mod     , only : shr_strdata_type, shr_strdata_init_from_xml, shr_strdata_advance
+  use dshr_strdata_mod     , only : shr_strdata_type, shr_strdata_init_from_config, shr_strdata_advance
   use dshr_dfield_mod      , only : dfield_type, dshr_dfield_add, dshr_dfield_copy
   use dshr_fldlist_mod     , only : fldlist_type, dshr_fldlist_add, dshr_fldlist_realize
 
@@ -68,7 +68,7 @@ module ice_comp_nuopc
   character(*) , parameter     :: nullstr = 'null'
 
   ! dice_in namelist input
-  character(CL)                :: xmlfilename = nullstr               ! filename to obtain namelist info from
+  character(CL)                :: streamfilename = nullstr            ! filename to obtain stream info from
   character(CL)                :: nlfilename = nullstr                ! filename to obtain namelist info from
   character(CL)                :: dataMode                            ! flags physics options wrt input data
   character(CL)                :: model_meshfile = nullstr            ! full pathname to model meshfile
@@ -307,8 +307,11 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Initialize stream data type
-    xmlfilename = 'dice.streams'//trim(inst_suffix)//'.xml'
-    call shr_strdata_init_from_xml(sdat, xmlfilename, model_mesh, clock, 'ICE', logunit, rc=rc)
+    streamfilename = 'dice.streams'//trim(inst_suffix)
+#ifndef DISABLE_FoX
+    streamfilename = trim(streamfilename)//'.xml'
+#endif
+    call shr_strdata_init_from_config(sdat, streamfilename, model_mesh, clock, 'ICE', logunit, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_TraceRegionExit('dice_strdata_init')
 

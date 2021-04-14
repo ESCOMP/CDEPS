@@ -25,7 +25,7 @@ module rof_comp_nuopc
   use shr_mpi_mod      , only : shr_mpi_bcast
   use dshr_methods_mod , only : dshr_state_getfldptr, dshr_state_diagnose, chkerr, memcheck
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_advance, shr_strdata_get_stream_domain
-  use dshr_strdata_mod , only : shr_strdata_init_from_xml
+  use dshr_strdata_mod , only : shr_strdata_init_from_config
   use dshr_mod         , only : dshr_model_initphase, dshr_init
   use dshr_mod         , only : dshr_state_setscalar, dshr_set_runclock
   use dshr_mod         , only : dshr_restart_read, dshr_restart_write, dshr_mesh_init
@@ -61,7 +61,7 @@ module rof_comp_nuopc
   character(CL)                :: case_name                           ! case name
   character(*) , parameter     :: nullstr = 'null'
                                                                       ! drof_in namelist input
-  character(CL)                :: xmlfilename = nullstr               ! filename to obtain namelist info from
+  character(CL)                :: streamfilename = nullstr            ! filename to obtain stream info from
   character(CL)                :: nlfilename = nullstr                ! filename to obtain namelist info from
   character(CL)                :: dataMode = nullstr                  ! flags physics options wrt input data
   character(CL)                :: model_meshfile = nullstr            ! full pathname to model meshfile
@@ -285,8 +285,11 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Initialize stream data type
-    xmlfilename = 'drof.streams'//trim(inst_suffix)//'.xml'
-    call shr_strdata_init_from_xml(sdat, xmlfilename, model_mesh, clock, 'ROF', logunit, rc=rc)
+    streamfilename = 'drof.streams'//trim(inst_suffix)
+#ifndef DISABLE_FOX
+    streamfilename = trim(streamfilename)//'.xml'
+#endif
+    call shr_strdata_init_from_config(sdat, streamfilename, model_mesh, clock, 'ROF', logunit, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_TraceRegionExit('drof_strdata_init')
 
