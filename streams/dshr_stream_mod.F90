@@ -562,77 +562,73 @@ contains
 
     ! fill in non-default values for the streamdat attributes
     do i=1, nstrms
-      if( nstrms == 1 ) then
-        mystrm=''
-      else
-        write(mystrm,'("I2")') i
-      endif
-      call ESMF_ConfigGetAttribute(CF,value=streamdat(i)%taxmode,label="taxmode"//mystrm, rc=rc)
+      write(mystrm,"(I2.2)") i
+      call ESMF_ConfigGetAttribute(CF,value=streamdat(i)%taxmode,label="taxmode"//mystrm//':', rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-      call ESMF_ConfigGetAttribute(CF,value=streamdat(i)%mapalgo,label="mapalgo"//mystrm, rc=rc)
+      call ESMF_ConfigGetAttribute(CF,value=streamdat(i)%mapalgo,label="mapalgo"//mystrm//':', rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-      call ESMF_ConfigGetAttribute(CF,value=streamdat(i)%tInterpAlgo,label="tInterpAlgo"//mystrm, rc=rc)
+      call ESMF_ConfigGetAttribute(CF,value=streamdat(i)%tInterpAlgo,label="tInterpAlgo"//mystrm//':', rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-      call ESMF_ConfigGetAttribute(CF,value=streamdat(i)%readMode,label="readMode"//mystrm, rc=rc)
+      call ESMF_ConfigGetAttribute(CF,value=streamdat(i)%readMode,label="readMode"//mystrm//':', rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-      if( ESMF_ConfigGetLen(config=CF, label="yearFirst"//mystrm, rc=rc) > 0 ) then
-        call ESMF_ConfigGetAttribute(CF,value=streamdat(i)%yearFirst,label="yearFirst"//mystrm, rc=rc)
+      if( ESMF_ConfigGetLen(config=CF, label="yearFirst"//mystrm//':', rc=rc) > 0 ) then
+        call ESMF_ConfigGetAttribute(CF,value=streamdat(i)%yearFirst,label="yearFirst"//mystrm//':', rc=rc)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
       else
         call shr_sys_abort("yearFirst must be provided")
       endif
 
-      if( ESMF_ConfigGetLen(config=CF, label="yearLast"//mystrm, rc=rc) > 0 ) then
-        call ESMF_ConfigGetAttribute(CF,value=streamdat(i)%yearLast,label="yearLast"//mystrm, rc=rc)
+      if( ESMF_ConfigGetLen(config=CF, label="yearLast"//mystrm//':', rc=rc) > 0 ) then
+        call ESMF_ConfigGetAttribute(CF,value=streamdat(i)%yearLast,label="yearLast"//mystrm//':', rc=rc)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
       else
         call shr_sys_abort("yearLast must be provided")
       endif
 
-      if( ESMF_ConfigGetLen(config=CF, label="yearAlign"//mystrm, rc=rc) > 0 ) then
-        call ESMF_ConfigGetAttribute(CF,value=streamdat(i)%yearAlign,label="yearAlign"//mystrm, rc=rc)
+      if( ESMF_ConfigGetLen(config=CF, label="yearAlign"//mystrm//':', rc=rc) > 0 ) then
+        call ESMF_ConfigGetAttribute(CF,value=streamdat(i)%yearAlign,label="yearAlign"//mystrm//':', rc=rc)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
       else
         call shr_sys_abort("yearAlign must be provided")
       endif
 
-      call ESMF_ConfigGetAttribute(CF,value=streamdat(i)%dtlimit,label="dtlimit"//mystrm, rc=rc)
+      call ESMF_ConfigGetAttribute(CF,value=streamdat(i)%dtlimit,label="dtlimit"//mystrm//':', rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-      call ESMF_ConfigGetAttribute(CF,value=streamdat(i)%offset,label="stream_offset"//mystrm, rc=rc)
+      call ESMF_ConfigGetAttribute(CF,value=streamdat(i)%offset,label="stream_offset"//mystrm//':', rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-      if( ESMF_ConfigGetLen(config=CF, label="stream_mesh_file"//mystrm, rc=rc) > 0 ) then
-        call ESMF_ConfigGetAttribute(CF,value=streamdat(i)%meshfile,label="stream_mesh_file"//mystrm, rc=rc)
+      if( ESMF_ConfigGetLen(config=CF, label="stream_mesh_file"//mystrm//':', rc=rc) > 0 ) then
+        call ESMF_ConfigGetAttribute(CF,value=streamdat(i)%meshfile,label="stream_mesh_file"//mystrm//':', rc=rc)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
       else
         call shr_sys_abort("stream_mesh_file must be provided")
       endif
 
-      if( ESMF_ConfigGetLen(config=CF, label="stream_vectors"//mystrm, rc=rc) > 0 ) then
-        call ESMF_ConfigGetAttribute(CF,value=streamdat(i)%stream_vectors,label="stream_vectors"//mystrm, rc=rc)
+      if( ESMF_ConfigGetLen(config=CF, label="stream_vectors"//mystrm//':', rc=rc) > 0 ) then
+        call ESMF_ConfigGetAttribute(CF,value=streamdat(i)%stream_vectors,label="stream_vectors"//mystrm//':', rc=rc)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
       else
         call shr_sys_abort("stream_vectors must be provided")
       endif
 
-      if( ESMF_ConfigGetLen(config=CF, label="stream_lev_dimname"//mystrm, rc=rc) > 0 ) then
-        call ESMF_ConfigGetAttribute(CF,value=streamdat(i)%lev_dimname,label="stream_lev_dimname"//mystrm, rc=rc)
+      if( ESMF_ConfigGetLen(config=CF, label="stream_lev_dimname"//mystrm//':', rc=rc) > 0 ) then
+        call ESMF_ConfigGetAttribute(CF,value=streamdat(i)%lev_dimname,label="stream_lev_dimname"//mystrm//':', rc=rc)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
       else
         call shr_sys_abort("stream_lev_dimname must be provided")
       endif
 
       ! Get a list of stream file names
-      streamdat(i)%nfiles = ESMF_ConfigGetLen(config=CF, label="stream_data_files"//mystrm, rc=rc)
+      streamdat(i)%nfiles = ESMF_ConfigGetLen(config=CF, label="stream_data_files"//mystrm//':', rc=rc)
       if( streamdat(i)%nfiles > 0) then
         allocate(streamdat(i)%file( streamdat(i)%nfiles))
         allocate(strm_tmpstrings(streamdat(i)%nfiles))
-        call ESMF_ConfigGetAttribute(CF,valueList=strm_tmpstrings, label="stream_data_files"//mystrm, rc=rc)
+        call ESMF_ConfigGetAttribute(CF,valueList=strm_tmpstrings, label="stream_data_files"//mystrm//':', rc=rc)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
         do n=1,streamdat(i)%nfiles
           streamdat(i)%file(n)%name = trim(strm_tmpstrings(i))
@@ -643,11 +639,11 @@ contains
       endif
 
       ! Get name of stream variables in file and model
-      streamdat(i)%nvars = ESMF_ConfigGetLen(config=CF, label="stream_data_variables"//mystrm, rc=rc)
+      streamdat(i)%nvars = ESMF_ConfigGetLen(config=CF, label="stream_data_variables"//mystrm//':', rc=rc)
       if( streamdat(i)%nvars > 0) then
         allocate(streamdat(i)%varlist(streamdat(i)%nvars))
         allocate(strm_tmpstrings(streamdat(i)%nvars))
-        call ESMF_ConfigGetAttribute(CF,valueList=strm_tmpstrings,label="stream_data_variables"//mystrm, rc=rc)
+        call ESMF_ConfigGetAttribute(CF,valueList=strm_tmpstrings,label="stream_data_variables"//mystrm//':', rc=rc)
         do n=1, streamdat(i)%nvars
           streamdat(i)%varlist(n)%nameinfile = strm_tmpstrings(n)(1:index(trim(strm_tmpstrings(n)), " "))
           streamdat(i)%varlist(n)%nameinmodel = strm_tmpstrings(n)(index(trim(strm_tmpstrings(n)), " ", .true.)+1:)
