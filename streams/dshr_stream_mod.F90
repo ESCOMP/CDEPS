@@ -30,7 +30,9 @@ module dshr_stream_mod
   use pio              , only : file_desc_t, pio_inq_varid, iosystem_desc_t, pio_file_is_open
   use pio              , only : pio_nowrite, pio_inquire_dimension, pio_inquire_variable, pio_bcast_error
   use pio              , only : pio_get_att, pio_get_var
+#ifdef CESMCOUPLED
   use shr_pio_mod      , only : shr_pio_getiosys, shr_pio_getiotype, shr_pio_getioformat
+#endif
 
   implicit none
   private ! default private
@@ -120,7 +122,8 @@ module dshr_stream_mod
 contains
 !===============================================================================
 
-  subroutine shr_stream_init_from_xml(xmlfilename, streamdat, isroot_task, logunit, compname, rc)
+  subroutine shr_stream_init_from_xml(xmlfilename, streamdat, isroot_task, logunit, &
+                                      pio_subsystem, io_type, io_format, compname, rc)
 
     use FoX_DOM, only : extractDataContent, destroy, Node, NodeList, parseFile, getElementsByTagname
     use FoX_DOM, only : getLength, item
@@ -154,11 +157,14 @@ contains
     ! ---------------------------------------------------------------------
 
     ! input/output variables
-    type(shr_stream_streamType) , intent(inout), pointer :: streamdat(:)
-    integer                     , intent(in)             :: logunit
-    logical                     , intent(in)             :: isroot_task
-    character(len=*)            , intent(in)             :: compname
     character(len=*), optional  , intent(in)             :: xmlfilename
+    type(shr_stream_streamType) , intent(inout), pointer :: streamdat(:)
+    logical                     , intent(in)             :: isroot_task
+    integer                     , intent(in)             :: logunit
+    type(iosystem_desc_t)       , intent(in), pointer    :: pio_subsystem
+    integer                     , intent(in)             :: io_type
+    integer                     , intent(in)             :: io_format
+    character(len=*)            , intent(in)             :: compname
     integer                     , intent(out)            :: rc
 
     ! local variables
@@ -345,9 +351,16 @@ contains
        call ESMF_VMBroadCast(vm, rtmp, 1, 0, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        streamdat(i)%dtlimit = rtmp(1)
+#ifdef CESMCOUPLED
+       ! Initialize stream pio
        streamdat(i)%pio_subsystem => shr_pio_getiosys(trim(compname))
-       streamdat(i)%pio_iotype = shr_pio_getiotype(trim(compname))
-       streamdat(i)%pio_ioformat = shr_pio_getioformat(trim(compname))
+       streamdat(i)%pio_iotype    =  shr_pio_getiotype(trim(compname))
+       streamdat(i)%pio_ioformat  =  shr_pio_getioformat(trim(compname))
+#else
+       streamdat(i)%pio_subsystem => pio_subsystem
+       streamdat(i)%pio_iotype = io_type
+       streamdat(i)%pio_ioformat = io_format
+#endif
        call shr_stream_getCalendar(streamdat(i), 1, streamdat(i)%calendar)
 
        ! Error check
@@ -367,6 +380,7 @@ contains
   !===============================================================================
 
   subroutine shr_stream_init_from_inline(streamdat, &
+       pio_subsystem, io_type, io_format, &
        stream_meshfile, stream_lev_dimname, stream_mapalgo, &
        stream_yearFirst, stream_yearLast, stream_yearAlign, &
        stream_offset, stream_taxmode, stream_tintalgo, stream_dtlimit, &
@@ -380,6 +394,9 @@ contains
 
     ! input/output variables
     type(shr_stream_streamType) ,pointer, intent(inout)  :: streamdat(:)           ! data streams (assume 1 below)
+    type(iosystem_desc_t)       ,pointer, intent(in)     :: pio_subsystem          ! data structure required for pio operations
+    integer                     ,intent(in)              :: io_type                ! data format
+    integer                     ,intent(in)              :: io_format              ! netcdf format
     character(*)                ,intent(in)              :: stream_meshFile        ! full pathname to stream mesh file
     character(*)                ,intent(in)              :: stream_lev_dimname     ! name of vertical dimension in stream
     character(*)                ,intent(in)              :: stream_mapalgo         ! stream mesh -> model mesh mapping type
@@ -420,10 +437,16 @@ contains
     streamdat(1)%offset       = stream_offset
     streamdat(1)%taxMode      = trim(stream_taxMode)
     streamdat(1)%dtlimit      = stream_dtlimit
-
+#ifdef CESMCOUPLED
+    ! Initialize stream pio
     streamdat(1)%pio_subsystem => shr_pio_getiosys(trim(compname))
     streamdat(1)%pio_iotype    =  shr_pio_getiotype(trim(compname))
     streamdat(1)%pio_ioformat  =  shr_pio_getioformat(trim(compname))
+#else
+    streamdat(1)%pio_subsystem => pio_subsystem
+    streamdat(1)%pio_iotype = io_type
+    streamdat(1)%pio_ioformat = io_format
+#endif
 
     ! initialize stream filenames
     if (allocated(streamdat(1)%file)) then

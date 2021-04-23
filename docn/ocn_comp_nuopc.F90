@@ -11,13 +11,14 @@ module ocn_comp_nuopc
   use ESMF             , only : ESMF_Alarm, ESMF_MethodRemove, ESMF_MethodAdd
   use ESMF             , only : ESMF_GridCompSetEntryPoint, ESMF_ClockGetAlarm, ESMF_AlarmIsRinging
   use ESMF             , only : ESMF_StateGet, operator(+), ESMF_AlarmRingerOff, ESMF_LogWrite
+  use ESMF             , only : ESMF_Field, ESMF_FieldGet
   use NUOPC            , only : NUOPC_CompDerive, NUOPC_CompSetEntryPoint, NUOPC_CompSpecialize
   use NUOPC            , only : NUOPC_Advertise, NUOPC_CompAttributeGet
   use NUOPC_Model      , only : model_routine_SS        => SetServices
   use NUOPC_Model      , only : model_label_Advance     => label_Advance
   use NUOPC_Model      , only : model_label_SetRunClock => label_SetRunClock
   use NUOPC_Model      , only : model_label_Finalize    => label_Finalize
-  use NUOPC_Model      , only : NUOPC_ModelGet
+  use NUOPC_Model      , only : NUOPC_ModelGet, SetVM
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_sys_mod      , only : shr_sys_abort
   use shr_cal_mod      , only : shr_cal_ymd2date
@@ -53,7 +54,7 @@ module ocn_comp_nuopc
   private ! except
 
   public  :: SetServices
-
+  public  :: SetVM
   private :: InitializeAdvertise
   private :: InitializeRealize
   private :: ModelAdvance
@@ -86,7 +87,6 @@ module ocn_comp_nuopc
   character(CL)                :: datamode = nullstr                  ! flags physics options wrt input data
   character(CL)                :: model_meshfile = nullstr            ! full pathname to model meshfile
   character(CL)                :: model_maskfile = nullstr            ! full pathname to obtain mask from
-  character(CL)                :: model_createmesh_fromfile = nullstr ! full pathname to obtain mask from
   real(R8)                     :: sst_constant_value                  ! sst constant value
   integer                      :: aquap_option                        ! if aqua-planet mode, option to use
   character(CL)                :: restfilm = nullstr                  ! model restart file namelist
@@ -101,6 +101,7 @@ module ocn_comp_nuopc
   ! model mask and model fraction
   real(r8), pointer            :: model_frac(:) => null()
   integer , pointer            :: model_mask(:) => null()
+  logical                      :: valid_ocn = .true. ! used for single column logic
 
   ! constants
   logical                      :: aquaplanet = .false.
@@ -181,7 +182,7 @@ contains
     !-------------------------------------------------------------------------------
 
     namelist / docn_nml / datamode, &
-         model_meshfile, model_maskfile, model_createmesh_fromfile, &
+         model_meshfile, model_maskfile, &
          restfilm,  nx_global, ny_global, sst_constant_value
 
     rc = ESMF_SUCCESS
@@ -191,7 +192,7 @@ contains
 
     ! Obtain flds_scalar values, mpi values, multi-instance values and
     ! set logunit and set shr logging to my log file
-    call dshr_init(gcomp, mpicom, my_task, inst_index, inst_suffix, &
+    call dshr_init(gcomp, 'OCN', sdat, mpicom, my_task, inst_index, inst_suffix, &
          flds_scalar_name, flds_scalar_num, flds_scalar_index_nx, flds_scalar_index_ny, logunit, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
@@ -213,44 +214,17 @@ contains
        ! write namelist input to standard out
        write(logunit,F00)' case_name = ',trim(case_name)
        write(logunit,F00)' datamode  = ',trim(datamode)
-       if (model_createmesh_fromfile /= nullstr) then
-          write(logunit,F00)' model_create_meshfile_fromfile = ',trim(model_createmesh_fromfile)
-       else
-          write(logunit,F00)' model_meshfile = ',trim(model_meshfile)
-          write(logunit,F00)' model_maskfile = ',trim(model_maskfile)
-       end if
+       write(logunit,F00)' model_meshfile = ',trim(model_meshfile)
+       write(logunit,F00)' model_maskfile = ',trim(model_maskfile)
        write(logunit,F01)' nx_global = ',nx_global
        write(logunit,F01)' ny_global = ',ny_global
        write(logunit,F00)' restfilm = ',trim(restfilm)
-
-       ! check that files exists
-       if (model_createmesh_fromfile /= nullstr) then
-          inquire(file=trim(model_createmesh_fromfile), exist=exists)
-          if (.not.exists) then
-             write(logunit, *)' ERROR: model_createmesh_fromfile '//&
-                  trim(model_createmesh_fromfile)//' does not exist'
-             call shr_sys_abort(trim(subname)//' ERROR: model_createmesh_fromfile '//&
-                  trim(model_createmesh_fromfile)//' does not exist')
-          end if
-       else
-          inquire(file=trim(model_meshfile), exist=exists)
-          if (.not.exists) then
-             write(logunit, *)' ERROR: model_meshfile '//trim(model_meshfile)//' does not exist'
-             call shr_sys_abort(trim(subname)//' ERROR: model_meshfile '//trim(model_meshfile)//' does not exist')
-          end if
-          inquire(file=trim(model_maskfile), exist=exists)
-          if (.not.exists) then
-             write(logunit, *)' ERROR: model_maskfile '//trim(model_maskfile)//' does not exist'
-             call shr_sys_abort(trim(subname)//' ERROR: model_maskfile '//trim(model_maskfile)//' does not exist')
-          end if
-       end if
     endif
 
     ! Broadcast namelist input
     call shr_mpi_bcast(datamode                  , mpicom, 'datamode')
     call shr_mpi_bcast(model_meshfile            , mpicom, 'model_meshfile')
     call shr_mpi_bcast(model_maskfile            , mpicom, 'model_maskfile')
-    call shr_mpi_bcast(model_createmesh_fromfile , mpicom, 'model_createmesh_fromfile')
     call shr_mpi_bcast(nx_global                 , mpicom, 'nx_global')
     call shr_mpi_bcast(ny_global                 , mpicom, 'ny_global')
     call shr_mpi_bcast(restfilm                  , mpicom, 'restfilm')
@@ -309,12 +283,17 @@ contains
     integer, intent(out) :: rc
 
     ! local variables
-    type(ESMF_Time)                 :: currTime
-    integer                         :: current_ymd  ! model date
-    integer                         :: current_year ! model year
-    integer                         :: current_mon  ! model month
-    integer                         :: current_day  ! model day
-    integer                         :: current_tod  ! model sec into model date
+    type(ESMF_Time)        :: currTime
+    integer                :: current_ymd  ! model date
+    integer                :: current_year ! model year
+    integer                :: current_mon  ! model month
+    integer                :: current_day  ! model day
+    integer                :: current_tod  ! model sec into model date
+    type(ESMF_Field)       :: lfield
+    character(CL) ,pointer :: lfieldnamelist(:) => null()
+    integer                :: fieldcount
+    real(r8), pointer      :: fldptr(:)
+    integer                :: n
     character(len=*), parameter :: subname=trim(module_name)//':(InitializeRealize) '
     !-------------------------------------------------------------------------------
 
@@ -322,9 +301,8 @@ contains
 
     ! Initialize model mesh, restart flag, logunit, model_mask and model_frac
     call ESMF_TraceRegionEnter('docn_strdata_init')
-    call dshr_mesh_init(gcomp, nullstr, logunit, 'OCN', nx_global, ny_global, &
-         model_meshfile, model_maskfile, model_createmesh_fromfile, model_mesh, &
-         model_mask, model_frac, restart_read, rc=rc)
+    call dshr_mesh_init(gcomp, sdat, nullstr, logunit, 'OCN', nx_global, ny_global, &
+         model_meshfile, model_maskfile, model_mesh, model_mask, model_frac, restart_read, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Initialize stream data type if not aqua planet
@@ -344,6 +322,30 @@ contains
     call dshr_fldlist_realize( importState, fldsImport, flds_scalar_name, flds_scalar_num, model_mesh, &
          subname//trim(modelname)//':Import', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    ! for single column, the target point might not be a valid ocn point
+    if (size(model_mask) == 1 .and. model_mask(1) == 0) then
+       valid_ocn = .false.
+       call ESMF_StateGet(exportState, itemCount=fieldCount, rc=rc)
+       if (chkerr(rc,__LINE__,u_FILE_u)) return
+       allocate(lfieldnamelist(fieldCount))
+       call ESMF_StateGet(exportState, itemNameList=lfieldnamelist, rc=rc)
+       if (chkerr(rc,__LINE__,u_FILE_u)) return
+       do n = 1, fieldCount
+          if (trim(lfieldnamelist(n)) /= flds_scalar_name) then
+             call ESMF_StateGet(exportState, itemName=trim(lfieldnamelist(n)), field=lfield, rc=rc)
+             if (chkerr(rc,__LINE__,u_FILE_u)) return
+             call ESMF_FieldGet(lfield, farrayPtr=fldptr, rc=rc)
+             if (ChkErr(rc,__LINE__,u_FILE_u)) return
+             fldptr(:) = 0._r8
+          end if
+       enddo
+       deallocate(lfieldnamelist)
+       ! *******************
+       ! *** RETURN HERE ***
+       ! *******************
+       RETURN
+    end if
 
     ! Get the time to interpolate the stream data to
     call ESMF_ClockGet(clock, currTime=currTime, rc=rc)
@@ -386,7 +388,12 @@ contains
     character(len=*),parameter :: subname=trim(module_name)//':(ModelAdvance) '
     !-------------------------------------------------------------------------------
 
+
     rc = ESMF_SUCCESS
+
+    if (.not. valid_ocn) then
+       RETURN
+    end if
 
     call memcheck(subname, 5, my_task == master_task)
 

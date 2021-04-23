@@ -61,8 +61,17 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     config['dwav_mode'] = dwav_mode
 
     # do not allow single column mode for dwav
-    expect(not case.get_value('PTS_MODE'),
-           "for, DWAV single column mode is not allowed")
+    if case.get_value('PTS_LON'):
+        scol_lon = float(case.get_value('PTS_LON'))
+    else: 
+        scol_lon = -999.
+    if case.get_value('PTS_LAT'):
+        scol_lat = float(case.get_value('PTS_LAT'))
+    else:
+        scol_lat = -999.
+    if (scol_lon > -999. and scol_lat > 999.):
+        expect(False,
+               "single column mode for DWAV is not currently allowed")
 
     # Initialize nmlgen
     nmlgen.init_defaults(infile, config)

@@ -211,7 +211,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo> 
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
@@ -243,7 +242,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
@@ -279,7 +277,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
@@ -304,7 +301,7 @@
 
   <stream_entry name="CLMCRUNCEPv7.Solar">
     <stream_meshfile>
-      <meshfile>$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.cruncep_qianFill.0.5d.v7.c160715/clmforc.cruncep.V7.c2016.0.5d.ESMFmesh_260520.nc</meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.cruncep_qianFill.0.5d.v7.c160715/clmforc.cruncep.V7.cdf5.c2016.0.5d.ESMFmesh_c210330.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
       <file first_year="1901" last_year="2016">$DIN_LOC_ROOT_CLMFORC/atm_forcing.datm7.cruncep_qianFill.0.5d.v7.c160715/Solar6Hrly/clmforc.cruncep.V7.c2016.0.5d.Solr.%ym.nc</file>
@@ -335,7 +332,7 @@
 
   <stream_entry name="CLMCRUNCEPv7.Precip">
     <stream_meshfile>
-      <meshfile>$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.cruncep_qianFill.0.5d.v7.c160715/clmforc.cruncep.V7.c2016.0.5d.ESMFmesh_260520.nc</meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.cruncep_qianFill.0.5d.v7.c160715/clmforc.cruncep.V7.cdf5.c2016.0.5d.ESMFmesh_c210330.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
       <file first_year="1901" last_year="2016">$DIN_LOC_ROOT_CLMFORC/atm_forcing.datm7.cruncep_qianFill.0.5d.v7.c160715/Precip6Hrly/clmforc.cruncep.V7.c2016.0.5d.Prec.%ym.nc</file>
@@ -366,7 +363,7 @@
 
   <stream_entry name="CLMCRUNCEPv7.TPQW">
     <stream_meshfile>
-      <meshfile>$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.cruncep_qianFill.0.5d.v7.c160715/clmforc.cruncep.V7.c2016.0.5d.ESMFmesh_260520.nc</meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.cruncep_qianFill.0.5d.v7.c160715/clmforc.cruncep.V7.cdf5.c2016.0.5d.ESMFmesh_c210330.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
       <file first_year="1901" last_year="2016">$DIN_LOC_ROOT_CLMFORC/atm_forcing.datm7.cruncep_qianFill.0.5d.v7.c160715/TPHWL6Hrly/clmforc.cruncep.V7.c2016.0.5d.TPQWL.%ym.nc</file>
@@ -380,7 +377,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
@@ -416,7 +412,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
@@ -448,7 +443,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
@@ -483,7 +477,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
@@ -519,7 +512,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
@@ -551,7 +543,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
@@ -586,7 +577,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
@@ -611,7 +601,7 @@
 
   <stream_entry name="CLMNLDAS2.Solar">
     <stream_meshfile>
-      <meshfile>$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.NLDAS2.0.125d.v1/ctsmforc.NLDAS2.0.125d.v1.ESMFmesh_120620.nc</meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.NLDAS2.0.125d.v1/ctsmforc.NLDAS2.cdf5.0.125d.v1.ESMFmesh_120620_c210330.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
       <file first_year="1980" last_year="2018">$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.NLDAS2.0.125d.v1/Solar/ctsmforc.NLDAS2.0.125d.v1.Solr.%ym.nc</file>
@@ -642,7 +632,7 @@
 
   <stream_entry name="CLMNLDAS2.Precip">
     <stream_meshfile>
-      <meshfile>$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.NLDAS2.0.125d.v1/ctsmforc.NLDAS2.0.125d.v1.ESMFmesh_120620.nc</meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.NLDAS2.0.125d.v1/ctsmforc.NLDAS2.cdf5.0.125d.v1.ESMFmesh_120620_c210330.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
       <file first_year="1980" last_year="2018">$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.NLDAS2.0.125d.v1/Precip/ctsmforc.NLDAS2.0.125d.v1.Prec.%ym.nc</file>
@@ -673,7 +663,7 @@
 
   <stream_entry name="CLMNLDAS2.TPQW">
     <stream_meshfile>
-      <meshfile>$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.NLDAS2.0.125d.v1/ctsmforc.NLDAS2.0.125d.v1.ESMFmesh_120620.nc</meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.NLDAS2.0.125d.v1/ctsmforc.NLDAS2.cdf5.0.125d.v1.ESMFmesh_120620_c210330.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
       <file first_year="1980" last_year="2018">$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.NLDAS2.0.125d.v1/TPQWL/ctsmforc.NLDAS2.0.125d.v1.TPQWL.%ym.nc</file>
@@ -862,7 +852,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>1979</stream_year_align>
@@ -894,7 +883,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>1979</stream_year_align>
@@ -926,7 +914,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>1979</stream_year_align>
@@ -951,7 +938,7 @@
 
   <stream_entry name="Anomaly.Forcing.Precip">
     <stream_meshfile>
-      <meshfile>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/domain.permafrostRCN_P2.c2013.nc/domain.permafrostRCN_P2_ESMFmesh_120620.nc</meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/domain.permafrostRCN_P2.c2013.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
       <file>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/af.pr.ccsm4.rcp45.2006-2300.nc</file>
@@ -962,7 +949,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2006</stream_year_align>
@@ -983,7 +969,7 @@
 
   <stream_entry name="Anomaly.Forcing.Temperature">
     <stream_meshfile>
-      <meshfile>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/domain.permafrostRCN_P2.c2013.nc/domain.permafrostRCN_P2_ESMFmesh_120620.nc</meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/domain.permafrostRCN_P2.c2013.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
       <file>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/af.tas.ccsm4.rcp45.2006-2300.nc</file>
@@ -994,7 +980,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2006</stream_year_align>
@@ -1015,7 +1000,7 @@
 
   <stream_entry name="Anomaly.Forcing.Pressure">
     <stream_meshfile>
-      <meshfile>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/domain.permafrostRCN_P2.c2013.nc/domain.permafrostRCN_P2_ESMFmesh_120620.nc</meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/domain.permafrostRCN_P2.c2013.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
       <file>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/af.ps.ccsm4.rcp45.2006-2300.nc</file>
@@ -1026,7 +1011,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2006</stream_year_align>
@@ -1047,7 +1031,7 @@
 
   <stream_entry name="Anomaly.Forcing.Humidity">
     <stream_meshfile>
-      <meshfile>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/domain.permafrostRCN_P2.c2013.nc/domain.permafrostRCN_P2_ESMFmesh_120620.nc</meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/domain.permafrostRCN_P2.c2013.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
       <file>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/af.huss.ccsm4.rcp45.2006-2300.nc</file>
@@ -1058,7 +1042,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2006</stream_year_align>
@@ -1079,7 +1062,7 @@
 
   <stream_entry name="Anomaly.Forcing.Uwind">
     <stream_meshfile>
-      <meshfile>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/domain.permafrostRCN_P2.c2013.nc/domain.permafrostRCN_P2_ESMFmesh_120620.nc</meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/domain.permafrostRCN_P2.c2013.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
       <file>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/af.uas.ccsm4.rcp45.2006-2300.nc</file>
@@ -1090,7 +1073,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2006</stream_year_align>
@@ -1111,7 +1093,7 @@
 
   <stream_entry name="Anomaly.Forcing.Vwind">
     <stream_meshfile>
-      <meshfile>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/domain.permafrostRCN_P2.c2013.nc/domain.permafrostRCN_P2_ESMFmesh_120620.nc</meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/domain.permafrostRCN_P2.c2013.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
       <file>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/af.vas.ccsm4.rcp45.2006-2300.nc</file>
@@ -1122,7 +1104,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2006</stream_year_align>
@@ -1143,7 +1124,7 @@
 
   <stream_entry name="Anomaly.Forcing.Shortwave">
     <stream_meshfile>
-      <meshfile>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/domain.permafrostRCN_P2.c2013.nc/domain.permafrostRCN_P2_ESMFmesh_120620.nc</meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/domain.permafrostRCN_P2.c2013.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
       <file>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/af.rsds.ccsm4.rcp45.2006-2300.nc</file>
@@ -1154,7 +1135,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2006</stream_year_align>
@@ -1175,7 +1155,7 @@
 
   <stream_entry name="Anomaly.Forcing.Longwave">
     <stream_meshfile>
-      <meshfile>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/domain.permafrostRCN_P2.c2013.nc/domain.permafrostRCN_P2_ESMFmesh_120620.nc</meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/domain.permafrostRCN_P2.c2013.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
       <file>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/af.rlds.ccsm4.rcp45.2006-2300.nc</file>
@@ -1186,7 +1166,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2006</stream_year_align>
@@ -1224,7 +1203,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1256,7 +1234,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1293,7 +1270,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1329,7 +1305,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1361,7 +1336,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1393,7 +1367,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1425,7 +1398,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1457,7 +1429,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1489,7 +1460,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1521,7 +1491,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1553,7 +1522,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1585,7 +1553,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1617,7 +1584,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1650,7 +1616,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1683,7 +1648,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1716,7 +1680,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1749,7 +1712,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1784,7 +1746,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1819,7 +1780,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1854,7 +1814,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1889,7 +1848,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1924,7 +1882,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1959,7 +1916,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -1991,7 +1947,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -2018,6 +1973,258 @@
   <!-- fill this in -->
   <!-- </stream_entry> -->
 
+  <!-- ================================ -->
+  <!-- datm_mode CORE2_IAF_JRA_1p4_2018 -->
+  <!-- ================================ -->
+
+  <stream_entry name="CORE_IAF_JRA_1p4_2018.GCGCS.PREC">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1958" last_year="2018">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap/JRA.v1.3.prec.TL319.%y.190528.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>prec  Faxa_prec</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1958</stream_year_first>
+    <stream_year_last>2018</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE_IAF_JRA_1p4_2018.GISS.LWDN">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1958" last_year="2018">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap/JRA.v1.3.lwdn.TL319.%y.190528.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>lwdn  Faxa_lwdn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1958</stream_year_first>
+    <stream_year_last>2018</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE_IAF_JRA_1p4_2018.GISS.SWDN">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1958" last_year="2018">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap/JRA.v1.3.swdn.TL319.%y.190528.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>swdn  Faxa_swdn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1958</stream_year_first>
+    <stream_year_last>2018</stream_year_last>
+    <stream_offset>-5400</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>coszen</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE_IAF_JRA_1p4_2018.NCEP.Q_10">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1958" last_year="2018">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap/JRA.v1.3.q_10.TL319.%y.190528.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>q_10  Sa_shum</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1958</stream_year_first>
+    <stream_year_last>2018</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE_IAF_JRA_1p4_2018.NCEP.SLP_">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1958" last_year="2018">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap/JRA.v1.3.slp.TL319.%y.190528.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>slp   Sa_pslv</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1958</stream_year_first>
+    <stream_year_last>2018</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE_IAF_JRA_1p4_2018.NCEP.T_10">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1958" last_year="2018">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap/JRA.v1.3.t_10.TL319.%y.190528.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>t_10  Sa_tbot</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1958</stream_year_first>
+    <stream_year_last>2018</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE_IAF_JRA_1p4_2018.NCEP.U_10">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1958" last_year="2018">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap/JRA.v1.3.u_10.TL319.%y.190528.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>u_10  Sa_u</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1958</stream_year_first>
+    <stream_year_last>2018</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE_IAF_JRA_1p4_2018.NCEP.V_10">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1958" last_year="2018">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap/JRA.v1.3.v_10.TL319.%y.190528.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>v_10  Sa_v</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>u:v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1958</stream_year_first>
+    <stream_year_last>2018</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
   <!-- ===================     -->
   <!-- datm_mode CORE2_IAF_JRA -->
   <!-- ===================     -->
@@ -2035,7 +2242,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -2067,7 +2273,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -2099,7 +2304,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -2131,7 +2335,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -2163,7 +2366,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -2195,7 +2397,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -2227,7 +2428,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -2259,7 +2459,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>u:v</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -2274,38 +2473,6 @@
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-    </stream_dtlimit>
-    <stream_readmode>single</stream_readmode>
-  </stream_entry>
-
-  <stream_entry name="CORE_IAF_JRA.CORE2.ArcFactor">
-    <stream_meshfile>
-      <meshfile>$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc</meshfile>
-    </stream_meshfile>
-    <stream_datafiles>
-      <file>$DIN_LOC_ROOT/atm/datm7/CORE2/CORE2.t_10.ArcFactor.T62.1997-2004.nc</file>
-    </stream_datafiles>
-    <stream_datavars>
-      <var>TarcFactor tarcf</var>
-    </stream_datavars>
-    <stream_lev_dimname>null</stream_lev_dimname>
-    <stream_mapalgo>
-      <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
-    </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
-    <stream_year_align>1</stream_year_align>
-    <stream_year_first>1958</stream_year_first>
-    <stream_year_last>2016</stream_year_last>
-    <stream_offset>0</stream_offset>
-    <stream_tintalgo>
-      <tintalgo>linear</tintalgo>
-    </stream_tintalgo>
-    <stream_taxmode>
-      <taxmode>cycle</taxmode>
-    </stream_taxmode>
-    <stream_dtlimit>
-      <dtlimit>1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -2361,7 +2528,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <!-- <stream_vectors>u:v taux:tauy</stream_vectors> -->
     <stream_vectors>u:v</stream_vectors>
@@ -2493,7 +2659,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>none</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -2525,7 +2690,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>none</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -2557,7 +2721,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>none</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -2589,7 +2752,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>none</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -2621,7 +2783,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>none</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -2653,7 +2814,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>none</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -2685,7 +2845,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>none</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -2717,7 +2876,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>none</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -2749,7 +2907,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>none</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -2781,7 +2938,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>none</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -2813,7 +2969,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>none</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -2845,7 +3000,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>none</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -2877,7 +3031,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>none</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -2909,7 +3062,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>none</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -2941,7 +3093,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>none</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -2973,7 +3124,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>none</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -3022,7 +3172,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -3069,7 +3218,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -3116,7 +3264,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
@@ -3163,7 +3310,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>1849</stream_year_align>
@@ -3210,7 +3356,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -3257,7 +3402,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -3304,7 +3448,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -3351,7 +3494,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -3398,7 +3540,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>2015</stream_year_align>
@@ -3435,7 +3576,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
@@ -3479,7 +3619,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
@@ -3514,7 +3653,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
@@ -3550,7 +3688,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
@@ -3590,7 +3727,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
@@ -3623,7 +3759,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
@@ -3659,7 +3794,6 @@
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
-      <mapalgo model_grid="1x1">nn</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>

@@ -401,12 +401,12 @@ contains
           e = strm_rh(n) * 0.01_r8 * datm_esat(tbot,tbot)
           qsat = (0.622_r8 * e)/(pbot - 0.378_r8 * e)
           Sa_shum(n) = qsat
-          if (associated(strm_rh_16O) .and. associated(strm_rh_18O) .and. associated(strm_rh_HDO)) then
+!          if (associated(strm_rh_16O) .and. associated(strm_rh_18O) .and. associated(strm_rh_HDO)) then
              ! for isotopic tracer specific humidity, expect a delta, just keep the delta from the input file
-             Sa_shum_wiso(1,n) = strm_rh_16O(n)
-             Sa_shum_wiso(2,n) = strm_rh_18O(n)
-             Sa_shum_wiso(3,n) = strm_rh_HDO(n)
-          end if
+!             Sa_shum_wiso(1,n) = strm_rh_16O(n)
+!             Sa_shum_wiso(2,n) = strm_rh_18O(n)
+!             Sa_shum_wiso(3,n) = strm_rh_HDO(n)
+!          end if
        else if (associated(strm_tdew)) then
           if (tdewmax < 50.0_r8) strm_tdew(n) = strm_tdew(n) + tkFrz
           e = datm_esat(strm_tdew(n),tbot)
