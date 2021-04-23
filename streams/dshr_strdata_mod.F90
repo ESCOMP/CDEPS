@@ -940,7 +940,6 @@ contains
        ! ---------------------------------------------------------
 
        do ns = 1,nstreams
-
           if (trim(sdat%stream(ns)%tinterpalgo) == 'coszen') then
 
              ! Determine stream lower bound index
