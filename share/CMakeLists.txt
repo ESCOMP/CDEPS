@@ -24,6 +24,11 @@ target_include_directories (cdeps_share PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${ES
 install(TARGETS cdeps_share
         LIBRARY DESTINATION lib)
 #===== genf90 =====
+if(IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/genf90")
+  message(STATUS "genf90 library is already checked out!")
+  message(STATUS "genf90 source dir: ${CMAKE_CURRENT_SOURCE_DIR}/genf90")
+  set(GENF90_PATH ${CMAKE_CURRENT_SOURCE_DIR}/genf90)
+endif()
 if (DEFINED GENF90_PATH)
   add_custom_target(genf90
     DEPENDS ${GENF90_PATH}/genf90.pl)

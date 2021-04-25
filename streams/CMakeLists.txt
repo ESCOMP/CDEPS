@@ -23,7 +23,8 @@ if(BLD_STANDALONE)
   add_dependencies(streams cdeps_share)
 endif()
 
-target_include_directories (streams PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/../build/_deps/fox-src/include)
+
+target_include_directories (streams PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/../fox/include)
 target_include_directories (streams PRIVATE ${ESMF_F90COMPILEPATHS})
 target_include_directories (streams PRIVATE ${PIO_Fortran_INCLUDE_DIR})
 target_include_directories (streams PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/../share)
