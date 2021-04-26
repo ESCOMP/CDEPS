@@ -37,6 +37,9 @@
       <value datm_mode="1PT" model_grid="1x1_urbanc_alpha">
         1PT.urbanc_alpha
       </value>
+      <value datm_mode="1PT" model_grid="CLM_USRDAT" neon="True">
+        NEON.$NEONSITE
+      </value>
       <value datm_mode="CORE2_NYF" >
         CORE2_NYF.GISS,CORE2_NYF.GXGXS,CORE2_NYF.NCEP
       </value>
@@ -65,7 +68,7 @@
     <type>char</type>
     <category>datm</category>
     <group>datm_nml</group>
-    <valid_values>CLMNCEP,CORE2_NYF,CORE2_IAF,CORE_IAF_JRA,ERA5,CPLHIST</valid_values>
+    <valid_values>CLMNCEP,CORE2_NYF,CORE2_IAF,CORE_IAF_JRA,ERA5,CPLHIST,1PT</valid_values>
     <desc>
       general method that operates on the data.
       ----datamode = "CPLHIST"----
@@ -99,6 +102,7 @@
       active-land-only simulations.
       ----datamode = "ERA5"----
       Fifth generation ECMWF atmospheric reanalysis of the global climate
+      ----datamode = "CPLHIST" ----
     </desc>
     <values>
       <value datm_mode="CLM">
@@ -107,13 +111,10 @@
       <value datm_mode="1PT">
         CLMNCEP
       </value>
-      <value datm_mode="CORE2_NYF">
-        CORE2_NYF
-      </value>
       <value datm_mode="CORE2_IAF">
         CORE2_IAF
       </value>
-      <value datm_mode="CORE_IAF_JRA" >
+      <value datm_mode="CORE_IAF_JRA">
         CORE_IAF_JRA
       </value>
       <value datm_mode="ERA5">
@@ -121,6 +122,9 @@
       </value>
       <value datm_mode="CPLHIST">
         CPLHIST
+      </value>
+      <value>
+        $DATM_MODE
       </value>
     </values>
   </entry>
@@ -135,7 +139,7 @@
     </desc>
     <values>
       <value>$ATM_DOMAIN_MESH</value>
-      <value single_column='true'>null</value> 
+      <value single_column='true'>null</value>
     </values>
   </entry>
 
@@ -149,7 +153,7 @@
     </desc>
     <values>
       <value>$ATM_DOMAIN_MESH</value>
-      <value single_column='true'>null</value> 
+      <value single_column='true'>null</value>
     </values>
   </entry>
 
@@ -162,7 +166,7 @@
     </desc>
     <values>
       <value>$ATM_NX</value>
-      <value single_column='true'>1</value> 
+      <value single_column='true'>1</value>
     </values>
   </entry>
 
@@ -175,7 +179,7 @@
     </desc>
     <values>
       <value>$ATM_NY</value>
-      <value single_column='true'>1</value> 
+      <value single_column='true'>1</value>
     </values>
   </entry>
 

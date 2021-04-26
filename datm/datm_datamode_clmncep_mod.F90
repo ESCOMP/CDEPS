@@ -349,6 +349,9 @@ contains
        rtmp = maxval(Sa_tbot(:))
        call shr_mpi_max(rtmp, tbotmax, mpicom, 'datm_tbot', all=.true.)
        write(logunit,*) trim(subname),' tbotmax = ',tbotmax
+       if(tbotmax <= 0) then
+          call shr_sys_abort(subname//'ERROR: bad value in tbotmax')
+       endif
 
        ! determine anidrmax (see below for use)
        if (atm_prognostic) then

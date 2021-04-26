@@ -69,14 +69,20 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
 
     # Initialize namelist defaults
     config = {}
-    config['model_grid'] = model_grid
+    if 'CLM_USRDAT' in model_grid:
+        config['model_grid'] = 'CLM_USRDAT'
+        if case.get_value("NEONSITE"):
+            config['neon'] = "True"
+    else:
+        config['model_grid'] = model_grid
+
     config['datm_mode'] = datm_mode
     config['datm_co2_tseries'] = datm_co2_tseries
     config['datm_presaero'] = datm_presaero
 
     if case.get_value('PTS_LON'):
         scol_lon = float(case.get_value('PTS_LON'))
-    else: 
+    else:
         scol_lon = -999.
     if case.get_value('PTS_LAT'):
         scol_lat = float(case.get_value('PTS_LAT'))
