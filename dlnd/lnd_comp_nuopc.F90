@@ -17,7 +17,7 @@ module lnd_comp_nuopc
   use NUOPC_Model       , only : model_label_Advance     => label_Advance
   use NUOPC_Model       , only : model_label_SetRunClock => label_SetRunClock
   use NUOPC_Model       , only : model_label_Finalize    => label_Finalize
-  use NUOPC_Model       , only : NUOPC_ModelGet
+  use NUOPC_Model       , only : NUOPC_ModelGet, SetVM
   use shr_kind_mod      , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_sys_mod       , only : shr_sys_abort
   use shr_cal_mod       , only : shr_cal_ymd2date
@@ -36,7 +36,7 @@ module lnd_comp_nuopc
   private ! except
 
   public  :: SetServices
-
+  public  :: SetVM
   private :: InitializeAdvertise
   private :: InitializeRealize
   private :: ModelAdvance
@@ -69,7 +69,6 @@ module lnd_comp_nuopc
   character(CL)            :: dataMode = nullstr                  ! flags physics options wrt input data
   character(CL)            :: model_meshfile = nullstr            ! full pathname to model meshfile
   character(CL)            :: model_maskfile = nullstr            ! full pathname to obtain mask from
-  character(CL)            :: model_createmesh_fromfile = nullstr ! full pathname to obtain mask from
   character(CL)            :: streamfilename                      ! filename to obtain stream info from
   character(CL)            :: nlfilename = nullstr                ! filename to obtain namelist info from
   logical                  :: force_prognostic_true = .false.     ! if true set prognostic true
@@ -165,7 +164,7 @@ contains
     character(*)     , parameter :: F02 = "('(lnd_comp_nuopc) ',a,l6)"
     !-------------------------------------------------------------------------------
 
-    namelist / dlnd_nml / datamode, model_meshfile, model_maskfile, model_createmesh_fromfile, &
+    namelist / dlnd_nml / datamode, model_meshfile, model_maskfile, &
          nx_global, ny_global, restfilm, force_prognostic_true
 
     rc = ESMF_SUCCESS
@@ -197,7 +196,6 @@ contains
     call shr_mpi_bcast(datamode                  , mpicom, 'datamode')
     call shr_mpi_bcast(model_meshfile            , mpicom, 'model_meshfile')
     call shr_mpi_bcast(model_maskfile            , mpicom, 'model_maskfile')
-    call shr_mpi_bcast(model_createmesh_fromfile , mpicom, 'model_createmesh_fromfile')
     call shr_mpi_bcast(nx_global                 , mpicom, 'nx_global')
     call shr_mpi_bcast(ny_global                 , mpicom, 'ny_global')
     call shr_mpi_bcast(restfilm                  , mpicom, 'restfilm')
@@ -205,41 +203,13 @@ contains
 
     ! write namelist input to standard out
     if (my_task == master_task) then
-       if (model_createmesh_fromfile /= nullstr) then
-          write(logunit,F00)' model_create_meshfile_fromfile = ',trim(model_createmesh_fromfile)
-       else
-          write(logunit,F00)' model_meshfile = ',trim(model_meshfile)
-          write(logunit,F00)' model_maskfile = ',trim(model_maskfile)
-       end if
+       write(logunit,F00)' model_meshfile = ',trim(model_meshfile)
+       write(logunit,F00)' model_maskfile = ',trim(model_maskfile)
        write(logunit ,*)' datamode              = ',datamode
        write(logunit ,*)' nx_global             = ',nx_global
        write(logunit ,*)' ny_global             = ',ny_global
        write(logunit ,*)' restfilm              = ',trim(restfilm)
        write(logunit ,*)' force_prognostic_true = ',force_prognostic_true
-    endif
-
-    ! Check that files exists
-    if (my_task == master_task) then
-       if (model_createmesh_fromfile /= nullstr) then
-          inquire(file=trim(model_createmesh_fromfile), exist=exists)
-          if (.not.exists) then
-             write(logunit, *)' ERROR: model_createmesh_fromfile '//&
-                  trim(model_createmesh_fromfile)//' does not exist'
-             call shr_sys_abort(trim(subname)//' ERROR: model_createmesh_fromfile '//&
-                  trim(model_createmesh_fromfile)//' does not exist')
-          end if
-       else
-          inquire(file=trim(model_meshfile), exist=exists)
-          if (.not.exists) then
-             write(logunit, *)' ERROR: model_meshfile '//trim(model_meshfile)//' does not exist'
-             call shr_sys_abort(trim(subname)//' ERROR: model_meshfile '//trim(model_meshfile)//' does not exist')
-          end if
-          inquire(file=trim(model_maskfile), exist=exists)
-          if (.not.exists) then
-             write(logunit, *)' ERROR: model_maskfile '//trim(model_maskfile)//' does not exist'
-             call shr_sys_abort(trim(subname)//' ERROR: model_maskfile '//trim(model_maskfile)//' does not exist')
-          end if
-       end if
     endif
 
     ! Validate sdat datamode
@@ -283,13 +253,12 @@ contains
     ! Initialize sdat
     call ESMF_TraceRegionEnter('dlnd_strdata_init')
     call dshr_mesh_init(gcomp, sdat, nullstr, logunit, 'LND', nx_global, ny_global, &
-         model_meshfile, model_maskfile, model_createmesh_fromfile, model_mesh, &
-         model_mask, model_frac, restart_read, rc=rc)
+         model_meshfile, model_maskfile, model_mesh, model_mask, model_frac, restart_read, rc=rc)
 
     ! Initialize stream data type
     streamfilename = 'dlnd.streams'//trim(inst_suffix)
 #ifndef DISABLE_FoX
-    streamfilename = trim(streamfilename)'.xml'
+    streamfilename = trim(streamfilename)//'.xml'
 #endif
     call shr_strdata_init_from_config(sdat, streamfilename, model_mesh, clock, 'LND', logunit, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return

@@ -114,11 +114,9 @@
     <stream_meshfile>
       <meshfile model_grid="_oi%1.9x2.5">$DIN_LOC_ROOT/share/meshes/fv1.9x2.5_141008_ESMFmesh.nc</meshfile>
       <meshfile model_grid="_oi%0.9x1.25">$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
-      <meshfile>$DIN_LOC_ROOT/share/meshes/fv1.9x2.5_141008_ESMFmesh.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file model_grid="oi%1.9x2.5" >$DIN_LOC_ROOT/ocn/docn7/SOM/default.som.forcing.aquaplanet.Qflux0_h30_sstQOBS.2degFV_c20170421.nc</file>
-      <file model_grid="oi%0.9x1.25">$DIN_LOC_ROOT/ocn/docn7/SOM/default.som.forcing.aquaplanet.Qflux0_h30_sstQOBS.1degFV_c20170421.nc</file>
+      <file>$DOCN_SOMAQP_DATAFILE</file>
     </stream_datafiles>
     <stream_datavars>
       <var>T     So_t</var>

@@ -51,7 +51,6 @@
     </desc>
     <values>
       <value>$ROF_DOMAIN_MESH</value>
-      <value create_mesh='true'>null</value>
     </values>
   </entry>
 
@@ -65,20 +64,6 @@
     </desc>
     <values>
       <value>$ROF_DOMAIN_MESH</value>
-    </values>
-  </entry>
-
-  <entry id="model_createmesh_fromfile">
-    <type>char</type>
-    <category>streams</category>
-    <input_pathname>abs</input_pathname>
-    <group>drof_nml</group>
-    <desc>
-      file specifying model mesh
-    </desc>
-    <values>
-      <value>null</value>
-      <value create_mesh='true'>$ROF_DOMAIN_PATH/$ROF_DOMAIN_FILE</value>
     </values>
   </entry>
 

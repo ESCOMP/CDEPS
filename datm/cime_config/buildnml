@@ -69,15 +69,30 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
 
     # Initialize namelist defaults
     config = {}
-    config['model_grid'] = model_grid
+    if 'CLM_USRDAT' in model_grid:
+        config['model_grid'] = 'CLM_USRDAT'
+        if case.get_value("NEONSITE"):
+            config['neon'] = "True"
+    else:
+        config['model_grid'] = model_grid
+
     config['datm_mode'] = datm_mode
     config['datm_co2_tseries'] = datm_co2_tseries
     config['datm_presaero'] = datm_presaero
-    config['cime_model'] = get_model()
-    if case.get_value('PTS_MODE'):
-        config['mode'] = 'single_column'
+
+    if case.get_value('PTS_LON'):
+        scol_lon = float(case.get_value('PTS_LON'))
     else:
-        config['mode'] = case.get_value("ATM_DOMAIN_MESH")
+        scol_lon = -999.
+    if case.get_value('PTS_LAT'):
+        scol_lat = float(case.get_value('PTS_LAT'))
+    else:
+        scol_lat = -999.
+    if case.get_value('ATM_DOMAIN_FILE'):
+        if scol_lon > -999. and scol_lat > -999. and case.get_value("ATM_DOMAIN_FILE") != "UNSET":
+            config['single_column'] = 'true'
+        else:
+            config['single_column'] = 'false'
 
     nmlgen.init_defaults(infile, config)
 
