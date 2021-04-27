@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 include(ExternalProject)
+include(FetchContent)
 
 if (DEFINED CIMEROOT)
   message("Using CIME in ${CIMEROOT} with compiler ${COMPILER}")
@@ -55,10 +56,28 @@ if(BLD_STANDALONE)
 endif()
 if("${COMPILER}" STREQUAL "nag")
   set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -D__NAG__")
-endif()
-add_subdirectory(fox)
+endif()     
 add_subdirectory(streams)
 add_subdirectory(dshr)
+
+if(IS_DIRECTORY "${PROJECT_SOURCE_DIR}/fox")
+  message(STATUS "FoX library is already checked out!")
+  message(STATUS "FoX source dir: ${PROJECT_SOURCE_DIR}/fox")
+else()
+  FetchContent_Declare(fox
+    GIT_REPOSITORY https://github.com/ESMCI/fox.git
+    GIT_TAG 4.1.2.1
+    SOURCE_DIR ${PROJECT_SOURCE_DIR}/fox
+    BINARY_DIR ${PROJECT_SOURCE_DIR}
+  )
+  FetchContent_GetProperties(fox)
+  if(NOT fox_POPULATED)
+    FetchContent_Populate(fox)
+    message(STATUS "FoX source dir: ${fox_SOURCE_DIR}")
+    message(STATUS "FoX binary dir: ${fox_BINARY_DIR}")
+  endif()
+endif()
+add_subdirectory(fox)
 
 foreach(COMP datm dice dlnd docn drof dwav)
   add_subdirectory("${COMP}")
