@@ -71,7 +71,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
 
     if case.get_value('PTS_LON'):
         scol_lon = float(case.get_value('PTS_LON'))
-    else: 
+    else:
         scol_lon = -999.
     if case.get_value('PTS_LAT'):
         scol_lat = float(case.get_value('PTS_LAT'))
@@ -90,7 +90,8 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     nmlgen.write_output_file(namelist_file, data_list_path, groups=['docn_nml'])
 
     # Generate docn.streams.xml if needed
-    if (re.search(r'sst_aquap[0-9]+',docn_mode) is not None) or (docn_mode == 'sst_aquap_constant'):
+    print("docn_mode is {}".format(docn_mode))
+    if (re.search(r'sst_aquap[0-9]+',docn_mode) is not None) or (docn_mode == 'sst_aquap_constant') or (docn_mode == 'som_aquap'):
         generate_stream_file = False
     else:
         generate_stream_file = True
