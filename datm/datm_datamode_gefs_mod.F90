@@ -1,6 +1,6 @@
 module datm_datamode_gefs_mod
 
-  use ESMF
+  use ESMF             , only : ESMF_State, ESMF_SUCCESS, ESMF_LogWrite, ESMF_LOGMSG_INFO
   use NUOPC            , only : NUOPC_Advertise
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_sys_mod      , only : shr_sys_abort
@@ -21,7 +21,6 @@ module datm_datamode_gefs_mod
   public  :: datm_datamode_gefs_advance
   public  :: datm_datamode_gefs_restart_write
   public  :: datm_datamode_gefs_restart_read
-!  private :: datm_eSat  ! determine saturation vapor pressure
 
   ! export state data
   real(r8), pointer :: Sa_z(:)              => null()
@@ -32,19 +31,19 @@ module datm_datamode_gefs_mod
   real(r8), pointer :: Sa_pbot(:)           => null()
   real(r8), pointer :: Sa_u10m(:)           => null()
   real(r8), pointer :: Sa_v10m(:)           => null()
-  real(r8), pointer :: Sa_t2m(:)           => null()
-  real(r8), pointer :: Sa_q2m(:)           => null()
+  real(r8), pointer :: Sa_t2m(:)            => null()
+  real(r8), pointer :: Sa_q2m(:)            => null()
   real(r8), pointer :: Sa_pslv(:)           => null()
   real(r8), pointer :: Faxa_lwdn(:)         => null()
   real(r8), pointer :: Faxa_rain(:)         => null()
-  real(r8), pointer :: Faxa_snow(:)        => null()
+  real(r8), pointer :: Faxa_snow(:)         => null()
   real(r8), pointer :: Faxa_swndr(:)        => null()
   real(r8), pointer :: Faxa_swndf(:)        => null()
   real(r8), pointer :: Faxa_swvdr(:)        => null()
   real(r8), pointer :: Faxa_swvdf(:)        => null()
 
   ! stream data
-  real(r8), pointer :: strm_mask(:)      => null()
+  real(r8), pointer :: strm_mask(:)         => null()
 
   real(r8) :: tbotmax ! units detector
   real(r8) :: maskmax ! units detector
@@ -86,11 +85,11 @@ contains
     call dshr_fldList_add(fldsExport, 'Sa_shum'    )
     call dshr_fldList_add(fldsExport, 'Sa_u10m'    )
     call dshr_fldList_add(fldsExport, 'Sa_v10m'    )
-    call dshr_fldList_add(fldsExport, 'Sa_t2m'    )
-    call dshr_fldList_add(fldsExport, 'Sa_q2m'    )
+    call dshr_fldList_add(fldsExport, 'Sa_t2m'     )
+    call dshr_fldList_add(fldsExport, 'Sa_q2m'     )
     call dshr_fldList_add(fldsExport, 'Sa_pslv'    )
     call dshr_fldList_add(fldsExport, 'Faxa_rain'  )
-    call dshr_fldList_add(fldsExport, 'Faxa_snow' )
+    call dshr_fldList_add(fldsExport, 'Faxa_snow'  )
     call dshr_fldList_add(fldsExport, 'Faxa_swndr' )
     call dshr_fldList_add(fldsExport, 'Faxa_swvdr' )
     call dshr_fldList_add(fldsExport, 'Faxa_swndf' )
@@ -184,8 +183,6 @@ contains
     integer  :: lsize               ! size of attr vect
     real(r8) :: rtmp
     real(r8) :: tbot, pbot
-!    real(r8) :: vp
-    real(r8) :: e, qsat
     character(len=*), parameter :: subname='(datm_datamode_gefs_advance): '
     !-------------------------------------------------------------------------------
 
@@ -209,9 +206,6 @@ contains
     end if
 
     do n = 1, lsize
-       !--- bottom layer height ---
-!       Sa_z(n) = 10.0_r8
-
        !--- temperature ---
        if (tbotmax < 50.0_r8) Sa_tbot(n) = Sa_tbot(n) + tkFrz
        ! Limit very cold forcing to 180K
