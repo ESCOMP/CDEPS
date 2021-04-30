@@ -1,7 +1,7 @@
 set(SRCFILES  dshr_methods_mod.F90
-	      dshr_strdata_mod.F90
-	      dshr_stream_mod.F90
-	      dshr_tinterp_mod.F90)
+              dshr_strdata_mod.F90
+              dshr_stream_mod.F90
+              dshr_tinterp_mod.F90)
 
 set(MODFILES ${SRCFILES})
 
@@ -23,13 +23,15 @@ if(BLD_STANDALONE)
   add_dependencies(streams cdeps_share)
 endif()
 
+
 target_include_directories (streams PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/../fox/include)
 target_include_directories (streams PRIVATE ${ESMF_F90COMPILEPATHS})
 target_include_directories (streams PRIVATE ${PIO_Fortran_INCLUDE_DIR})
 target_include_directories (streams PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/../share)
 
 install(TARGETS streams
-	LIBRARY DESTINATION lib)
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib)
 foreach(MOD ${MODFILES})
   install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${MOD}" DESTINATION include)
 endforeach()

@@ -250,10 +250,14 @@ contains
        dt = idt * 1.0_r8
 
        do n = 1,lsize
-          if (.not. restart_read) then
-             somtp(n) = So_t(n) + TkFrz
-          endif
-          So_t(n) = somtp(n)
+          if (So_omask(n) /= 0._r8) then
+             if (.not. restart_read) then
+                somtp(n) = So_t(n) + TkFrz
+             endif
+             So_t(n) = somtp(n)
+          else
+             So_t(n) = 0._r8
+          end if
           Fioo_q(n) = 0.0_R8
        enddo
 
