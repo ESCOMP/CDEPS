@@ -203,7 +203,7 @@
       <meshfile>none</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file first_year="2018" last_year="2019">$DIN_LOC_ROOT/atm/cdeps/v1/$NEONSITE/%ym.nc</file>
+      <file first_year="$DATM_YR_START" last_year="$DATM_YR_END">$DIN_LOC_ROOT/atm/cdeps/v1/$NEONSITE/%ym.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>PRECTmms Faxa_precn</var>
@@ -220,9 +220,9 @@
       <mapalgo>none</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
-    <stream_year_align>2018</stream_year_align>
-    <stream_year_first>2018</stream_year_first>
-    <stream_year_last>2019</stream_year_last>
+    <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_YR_START</stream_year_first>
+    <stream_year_last>$DATM_YR_END</stream_year_last>
     <stream_offset>0</stream_offset>
     <stream_tintalgo>
       <tintalgo>linear</tintalgo>
