@@ -91,7 +91,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
 
     # Generate docn.streams.xml if needed
     print("docn_mode is {}".format(docn_mode))
-    if (re.search(r'sst_aquap[0-9]+',docn_mode) is not None) or (docn_mode == 'sst_aquap_constant') or (docn_mode == 'som_aquap'):
+    if (re.search(r'sst_aquap[0-9]+',docn_mode) is not None) or (docn_mode == 'sst_aquap_constant'):
         generate_stream_file = False
     else:
         generate_stream_file = True
