@@ -206,7 +206,7 @@
     <valid_values></valid_values>
     <default_value>2004</default_value>
     <values match="last">
-      <value compset="2000.*_DATM%1PT">1972</value>
+      <value compset="2000.*_DATM%1PT">2018</value>
       <value compset="1850.*_DATM%QIA">1948</value>
       <value compset="1850.*_DATM%CRU">1901</value>
       <value compset="1850.*_DATM%GSW">1901</value>
@@ -248,7 +248,7 @@
     <valid_values></valid_values>
     <default_value>2004</default_value>
     <values match="last">
-      <value   compset="2000.*_DATM%1PT">2004</value>
+      <value   compset="2000.*_DATM%1PT">2019</value>
       <value   compset="1850.*_DATM%QIA">1972</value>
       <value   compset="1850.*_DATM%CRU">1920</value>
       <value   compset="1850.*_DATM%GSW">1920</value>
