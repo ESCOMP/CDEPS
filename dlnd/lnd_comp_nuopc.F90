@@ -24,7 +24,7 @@ module lnd_comp_nuopc
   use shr_mpi_mod       , only : shr_mpi_bcast
   use dshr_methods_mod  , only : dshr_state_getfldptr, dshr_state_diagnose, chkerr, memcheck
   use dshr_strdata_mod  , only : shr_strdata_type, shr_strdata_advance, shr_strdata_get_stream_domain
-  use dshr_strdata_mod  , only : shr_strdata_init_from_xml
+  use dshr_strdata_mod  , only : shr_strdata_init_from_config
   use dshr_mod          , only : dshr_model_initphase, dshr_init
   use dshr_mod          , only : dshr_state_setscalar, dshr_set_runclock, dshr_log_clock_advance
   use dshr_mod          , only : dshr_restart_read, dshr_restart_write, dshr_mesh_init
@@ -69,7 +69,7 @@ module lnd_comp_nuopc
   character(CL)            :: dataMode = nullstr                  ! flags physics options wrt input data
   character(CL)            :: model_meshfile = nullstr            ! full pathname to model meshfile
   character(CL)            :: model_maskfile = nullstr            ! full pathname to obtain mask from
-  character(CL)            :: xmlfilename                         ! filename to obtain stream info from
+  character(CL)            :: streamfilename                      ! filename to obtain stream info from
   character(CL)            :: nlfilename = nullstr                ! filename to obtain namelist info from
   logical                  :: force_prognostic_true = .false.     ! if true set prognostic true
   character(CL)            :: restfilm = nullstr                  ! model restart file namelist
@@ -256,8 +256,11 @@ contains
          model_meshfile, model_maskfile, model_mesh, model_mask, model_frac, restart_read, rc=rc)
 
     ! Initialize stream data type
-    xmlfilename = 'dlnd.streams'//trim(inst_suffix)//'.xml'
-    call shr_strdata_init_from_xml(sdat, xmlfilename, model_mesh, clock, 'LND', logunit, rc=rc)
+    streamfilename = 'dlnd.streams'//trim(inst_suffix)
+#ifndef DISABLE_FoX
+    streamfilename = trim(streamfilename)//'.xml'
+#endif
+    call shr_strdata_init_from_config(sdat, streamfilename, model_mesh, clock, 'LND', logunit, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_TraceRegionExit('dlnd_strdata_init')
 

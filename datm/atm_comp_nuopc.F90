@@ -26,7 +26,7 @@ module atm_comp_nuopc
   use shr_cal_mod      , only : shr_cal_ymd2date
   use shr_mpi_mod      , only : shr_mpi_bcast
   use dshr_methods_mod , only : dshr_state_diagnose, chkerr, memcheck
-  use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_init_from_xml, shr_strdata_advance
+  use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_init_from_config, shr_strdata_advance
   use dshr_strdata_mod , only : shr_strdata_get_stream_pointer, shr_strdata_setOrbs
   use dshr_mod         , only : dshr_model_initphase, dshr_init
   use dshr_mod         , only : dshr_state_setscalar, dshr_set_runclock, dshr_log_clock_advance
@@ -65,6 +65,18 @@ module atm_comp_nuopc
   use datm_datamode_era5_mod    , only : datm_datamode_era5_restart_write
   use datm_datamode_era5_mod    , only : datm_datamode_era5_restart_read
 
+  use datm_datamode_gefs_mod    , only : datm_datamode_gefs_advertise
+  use datm_datamode_gefs_mod    , only : datm_datamode_gefs_init_pointers
+  use datm_datamode_gefs_mod    , only : datm_datamode_gefs_advance
+  use datm_datamode_gefs_mod    , only : datm_datamode_gefs_restart_write
+  use datm_datamode_gefs_mod    , only : datm_datamode_gefs_restart_read
+
+  use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_advertise
+  use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_init_pointers
+  use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_advance
+  use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_restart_write
+  use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_restart_read
+
   implicit none
   private ! except
 
@@ -99,7 +111,7 @@ module atm_comp_nuopc
 
   ! datm_in namelist input
   character(CL)                :: nlfilename = nullstr                ! filename to obtain namelist info from
-  character(CL)                :: xmlfilename = nullstr               ! filename to obtain namelist info from
+  character(CL)                :: streamfilename = nullstr            ! filename to obtain stream info from
   character(CL)                :: dataMode = nullstr                  ! flags physics options wrt input data
   character(CL)                :: model_meshfile = nullstr            ! full pathname to model meshfile
   character(CL)                :: model_maskfile = nullstr            ! full pathname to obtain mask from
@@ -273,6 +285,8 @@ contains
          trim(datamode) == 'CORE_IAF_JRA' .or. &
          trim(datamode) == 'CLMNCEP'      .or. &
          trim(datamode) == 'CPLHIST'      .or. &
+         trim(datamode) == 'GEFS'         .or. &
+         trim(datamode) == 'CFSR'         .or. &
          trim(datamode) == 'ERA5') then
     else
        call shr_sys_abort(' ERROR illegal datm datamode = '//trim(datamode))
@@ -297,6 +311,12 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('ERA5')
        call datm_datamode_era5_advertise(exportState, fldsExport, flds_scalar_name, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    case ('GEFS')
+       call datm_datamode_gefs_advertise(exportState, fldsExport, flds_scalar_name, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    case ('CFSR')
+       call datm_datamode_cfsr_advertise(exportState, fldsExport, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end select
 
@@ -342,8 +362,11 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Initialize stream data type
-    xmlfilename = 'datm.streams'//trim(inst_suffix)//'.xml'
-    call shr_strdata_init_from_xml(sdat, xmlfilename, model_mesh, clock, 'ATM', logunit, rc=rc)
+    streamfilename = 'datm.streams'//trim(inst_suffix)
+#ifndef DISABLE_FoX
+    streamfilename = trim(streamfilename)//'.xml'
+#endif
+    call shr_strdata_init_from_config(sdat, streamfilename, model_mesh, clock, 'ATM', logunit, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_TraceRegionExit('datm_strdata_init')
 
@@ -541,6 +564,12 @@ contains
        case('ERA5')
           call datm_datamode_era5_init_pointers(exportState, sdat, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       case('GEFS')
+          call datm_datamode_gefs_init_pointers(exportState, sdat, rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       case('CFSR')
+          call datm_datamode_cfsr_init_pointers(exportState, sdat, rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end select
 
        ! Read restart if needed
@@ -556,6 +585,10 @@ contains
              call datm_datamode_cplhist_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
           case('ERA5')
              call datm_datamode_era5_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
+          case('GEFS')
+             call datm_datamode_gefs_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
+          case('CFSR')
+             call datm_datamode_cfsr_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
           end select
        end if
 
@@ -603,6 +636,13 @@ contains
        call datm_datamode_era5_advance(exportstate, masterproc, logunit, mpicom, target_ymd, &
             target_tod, sdat%model_calendar, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    case('GEFS')
+       call datm_datamode_gefs_advance(exportstate, masterproc, logunit, mpicom, target_ymd, &
+            target_tod, sdat%model_calendar, rc)
+    case('CFSR')
+       call datm_datamode_cfsr_advance(exportstate, masterproc, logunit, mpicom, target_ymd, &
+            target_tod, sdat%model_calendar, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end select
 
     ! Write restarts if needed
@@ -623,6 +663,14 @@ contains
        case('ERA5')
           call datm_datamode_era5_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
                logunit, my_task, sdat)
+       case('GEFS')
+          call datm_datamode_gefs_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
+               logunit, my_task, sdat)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       case('CFSR')
+          call datm_datamode_cfsr_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
+               logunit, my_task, sdat)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end select
     end if
 
