@@ -228,7 +228,8 @@
       <tintalgo>linear</tintalgo>
     </stream_tintalgo>
     <stream_taxmode>
-      <taxmode>limit</taxmode>
+      <taxmode               >cycle</taxmode>
+      <taxmode compset="HIST">limit</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
@@ -664,7 +665,8 @@
       <tintalgo>coszen</tintalgo>
     </stream_tintalgo>
     <stream_taxmode>
-      <taxmode>cycle</taxmode>
+      <taxmode               >cycle</taxmode>
+      <taxmode compset="HIST">limit</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
@@ -695,7 +697,8 @@
       <tintalgo>nearest</tintalgo>
     </stream_tintalgo>
     <stream_taxmode>
-      <taxmode>cycle</taxmode>
+      <taxmode               >cycle</taxmode>
+      <taxmode compset="HIST">limit</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
@@ -730,7 +733,8 @@
       <tintalgo>linear</tintalgo>
     </stream_tintalgo>
     <stream_taxmode>
-      <taxmode>cycle</taxmode>
+      <taxmode               >cycle</taxmode>
+      <taxmode compset="HIST">limit</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
@@ -774,7 +778,8 @@
       <tintalgo>linear</tintalgo>
     </stream_tintalgo>
     <stream_taxmode>
-      <taxmode>limit</taxmode>
+      <taxmode               >cycle</taxmode>
+      <taxmode compset="HIST">limit</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
@@ -3265,11 +3270,9 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode>cycle</taxmode>
-      <taxmode compset="DATM%1PT">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit compset="DATM%1PT">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -3490,7 +3493,6 @@
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit compset="DATM%1PT">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
