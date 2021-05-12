@@ -89,6 +89,11 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     namelist_file = os.path.join(confdir, "docn_in")
     nmlgen.write_output_file(namelist_file, data_list_path, groups=['docn_nml'])
 
+    # Determine streams
+    streamlist = nmlgen.get_streams()
+    if type(streamlist) == type(str()):
+        streamlist = []
+
     # Generate docn.streams.xml if needed
     print("docn_mode is {}".format(docn_mode))
     if (re.search(r'sst_aquap[0-9]+',docn_mode) is not None) or (docn_mode == 'sst_aquap_constant'):
