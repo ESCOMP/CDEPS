@@ -68,6 +68,10 @@ class StreamCDEPS(GenericXML):
                 self.stream_nodes = super(StreamCDEPS,self).get_child("stream_entry", {"name" : "NEON.$NEONSITE"},
                                                                      err_msg="No stream_entry {} found".format(stream_name))
 
+            elif stream_name.startswith("CLM_USRDAT."):
+                self.stream_nodes = super(StreamCDEPS,self).get_child("stream_entry", {"name" : "CLM_USRDAT.$CLM_USRDAT_NAME"},
+                                                                     err_msg="No stream_entry {} found".format(stream_name))
+
             elif stream_name:
                 self.stream_nodes = super(StreamCDEPS,self).get_child("stream_entry", {"name" : stream_name},
                                                                      err_msg="No stream_entry {} found".format(stream_name))
