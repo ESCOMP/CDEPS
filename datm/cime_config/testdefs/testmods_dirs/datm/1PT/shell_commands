@@ -1,0 +1,9 @@
+if   [ "`./xmlquery ATM_GRID --value`" == "1x1_vancouverCAN"  ]; then
+  ./xmlchange START_DATE="1992-08-12"
+elif [ "`./xmlquery ATM_GRID --value`" == "1x1_mexicocityMEX" ]; then
+  ./xmlchange START_DATE="1993-12-01"
+elif [ "`./xmlquery ATM_GRID --value`" == "1x1_urbanc_alpha"  ]; then
+  ./xmlchange START_DATE="0001-08-12"
+else
+  ./xmlchange START_DATE="2018-01-01"
+fi

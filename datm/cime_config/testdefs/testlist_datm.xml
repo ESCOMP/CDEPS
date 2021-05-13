@@ -6,7 +6,7 @@
       <machine name="cheyenne" compiler="intel" category="aux_cdeps"/>
     </machines>
   </test>
-  <test compset="2000_DATM%QIA_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="f10_f10_g37" name="SMS_Vnuopc_Ld5">
+  <test compset="2000_DATM%QIA_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="f10_f10_mg37" name="SMS_Vnuopc_Ld5">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_cdeps"/>
     </machines>
@@ -14,7 +14,7 @@
       <option name="wallclock"> 00:10:00 </option>
     </options>
   </test>
-  <test compset="2000_DATM%CRUv7_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="f10_f10_g37" name="SMS_Vnuopc_Ld5">
+  <test compset="2000_DATM%CRUv7_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="f10_f10_mg37" name="SMS_Vnuopc_Ld5">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_cdeps"/>
     </machines>
@@ -22,7 +22,7 @@
       <option name="wallclock"> 00:10:00 </option>
     </options>
   </test>
-  <test compset="HIST_DATM%GSWP3v1_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="f10_f10_g37" name="SMS_Vnuopc_Ld5">
+  <test compset="HIST_DATM%GSWP3v1_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="f10_f10_mg37" name="SMS_Vnuopc_Ld5">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_cdeps"/>
     </machines>
@@ -30,7 +30,7 @@
       <option name="wallclock"> 00:10:00 </option>
     </options>
   </test>
-  <test compset="1850_DATM%GSWP3v1_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="f10_f10_g37" name="SMS_Vnuopc_Ld5">
+  <test compset="1850_DATM%GSWP3v1_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="f10_f10_mg37" name="SMS_Vnuopc_Ld5">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_cdeps"/>
     </machines>
@@ -38,7 +38,7 @@
       <option name="wallclock"> 00:10:00 </option>
     </options>
   </test>
-  <test compset="2010_DATM%GSWP3v1_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="f10_f10_g37" name="SMS_Vnuopc_Ld5">
+  <test compset="2010_DATM%GSWP3v1_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="f10_f10_mg37" name="SMS_Vnuopc_Ld5">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_cdeps"/>
     </machines>
@@ -46,7 +46,7 @@
       <option name="wallclock"> 00:10:00 </option>
     </options>
   </test>
-  <test compset="SSP585_DATM%GSWP3v1_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="f10_f10_g37" name="SMS_Vnuopc_Ld5">
+  <test compset="SSP585_DATM%GSWP3v1_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="f10_f10_mg37" name="SMS_Vnuopc_Ld5">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_cdeps"/>
     </machines>
@@ -54,7 +54,7 @@
       <option name="wallclock"> 00:10:00 </option>
     </options>
   </test>
-  <test compset="2000_DATM%NLDAS2_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="f10_f10_g37" name="SMS_Vnuopc_Ld5">
+  <test compset="2000_DATM%NLDAS2_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="f10_f10_mg37" name="SMS_Vnuopc_Ld5">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_cdeps"/>
     </machines>
@@ -94,7 +94,7 @@
       <option name="wallclock"> 00:10:00 </option>
     </options>
   </test>
-  <test compset="2000_DATM%1PT_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="1x1_mexicocityMEX" name="SMS_Vnuopc_Ld5_P1">
+  <test compset="2000_DATM%1PT_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="1x1_mexicocityMEX" name="SMS_Vnuopc_Ld5_P1" testmods="datm/1PT">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_cdeps"/>
     </machines>
