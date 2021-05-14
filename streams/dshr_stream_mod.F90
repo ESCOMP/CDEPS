@@ -772,7 +772,7 @@ contains
 
     if (dYear < 0) then
        write(strm%logunit,*) trim(subName),' ERROR: dyear lt zero = ',dYear
-       call shr_sys_abort(trim(subName)//' ERROR: dyear lt one')
+       call shr_sys_abort(trim(subName)//' ERROR: dyear lt zero')
     endif
 
     dDateIn = dYear*10000 + modulo(mDateIn,10000) ! mDateIn mapped to range of data years
@@ -1453,7 +1453,7 @@ contains
     if (ichar(lcal(n:n)) == 0 ) lcal(n:n) = ' '
     call shr_string_leftalign_and_convert_tabs(lcal)
     calendar = trim(shr_cal_calendarName(trim(lcal)))
-    
+
     ! TODO: add isroot_task
     !write(strm%logunit, '(a)') trim(subname)//' closing stream filename = '//trim(filename)
     call pio_closefile(strm%file(k)%fileid)
