@@ -557,7 +557,7 @@
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
-    <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
+    <stream_year_align>2000</stream_year_align>
     <stream_year_first>2000</stream_year_first>
     <stream_year_last>2004</stream_year_last>
     <stream_offset>0</stream_offset>
@@ -588,7 +588,7 @@
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
-    <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
+    <stream_year_align>2000</stream_year_align>
     <stream_year_first>2000</stream_year_first>
     <stream_year_last>2004</stream_year_last>
     <stream_offset>0</stream_offset>
@@ -622,7 +622,7 @@
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
-    <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
+    <stream_year_align>2000</stream_year_align>
     <stream_year_first>2000</stream_year_first>
     <stream_year_last>2004</stream_year_last>
     <stream_offset>0</stream_offset>
@@ -812,8 +812,8 @@
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
-    <stream_year_first>1993</stream_year_first>
-    <stream_year_last >1993</stream_year_last>
+    <stream_year_first>$DATM_YR_START</stream_year_first>
+    <stream_year_last >$DATM_YR_END</stream_year_last>
     <stream_offset>0</stream_offset>
     <stream_tintalgo>
       <tintalgo>nearest</tintalgo>
@@ -852,8 +852,8 @@
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
-    <stream_year_first>1992</stream_year_first>
-    <stream_year_last >1992</stream_year_last>
+    <stream_year_first>$DATM_YR_START</stream_year_first>
+    <stream_year_last >$DATM_YR_END</stream_year_last>
     <stream_offset>0</stream_offset>
     <stream_tintalgo>
       <tintalgo>nearest</tintalgo>
@@ -907,8 +907,8 @@
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
-    <stream_year_first>0001</stream_year_first>
-    <stream_year_last >0002</stream_year_last>
+    <stream_year_first>$DATM_YR_START</stream_year_first>
+    <stream_year_last >$DATM_YR_END</stream_year_last>
     <stream_offset>0</stream_offset>
     <stream_tintalgo>
       <tintalgo>nearest</tintalgo>
