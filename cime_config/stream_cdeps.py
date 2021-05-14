@@ -131,8 +131,9 @@ class StreamCDEPS(GenericXML):
                     attributes['model_grid'] = case.get_value("GRID")
                     attributes['compset'] = case.get_value("COMPSET")
                     value = self._get_value_match(node, node_name[7:], attributes=attributes)
-                    value = self._resolve_values(case, value)
-                    value = value.strip()
+                    if value:
+                        value = self._resolve_values(case, value)
+                        value = value.strip()
                     stream_vars[node_name] = value
 
                 elif node_name.strip():
@@ -145,8 +146,9 @@ class StreamCDEPS(GenericXML):
                 stream_file.write(stream_file_text)
 
             # append to input_data_list
-            stream_meshfile = stream_vars['stream_meshfile'].strip()
-            self._add_entries_to_inputdata_list(stream_meshfile, stream_datafiles, data_list_file)
+            if stream_vars['stream_meshfile']:
+                stream_meshfile = stream_vars['stream_meshfile'].strip()
+                self._add_entries_to_inputdata_list(stream_meshfile, stream_datafiles.split("\n"), data_list_file)
 
         # write close of stream xml file
         with open(streams_xml_file, 'a') as stream_file:
@@ -178,7 +180,7 @@ class StreamCDEPS(GenericXML):
             if hashValue not in lines_hash:
                 input_data_list.write(string)
             # now append the stream_datafile entries
-            for i, filename in enumerate(stream_datafiles.split("\n")):
+            for i, filename in enumerate(stream_datafiles):
                 if filename.strip() == '':
                     continue
                 string = "file{:d} = {}\n".format(i+1, filename)
@@ -404,3 +406,17 @@ class StreamCDEPS(GenericXML):
             #endif
         #endfor
         return "\n      ".join(list_to_deliminate)
+
+    def update_input_data_list(self, data_list_file):
+        ''' From the stream object parse out and list required input files '''
+        sinodes = self.scan_children("stream_info")
+        for node in sinodes:
+            meshnode = self.scan_child("stream_mesh_file", root=node)
+            stream_meshfile = self.text(meshnode)
+            data_file_node = self.scan_child("stream_data_files", root=node)
+            filenodes = self.scan_children("file",root=data_file_node)
+            stream_datafiles = []
+            for fnode in filenodes:
+                stream_datafiles.append(self.text(fnode))
+            print("HERE {}".format(data_list_file))
+            self._add_entries_to_inputdata_list(stream_meshfile, stream_datafiles, data_list_file)
