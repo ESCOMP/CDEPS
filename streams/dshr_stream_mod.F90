@@ -631,7 +631,7 @@ contains
         call ESMF_ConfigGetAttribute(CF,valueList=strm_tmpstrings, label="stream_data_files"//mystrm//':', rc=rc)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
         do n=1,streamdat(i)%nfiles
-          streamdat(i)%file(n)%name = trim(strm_tmpstrings(i))
+          streamdat(i)%file(n)%name = trim(strm_tmpstrings(n))
         enddo
         deallocate(strm_tmpstrings)
       else
