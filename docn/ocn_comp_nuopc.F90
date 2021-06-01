@@ -24,7 +24,7 @@ module ocn_comp_nuopc
   use shr_cal_mod      , only : shr_cal_ymd2date
   use shr_mpi_mod      , only : shr_mpi_bcast
   use dshr_methods_mod , only : dshr_state_diagnose, chkerr, memcheck
-  use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_advance, shr_strdata_init_from_xml
+  use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_advance, shr_strdata_init_from_config
   use dshr_mod         , only : dshr_model_initphase, dshr_init, dshr_mesh_init
   use dshr_mod         , only : dshr_state_setscalar, dshr_set_runclock
   use dshr_dfield_mod  , only : dfield_type, dshr_dfield_add, dshr_dfield_copy
@@ -82,7 +82,7 @@ module ocn_comp_nuopc
   character(*) , parameter     :: nullstr = 'null'
 
   ! docn_in namelist input
-  character(CL)                :: xmlfilename = nullstr               ! filename to obtain namelist info from
+  character(CL)                :: streamfilename = nullstr            ! filename to obtain stream info from
   character(CL)                :: nlfilename = nullstr                ! filename to obtain namelist info from
   character(CL)                :: datamode = nullstr                  ! flags physics options wrt input data
   character(CL)                :: model_meshfile = nullstr            ! full pathname to model meshfile
@@ -307,8 +307,11 @@ contains
 
     ! Initialize stream data type if not aqua planet
     if (.not. aquaplanet) then
-       xmlfilename = trim(modelname)//'.streams'//trim(inst_suffix)//'.xml'
-       call shr_strdata_init_from_xml(sdat, xmlfilename, model_mesh, clock, 'OCN', logunit, rc=rc)
+       streamfilename = trim(modelname)//'.streams'//trim(inst_suffix)
+#ifndef DISABLE_FoX
+       streamfilename = trim(streamfilename)//'.xml'
+#endif
+       call shr_strdata_init_from_config(sdat, streamfilename, model_mesh, clock, 'OCN', logunit, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
     call ESMF_TraceRegionExit('docn_strdata_init')

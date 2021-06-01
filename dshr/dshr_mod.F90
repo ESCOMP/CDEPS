@@ -41,7 +41,7 @@ module dshr_mod
 #ifdef CESMCOUPLED
   use shr_pio_mod      , only : shr_pio_getiosys, shr_pio_getiotype, shr_pio_getioformat
 #endif
-  use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_init_from_xml, SHR_STRDATA_GET_STREAM_COUNT
+  use dshr_strdata_mod , only : shr_strdata_type, SHR_STRDATA_GET_STREAM_COUNT
   use dshr_methods_mod , only : chkerr
   use pio
 
