@@ -378,7 +378,6 @@ contains
 
     ! local variables
     type(ESMF_Mesh), pointer     :: stream_mesh
-    type(ESMF_Calendar)          :: esmf_calendar   ! esmf calendar
     type(ESMF_CalKind_Flag)      :: esmf_caltype    ! esmf calendar type
     character(CS)                :: calendar        ! calendar name
     integer                      :: ns              ! stream index
