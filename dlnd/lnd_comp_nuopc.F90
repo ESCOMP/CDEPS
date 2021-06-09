@@ -1,4 +1,8 @@
+#ifdef CESMCOUPLED
 module lnd_comp_nuopc
+#else
+module cdeps_dlnd_comp
+#endif
 
   !----------------------------------------------------------------------------
   ! This is the NUOPC cap for DLND
@@ -92,7 +96,11 @@ module lnd_comp_nuopc
   logical                      :: diagnose_data = .true.
   integer      , parameter     :: master_task=0                   ! task number of master task
   character(*) , parameter     :: rpfile = 'rpointer.lnd'
+#ifdef CESMCOUPLED
   character(*) , parameter     :: modName =  "(lnd_comp_nuopc)"
+#else
+  character(*) , parameter     :: modName =  "(cdeps_dlnd_comp)"
+#endif
   character(*) , parameter     :: u_FILE_u = &
        __FILE__
 
@@ -159,9 +167,9 @@ contains
     integer       :: ierr       ! error code
     logical           :: exists     ! check for file existence
     character(len=*) , parameter :: subname=trim(modName)//':(InitializeAdvertise) '
-    character(*)     , parameter :: F00 = "('(lnd_comp_nuopc) ',8a)"
-    character(*)     , parameter :: F01 = "('(lnd_comp_nuopc) ',a,2x,i8)"
-    character(*)     , parameter :: F02 = "('(lnd_comp_nuopc) ',a,l6)"
+    character(*)     , parameter :: F00 = "('(" // trim(modName) // ") ',8a)"
+    character(*)     , parameter :: F01 = "('(" // trim(modName) // ") ',a,2x,i8)"
+    character(*)     , parameter :: F02 = "('(" // trim(modName) // ") ',a,l6)"
     !-------------------------------------------------------------------------------
 
     namelist / dlnd_nml / datamode, model_meshfile, model_maskfile, &
@@ -559,4 +567,8 @@ contains
 
   end subroutine dlnd_comp_run
 
+#ifdef CESMCOUPLED
 end module lnd_comp_nuopc
+#else
+end module cdeps_dlnd_comp
+#endif
