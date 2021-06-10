@@ -30,6 +30,7 @@ module dshr_mod
   use ESMF             , only : ESMF_RouteHandle, ESMF_FieldRegrid
   use ESMF             , only : ESMF_TERMORDER_SRCSEQ, ESMF_FieldRegridStore, ESMF_SparseMatrixWrite
   use ESMF             , only : ESMF_Region_Flag, ESMF_REGION_TOTAL, ESMF_MAXSTR, ESMF_RC_NOT_VALID
+  use ESMF             , only : ESMF_UtilStringUpperCase
   use shr_kind_mod     , only : r8=>shr_kind_r8, cs=>shr_kind_cs, cl=>shr_kind_cl, cxx=>shr_kind_cxx, i8=>shr_kind_i8
   use shr_sys_mod      , only : shr_sys_abort
   use shr_mpi_mod      , only : shr_mpi_bcast
@@ -37,8 +38,10 @@ module dshr_mod
   use shr_cal_mod      , only : shr_cal_datetod2string, shr_cal_date2julian
   use shr_const_mod    , only : shr_const_spval, shr_const_cday
   use shr_orb_mod      , only : shr_orb_params, SHR_ORB_UNDEF_INT, SHR_ORB_UNDEF_REAL
+#ifdef CESMCOUPLED
   use shr_pio_mod      , only : shr_pio_getiosys, shr_pio_getiotype, shr_pio_getioformat
-  use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_init_from_xml, SHR_STRDATA_GET_STREAM_COUNT
+#endif
+  use dshr_strdata_mod , only : shr_strdata_type, SHR_STRDATA_GET_STREAM_COUNT
   use dshr_methods_mod , only : chkerr
   use pio
 
@@ -57,9 +60,9 @@ module dshr_mod
   public  :: dshr_orbital_update
   public  :: dshr_orbital_init
 
-  private :: dshr_mesh_create
-  private :: dshr_alarm_init
-  private :: dshr_time_init
+  private :: dshr_mesh_create_scol ! create mesh for single column mode
+  private :: dshr_alarm_init       ! initialize alarms
+  private :: dshr_time_init        ! initialize time
 
   ! Note that gridTofieldMap = 2, therefore the ungridded dimension is innermost
 
@@ -100,21 +103,23 @@ contains
   end subroutine dshr_model_initphase
 
   !===============================================================================
-  subroutine dshr_init(gcomp, mpicom, my_task, inst_index, inst_suffix, &
+  subroutine dshr_init(gcomp, compname, sdat, mpicom, my_task, inst_index, inst_suffix, &
        flds_scalar_name, flds_scalar_num, flds_scalar_index_nx, flds_scalar_index_ny, logunit, rc)
 
     ! input/output variables
-    type(ESMF_GridComp)              :: gcomp
-    integer          , intent(inout) :: mpicom
-    integer          , intent(out)   :: my_task
-    integer          , intent(out)   :: inst_index
-    character(len=*) , intent(out)   :: inst_suffix
-    character(len=*) , intent(out)   :: flds_scalar_name
-    integer          , intent(out)   :: flds_scalar_num
-    integer          , intent(out)   :: flds_scalar_index_nx
-    integer          , intent(out)   :: flds_scalar_index_ny
-    integer          , intent(out)   :: logunit
-    integer          , intent(out)   :: rc
+    type(ESMF_GridComp)                   :: gcomp
+    character(len=*)      , intent(in)    :: compname  !e.g. ATM, OCN, ...
+    type(shr_strdata_type), intent(inout) :: sdat
+    integer               , intent(inout) :: mpicom
+    integer               , intent(out)   :: my_task
+    integer               , intent(out)   :: inst_index
+    character(len=*)      , intent(out)   :: inst_suffix
+    character(len=*)      , intent(out)   :: flds_scalar_name
+    integer               , intent(out)   :: flds_scalar_num
+    integer               , intent(out)   :: flds_scalar_index_nx
+    integer               , intent(out)   :: flds_scalar_index_ny
+    integer               , intent(out)   :: logunit
+    integer               , intent(out)   :: rc
 
     ! local variables
     type(ESMF_VM)     :: vm
@@ -195,19 +200,27 @@ contains
        inst_index=1
     endif
 
+#ifdef CESMCOUPLED
+    sdat%pio_subsystem => shr_pio_getiosys(trim(compname))
+    sdat%io_type       =  shr_pio_getiotype(trim(compname))
+    sdat%io_format     =  shr_pio_getioformat(trim(compname))
+#else
+    call dshr_pio_init(gcomp, sdat, logunit, rc)
+#endif
+
   end subroutine dshr_init
 
   !===============================================================================
-  subroutine dshr_mesh_init(gcomp, nullstr, logunit, compname, model_nxg, model_nyg, &
-       model_meshfile, model_maskfile, model_createmesh_fromfile, model_mesh, &
-       model_mask, model_frac, read_restart, rc)
+  subroutine dshr_mesh_init(gcomp, sdat, nullstr, logunit, compname, model_nxg, model_nyg, &
+       model_meshfile, model_maskfile, model_mesh, model_mask, model_frac, read_restart, rc)
 
     ! ----------------------------------------------
     ! Initialize model mesh
     ! ----------------------------------------------
 
     ! input/output variables
-    type(ESMF_GridComp), intent(inout)         :: gcomp
+    type(ESMF_GridComp)        , intent(inout) :: gcomp
+    type(shr_strdata_type)     , intent(in)    :: sdat
     integer                    , intent(in)    :: logunit
     character(len=*)           , intent(in)    :: compname  !e.g. ATM, OCN, ...
     character(len=*)           , intent(in)    :: nullstr
@@ -215,7 +228,6 @@ contains
     integer                    , intent(in)    :: model_nyg
     character(len=*)           , intent(in)    :: model_meshfile
     character(len=*)           , intent(in)    :: model_maskfile
-    character(len=*)           , intent(in)    :: model_createmesh_fromfile
     type(ESMF_Mesh)            , intent(out)   :: model_mesh
     integer , pointer          , intent(out)   :: model_mask(:)
     real(r8), pointer          , intent(out)   :: model_frac(:)
@@ -224,29 +236,19 @@ contains
 
     ! local variables
     type(ESMF_VM)                  :: vm
-    type(ESMF_Calendar)            :: esmf_calendar           ! esmf calendar
+    logical                        :: masterproc
     type(ESMF_DistGrid)            :: distGrid
-    integer, pointer               :: model_gindex(:)         ! model global index spzce
-    integer                        :: mpicom
     integer                        :: my_task
-    logical                        :: scol_mode
     real(r8)                       :: scol_lon
     real(r8)                       :: scol_lat
     character(CL)                  :: cvalue
-    integer                        :: lsize                   ! local size of mesh
-    integer                        :: petcount
+    integer                        :: lsize      ! local size of mesh
     type(ESMF_Array)               :: elemMaskArray
-    type(file_desc_t)              :: pioid
-    type(var_desc_t)               :: varid
-    type(io_desc_t)                :: pio_iodesc
-    type(iosystem_desc_t), pointer :: pio_subsystem => null() ! pio info
-    integer                        :: io_type                 ! pio info
-    integer                        :: io_format               ! pio info
-    integer                        :: rcode
     logical                        :: isPresent, isSet
-    logical                        :: masterproc
-    character(len=*), parameter    :: subname='(dshr_mod:dshr_mesh_init)'
+    logical                        :: exists     ! check for file existence
+    real(r8)                       :: scol_spval = -999._r8
     character(*)    , parameter    :: F00 ="('(dshr_mesh_init) ',a)"
+    character(len=*), parameter    :: subname='(dshr_mod:dshr_mesh_init)'
     ! ----------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -254,11 +256,11 @@ contains
     ! generate local mpi comm
     call ESMF_GridCompGet(gcomp, vm=vm, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_VMGet(vm, mpiCommunicator=mpicom, localPet=my_task, petcount=petcount, rc=rc)
+    call ESMF_VMGet(vm, localPet=my_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    masterproc = (my_task == master_task)
 
     ! Set restart flag
-    ! TODO: should this be a variable from the driver?
     call NUOPC_CompAttributeGet(gcomp, name='read_restart', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (isPresent .and. isSet) then
@@ -267,65 +269,43 @@ contains
        call shr_sys_abort(subname//' ERROR: read restart flag must be present')
     end if
 
-    masterproc = (my_task == master_task)
+    ! obtain the single column lon and lat
+    call NUOPC_CompAttributeGet(gcomp, name='scol_lon', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (isPresent .and. isSet) then
+       read(cvalue,*) scol_lon
+    else
+       scol_lon = scol_spval
+    end if
+    call NUOPC_CompAttributeGet(gcomp, name='scol_lat', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (isPresent .and. isSet) then
+       read(cvalue,*) scol_lat
+    else
+       scol_lat = scol_spval
+    end if
 
-    ! Obtain the data model mesh
-    ! (1) if asked to create the mesh
-    !     - create mesh from input file given by model_createmesh_fromfile
-    !     - if single column find the nearest neighbor in model_createmesh_fromfile
-    ! (2) if not single column - obtain the mesh directly from the mesh input 
-    !     - reset the model mesh if the model maskfile is not equal to the model mesh file 
+    if (scol_lon > scol_spval .and. scol_lat > scol_spval) then
 
-    if (trim(model_meshfile) == nullstr) then
-
-       ! Get single column values
-       call NUOPC_CompAttributeGet(gcomp, name='single_column', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       if (isPresent .and. isSet) then
-          read(cvalue,*) scol_mode
-          if (scol_mode) then
-             ! verify that ROF, WAV and LND are not trying to use single column mode
-             if (trim(compname) == 'ROF' .or. trim(compname) == 'LND' .or. trim(compname) == 'WAV') then
-                if (masterproc) then
-                   write(logunit,*) subname,' ERROR: '//trim(compname)//' does not support single column mode '
-                end if
-                call shr_sys_abort(subname//' ERROR: '//trim(compname)//' does not support single column mode ')
-             end if
-
-             ! verify that are only using 1 pe
-             if (petcount > 1) then
-                if (masterproc) then
-                   write(logunit,*) subname,' ERROR: single column mode must be run on one pe, petcount= ',petcount
-                end if
-                call shr_sys_abort(subname//' ERROR: single column mode must be run on 1 pe')
-             endif
-
-             ! obtain the single column lon and lat
-             call NUOPC_CompAttributeGet(gcomp, name='scmlon', value=cvalue, rc=rc)
-             if (ChkErr(rc,__LINE__,u_FILE_u)) return
-             read(cvalue,*) scol_lon
-             call NUOPC_CompAttributeGet(gcomp, name='scmlat', value=cvalue, rc=rc)
-             if (ChkErr(rc,__LINE__,u_FILE_u)) return
-             read(cvalue,*) scol_lat
-             if (my_task == master_task) then
-                write(logunit,*) ' single column mode, lon lat = ',scol_mode, scol_lon, scol_lat
-             end if
-          else
-             scol_lon  = shr_const_spval
-             scol_lat  = shr_const_spval
-          end if
-       else
-          scol_mode = .false.
-          scol_lon  = shr_const_spval
-          scol_lat  = shr_const_spval
-       end if
-
-       ! Now create the model meshfile
-       call dshr_mesh_create(trim(model_createmesh_fromfile), scol_mode, scol_lon, scol_lat, &
-            trim(compname), my_task, logunit, model_mesh, model_mask, model_frac, rc=rc)
+       ! This is simply a single point run
+       call dshr_mesh_create_scol(gcomp, compname, scol_lon, scol_lat, model_mesh, model_mask, model_frac, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     else
+
+       ! check that model_meshfile and model_maskfile exists
+       if (my_task == master_task) then
+          inquire(file=trim(model_meshfile), exist=exists)
+          if (.not.exists) then
+             write(logunit, *)' ERROR: model_meshfile '//trim(model_meshfile)//' does not exist'
+             call shr_sys_abort(trim(subname)//' ERROR: model_meshfile '//trim(model_meshfile)//' does not exist')
+          end if
+          inquire(file=trim(model_maskfile), exist=exists)
+          if (.not.exists) then
+             write(logunit, *)' ERROR: model_maskfile '//trim(model_maskfile)//' does not exist'
+             call shr_sys_abort(trim(subname)//' ERROR: model_maskfile '//trim(model_maskfile)//' does not exist')
+          end if
+       endif
 
        ! Read in the input model mesh
        model_mesh = ESMF_MeshCreate(trim(model_meshfile), fileformat=ESMF_FILEFORMAT_ESMFMESH, rc=rc)
@@ -374,291 +354,78 @@ contains
        end if
     end if
 
-
   end subroutine dshr_mesh_init
 
   !===============================================================================
-  subroutine dshr_mesh_create(filename, scol_mode, scol_lon, scol_lat, &
-       compname, my_task, logunit, model_mesh, model_mask, model_frac, rc)
+  subroutine dshr_mesh_create_scol(gcomp, compname, scol_lon, scol_lat, &
+       model_mesh, model_mask, model_frac, rc)
 
-    ! Create the model mesh from the domain file - for either single column mode
-    ! or for a regional grid
+    ! Create a single column mesh - the area is arbitrary
 
     ! input/output variables
-    character(len=*)  , intent(in)    :: filename
-    logical           , intent(in)    :: scol_mode
-    real(r8)          , intent(inout) :: scol_lon
-    real(r8)          , intent(inout) :: scol_lat
-    character(len=*)  , intent(in)    :: compname
-    integer           , intent(in)    :: my_task
-    integer           , intent(in)    :: logunit
-    type(ESMF_Mesh)   , intent(out)   :: model_mesh
-    integer , pointer , intent(out)   :: model_mask(:)
-    real(r8), pointer , intent(out)   :: model_frac(:)
-    integer           , intent(out)   :: rc
+    type(ESMF_GridComp)   , intent(inout) :: gcomp
+    character(len=*)      , intent(in)    :: compname
+    real(r8)              , intent(inout) :: scol_lon
+    real(r8)              , intent(inout) :: scol_lat
+    type(ESMF_Mesh)       , intent(out)   :: model_mesh
+    integer , pointer     , intent(inout) :: model_mask(:)
+    real(r8), pointer     , intent(inout) :: model_frac(:)
+    integer               , intent(out)   :: rc
 
     ! local variables
-    type(iosystem_desc_t), pointer :: pio_subsystem => null() ! pio info
-    integer                        :: io_type                 ! pio info
-    integer                        :: io_format               ! pio info
-    type(file_desc_t)              :: pioid
-    integer                        :: rcode                   ! error code
-    type(var_desc_t)               :: varid                   ! variable id
-    integer                        :: dimid                   ! dimension id
-    integer                        :: ni, nj, nv              ! dimension sizes
-    integer                        :: i,j
+    type(ESMF_Grid)                :: lgrid
+    character(CL)                  :: cvalue
     integer                        :: maxIndex(2)
     real(r8)                       :: mincornerCoord(2)
     real(r8)                       :: maxcornerCoord(2)
-    type(ESMF_Grid)                :: lgrid
-    integer                        :: spatialDim              ! number of dimension in mesh
-    integer                        :: numOwnedElements        ! number of elements owned by this PET
-    real(r8), pointer              :: ownedElemCoords(:)      ! mesh element coordinates owned by this PET
-    integer                        :: n                       ! index
-    integer                        :: start(2)                ! start index to read in for single column mode
-    integer                        :: count(2)                ! number of points to read in
-    real(r8), allocatable          :: xv(:,:,:), yv(:,:,:)    ! coordinates of vertices
-    real(r8), allocatable          :: xc(:,:), yc(:,:)        ! coordinates of centers
-    real(r8)                       :: scol_data(1)            ! temporary
-    integer , allocatable          :: mask(:)                 ! temporary
-    real(r8), allocatable          :: lats(:)                 ! temporary
-    real(r8), allocatable          :: lons(:)                 ! temporary
-    real(r8), allocatable          :: pos_lons(:)             ! temporary
-    real(r8)                       :: pos_scol_lon            ! temporary
-    real(r8)                       :: scol_area               ! temporary
-    character(len=*), parameter    :: subname='(dshr_mesh_create)'
+    character(len=*), parameter    :: subname='(dshr_mesh_create_single_column)'
     ! ----------------------------------------------
 
     rc = ESMF_SUCCESS
 
-    pio_subsystem => shr_pio_getiosys(trim(compname))
-    io_type       =  shr_pio_getiotype(trim(compname))
-    io_format     =  shr_pio_getioformat(trim(compname))
+    allocate(model_mask(1))
+    allocate(model_frac(1))
 
-    !-------------------------------------
-    ! open domain file and get dimensions
-    !-------------------------------------
-
-    rcode = pio_openfile(pio_subsystem, pioid, io_type, trim(filename), pio_nowrite)
-    call pio_check_err(rcode, 'error opening file '//trim(filename))
-    call PIO_seterrorhandling(pioid, PIO_BCAST_ERROR)
-
-    rcode = pio_inq_dimid(pioid, 'ni', dimid)
-    call pio_check_err(rcode, 'pio_inq_dimid for ni in file '//trim(filename))
-    rcode = pio_inquire_dimension(pioid, dimid, len=ni)
-    call pio_check_err(rcode, 'pio_inq_dimension for ni in file '//trim(filename))
-
-    rcode = pio_inq_dimid(pioid, 'nj', dimid)
-    call pio_check_err(rcode, 'pio_inq_dimid for nj in file '//trim(filename))
-    rcode = pio_inquire_dimension(pioid, dimid, len=nj)
-    call pio_check_err(rcode, 'pio_inq_dimension for nj in file '//trim(filename))
-
-    rcode = pio_inq_dimid(pioid, 'nv', dimid)
-    call pio_check_err(rcode, 'pio_inq_dimid for nv in file '//trim(filename))
-    rcode = pio_inquire_dimension(pioid, dimid, len=nv)
-    call pio_check_err(rcode, 'pio_inq_dimension for nv in file '//trim(filename))
-
-    !-------------------------------------
-    ! Single column model (size 1)
-    !-------------------------------------
-
-    if (scol_mode) then
-
-       ! get lons from domain file
-       rcode = pio_inq_varid(pioid, 'xc', varid)
-       call pio_check_err(rcode, 'pio_inq_varid for xc in file '//trim(filename))
-       allocate(xc(ni,nj))
-       rcode = pio_get_var(pioid, varid, xc)
-       call pio_check_err(rcode, 'pio_get_var for xc in file '//trim(filename))
-
-       ! get lats from domain file
-       rcode = pio_inq_varid(pioid, 'yc', varid)
-       call pio_check_err(rcode, 'pio_inq_varid for yc in file '//trim(filename))
-       allocate(yc(ni,nj))
-       rcode = pio_get_var(pioid, varid, yc)
-       call pio_check_err(rcode, 'pio_get_var for yc in file '//trim(filename))
-
-       ! find nearest neighbor indices of scol_lon and scol_lat in domain file
-       allocate(lats(nj))
-       allocate(lons(ni))
-       allocate(pos_lons(ni))
-       do i = 1,ni
-          lons(i) = xc(i,1)
-       end do
-       do j = 1,nj
-          lats(j) = yc(1,j)
-       end do
-       pos_lons(:)  = mod(lons(:)  + 360._r8, 360._r8)
-       pos_scol_lon = mod(scol_lon + 360._r8, 360._r8)
-       start(1) = (MINLOC(abs(pos_lons - pos_scol_lon), dim=1))
-       start(2) = (MINLOC(abs(lats      -scol_lat    ), dim=1))
-       count(:) = 1
-       deallocate(lons)
-       deallocate(lats)
-
-       ! read in value of nearest neighbor lon and RESET scol_lat
-       rcode = pio_inq_varid(pioid, 'xc' , varid)
-       call pio_check_err(rcode, 'pio_inq_varid for xc in file '//trim(filename))
-       rcode = pio_get_var(pioid, varid, start, count, scol_data)
-       call pio_check_err(rcode, 'pio_get_var for xc in file '//trim(filename))
-       scol_lon = scol_data(1)
-
-       ! read in value of nearest neighbor lon and RESET scol_lon
-       rcode = pio_inq_varid(pioid, 'yc' , varid)
-       call pio_check_err(rcode, 'pio_inq_varid for yc in file '//trim(filename))
-       rcode = pio_get_var(pioid, varid, start, count, scol_data)
-       call pio_check_err(rcode, 'pio_get_var for yc in file '//trim(filename))
-       scol_lat = scol_data(1)
-
-       ! get area of gridcell
-       rcode = pio_inq_varid(pioid, 'area', varid)
-       call pio_check_err(rcode, 'pio_inq_varid for area in file '//trim(filename))
-       rcode = pio_get_var(pioid, varid, start, count, scol_data)
-       call pio_check_err(rcode, 'pio_get_var for area in file '//trim(filename))
-       scol_area = scol_data(1)
-
-       ! create the single column grid
-       maxIndex(1)       = 1                     ! number of lons
-       maxIndex(2)       = 1                     ! number of lats
-       mincornerCoord(1) = scol_lon - scol_area/2._r8 ! min lon
-       mincornerCoord(2) = scol_lat - scol_area/2._r8 ! min lat
-       maxcornerCoord(1) = scol_lon + scol_area/2._r8 ! max lon
-       maxcornerCoord(2) = scol_lat + scol_area/2._r8 ! max lat
-
-       ! create the model grid
-       lgrid = ESMF_GridCreateNoPeriDimUfrm (maxindex=maxindex, &
-            mincornercoord=mincornercoord, maxcornercoord= maxcornercoord, &
-            staggerloclist=(/ESMF_STAGGERLOC_CENTER, ESMF_STAGGERLOC_CORNER/), rc=rc)
+    if (compname == 'ATM') then
+       model_frac(1) = 1._r8
+       model_mask(1) = 1
+    else if (compname == 'LND') then
+       call NUOPC_CompAttributeGet(gcomp, name='scol_lndmask', value=cvalue, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-       ! create the mesh from the grid
-       model_mesh = ESMF_MeshCreate(lgrid, rc=rc)
+       read(cvalue,*) model_mask(1)
+       call NUOPC_CompAttributeGet(gcomp, name='scol_lndfrac', value=cvalue, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-       ! For the ATM component - the fractions and masks are always 1 - don't read them
-       ! in or reset the mesh
-
-       if (compname /= 'ATM') then
-          ! get model_mask
-          allocate(model_mask(1))
-          rcode = pio_inq_varid(pioid, 'mask', varid)
-          call pio_check_err(rcode, 'pio_inq_varid for area in file '//trim(filename))
-          rcode = pio_get_var(pioid, varid, start, count, model_mask)
-          call pio_check_err(rcode, 'pio_get_var for area in file '//trim(filename))
-
-          ! get model_frac
-          allocate(model_frac(1))
-          rcode = pio_inq_varid(pioid, 'frac', varid)
-          call pio_check_err(rcode, 'pio_inq_varid for area in file '//trim(filename))
-          rcode = pio_get_var(pioid, varid, start, count, model_frac)
-          call pio_check_err(rcode, 'pio_get_var for area in file '//trim(filename))
-
-          ! set the model mesh mask
-          call ESMF_MeshSet(model_mesh, elementMask=model_mask, rc=rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       end if
-
+       read(cvalue,*) model_frac(1)
+    else if (compname == 'OCN' .or. compname == 'ICE') then
+       call NUOPC_CompAttributeGet(gcomp, name='scol_ocnmask', value=cvalue, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       read(cvalue,*) model_mask(1)
+       call NUOPC_CompAttributeGet(gcomp, name='scol_ocnfrac', value=cvalue, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       read(cvalue,*) model_frac(1)
+    else
+       call shr_sys_abort('ERROR: currently component '//trim(compname)//' is not supported for single column')
     end if
 
-    !-------------------------------------
-    ! Non single-column mode
-    !-------------------------------------
+    ! Use center and come up with arbitrary area delta lon and lat = .1 degree
+    maxIndex(1)       = 1                ! number of lons
+    maxIndex(2)       = 1                ! number of lats
+    mincornerCoord(1) = scol_lon - .1_r8 ! min lon
+    mincornerCoord(2) = scol_lat - .1_r8 ! min lat
+    maxcornerCoord(1) = scol_lon + .1_r8 ! max lon
+    maxcornerCoord(2) = scol_lat + .1_r8 ! max lat
 
-    if (.not. scol_mode) then
-
-       ! allocate xv and read it in
-       allocate(xv(nv,ni,nj))
-       rcode = pio_inq_varid(pioid, 'xv', varid)
-       call pio_check_err(rcode, 'pio_inq_varid for xv in file '//trim(filename))
-       rcode = pio_get_var(pioid, varid, xv)
-       call pio_check_err(rcode, 'pio_get_var for xv in file '//trim(filename))
-
-       ! allocate yv and read it in
-       allocate(yv(nv,ni,nj))
-       rcode = pio_inq_varid(pioid, 'yv', varid)
-       call pio_check_err(rcode, 'pio_inq_varid for yv in file '//trim(filename))
-       rcode = pio_get_var(pioid, varid, yv)
-       call pio_check_err(rcode, 'pio_get_var for yv in file '//trim(filename))
-
-       ! create grid from corner vertices
-       maxIndex(1)       = ni          ! number of lons
-       maxIndex(2)       = nj          ! number of lats
-       mincornerCoord(1) = xv(1,1,1)   ! min lon
-       mincornerCoord(2) = yv(1,1,1)   ! min lat
-       maxcornerCoord(1) = xv(3,ni,nj) ! max lon
-       maxcornerCoord(2) = yv(3,ni,nj) ! max lat
-
-       ! create the model grid
-       lgrid = ESMF_GridCreateNoPeriDimUfrm (maxindex=maxindex, &
-            mincornercoord=mincornercoord, maxcornercoord= maxcornercoord, &
-            staggerloclist=(/ESMF_STAGGERLOC_CENTER, ESMF_STAGGERLOC_CORNER/), rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-       ! create the mesh from the grid
-       model_mesh = ESMF_MeshCreate(lgrid, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-       ! For the ATM component - the fractions and masks are always 1 - don't read them
-       ! in or reset the mesh
-       if (compname /= 'ATM') then
-          ! allocate model_mask and read it in
-          allocate(model_mask(ni*nj))
-          rcode = pio_inq_varid(pioid, 'mask', varid)
-          call pio_check_err(rcode, 'pio_inq_varid for mask in file '//trim(filename))
-          rcode = pio_get_var(pioid, varid, model_mask)
-          call pio_check_err(rcode, 'pio_get_var for mask in file '//trim(filename))
-
-          ! allocate model_frac and read it in
-          allocate(model_frac(ni*nj))
-          rcode = pio_inq_varid(pioid, 'frac', varid)
-          call pio_check_err(rcode, 'pio_inq_varid for frac in file '//trim(filename))
-          rcode = pio_get_var(pioid, varid, model_frac)
-          call pio_check_err(rcode, 'pio_get_var for frac in file '//trim(filename))
-
-          ! reset the model mesh mask if not an atmosphere component
-          call ESMF_MeshSet(model_mesh, elementMask=mask, rc=rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       end if
-
-    end if
-
-    !-------------------------------------
-    ! close domain file and write diagnostic output
-    !-------------------------------------
-
-    call pio_seterrorhandling(pioid, PIO_INTERNAL_ERROR)
-    call pio_closefile(pioid)
-
-    call ESMF_MeshGet(model_mesh, numOwnedElements=numOwnedElements, spatialDim=spatialDim, rc=rc)
+    ! create the model grid
+    lgrid = ESMF_GridCreateNoPeriDimUfrm (maxindex=maxindex, &
+         mincornercoord=mincornercoord, maxcornercoord= maxcornercoord, &
+         staggerloclist=(/ESMF_STAGGERLOC_CENTER, ESMF_STAGGERLOC_CORNER/), rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    allocate(ownedElemCoords(spatialDim*numOwnedElements)) ! this is a pointer and must be deallocated
-    call ESMF_MeshGet(model_mesh, ownedElemCoords=ownedElemCoords)
+
+    ! create the mesh from the grid
+    model_mesh = ESMF_MeshCreate(lgrid, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    allocate(lons(numOwnedElements))
-    allocate(lats(numOwnedElements))
-    do n = 1, numOwnedElements
-       lons(n) = ownedElemCoords(2*n-1)
-       lats(n) = ownedElemCoords(2*n)
-    end do
-    if (my_task == master_task) then
-       write(logunit,*)' Mesh created from file ',trim(filename)
-       write(logunit,*)' mesh element lons = ',lons(:)
-       write(logunit,*)' mesh element lats = ',lats(:)
-    end if
-    deallocate(ownedElemCoords)
 
-  contains
-
-    subroutine pio_check_err(ierror, description)
-      integer     , intent(in) :: ierror
-      character(*), intent(in) :: description
-      if (ierror /= PIO_NOERR) then
-         write (*,'(6a)') 'ERROR ', trim(description)
-         call shr_sys_abort()
-      endif
-    end subroutine pio_check_err
-
-  end subroutine dshr_mesh_create
+  end subroutine dshr_mesh_create_scol
 
   !===============================================================================
   subroutine dshr_set_runclock(gcomp, rc)
@@ -1532,43 +1299,6 @@ contains
   end subroutine dshr_orbital_update
 
   !===============================================================================
-  real(R8) function getNextRadCDay_i8( ymd, tod, stepno, dtime, iradsw, calendar )
-
-    !  Return the calendar day of the next radiation time-step.
-    !  General Usage: nextswday = getNextRadCDay(curr_date)
-
-    ! input/output variables
-    integer    , intent(in)    :: ymd
-    integer    , intent(in)    :: tod
-    integer(I8), intent(in)    :: stepno
-    integer    , intent(in)    :: dtime
-    integer    , intent(in)    :: iradsw
-    character(*),intent(in)    :: calendar
-
-    ! local variables
-    real(R8) :: nextsw_cday
-    real(R8) :: julday
-    integer  :: liradsw
-    character(*),parameter :: subName =  '(getNextRadCDay) '
-    !-------------------------------------------------------------------------------
-
-    liradsw = iradsw
-    if (liradsw < 0) liradsw  = nint((-liradsw *3600._r8)/dtime)
-    call shr_cal_date2julian(ymd,tod,julday,calendar)
-    if (liradsw > 1) then
-       if (mod(stepno+1,liradsw) == 0 .and. stepno > 0) then
-          nextsw_cday = julday + 2*dtime/shr_const_cday
-       else
-          nextsw_cday = -1._r8
-       end if
-    else
-       nextsw_cday = julday + dtime/shr_const_cday
-    end if
-    getNextRadCDay_i8 = nextsw_cday
-
-  end function getNextRadCDay_i8
-
-  !===============================================================================
   subroutine dshr_set_modelmask(mesh_dst, meshfile_mask, compname, mask_dst, frac_dst, rc)
 
     use ESMF, only : ESMF_FieldRegridStore, ESMF_FieldRegrid, ESMF_FIELDCREATE
@@ -1648,7 +1378,7 @@ contains
          termorderflag=ESMF_TERMORDER_SRCSEQ, checkflag=checkflag, zeroregion=ESMF_REGION_TOTAL, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
 
-    ! now determine mask_dst and frac_dst 
+    ! now determine mask_dst and frac_dst
     call ESMF_MeshGet(mesh_dst, spatialDim=spatialDim, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_FieldGet(field_dst, farrayptr=dataptr1d, rc=rc)
@@ -1683,12 +1413,423 @@ contains
     ! deallocate memory
     call ESMF_RouteHandleDestroy(rhandle, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_FieldDestroy(field_mask, rc=rc) 
+    call ESMF_FieldDestroy(field_mask, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     call ESMF_FieldDestroy(field_dst, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     deallocate(mask_src)
 
   end subroutine dshr_set_modelmask
+
+  subroutine dshr_pio_init(gcomp, sdat, logunit, rc)
+
+    ! ----------------------------------------------
+    ! Initialize PIO
+    ! ----------------------------------------------
+
+    ! input/output variables
+    type(ESMF_GridComp)   , intent(in)    :: gcomp
+    type(shr_strdata_type), intent(inout) :: sdat
+    integer               , intent(in)    :: logunit
+    integer               , intent(out)   :: rc
+
+    ! local variables:
+    type(ESMF_VM)     :: vm
+    integer           :: mpicom, my_task, petCount
+    integer           :: pio_numiotasks
+    integer           :: pio_stride
+    integer           :: pio_rearranger
+    integer           :: pio_root
+    integer           :: pio_debug_level
+    integer           :: pio_rearr_comm_type
+    integer           :: pio_rearr_comm_fcd
+    logical           :: pio_rearr_comm_enable_hs_comp2io
+    logical           :: pio_rearr_comm_enable_isend_comp2io
+    integer           :: pio_rearr_comm_max_pend_req_comp2io
+    logical           :: pio_rearr_comm_enable_hs_io2comp
+    logical           :: pio_rearr_comm_enable_isend_io2comp
+    integer           :: pio_rearr_comm_max_pend_req_io2comp
+    logical           :: isPresent, isSet
+    integer           :: ret
+    character(len=CL) :: cvalue
+    character(len=CS) :: cname
+    character(len=CL) :: logmsg
+    character(len=CL) :: diro
+    character(len=CL) :: logfile
+    character(len=*),parameter  :: subname='(dshr_pio_init)'
+    !-------------------------------------------------------------------------------
+
+    rc = ESMF_SUCCESS
+
+    ! generate local mpi comm
+    call ESMF_GridCompGet(gcomp, vm=vm, name=cname, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    call ESMF_VMGet(vm, mpiCommunicator=mpicom, localPet=my_task, &
+         petCount=petCount, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    ! query component specific PIO attributes
+    ! pio_netcdf_format
+    call NUOPC_CompAttributeGet(gcomp, name='pio_netcdf_format', value=cvalue, &
+         isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    if (isPresent .and. isSet) then
+       cvalue = ESMF_UtilStringUpperCase(cvalue)
+       if (trim(cvalue) .eq. 'CLASSIC') then
+          sdat%io_format = 0
+       else if (trim(cvalue) .eq. '64BIT_OFFSET') then
+          sdat%io_format = PIO_64BIT_OFFSET
+       else if (trim(cvalue) .eq. '64BIT_DATA') then
+          sdat%io_format = PIO_64BIT_DATA
+       else
+         call ESMF_LogWrite(trim(subname)//'-'//trim(cname)// &
+              ' : need to provide valid option for pio_ioformat &
+              (CLASSIC|64BIT_OFFSET|64BIT_DATA)', ESMF_LOGMSG_INFO)
+         rc = ESMF_FAILURE
+         return
+       end if
+    else
+       cvalue = '64BIT_OFFSET'
+       sdat%io_format = PIO_64BIT_OFFSET
+    end if
+    if (my_task == master_task) write(logunit,*) trim(subname)//' : pio_netcdf_format = ', &
+       trim(cvalue), sdat%io_format
+
+    ! pio_typename
+    call NUOPC_CompAttributeGet(gcomp, name='pio_typename', value=cvalue, &
+         isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    if (isPresent .and. isSet) then
+       cvalue = ESMF_UtilStringUpperCase(cvalue)
+       if (trim(cvalue) .eq. 'NETCDF') then
+          sdat%io_type = PIO_IOTYPE_NETCDF
+       else if (trim(cvalue) .eq. 'PNETCDF') then
+          sdat%io_type = PIO_IOTYPE_PNETCDF
+       else if (trim(cvalue) .eq. 'NETCDF4C') then
+          sdat%io_type = PIO_IOTYPE_NETCDF4C
+       else if (trim(cvalue) .eq. 'NETCDF4P') then
+          sdat%io_type = PIO_IOTYPE_NETCDF4P
+       else
+         call ESMF_LogWrite(trim(subname)//'-'//trim(cname)// &
+              ' : need to provide valid option for pio_typename &
+              (NETCDF|PNETCDF|NETCDF4C|NETCDF4P)', ESMF_LOGMSG_INFO)
+         rc = ESMF_FAILURE
+         return
+       end if
+    else
+       cvalue = 'NETCDF'
+       sdat%io_type = PIO_IOTYPE_NETCDF
+    end if
+    if (my_task == master_task) write(logunit,*) trim(subname)//' : pio_typename = ', &
+       trim(cvalue), sdat%io_type
+
+    ! pio_root
+    call NUOPC_CompAttributeGet(gcomp, name='pio_root', value=cvalue, &
+         isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    if (isPresent .and. isSet) then
+       read(cvalue,*) pio_root
+       if (pio_root < 0) then
+          pio_root = 1
+       endif
+       pio_root = min(pio_root, petCount-1)
+    else
+       pio_root = 1
+    end if
+    if (my_task == master_task) write(logunit,*) trim(subname)//' : pio_root = ', &
+       pio_root
+
+    ! pio_stride
+    call NUOPC_CompAttributeGet(gcomp, name='pio_stride', value=cvalue, &
+         isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    if (isPresent .and. isSet) then
+       read(cvalue,*) pio_stride
+    else
+       pio_stride = -99
+    end if
+    if (my_task == master_task) write(logunit,*) trim(subname)//' : pio_stride = ', &
+       pio_stride
+
+    ! pio_numiotasks
+    call NUOPC_CompAttributeGet(gcomp, name='pio_numiotasks', value=cvalue, &
+        isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    if (isPresent .and. isSet) then
+       read(cvalue,*) pio_numiotasks
+    else
+       pio_numiotasks = -99
+    end if
+    if (my_task == master_task) write(logunit,*) trim(subname)//' : pio_numiotasks = ', &
+       pio_numiotasks
+
+    ! check for parallel IO, it requires at least two io pes
+    if (petCount > 1 .and. pio_numiotasks == 1 .and. &
+       (sdat%io_type .eq. PIO_IOTYPE_PNETCDF .or. &
+        sdat%io_type .eq. PIO_IOTYPE_NETCDF4P)) then
+       pio_numiotasks = 2
+       pio_stride = min(pio_stride, petCount/2)
+       if (my_task == master_task) then
+          write(logunit,*) ' parallel io requires at least two io pes - following parameters are updated:'
+          write(logunit,*) trim(subname)//' : pio_stride = ', pio_stride
+          write(logunit,*) trim(subname)//' : pio_numiotasks = ', pio_numiotasks
+       end if
+    endif
+
+    ! check/set/correct io pio parameters
+    if (pio_stride > 0 .and. pio_numiotasks < 0) then
+       pio_numiotasks = max(1, petCount/pio_stride)
+       if (my_task == master_task) write(logunit,*) trim(subname)//' : update pio_numiotasks = ', pio_numiotasks
+    else if(pio_numiotasks > 0 .and. pio_stride < 0) then
+       pio_stride = max(1, petCount/pio_numiotasks)
+       if (my_task == master_task) write(logunit,*) trim(subname)//' : update pio_stride = ', pio_stride
+    else if(pio_numiotasks < 0 .and. pio_stride < 0) then
+       pio_stride = max(1,petCount/4)
+       pio_numiotasks = max(1,petCount/pio_stride)
+       if (my_task == master_task) write(logunit,*) trim(subname)//' : update pio_numiotasks = ', pio_numiotasks
+       if (my_task == master_task) write(logunit,*) trim(subname)//' : update pio_stride = ', pio_stride
+    end if
+    if (pio_stride == 1) then
+       pio_root = 0
+    endif
+
+    if (pio_root + (pio_stride)*(pio_numiotasks-1) >= petCount .or. &
+       pio_stride <= 0 .or. pio_numiotasks <= 0 .or. &
+       pio_root < 0 .or. pio_root > petCount-1) then
+       if (petCount < 100) then
+          pio_stride = max(1, petCount/4)
+       else if(petCount < 1000) then
+          pio_stride = max(1, petCount/8)
+       else
+          pio_stride = max(1, petCount/16)
+       end if
+       if(pio_stride > 1) then
+          pio_numiotasks = petCount/pio_stride
+          pio_root = min(1, petCount-1)
+       else
+          pio_numiotasks = petCount
+          pio_root = 0
+       end if
+       if (my_task == master_task) then
+          write(logunit,*) 'pio_stride, iotasks or root out of bounds - resetting to defaults:'
+          write(logunit,*) trim(subname)//' : pio_root = ', pio_root
+          write(logunit,*) trim(subname)//' : pio_stride = ', pio_stride
+          write(logunit,*) trim(subname)//' : pio_numiotasks = ', pio_numiotasks
+       end if
+    end if
+
+    ! init PIO
+    allocate(sdat%pio_subsystem)
+    if (my_task == master_task) write(logunit,*) trim(subname)//' : calling pio init'
+    call pio_init(my_task, mpicom, pio_numiotasks, 0, pio_stride, &
+                  pio_rearranger, sdat%pio_subsystem, base=pio_root)
+
+    ! PIO debug related options
+    ! pio_debug_level
+    call NUOPC_CompAttributeGet(gcomp, name='pio_debug_level', value=cvalue, &
+         isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    if (isPresent .and. isSet) then
+       read(cvalue,*) pio_debug_level
+       if (pio_debug_level < 0 .or. pio_debug_level > 6) then
+         call ESMF_LogWrite(trim(subname)//': need to provide valid option for &
+              pio_debug_level (0-6)', ESMF_LOGMSG_INFO)
+         rc = ESMF_FAILURE
+         return
+       end if
+    else
+       pio_debug_level = 0
+    end if
+    if (my_task == master_task) write(logunit,*) trim(subname), &
+       ' : pio_debug_level = ',pio_debug_level
+
+    ! set PIO debug level
+    call pio_setdebuglevel(pio_debug_level)
+
+    ! pio_rearranger
+    call NUOPC_CompAttributeGet(gcomp, name='pio_rearranger', value=cvalue, &
+         isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (isPresent .and. isSet) then
+       cvalue = ESMF_UtilStringUpperCase(cvalue)
+       if (trim(cvalue) .eq. 'BOX') then
+         pio_rearranger = PIO_REARR_BOX
+       else if (trim(cvalue) .eq. 'SUBSET') then
+         pio_rearranger = PIO_REARR_SUBSET
+       else
+         call ESMF_LogWrite(trim(subname)//'-'//trim(cname)// &
+              ' : need to provide valid option for pio_rearranger &
+              (BOX|SUBSET)', ESMF_LOGMSG_INFO)
+         rc = ESMF_FAILURE
+         return
+       end if
+    else
+       cvalue = 'BOX'
+       pio_rearranger = PIO_REARR_BOX
+    end if
+    if (my_task == master_task) write(logunit,*) trim(subname)//' : pio_rearranger = ', &
+       trim(cvalue), pio_rearranger
+
+    ! init PIO
+    allocate(sdat%pio_subsystem)
+    if (my_task == master_task) write(logunit,*) trim(subname)//' : calling pio init'
+    call pio_init(my_task, mpicom, pio_numiotasks, 0, pio_stride, &
+                  pio_rearranger, sdat%pio_subsystem, base=pio_root)
+
+    ! query shared PIO rearranger attributes
+    ! pio_rearr_comm_type
+    call NUOPC_CompAttributeGet(gcomp, name='pio_rearr_comm_type', value=cvalue, &
+         isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    if (isPresent .and. isSet) then
+       cvalue = ESMF_UtilStringUpperCase(cvalue)
+       if (trim(cvalue) .eq. 'P2P') then
+          pio_rearr_comm_type = PIO_REARR_COMM_P2P
+       else if (trim(cvalue) .eq. 'COLL') then
+          pio_rearr_comm_type = PIO_REARR_COMM_COLL
+       else
+         call ESMF_LogWrite(trim(subname)//' : need to provide valid option for &
+              pio_rearr_comm_type (P2P|COLL)', ESMF_LOGMSG_INFO)
+         rc = ESMF_FAILURE
+         return
+       end if
+    else
+       cvalue = 'P2P'
+       pio_rearr_comm_type = PIO_REARR_COMM_P2P
+    end if
+    if (my_task == master_task) write(logunit,*) trim(subname)// &
+       ' : pio_rearr_comm_type = ', trim(cvalue), pio_rearr_comm_type
+
+    ! pio_rearr_comm_fcd
+    call NUOPC_CompAttributeGet(gcomp, name='pio_rearr_comm_fcd', value=cvalue, &
+         isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    if (isPresent .and. isSet) then
+       cvalue = ESMF_UtilStringUpperCase(cvalue)
+       if (trim(cvalue) .eq. '2DENABLE') then
+          pio_rearr_comm_fcd = PIO_REARR_COMM_FC_2D_ENABLE
+       else if (trim(cvalue) .eq. 'IO2COMP') then
+          pio_rearr_comm_fcd = PIO_REARR_COMM_FC_1D_IO2COMP
+       else if (trim(cvalue) .eq. 'COMP2IO') then
+          pio_rearr_comm_fcd = PIO_REARR_COMM_FC_1D_COMP2IO
+       else if (trim(cvalue) .eq. '2DDISABLE') then
+          pio_rearr_comm_fcd = PIO_REARR_COMM_FC_2D_DISABLE
+       else
+         call ESMF_LogWrite(trim(subname)//' : need to provide valid option for &
+              pio_rearr_comm_fcd (2DENABLE|IO2COMP|COMP2IO|2DDISABLE)', ESMF_LOGMSG_INFO)
+         rc = ESMF_FAILURE
+         return
+       end if
+    else
+       cvalue = '2DENABLE'
+       pio_rearr_comm_fcd = PIO_REARR_COMM_FC_2D_ENABLE
+    end if
+    if (my_task == master_task) write(logunit,*) trim(subname)// &
+       ' : pio_rearr_comm_fcd = ', trim(cvalue), pio_rearr_comm_fcd
+
+    ! pio_rearr_comm_enable_hs_comp2io
+    call NUOPC_CompAttributeGet(gcomp, name='pio_rearr_comm_enable_hs_comp2io', &
+         value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    if (isPresent .and. isSet) then
+       read(cvalue,*) pio_rearr_comm_enable_hs_comp2io
+    else
+       pio_rearr_comm_enable_hs_comp2io = .true.
+    end if
+
+    ! pio_rearr_comm_enable_isend_comp2io
+    call NUOPC_CompAttributeGet(gcomp, name='pio_rearr_comm_enable_isend_comp2io', &
+         value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    if (isPresent .and. isSet) then
+       read(cvalue,*) pio_rearr_comm_enable_isend_comp2io
+    else
+       pio_rearr_comm_enable_isend_comp2io = .false.
+    end if
+
+    ! pio_rearr_comm_max_pend_req_comp2io
+    call NUOPC_CompAttributeGet(gcomp, name='pio_rearr_comm_max_pend_req_comp2io', &
+         value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    if (isPresent .and. isSet) then
+       read(cvalue,*) pio_rearr_comm_max_pend_req_comp2io
+    else
+       pio_rearr_comm_max_pend_req_comp2io = 0
+    end if
+
+    ! pio_rearr_comm_enable_hs_io2comp
+    call NUOPC_CompAttributeGet(gcomp, name='pio_rearr_comm_enable_hs_io2comp', &
+         value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    if (isPresent .and. isSet) then
+       read(cvalue,*) pio_rearr_comm_enable_hs_io2comp
+    else
+       pio_rearr_comm_enable_hs_io2comp = .false.
+    end if
+
+    ! pio_rearr_comm_enable_isend_io2comp
+    call NUOPC_CompAttributeGet(gcomp, name='pio_rearr_comm_enable_isend_io2comp', &
+         value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    if (isPresent .and. isSet) then
+       read(cvalue,*) pio_rearr_comm_enable_isend_io2comp
+    else
+       pio_rearr_comm_enable_isend_io2comp = .true.
+    end if
+
+    ! pio_rearr_comm_max_pend_req_io2comp
+    call NUOPC_CompAttributeGet(gcomp, name='pio_rearr_comm_max_pend_req_io2comp', &
+         value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    if (isPresent .and. isSet) then
+       read(cvalue,*) pio_rearr_comm_max_pend_req_io2comp
+    else
+       pio_rearr_comm_max_pend_req_io2comp = 64
+    end if
+
+    ! print out PIO rearranger parameters
+    if (my_task == master_task) then
+       write(logunit,*) trim(subname)//' : pio_rearr_comm_enable_hs_comp2io = ', &
+            pio_rearr_comm_enable_hs_comp2io
+       write(logunit,*) trim(subname)//' : pio_rearr_comm_enable_isend_comp2io = ', &
+            pio_rearr_comm_enable_isend_comp2io
+       write(logunit,*) trim(subname)//' : pio_rearr_comm_max_pend_req_comp2io = ', &
+            pio_rearr_comm_max_pend_req_comp2io
+       write(logunit,*) trim(subname)//' : pio_rearr_comm_enable_hs_io2comp = ', &
+            pio_rearr_comm_enable_hs_io2comp
+       write(logunit,*) trim(subname)//' : pio_rearr_comm_enable_isend_io2comp = ', &
+            pio_rearr_comm_enable_isend_io2comp
+       write(logunit,*) trim(subname)//' : pio_rearr_comm_max_pend_req_io2comp = ', &
+            pio_rearr_comm_max_pend_req_io2comp
+    end if
+
+    ! set PIO rearranger options
+    if (my_task == master_task) write(logunit,*) trim(subname)// &
+       ' calling pio_set_rearr_opts'
+    ret = pio_set_rearr_opts(sdat%pio_subsystem, pio_rearr_comm_type, &
+                             pio_rearr_comm_fcd, &
+                             pio_rearr_comm_enable_hs_comp2io, &
+                             pio_rearr_comm_enable_isend_comp2io, &
+                             pio_rearr_comm_max_pend_req_comp2io, &
+                             pio_rearr_comm_enable_hs_io2comp, &
+                             pio_rearr_comm_enable_isend_io2comp, &
+                             pio_rearr_comm_max_pend_req_io2comp)
+
+  end subroutine dshr_pio_init
 
 end module dshr_mod

@@ -1,4 +1,8 @@
+#ifdef CESMCOUPLED
 module lnd_comp_nuopc
+#else
+module cdeps_dlnd_comp
+#endif
 
   !----------------------------------------------------------------------------
   ! This is the NUOPC cap for DLND
@@ -17,14 +21,14 @@ module lnd_comp_nuopc
   use NUOPC_Model       , only : model_label_Advance     => label_Advance
   use NUOPC_Model       , only : model_label_SetRunClock => label_SetRunClock
   use NUOPC_Model       , only : model_label_Finalize    => label_Finalize
-  use NUOPC_Model       , only : NUOPC_ModelGet
+  use NUOPC_Model       , only : NUOPC_ModelGet, SetVM
   use shr_kind_mod      , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_sys_mod       , only : shr_sys_abort
   use shr_cal_mod       , only : shr_cal_ymd2date
   use shr_mpi_mod       , only : shr_mpi_bcast
   use dshr_methods_mod  , only : dshr_state_getfldptr, dshr_state_diagnose, chkerr, memcheck
   use dshr_strdata_mod  , only : shr_strdata_type, shr_strdata_advance, shr_strdata_get_stream_domain
-  use dshr_strdata_mod  , only : shr_strdata_init_from_xml
+  use dshr_strdata_mod  , only : shr_strdata_init_from_config
   use dshr_mod          , only : dshr_model_initphase, dshr_init
   use dshr_mod          , only : dshr_state_setscalar, dshr_set_runclock, dshr_log_clock_advance
   use dshr_mod          , only : dshr_restart_read, dshr_restart_write, dshr_mesh_init
@@ -36,7 +40,7 @@ module lnd_comp_nuopc
   private ! except
 
   public  :: SetServices
-
+  public  :: SetVM
   private :: InitializeAdvertise
   private :: InitializeRealize
   private :: ModelAdvance
@@ -69,8 +73,7 @@ module lnd_comp_nuopc
   character(CL)            :: dataMode = nullstr                  ! flags physics options wrt input data
   character(CL)            :: model_meshfile = nullstr            ! full pathname to model meshfile
   character(CL)            :: model_maskfile = nullstr            ! full pathname to obtain mask from
-  character(CL)            :: model_createmesh_fromfile = nullstr ! full pathname to obtain mask from
-  character(CL)            :: xmlfilename                         ! filename to obtain stream info from
+  character(CL)            :: streamfilename                      ! filename to obtain stream info from
   character(CL)            :: nlfilename = nullstr                ! filename to obtain namelist info from
   logical                  :: force_prognostic_true = .false.     ! if true set prognostic true
   character(CL)            :: restfilm = nullstr                  ! model restart file namelist
@@ -93,7 +96,11 @@ module lnd_comp_nuopc
   logical                      :: diagnose_data = .true.
   integer      , parameter     :: master_task=0                   ! task number of master task
   character(*) , parameter     :: rpfile = 'rpointer.lnd'
+#ifdef CESMCOUPLED
   character(*) , parameter     :: modName =  "(lnd_comp_nuopc)"
+#else
+  character(*) , parameter     :: modName =  "(cdeps_dlnd_comp)"
+#endif
   character(*) , parameter     :: u_FILE_u = &
        __FILE__
 
@@ -160,12 +167,12 @@ contains
     integer       :: ierr       ! error code
     logical           :: exists     ! check for file existence
     character(len=*) , parameter :: subname=trim(modName)//':(InitializeAdvertise) '
-    character(*)     , parameter :: F00 = "('(lnd_comp_nuopc) ',8a)"
-    character(*)     , parameter :: F01 = "('(lnd_comp_nuopc) ',a,2x,i8)"
-    character(*)     , parameter :: F02 = "('(lnd_comp_nuopc) ',a,l6)"
+    character(*)     , parameter :: F00 = "('(" // trim(modName) // ") ',8a)"
+    character(*)     , parameter :: F01 = "('(" // trim(modName) // ") ',a,2x,i8)"
+    character(*)     , parameter :: F02 = "('(" // trim(modName) // ") ',a,l6)"
     !-------------------------------------------------------------------------------
 
-    namelist / dlnd_nml / datamode, model_meshfile, model_maskfile, model_createmesh_fromfile, &
+    namelist / dlnd_nml / datamode, model_meshfile, model_maskfile, &
          nx_global, ny_global, restfilm, force_prognostic_true
 
     rc = ESMF_SUCCESS
@@ -175,7 +182,7 @@ contains
 
     ! Obtain flds_scalar values, mpi values, multi-instance values and
     ! set logunit and set shr logging to my log file
-    call dshr_init(gcomp, mpicom, my_task, inst_index, inst_suffix, &
+    call dshr_init(gcomp, 'LND', sdat, mpicom, my_task, inst_index, inst_suffix, &
          flds_scalar_name, flds_scalar_num, flds_scalar_index_nx, flds_scalar_index_ny, &
          logunit, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -197,7 +204,6 @@ contains
     call shr_mpi_bcast(datamode                  , mpicom, 'datamode')
     call shr_mpi_bcast(model_meshfile            , mpicom, 'model_meshfile')
     call shr_mpi_bcast(model_maskfile            , mpicom, 'model_maskfile')
-    call shr_mpi_bcast(model_createmesh_fromfile , mpicom, 'model_createmesh_fromfile')
     call shr_mpi_bcast(nx_global                 , mpicom, 'nx_global')
     call shr_mpi_bcast(ny_global                 , mpicom, 'ny_global')
     call shr_mpi_bcast(restfilm                  , mpicom, 'restfilm')
@@ -205,41 +211,13 @@ contains
 
     ! write namelist input to standard out
     if (my_task == master_task) then
-       if (model_createmesh_fromfile /= nullstr) then
-          write(logunit,F00)' model_create_meshfile_fromfile = ',trim(model_createmesh_fromfile)
-       else
-          write(logunit,F00)' model_meshfile = ',trim(model_meshfile)
-          write(logunit,F00)' model_maskfile = ',trim(model_maskfile)
-       end if
+       write(logunit,F00)' model_meshfile = ',trim(model_meshfile)
+       write(logunit,F00)' model_maskfile = ',trim(model_maskfile)
        write(logunit ,*)' datamode              = ',datamode
        write(logunit ,*)' nx_global             = ',nx_global
        write(logunit ,*)' ny_global             = ',ny_global
        write(logunit ,*)' restfilm              = ',trim(restfilm)
        write(logunit ,*)' force_prognostic_true = ',force_prognostic_true
-    endif
-
-    ! Check that files exists
-    if (my_task == master_task) then
-       if (model_createmesh_fromfile /= nullstr) then
-          inquire(file=trim(model_createmesh_fromfile), exist=exists)
-          if (.not.exists) then
-             write(logunit, *)' ERROR: model_createmesh_fromfile '//&
-                  trim(model_createmesh_fromfile)//' does not exist'
-             call shr_sys_abort(trim(subname)//' ERROR: model_createmesh_fromfile '//&
-                  trim(model_createmesh_fromfile)//' does not exist')
-          end if
-       else
-          inquire(file=trim(model_meshfile), exist=exists)
-          if (.not.exists) then
-             write(logunit, *)' ERROR: model_meshfile '//trim(model_meshfile)//' does not exist'
-             call shr_sys_abort(trim(subname)//' ERROR: model_meshfile '//trim(model_meshfile)//' does not exist')
-          end if
-          inquire(file=trim(model_maskfile), exist=exists)
-          if (.not.exists) then
-             write(logunit, *)' ERROR: model_maskfile '//trim(model_maskfile)//' does not exist'
-             call shr_sys_abort(trim(subname)//' ERROR: model_maskfile '//trim(model_maskfile)//' does not exist')
-          end if
-       end if
     endif
 
     ! Validate sdat datamode
@@ -282,13 +260,15 @@ contains
 
     ! Initialize sdat
     call ESMF_TraceRegionEnter('dlnd_strdata_init')
-    call dshr_mesh_init(gcomp, nullstr, logunit, 'LND', nx_global, ny_global, &
-         model_meshfile, model_maskfile, model_createmesh_fromfile, model_mesh, &
-         model_mask, model_frac, restart_read, rc=rc)
+    call dshr_mesh_init(gcomp, sdat, nullstr, logunit, 'LND', nx_global, ny_global, &
+         model_meshfile, model_maskfile, model_mesh, model_mask, model_frac, restart_read, rc=rc)
 
     ! Initialize stream data type
-    xmlfilename = 'dlnd.streams'//trim(inst_suffix)//'.xml'
-    call shr_strdata_init_from_xml(sdat, xmlfilename, model_mesh, clock, 'LND', logunit, rc=rc)
+    streamfilename = 'dlnd.streams'//trim(inst_suffix)
+#ifndef DISABLE_FoX
+    streamfilename = trim(streamfilename)//'.xml'
+#endif
+    call shr_strdata_init_from_config(sdat, streamfilename, model_mesh, clock, 'LND', logunit, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_TraceRegionExit('dlnd_strdata_init')
 
@@ -587,4 +567,8 @@ contains
 
   end subroutine dlnd_comp_run
 
+#ifdef CESMCOUPLED
 end module lnd_comp_nuopc
+#else
+end module cdeps_dlnd_comp
+#endif

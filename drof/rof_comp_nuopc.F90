@@ -1,4 +1,9 @@
+#ifdef CESMCOUPLED
 module rof_comp_nuopc
+#else
+module cdeps_drof_comp
+#endif
+
 
   !----------------------------------------------------------------------------
   ! This is the NUOPC cap for DROF
@@ -17,7 +22,7 @@ module rof_comp_nuopc
   use NUOPC_Model      , only : model_label_Advance     => label_Advance
   use NUOPC_Model      , only : model_label_SetRunClock => label_SetRunClock
   use NUOPC_Model      , only : model_label_Finalize    => label_Finalize
-  use NUOPC_Model      , only : NUOPC_ModelGet
+  use NUOPC_Model      , only : NUOPC_ModelGet, SetVM
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_const_mod    , only : SHR_CONST_SPVAL
   use shr_sys_mod      , only : shr_sys_abort
@@ -25,7 +30,7 @@ module rof_comp_nuopc
   use shr_mpi_mod      , only : shr_mpi_bcast
   use dshr_methods_mod , only : dshr_state_getfldptr, dshr_state_diagnose, chkerr, memcheck
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_advance, shr_strdata_get_stream_domain
-  use dshr_strdata_mod , only : shr_strdata_init_from_xml
+  use dshr_strdata_mod , only : shr_strdata_init_from_config
   use dshr_mod         , only : dshr_model_initphase, dshr_init
   use dshr_mod         , only : dshr_state_setscalar, dshr_set_runclock
   use dshr_mod         , only : dshr_restart_read, dshr_restart_write, dshr_mesh_init
@@ -36,6 +41,7 @@ module rof_comp_nuopc
   private ! except
 
   public  :: SetServices
+  public  :: SetVM
   private :: InitializeAdvertise
   private :: InitializeRealize
   private :: ModelAdvance
@@ -61,12 +67,11 @@ module rof_comp_nuopc
   character(CL)                :: case_name                           ! case name
   character(*) , parameter     :: nullstr = 'null'
                                                                       ! drof_in namelist input
-  character(CL)                :: xmlfilename = nullstr               ! filename to obtain namelist info from
+  character(CL)                :: streamfilename = nullstr            ! filename to obtain stream info from
   character(CL)                :: nlfilename = nullstr                ! filename to obtain namelist info from
   character(CL)                :: dataMode = nullstr                  ! flags physics options wrt input data
   character(CL)                :: model_meshfile = nullstr            ! full pathname to model meshfile
   character(CL)                :: model_maskfile = nullstr            ! full pathname to obtain mask from
-  character(CL)                :: model_createmesh_fromfile = nullstr ! full pathname to obtain mask from
   character(CL)                :: restfilm = nullstr                  ! model restart file namelist
   integer                      :: nx_global
   integer                      :: ny_global
@@ -74,7 +79,11 @@ module rof_comp_nuopc
   logical                      :: diagnose_data = .true.
   integer      , parameter     :: master_task=0                       ! task number of master task
   character(*) , parameter     :: rpfile = 'rpointer.rof'
+#ifdef CESMCOUPLED
   character(*) , parameter     :: modName =  "(rof_comp_nuopc)"
+#else
+  character(*) , parameter     :: modName =  "(cdeps_drof_comp)"
+#endif
 
   ! linked lists
   type(fldList_type) , pointer :: fldsExport => null()
@@ -156,12 +165,12 @@ contains
     logical           :: exists     ! check for file existence
     type(fldlist_type), pointer :: fldList
     character(len=*),parameter :: subname=trim(modName)//':(InitializeAdvertise) '
-    character(*)    ,parameter :: F00 = "('(rof_comp_nuopc) ',8a)"
-    character(*)    ,parameter :: F01 = "('(rof_comp_nuopc) ',a,2x,i8)"
-    character(*)    ,parameter :: F02 = "('(rof_comp_nuopc) ',a,l6)"
+    character(*)    ,parameter :: F00 = "('(" // trim(modName) // ") ',8a)"
+    character(*)    ,parameter :: F01 = "('(" // trim(modName) // ") ',a,2x,i8)"
+    character(*)    ,parameter :: F02 = "('(" // trim(modName) // ") ',a,l6)"
     !-------------------------------------------------------------------------------
 
-    namelist / drof_nml / datamode, model_meshfile, model_maskfile, model_createmesh_fromfile, &
+    namelist / drof_nml / datamode, model_meshfile, model_maskfile, &
          restfilm, nx_global, ny_global
 
     rc = ESMF_SUCCESS
@@ -171,7 +180,7 @@ contains
 
     ! Obtain flds_scalar values, mpi values, multi-instance values and
     ! set logunit and set shr logging to my log file
-    call dshr_init(gcomp, mpicom, my_task, inst_index, inst_suffix, &
+    call dshr_init(gcomp, 'ROF', sdat, mpicom, my_task, inst_index, inst_suffix, &
          flds_scalar_name, flds_scalar_num, flds_scalar_index_nx, flds_scalar_index_ny, &
          logunit, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -192,44 +201,17 @@ contains
 
        ! write namelist input to standard out
        write(logunit,F00)' datamode = ',trim(datamode)
-       if (model_createmesh_fromfile /= nullstr) then
-          write(logunit,F00)' model_create_meshfile_fromfile = ',trim(model_createmesh_fromfile)
-       else
-          write(logunit,F00)' model_meshfile = ',trim(model_meshfile)
-          write(logunit,F00)' model_maskfile = ',trim(model_maskfile)
-       end if
+       write(logunit,F00)' model_meshfile = ',trim(model_meshfile)
+       write(logunit,F00)' model_maskfile = ',trim(model_maskfile)
        write(logunit,F01)' nx_global = ',nx_global
        write(logunit,F01)' ny_global = ',ny_global
        write(logunit,F00)' restfilm = ',trim(restfilm)
-
-       ! check that files exists
-       if (model_createmesh_fromfile /= nullstr) then
-          inquire(file=trim(model_createmesh_fromfile), exist=exists)
-          if (.not.exists) then
-             write(logunit, *)' ERROR: model_createmesh_fromfile '//&
-                  trim(model_createmesh_fromfile)//' does not exist'
-             call shr_sys_abort(trim(subname)//' ERROR: model_createmesh_fromfile '//&
-                  trim(model_createmesh_fromfile)//' does not exist')
-          end if
-       else
-          inquire(file=trim(model_meshfile), exist=exists)
-          if (.not.exists) then
-             write(logunit, *)' ERROR: model_meshfile '//trim(model_meshfile)//' does not exist'
-             call shr_sys_abort(trim(subname)//' ERROR: model_meshfile '//trim(model_meshfile)//' does not exist')
-          end if
-          inquire(file=trim(model_maskfile), exist=exists)
-          if (.not.exists) then
-             write(logunit, *)' ERROR: model_maskfile '//trim(model_maskfile)//' does not exist'
-             call shr_sys_abort(trim(subname)//' ERROR: model_maskfile '//trim(model_maskfile)//' does not exist')
-          end if
-       end if
-    endif
+    end if
 
     ! broadcast namelist input
     call shr_mpi_bcast(datamode                  , mpicom, 'datamode')
     call shr_mpi_bcast(model_meshfile            , mpicom, 'model_meshfile')
     call shr_mpi_bcast(model_maskfile            , mpicom, 'model_maskfile')
-    call shr_mpi_bcast(model_createmesh_fromfile , mpicom, 'model_createmesh_fromfile')
     call shr_mpi_bcast(nx_global                 , mpicom, 'nx_global')
     call shr_mpi_bcast(ny_global                 , mpicom, 'ny_global')
     call shr_mpi_bcast(restfilm                  , mpicom, 'restfilm')
@@ -271,7 +253,7 @@ contains
     integer         :: current_mon  ! model month
     integer         :: current_day  ! model day
     integer         :: current_tod  ! model sec into model date
-    character(len=*), parameter :: F00   = "('rof_comp_nuopc: ')',8a)"
+    character(len=*), parameter :: F00   = "('" // trim(modName) // ": ')',8a)"
     character(len=*), parameter :: subname=trim(modName)//':(InitializeRealize) '
     !-------------------------------------------------------------------------------
 
@@ -279,14 +261,16 @@ contains
 
     ! Initialize mesh, restart flag, logunit
     call ESMF_TraceRegionEnter('drof_strdata_init')
-    call dshr_mesh_init(gcomp, nullstr, logunit, 'ROF', nx_global, ny_global, &
-         model_meshfile, model_maskfile, model_createmesh_fromfile, model_mesh, &
-         model_mask, model_frac, restart_read, rc=rc)
+    call dshr_mesh_init(gcomp, sdat, nullstr, logunit, 'ROF', nx_global, ny_global, &
+         model_meshfile, model_maskfile, model_mesh, model_mask, model_frac, restart_read, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Initialize stream data type
-    xmlfilename = 'drof.streams'//trim(inst_suffix)//'.xml'
-    call shr_strdata_init_from_xml(sdat, xmlfilename, model_mesh, clock, 'ROF', logunit, rc=rc)
+    streamfilename = 'drof.streams'//trim(inst_suffix)
+#ifndef DISABLE_FOX
+    streamfilename = trim(streamfilename)//'.xml'
+#endif
+    call shr_strdata_init_from_config(sdat, streamfilename, model_mesh, clock, 'ROF', logunit, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_TraceRegionExit('drof_strdata_init')
 
@@ -479,4 +463,8 @@ contains
     end if
   end subroutine ModelFinalize
 
+#ifdef CESMCOUPLED
 end module rof_comp_nuopc
+#else
+end module cdeps_drof_comp
+#endif

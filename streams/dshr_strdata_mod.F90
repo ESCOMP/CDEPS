@@ -26,13 +26,18 @@ module dshr_strdata_mod
   use shr_cal_mod      , only : shr_cal_noleap, shr_cal_gregorian
   use shr_cal_mod      , only : shr_cal_date2ymd, shr_cal_ymd2date
   use shr_orb_mod      , only : shr_orb_decl, shr_orb_cosz, shr_orb_undef_real
+#ifdef CESMCOUPLED
   use shr_pio_mod      , only : shr_pio_getiosys, shr_pio_getiotype, shr_pio_getioformat
+#endif
   use shr_string_mod   , only : shr_string_listgetname, shr_string_listisvalid, shr_string_listgetnum
 
   use dshr_stream_mod  , only : shr_stream_streamtype, shr_stream_getModelFieldList, shr_stream_getStreamFieldList
   use dshr_stream_mod  , only : shr_stream_taxis_cycle, shr_stream_taxis_extend, shr_stream_findBounds
   use dshr_stream_mod  , only : shr_stream_getCurrFile, shr_stream_setCurrFile, shr_stream_getMeshFilename
-  use dshr_stream_mod  , only : shr_stream_init_from_xml, shr_stream_init_from_inline
+  use dshr_stream_mod  , only : shr_stream_init_from_inline, shr_stream_init_from_esmfconfig
+#ifndef DISABLE_FoX
+  use dshr_stream_mod  , only : shr_stream_init_from_xml
+#endif
   use dshr_stream_mod  , only : shr_stream_getnextfilename, shr_stream_getprevfilename, shr_stream_getData
   use dshr_tinterp_mod , only : shr_tInterp_getCosz, shr_tInterp_getAvgCosz, shr_tInterp_getFactors
   use dshr_methods_mod , only : dshr_fldbun_getfldptr, dshr_fldbun_getfieldN, dshr_fldbun_fldchk, chkerr
@@ -51,7 +56,7 @@ module dshr_strdata_mod
   private
 
   public  :: shr_strdata_type
-  public  :: shr_strdata_init_from_xml
+  public  :: shr_strdata_init_from_config
   public  :: shr_strdata_init_from_inline
   public  :: shr_strdata_setOrbs
   public  :: shr_strdata_advance
@@ -143,7 +148,11 @@ contains
 
   integer function shr_strdata_get_stream_count(sdat)
     type(shr_strdata_type)     , intent(in) :: sdat
-    shr_strdata_get_stream_count = size(sdat%stream)
+    if(associated(sdat%stream)) then
+       shr_strdata_get_stream_count = size(sdat%stream)
+    else
+       shr_strdata_get_stream_count = 0
+    endif
   end function shr_strdata_get_stream_count
 
   !===============================================================================
@@ -171,11 +180,11 @@ contains
   end function shr_strdata_get_stream_fieldbundle
 
   !===============================================================================
-  subroutine shr_strdata_init_from_xml(sdat, xmlfilename, model_mesh, clock, compname, logunit, rc)
+  subroutine shr_strdata_init_from_config(sdat, streamfilename, model_mesh, clock, compname, logunit, rc)
 
     ! input/output variables
     type(shr_strdata_type)     , intent(inout) :: sdat
-    character(len=*)           , intent(in)    :: xmlfilename
+    character(len=*)           , intent(in)    :: streamfilename
     type(ESMF_Mesh)            , intent(in)    :: model_mesh
     type(ESMF_Clock)           , intent(in)    :: clock
     character(len=*)           , intent(in)    :: compname
@@ -184,8 +193,8 @@ contains
 
     ! local variables
     type(ESMF_VM) :: vm
-    integer       :: localPet
-    character(len=*), parameter  :: subname='(shr_strdata_init_from_xml)'
+    integer       :: i, localPet
+    character(len=*), parameter  :: subname='(shr_strdata_init_from_config)'
     ! ----------------------------------------------
     rc = ESMF_SUCCESS
     call ESMF_LogWrite(subname//' called', ESMF_LOGMSG_INFO)
@@ -193,10 +202,12 @@ contains
     ! Initialize log unit
     sdat%logunit = logunit
 
+#ifdef CESMCOUPLED
     ! Initialize sdat  pio
     sdat%pio_subsystem => shr_pio_getiosys(trim(compname))
     sdat%io_type       =  shr_pio_getiotype(trim(compname))
     sdat%io_format     =  shr_pio_getioformat(trim(compname))
+#endif
 
     call ESMF_VMGetCurrent(vm, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -206,7 +217,13 @@ contains
     ! Initialize sdat streams (read xml file for streams)
     sdat%masterproc = (localPet == master_task)
 
-    call shr_stream_init_from_xml(xmlfilename, sdat%stream, sdat%masterproc, sdat%logunit, trim(compname), rc=rc)
+#ifdef DISABLE_FoX
+    call shr_stream_init_from_esmfconfig(streamfilename, sdat%stream, sdat%logunit, &
+         sdat%pio_subsystem, sdat%io_type, sdat%io_format, rc=rc)
+#else
+    call shr_stream_init_from_xml(streamfilename, sdat%stream, sdat%masterproc, sdat%logunit, &
+         sdat%pio_subsystem, sdat%io_type, sdat%io_format, trim(compname), rc=rc)
+#endif
 
     allocate(sdat%pstrm(shr_strdata_get_stream_count(sdat)))
 
@@ -219,7 +236,7 @@ contains
     call shr_strdata_init(sdat, clock, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-  end subroutine shr_strdata_init_from_xml
+  end subroutine shr_strdata_init_from_config
 
   !===============================================================================
   subroutine shr_strdata_init_from_inline(sdat, my_task, logunit, compname, &
@@ -258,10 +275,12 @@ contains
     sdat%logunit = logunit
     sdat%masterproc = (my_task == master_task)
 
+#ifdef CESMCOUPLED
     ! Initialize sdat pio
     sdat%pio_subsystem => shr_pio_getiosys(trim(compname))
     sdat%io_type       =  shr_pio_getiotype(trim(compname))
     sdat%io_format     =  shr_pio_getioformat(trim(compname))
+#endif
 
     ! Initialize sdat%pstrm - ASSUME only 1 stream
     allocate(sdat%pstrm(1))
@@ -273,6 +292,7 @@ contains
 
     ! Initialize sdat stream - ASSUME only 1 stream
     call shr_stream_init_from_inline(sdat%stream, &
+         sdat%pio_subsystem, sdat%io_type, sdat%io_format, &
          stream_meshfile, stream_lev_dimname, stream_mapalgo, &
          stream_yearFirst, stream_yearLast, stream_yearAlign, &
          stream_offset, stream_taxmode, stream_tintalgo, stream_dtlimit, &
@@ -358,7 +378,6 @@ contains
 
     ! local variables
     type(ESMF_Mesh), pointer     :: stream_mesh
-    type(ESMF_Calendar)          :: esmf_calendar   ! esmf calendar
     type(ESMF_CalKind_Flag)      :: esmf_caltype    ! esmf calendar type
     character(CS)                :: calendar        ! calendar name
     integer                      :: ns              ! stream index
@@ -929,7 +948,6 @@ contains
        ! ---------------------------------------------------------
 
        do ns = 1,nstreams
-
           if (trim(sdat%stream(ns)%tinterpalgo) == 'coszen') then
 
              ! Determine stream lower bound index

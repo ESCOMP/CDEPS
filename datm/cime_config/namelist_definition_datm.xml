@@ -37,16 +37,24 @@
       <value datm_mode="1PT" model_grid="1x1_urbanc_alpha">
         1PT.urbanc_alpha
       </value>
+      <value datm_mode="1PT" model_grid="CLM_USRDAT" neon="True">
+        NEON.$NEONSITE
+      </value>
+      <value datm_mode="1PT" model_grid="CLM_USRDAT">
+        CLM_USRDAT.$CLM_USRDAT_NAME
+      </value>
       <value datm_mode="CORE2_NYF" >
         CORE2_NYF.GISS,CORE2_NYF.GXGXS,CORE2_NYF.NCEP
       </value>
       <value datm_mode="CORE2_IAF" >
         CORE2_IAF.GCGCS.PREC,CORE2_IAF.GISS.LWDN,CORE2_IAF.GISS.SWDN,CORE2_IAF.GISS.SWUP,CORE2_IAF.NCEP.DN10,CORE2_IAF.NCEP.Q_10,CORE2_IAF.NCEP.SLP_,CORE2_IAF.NCEP.T_10,CORE2_IAF.NCEP.U_10,CORE2_IAF.NCEP.V_10,CORE2_IAF.CORE2.ArcFactor
       </value>
-      <value datm_mode="CORE_IAF_JRA" >
-        CORE_IAF_JRA.PREC,CORE_IAF_JRA.LWDN,CORE_IAF_JRA.SWDN,CORE_IAF_JRA.Q_10,CORE_IAF_JRA.SLP_,CORE_IAF_JRA.T_10,CORE_IAF_JRA.U_10,CORE_IAF_JRA.V_10,CORE_IAF_JRA.CORE2.ArcFactor
+      <value datm_mode="CORE_IAF_JRA_1p4_2018" >
+      CORE_IAF_JRA_1p4_2018.GCGCS.PREC,CORE_IAF_JRA_1p4_2018.GISS.LWDN,CORE_IAF_JRA_1p4_2018.GISS.SWDN,CORE_IAF_JRA_1p4_2018.NCEP.Q_10,CORE_IAF_JRA_1p4_2018.NCEP.SLP_,CORE_IAF_JRA_1p4_2018.NCEP.T_10,CORE_IAF_JRA_1p4_2018.NCEP.U_10,CORE_IAF_JRA_1p4_2018.NCEP.V_10
       </value>
-      <value datm_mode="CORE_IAF_JRA_1p4_2018" >CORE_IAF_JRA_1p4_2018.GCGCS.PREC,CORE_IAF_JRA_1p4_2018.GISS.LWDN,CORE_IAF_JRA_1p4_2018.GISS.SWDN,CORE_IAF_JRA_1p4_2018.NCEP.Q_10,CORE_IAF_JRA_1p4_2018.NCEP.SLP_,CORE_IAF_JRA_1p4_2018.NCEP.T_10,CORE_IAF_JRA_1p4_2018.NCEP.U_10,CORE_IAF_JRA_1p4_2018.NCEP.V_10</value>
+      <value datm_mode="CORE_IAF_JRA" >
+        CORE_IAF_JRA.PREC,CORE_IAF_JRA.LWDN,CORE_IAF_JRA.SWDN,CORE_IAF_JRA.Q_10,CORE_IAF_JRA.SLP_,CORE_IAF_JRA.T_10,CORE_IAF_JRA.U_10,CORE_IAF_JRA.V_10
+      </value>
       <value datm_mode="CORE2_IAF" model_grid="01col" >
         CORE2_IAF.NCEP.DENS.SOFS,CORE2_IAF.NCEP.PSLV.SOFS,CORE2_IAF.PREC.SOFS.DAILY,CORE2_IAF.LWDN.SOFS.DAILY,CORE2_IAF.SWDN.SOFS.DAILY,CORE2_IAF.SWUP.SOFS.DAILY,CORE2_IAF.SHUM.SOFS.6HOUR,CORE2_IAF.TBOT.SOFS.6HOUR,CORE2_IAF.U.SOFS.6HOUR,CORE2_IAF.V.SOFS.6HOUR,CORE2_IAF.CORE2.ArcFactor
       </value>
@@ -63,7 +71,7 @@
     <type>char</type>
     <category>datm</category>
     <group>datm_nml</group>
-    <valid_values>CLMNCEP,CORE2_NYF,CORE2_IAF,CORE_IAF_JRA,ERA5,CPLHIST</valid_values>
+    <valid_values>CLMNCEP,CORE2_NYF,CORE2_IAF,CORE_IAF_JRA,ERA5,CPLHIST,1PT</valid_values>
     <desc>
       general method that operates on the data.
       ----datamode = "CPLHIST"----
@@ -97,6 +105,7 @@
       active-land-only simulations.
       ----datamode = "ERA5"----
       Fifth generation ECMWF atmospheric reanalysis of the global climate
+      ----datamode = "CPLHIST" ----
     </desc>
     <values>
       <value datm_mode="CLM">
@@ -105,13 +114,10 @@
       <value datm_mode="1PT">
         CLMNCEP
       </value>
-      <value datm_mode="CORE2_NYF">
-        CORE2_NYF
-      </value>
       <value datm_mode="CORE2_IAF">
         CORE2_IAF
       </value>
-      <value datm_mode="CORE_IAF_JRA" >
+      <value datm_mode="CORE_IAF_JRA">
         CORE_IAF_JRA
       </value>
       <value datm_mode="ERA5">
@@ -119,6 +125,9 @@
       </value>
       <value datm_mode="CPLHIST">
         CPLHIST
+      </value>
+      <value>
+        $DATM_MODE
       </value>
     </values>
   </entry>
@@ -133,8 +142,7 @@
     </desc>
     <values>
       <value>$ATM_DOMAIN_MESH</value>
-      <value scol_mode='true'>null</value>
-      <value create_mesh='true'>null</value>
+      <value single_column='true'>null</value>
     </values>
   </entry>
 
@@ -148,23 +156,7 @@
     </desc>
     <values>
       <value>$ATM_DOMAIN_MESH</value>
-      <value scol_mode='true'>$ATM_DOMAIN_PATH/$ATM_DOMAIN_FILE</value>
-      <value create_mesh='true'>$ATM_DOMAIN_PATH/$ATM_DOMAIN_FILE</value>
-    </values>
-  </entry>
-
-  <entry id="model_createmesh_fromfile">
-    <type>char</type>
-    <category>streams</category>
-    <input_pathname>abs</input_pathname>
-    <group>datm_nml</group>
-    <desc>
-      file specifying model mesh
-    </desc>
-    <values>
-      <value>null</value>
-      <value scol_mode='true'>$ATM_DOMAIN_PATH/$ATM_DOMAIN_FILE</value>
-      <value create_mesh='true'>$ATM_DOMAIN_PATH/$ATM_DOMAIN_FILE</value>
+      <value single_column='true'>null</value>
     </values>
   </entry>
 
@@ -177,6 +169,7 @@
     </desc>
     <values>
       <value>$ATM_NX</value>
+      <value single_column='true'>1</value>
     </values>
   </entry>
 
@@ -189,8 +182,10 @@
     </desc>
     <values>
       <value>$ATM_NY</value>
+      <value single_column='true'>1</value>
     </values>
   </entry>
+
   <entry id="bias_correct" skip_default_entry="true"><!--- anomaly forcing - bias correction -->
     <type>char</type>
     <category>datm</category>

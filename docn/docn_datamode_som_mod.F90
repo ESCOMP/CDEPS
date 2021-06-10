@@ -7,7 +7,6 @@ module docn_datamode_som_mod
   use NUOPC            , only : NUOPC_Advertise
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_sys_mod      , only : shr_sys_abort
-  use shr_cal_mod      , only : shr_cal_date2julian
   use shr_const_mod    , only : shr_const_cpsw, shr_const_rhosw, shr_const_TkFrz
   use shr_const_mod    , only : shr_const_TkFrzSw, shr_const_latice, shr_const_ocn_ref_sal
   use shr_const_mod    , only : shr_const_zsrflyr, shr_const_pi
@@ -162,8 +161,6 @@ contains
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(importState, 'Foxx_lwup'  , fldptr1=Foxx_lwup  , rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
-    call dshr_state_getfldptr(importState, 'Foxx_lwup'  , fldptr1=Foxx_lwup  , rc=rc)
-    if (chkerr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(importState, 'Foxx_sen'   , fldptr1=Foxx_sen   , rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(importState, 'Foxx_lat'   , fldptr1=Foxx_lat   , rc=rc)
@@ -253,10 +250,14 @@ contains
        dt = idt * 1.0_r8
 
        do n = 1,lsize
-          if (.not. restart_read) then
-             somtp(n) = So_t(n) + TkFrz
-          endif
-          So_t(n) = somtp(n)
+          if (So_omask(n) /= 0._r8) then
+             if (.not. restart_read) then
+                somtp(n) = So_t(n) + TkFrz
+             endif
+             So_t(n) = somtp(n)
+          else
+             So_t(n) = 0._r8
+          end if
           Fioo_q(n) = 0.0_R8
        enddo
 

@@ -43,7 +43,6 @@ module datm_datamode_jra_mod
   ! stream data
   real(r8), pointer :: strm_prec(:)  => null()
   real(r8), pointer :: strm_swdn(:)  => null()
-  real(r8), pointer :: strm_tarcf(:) => null()
 
   ! othe module arrays
   real(R8), pointer :: yc(:)                 ! array of model latitudes
@@ -64,12 +63,16 @@ module datm_datamode_jra_mod
 contains
 !===============================================================================
 
-  subroutine datm_datamode_jra_advertise(exportState, fldsexport, flds_scalar_name, rc)
+  subroutine datm_datamode_jra_advertise(exportState, fldsexport, flds_scalar_name, &
+       flds_co2, flds_wiso, flds_presaero, rc)
 
     ! input/output variables
     type(esmf_State)   , intent(inout) :: exportState
     type(fldlist_type) , pointer       :: fldsexport
     character(len=*)   , intent(in)    :: flds_scalar_name
+    logical            , intent(in)    :: flds_co2
+    logical            , intent(in)    :: flds_wiso
+    logical            , intent(in)    :: flds_presaero
     integer            , intent(out)   :: rc
 
     ! local variables
@@ -99,6 +102,24 @@ contains
     call dshr_fldList_add(fldsExport, 'Faxa_swnet' )
     call dshr_fldList_add(fldsExport, 'Faxa_lwdn'  )
     call dshr_fldList_add(fldsExport, 'Faxa_swdn'  )
+
+    if (flds_co2) then
+       call dshr_fldList_add(fldsExport, 'Sa_co2prog')
+       call dshr_fldList_add(fldsExport, 'Sa_co2diag')
+    end if
+    if (flds_presaero) then
+       call dshr_fldList_add(fldsExport, 'Faxa_bcph'   , ungridded_lbound=1, ungridded_ubound=3)
+       call dshr_fldList_add(fldsExport, 'Faxa_ocph'   , ungridded_lbound=1, ungridded_ubound=3)
+       call dshr_fldList_add(fldsExport, 'Faxa_dstwet' , ungridded_lbound=1, ungridded_ubound=4)
+       call dshr_fldList_add(fldsExport, 'Faxa_dstdry' , ungridded_lbound=1, ungridded_ubound=4)
+    end if
+    if (flds_wiso) then
+       call dshr_fldList_add(fldsExport, 'Faxa_rainc_wiso', ungridded_lbound=1, ungridded_ubound=3)
+       call dshr_fldList_add(fldsExport, 'Faxa_rainl_wiso', ungridded_lbound=1, ungridded_ubound=3)
+       call dshr_fldList_add(fldsExport, 'Faxa_snowc_wiso', ungridded_lbound=1, ungridded_ubound=3)
+       call dshr_fldList_add(fldsExport, 'Faxa_snowl_wiso', ungridded_lbound=1, ungridded_ubound=3)
+       call dshr_fldList_add(fldsExport, 'Faxa_shum_wiso' , ungridded_lbound=1, ungridded_ubound=3)
+    end if
 
     fldlist => fldsExport ! the head of the linked list
     do while (associated(fldlist))
@@ -145,8 +166,6 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'Faxa_swdn'  , strm_swdn  , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'tarcf'      , strm_tarcf , rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     call dshr_state_getfldptr(exportState, 'Sa_z'       , fldptr1=Sa_z       , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -183,10 +202,6 @@ contains
 
     if (.not. associated(strm_prec) .or. .not. associated(strm_swdn)) then
        call shr_sys_abort(trim(subname)//'ERROR: prec and swdn must be in streams for CORE_IAF_JRA')
-    endif
-
-    if (.not. associated(strm_tarcf)) then
-       call shr_sys_abort(trim(subname)//'ERROR: tarcf must be in an input stream for CORE_IAF_JRA')
     endif
 
   end subroutine datm_datamode_jra_init_pointers

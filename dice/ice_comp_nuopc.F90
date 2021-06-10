@@ -1,4 +1,8 @@
+#ifdef CESMCOUPLED
 module ice_comp_nuopc
+#else
+module cdeps_dice_comp
+#endif
 
   !----------------------------------------------------------------------------
   ! This is the NUOPC cap for DICE
@@ -11,14 +15,14 @@ module ice_comp_nuopc
   use ESMF                 , only : ESMF_AlarmIsRinging, ESMF_METHOD_INITIALIZE
   use ESMF                 , only : ESMF_ClockGet, ESMF_TimeGet, ESMF_MethodRemove, ESMF_MethodAdd
   use ESMF                 , only : ESMF_GridCompSetEntryPoint, operator(+), ESMF_AlarmRingerOff
-  use ESMF                 , only : ESMF_ClockGetAlarm
+  use ESMF                 , only : ESMF_ClockGetAlarm, ESMF_StateGet, ESMF_Field, ESMF_FieldGet
   use NUOPC                , only : NUOPC_CompDerive, NUOPC_CompSetEntryPoint, NUOPC_CompSpecialize
   use NUOPC                , only : NUOPC_CompAttributeGet, NUOPC_Advertise
   use NUOPC_Model          , only : model_routine_SS        => SetServices
   use NUOPC_Model          , only : model_label_Advance     => label_Advance
   use NUOPC_Model          , only : model_label_SetRunClock => label_SetRunClock
   use NUOPC_Model          , only : model_label_Finalize    => label_Finalize
-  use NUOPC_Model          , only : NUOPC_ModelGet
+  use NUOPC_Model          , only : NUOPC_ModelGet, SetVM
   use shr_kind_mod         , only : r8=>shr_kind_r8, cxx=>shr_kind_cxx, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_const_mod        , only : shr_const_pi
   use shr_sys_mod          , only : shr_sys_abort
@@ -27,7 +31,7 @@ module ice_comp_nuopc
   use dshr_mod             , only : dshr_model_initphase, dshr_init, dshr_mesh_init
   use dshr_mod             , only : dshr_state_setscalar, dshr_set_runclock, dshr_log_clock_advance
   use dshr_methods_mod     , only : dshr_state_diagnose, chkerr, memcheck
-  use dshr_strdata_mod     , only : shr_strdata_type, shr_strdata_init_from_xml, shr_strdata_advance
+  use dshr_strdata_mod     , only : shr_strdata_type, shr_strdata_init_from_config, shr_strdata_advance
   use dshr_dfield_mod      , only : dfield_type, dshr_dfield_add, dshr_dfield_copy
   use dshr_fldlist_mod     , only : fldlist_type, dshr_fldlist_add, dshr_fldlist_realize
 
@@ -41,7 +45,7 @@ module ice_comp_nuopc
   private ! except
 
   public  :: SetServices
-
+  public  :: SetVM
   private :: InitializeAdvertise
   private :: InitializeRealize
   private :: ModelAdvance
@@ -68,12 +72,11 @@ module ice_comp_nuopc
   character(*) , parameter     :: nullstr = 'null'
 
   ! dice_in namelist input
-  character(CL)                :: xmlfilename = nullstr               ! filename to obtain namelist info from
+  character(CL)                :: streamfilename = nullstr            ! filename to obtain stream info from
   character(CL)                :: nlfilename = nullstr                ! filename to obtain namelist info from
   character(CL)                :: dataMode                            ! flags physics options wrt input data
   character(CL)                :: model_meshfile = nullstr            ! full pathname to model meshfile
   character(CL)                :: model_maskfile = nullstr            ! full pathname to obtain mask from
-  character(CL)                :: model_createmesh_fromfile = nullstr ! full pathname to obtain mask from
   real(R8)                     :: flux_swpf                           ! short-wave penatration factor
   real(R8)                     :: flux_Qmin                           ! bound on melt rate
   logical                      :: flux_Qacc                           ! activates water accumulation/melt wrt Q
@@ -90,6 +93,7 @@ module ice_comp_nuopc
   ! model mask and model fraction
   real(r8), pointer            :: model_frac(:) => null()
   integer , pointer            :: model_mask(:) => null()
+  logical                      :: valid_ice = .true.                  ! used for single column logic (ocn mask > 0)
 
   ! constants
   logical                      :: flds_i2o_per_cat                    ! .true. if select per ice thickness
@@ -97,7 +101,11 @@ module ice_comp_nuopc
 
   logical                      :: diagnose_data = .true.
   integer      , parameter     :: master_task=0                       ! task number of master task
+#ifdef CESMCOUPLED
   character(*) , parameter     :: modName =  "(ice_comp_nuopc)"
+#else
+  character(*) , parameter     :: modName =  "(cdeps_dice_comp)"
+#endif
   character(*) , parameter     :: u_FILE_u = &
        __FILE__
 
@@ -114,6 +122,7 @@ contains
     !--------------------------------
 
     rc = ESMF_SUCCESS
+
     ! the NUOPC gcomp component will register the generic methods
     call NUOPC_CompDerive(gcomp, model_routine_SS, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -163,14 +172,14 @@ contains
     integer           :: ierr               ! error code
     logical           :: exists             ! check for file existence
     character(len=*),parameter  :: subname=trim(modName)//':(InitializeAdvertise) '
-    character(*)    ,parameter :: F00 = "('(ice_comp_nuopc) ',8a)"
-    character(*)    ,parameter :: F01 = "('(ice_comp_nuopc) ',a,2x,i8)"
-    character(*)    ,parameter :: F02 = "('(ice_comp_nuopc) ',a,l6)"
-    character(*)    ,parameter :: F03 = "('(ice_comp_nuopc) ',a,d13.5)"
+    character(*)    ,parameter :: F00 = "('(" // trim(modName) // ") ',8a)"
+    character(*)    ,parameter :: F01 = "('(" // trim(modName) // ") ',a,2x,i8)"
+    character(*)    ,parameter :: F02 = "('(" // trim(modName) // ") ',a,l6)"
+    character(*)    ,parameter :: F03 = "('(" // trim(modName) // ") ',a,d13.5)"
     !-------------------------------------------------------------------------------
 
     namelist / dice_nml / case_name, datamode, &
-         model_meshfile, model_maskfile, model_createmesh_fromfile, &
+         model_meshfile, model_maskfile, &
          restfilm, nx_global, ny_global, flux_swpf, flux_Qmin, flux_Qacc, flux_Qacc0
 
     rc = ESMF_SUCCESS
@@ -180,7 +189,7 @@ contains
 
     ! Obtain flds_scalar values, mpi values, multi-instance values and
     ! set logunit and set shr logging to my log file
-    call dshr_init(gcomp, mpicom, my_task, inst_index, inst_suffix, &
+    call dshr_init(gcomp, 'ICE', sdat, mpicom, my_task, inst_index, inst_suffix, &
          flds_scalar_name, flds_scalar_num, flds_scalar_index_nx, flds_scalar_index_ny, &
          logunit, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -201,12 +210,8 @@ contains
 
        ! write namelist input to standard out
        write(logunit,F00)' datamode = ',trim(datamode)
-       if (model_createmesh_fromfile /= nullstr) then
-          write(logunit,F00)' model_create_meshfile_fromfile = ',trim(model_createmesh_fromfile)
-       else
-          write(logunit,F00)' model_meshfile = ',trim(model_meshfile)
-          write(logunit,F00)' model_maskfile = ',trim(model_maskfile)
-       end if
+       write(logunit,F00)' model_meshfile = ',trim(model_meshfile)
+       write(logunit,F00)' model_maskfile = ',trim(model_maskfile)
        write(logunit,F01)' nx_global  = ',nx_global
        write(logunit,F01)' ny_global  = ',ny_global
        write(logunit,F03)' flux_swpf  = ',flux_swpf
@@ -214,43 +219,19 @@ contains
        write(logunit,F02)' flux_Qacc  = ',flux_Qacc
        write(logunit,F03)' flux_Qacc0 = ',flux_Qacc0
        write(logunit,F00)' restfilm = ',trim(restfilm)
-
-       ! check that files exists
-       if (model_createmesh_fromfile /= nullstr) then
-          inquire(file=trim(model_createmesh_fromfile), exist=exists)
-          if (.not.exists) then
-             write(logunit, *)' ERROR: model_createmesh_fromfile '//&
-                  trim(model_createmesh_fromfile)//' does not exist'
-             call shr_sys_abort(trim(subname)//' ERROR: model_createmesh_fromfile '//&
-                  trim(model_createmesh_fromfile)//' does not exist')
-          end if
-       else
-          inquire(file=trim(model_meshfile), exist=exists)
-          if (.not.exists) then
-             write(logunit, *)' ERROR: model_meshfile '//trim(model_meshfile)//' does not exist'
-             call shr_sys_abort(trim(subname)//' ERROR: model_meshfile '//trim(model_meshfile)//' does not exist')
-          end if
-          inquire(file=trim(model_maskfile), exist=exists)
-          if (.not.exists) then
-             write(logunit, *)' ERROR: model_maskfile '//trim(model_maskfile)//' does not exist'
-             call shr_sys_abort(trim(subname)//' ERROR: model_maskfile '//trim(model_maskfile)//' does not exist')
-          end if
-       end if
     endif
 
     ! broadcast namelist input
-    call shr_mpi_bcast(datamode                  , mpicom, 'datamode')
-    call shr_mpi_bcast(model_maskfile            , mpicom, 'model_maskfile')
-    call shr_mpi_bcast(model_meshfile            , mpicom, 'model_meshfile')
-    call shr_mpi_bcast(model_maskfile            , mpicom, 'model_maskfile')
-    call shr_mpi_bcast(model_createmesh_fromfile , mpicom, 'model_createmesh_fromfile')
-    call shr_mpi_bcast(nx_global                 , mpicom, 'nx_global')
-    call shr_mpi_bcast(ny_global                 , mpicom, 'ny_global')
-    call shr_mpi_bcast(restfilm                  , mpicom, 'restfilm')
-    call shr_mpi_bcast(flux_swpf                 , mpicom, 'flux_swpf')
-    call shr_mpi_bcast(flux_Qmin                 , mpicom, 'flux_Qmin')
-    call shr_mpi_bcast(flux_Qacc                 , mpicom, 'flux_Qacc')
-    call shr_mpi_bcast(flux_Qacc0                , mpicom, 'flux_Qacc0')
+    call shr_mpi_bcast(datamode       , mpicom, 'datamode')
+    call shr_mpi_bcast(model_meshfile , mpicom, 'model_meshfile')
+    call shr_mpi_bcast(model_maskfile , mpicom, 'model_maskfile')
+    call shr_mpi_bcast(nx_global      , mpicom, 'nx_global')
+    call shr_mpi_bcast(ny_global      , mpicom, 'ny_global')
+    call shr_mpi_bcast(restfilm       , mpicom, 'restfilm')
+    call shr_mpi_bcast(flux_swpf      , mpicom, 'flux_swpf')
+    call shr_mpi_bcast(flux_Qmin      , mpicom, 'flux_Qmin')
+    call shr_mpi_bcast(flux_Qacc      , mpicom, 'flux_Qacc')
+    call shr_mpi_bcast(flux_Qacc0     , mpicom, 'flux_Qacc0')
 
     ! Validate datamode
     if ( trim(datamode) == 'ssmi' .or. trim(datamode) == 'ssmi_iaf') then
@@ -293,7 +274,12 @@ contains
     real(R8)                    :: cosarg        ! for setting ice temp pattern
     real(R8)                    :: jday, jday0   ! elapsed day counters
     integer                     :: model_dt      ! integer model timestep
-    character(len=*), parameter :: F00   = "('ice_comp_nuopc: ')',8a)"
+    type(ESMF_Field)            :: lfield
+    character(CL) ,pointer      :: lfieldnamelist(:) => null()
+    integer                     :: fieldcount
+    real(r8), pointer           :: fldptr(:)
+    integer                     :: n
+    character(len=*), parameter :: F00   = "('" // trim(modName) // ": ')',8a)"
     character(len=*), parameter :: subname=trim(modName)//':(InitializeRealize) '
     !-------------------------------------------------------------------------------
 
@@ -301,14 +287,16 @@ contains
 
     ! Initialize mesh, restart flag, logunit
     call ESMF_TraceRegionEnter('dice_strdata_init')
-    call dshr_mesh_init(gcomp, nullstr, logunit, 'ICE', nx_global, ny_global, &
-         model_meshfile, model_maskfile, model_createmesh_fromfile, model_mesh, &
-         model_mask, model_frac, restart_read, rc=rc)
+    call dshr_mesh_init(gcomp, sdat, nullstr, logunit, 'ICE', nx_global, ny_global, &
+         model_meshfile, model_maskfile, model_mesh, model_mask, model_frac, restart_read, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Initialize stream data type
-    xmlfilename = 'dice.streams'//trim(inst_suffix)//'.xml'
-    call shr_strdata_init_from_xml(sdat, xmlfilename, model_mesh, clock, 'ICE', logunit, rc=rc)
+    streamfilename = 'dice.streams'//trim(inst_suffix)
+#ifndef DISABLE_FoX
+    streamfilename = trim(streamfilename)//'.xml'
+#endif
+    call shr_strdata_init_from_config(sdat, streamfilename, model_mesh, clock, 'ICE', logunit, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_TraceRegionExit('dice_strdata_init')
 
@@ -320,6 +308,30 @@ contains
     call dshr_fldlist_realize( importState, fldsImport, flds_scalar_name, flds_scalar_num, model_mesh, &
          subname//':diceImport', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    ! for single column, the target point might not be a point where the ice/ocn mask is > 0
+    if (size(model_frac) == 1 .and. model_frac(1) == 0._r8) then
+       valid_ice = .false.
+       call ESMF_StateGet(exportState, itemCount=fieldCount, rc=rc)
+       if (chkerr(rc,__LINE__,u_FILE_u)) return
+       allocate(lfieldnamelist(fieldCount))
+       call ESMF_StateGet(exportState, itemNameList=lfieldnamelist, rc=rc)
+       if (chkerr(rc,__LINE__,u_FILE_u)) return
+       do n = 1, fieldCount
+          if (trim(lfieldnamelist(n)) /= flds_scalar_name) then
+             call ESMF_StateGet(exportState, itemName=trim(lfieldnamelist(n)), field=lfield, rc=rc)
+             if (chkerr(rc,__LINE__,u_FILE_u)) return
+             call ESMF_FieldGet(lfield, farrayPtr=fldptr, rc=rc)
+             if (ChkErr(rc,__LINE__,u_FILE_u)) return
+             fldptr(:) = 0._r8
+          end if
+       enddo
+       deallocate(lfieldnamelist)
+       ! *******************
+       ! *** RETURN HERE ***
+       ! *******************
+       RETURN
+    end if
 
     ! Get the time to interpolate the stream data to
     call ESMF_ClockGet(clock, currTime=currTime, timeStep=timeStep, rc=rc)
@@ -373,6 +385,10 @@ contains
     logical                 :: restart_write
     character(len=*),parameter :: subname=trim(modName)//':(ModelAdvance) '
     !-------------------------------------------------------------------------------
+
+    if (.not. valid_ice) then
+       RETURN
+    end if
 
     rc = ESMF_SUCCESS
 
@@ -543,4 +559,8 @@ contains
     end if
   end subroutine ModelFinalize
 
+#ifdef CESMCOUPLED
 end module ice_comp_nuopc
+#else
+end module cdeps_dice_comp
+#endif
