@@ -63,12 +63,16 @@ module datm_datamode_jra_mod
 contains
 !===============================================================================
 
-  subroutine datm_datamode_jra_advertise(exportState, fldsexport, flds_scalar_name, rc)
+  subroutine datm_datamode_jra_advertise(exportState, fldsexport, flds_scalar_name, &
+       flds_co2, flds_wiso, flds_presaero, rc)
 
     ! input/output variables
     type(esmf_State)   , intent(inout) :: exportState
     type(fldlist_type) , pointer       :: fldsexport
     character(len=*)   , intent(in)    :: flds_scalar_name
+    logical            , intent(in)    :: flds_co2
+    logical            , intent(in)    :: flds_wiso
+    logical            , intent(in)    :: flds_presaero
     integer            , intent(out)   :: rc
 
     ! local variables
@@ -98,6 +102,24 @@ contains
     call dshr_fldList_add(fldsExport, 'Faxa_swnet' )
     call dshr_fldList_add(fldsExport, 'Faxa_lwdn'  )
     call dshr_fldList_add(fldsExport, 'Faxa_swdn'  )
+
+    if (flds_co2) then
+       call dshr_fldList_add(fldsExport, 'Sa_co2prog')
+       call dshr_fldList_add(fldsExport, 'Sa_co2diag')
+    end if
+    if (flds_presaero) then
+       call dshr_fldList_add(fldsExport, 'Faxa_bcph'   , ungridded_lbound=1, ungridded_ubound=3)
+       call dshr_fldList_add(fldsExport, 'Faxa_ocph'   , ungridded_lbound=1, ungridded_ubound=3)
+       call dshr_fldList_add(fldsExport, 'Faxa_dstwet' , ungridded_lbound=1, ungridded_ubound=4)
+       call dshr_fldList_add(fldsExport, 'Faxa_dstdry' , ungridded_lbound=1, ungridded_ubound=4)
+    end if
+    if (flds_wiso) then
+       call dshr_fldList_add(fldsExport, 'Faxa_rainc_wiso', ungridded_lbound=1, ungridded_ubound=3)
+       call dshr_fldList_add(fldsExport, 'Faxa_rainl_wiso', ungridded_lbound=1, ungridded_ubound=3)
+       call dshr_fldList_add(fldsExport, 'Faxa_snowc_wiso', ungridded_lbound=1, ungridded_ubound=3)
+       call dshr_fldList_add(fldsExport, 'Faxa_snowl_wiso', ungridded_lbound=1, ungridded_ubound=3)
+       call dshr_fldList_add(fldsExport, 'Faxa_shum_wiso' , ungridded_lbound=1, ungridded_ubound=3)
+    end if
 
     fldlist => fldsExport ! the head of the linked list
     do while (associated(fldlist))
