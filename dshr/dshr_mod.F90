@@ -42,6 +42,7 @@ module dshr_mod
   use shr_pio_mod      , only : shr_pio_getiosys, shr_pio_getiotype, shr_pio_getioformat
 #endif
   use dshr_strdata_mod , only : shr_strdata_type, SHR_STRDATA_GET_STREAM_COUNT
+  use shr_string_mod   , only : shr_string_toLower
   use dshr_methods_mod , only : chkerr
   use pio
 
@@ -176,12 +177,27 @@ contains
     endif
 
     ! set output logging
-    if (my_task == master_task) then
-       call NUOPC_CompAttributeGet(gcomp, name="diro", value=diro, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       call NUOPC_CompAttributeGet(gcomp, name="logfile", value=logfile, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       open(newunit=logunit,file=trim(diro)//"/"//trim(logfile))
+    call NUOPC_CompAttributeGet(gcomp, name="diro", value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (isPresent .and. isSet) then
+       read(cvalue,*) diro
+    else
+       diro = "."
+    endif
+
+    call NUOPC_CompAttributeGet(gcomp, name="logfile", value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (isPresent .and. isSet) then
+       read(cvalue,*) logfile
+    else
+       logfile = "d"//shr_string_toLower(compname)//".log"
+    endif
+
+    if (my_task == master_task) then 
+       write(logmsg,*) trim(diro)//"/"//trim(logfile) 
+       call ESMF_LogWrite(trim(subname)//' : output logging is written to '//trim(logmsg), ESMF_LOGMSG_INFO)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       open(newunit=logunit, file=trim(diro)//"/"//trim(logfile))
     else
        logUnit = 6
     endif
