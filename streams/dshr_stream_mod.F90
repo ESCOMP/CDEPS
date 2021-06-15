@@ -1149,7 +1149,7 @@ contains
     integer                :: old_handle    ! previous setting of pio error handling
     real(R8)               :: nsec          ! elapsed secs on calendar date
     real(R8),allocatable   :: tvar(:)
-    character(*),parameter :: subname = ' (shr_stream_readTCoord) '
+    character(*),parameter :: subname = '(shr_stream_readTCoord) '
     !-------------------------------------------------------------------------------
 
     lrc = 0
@@ -1159,7 +1159,7 @@ contains
 
     ! open file if needed
     if (.not. pio_file_is_open(strm%file(k)%fileid)) then
-       if (isroot_task) then
+       if (debug > 0 .and. isroot_task) then
           write(strm%logunit, '(a)') trim(subname)//' opening stream filename = '//trim(filename)
        end if
        rcode = pio_openfile(strm%pio_subsystem, strm%file(k)%fileid, strm%pio_iotype, filename, pio_nowrite)
@@ -1220,7 +1220,7 @@ contains
     deallocate(tvar)
 
     ! close file
-    if (isroot_task) then
+    if (debug > 0 .and. isroot_task) then
        write(strm%logunit, '(a)') trim(subname)//' closing stream filename = '//trim(filename)
     end if
     call pio_closefile(strm%file(k)%fileid)
@@ -1424,7 +1424,7 @@ contains
     character(CL)          :: fileName,lcal
     integer                :: old_handle
     integer                :: rCode
-    character(*),parameter :: subName = ' (shr_stream_getCalendar) '
+    character(*),parameter :: subName = '(shr_stream_getCalendar) '
     !-------------------------------------------------------------------------------
 
     lcal = ' '

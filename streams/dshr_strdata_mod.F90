@@ -233,7 +233,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Now finish initializing sdat
-    call shr_strdata_init(sdat, clock, rc)
+    call shr_strdata_init(sdat, clock, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine shr_strdata_init_from_config
@@ -244,7 +244,7 @@ contains
        stream_meshfile, stream_lev_dimname, stream_mapalgo, &
        stream_filenames, stream_fldlistFile, stream_fldListModel, &
        stream_yearFirst, stream_yearLast, stream_yearAlign, &
-       stream_offset, stream_taxmode, stream_dtlimit, stream_tintalgo, rc)
+       stream_offset, stream_taxmode, stream_dtlimit, stream_tintalgo, stream_name, rc)
 
     ! input/output variables
     type(shr_strdata_type) , intent(inout) :: sdat                   ! stream data type
@@ -266,6 +266,7 @@ contains
     character(*)           , intent(in)    :: stream_taxMode         ! time axis mode
     real(r8)               , intent(in)    :: stream_dtlimit         ! ratio of max/min stream delta times
     character(*)           , intent(in)    :: stream_tintalgo        ! time interpolation algorithm
+    character(*), optional , intent(in)    :: stream_name            ! name of stream
     integer                , intent(out)   :: rc                     ! error code
     ! ----------------------------------------------
 
@@ -300,7 +301,7 @@ contains
          logunit, trim(compname))
 
     ! Now finish initializing sdat
-    call shr_strdata_init(sdat, model_clock, rc)
+    call shr_strdata_init(sdat, model_clock, stream_name, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine shr_strdata_init_from_inline
@@ -369,11 +370,12 @@ contains
   end subroutine shr_strdata_init_model_domain
 
   !===============================================================================
-  subroutine shr_strdata_init(sdat, model_clock, rc)
+  subroutine shr_strdata_init(sdat, model_clock, stream_name, rc)
 
     ! input/output variables
     type(shr_strdata_type) , intent(inout), target :: sdat
     type(ESMF_Clock)       , intent(in)    :: model_clock
+    character(*), optional , intent(in)    :: stream_name
     integer                , intent(out)   :: rc
 
     ! local variables
@@ -608,7 +610,11 @@ contains
 
     ! print sdat output
     if (masterproc) then
-       call shr_strdata_print(sdat,'sdat data ')
+       if (present(stream_name)) then
+          call shr_strdata_print(sdat, trim(stream_name))
+       else
+          call shr_strdata_print(sdat, 'stream_data')
+       end if
        write(sdat%logunit,*) ' successfully initialized sdat'
     endif
   end subroutine shr_strdata_init
