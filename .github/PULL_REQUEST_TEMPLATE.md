@@ -8,12 +8,12 @@ CMEPS Issues Fixed (include github issue #):
 
 Are there dependencies on other component PRs
  - [ ] CIME (list)
- - [ ] CMEPS (list) 
+ - [ ] CMEPS (list)
 
 Are changes expected to change answers?
  - [ ] bit for bit
  - [ ] different at roundoff level
- - [ ] more substantial 
+ - [ ] more substantial
 
 Any User Interface Changes (namelist or namelist defaults changes)?
  - [ ] Yes
@@ -30,13 +30,13 @@ Testing performed:
 Hashes used for testing:
 - [ ] CIME
   - repository to check out: https://github.com/ESCOMP/CESM.git
-  - branch: nuopc_dev
+  - branch:
   - hash:
 - [ ] CMEPS
   - repository to check out: https://github.com/ESCOMP/CESM.git
-  - branch: nuopc_dev
+  - branch:
   - hash:
 - [ ] CESM
   - repository to check out: https://github.com/ESCOMP/CESM.git
-  - branch: nuopc_dev
+  - branch:
   - hash:

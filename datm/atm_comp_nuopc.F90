@@ -299,7 +299,8 @@ contains
             flds_co2, flds_wiso, flds_presaero, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('CORE_IAF_JRA')
-       call datm_datamode_jra_advertise(exportState, fldsExport, flds_scalar_name, rc)
+       call datm_datamode_jra_advertise(exportState, fldsExport, flds_scalar_name, &
+            flds_co2, flds_wiso, flds_presaero, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('CLMNCEP')
        call datm_datamode_clmncep_advertise(exportState, fldsExport, flds_scalar_name, &
