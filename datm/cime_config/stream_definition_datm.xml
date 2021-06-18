@@ -2587,13 +2587,12 @@
       <file>$DIN_LOC_ROOT/atm/datm7/ERA5/ERA5.TL639.2019.12.200618.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>u10   Sa_u</var>
-      <var>v10   Sa_v</var>
-      <var>t2m   Sa_tbot</var>
+      <var>u10   Sa_u10m</var>
+      <var>v10   Sa_v10m</var>
+      <var>t2m   Sa_t2m</var>
       <var>skt   Sa_tskn</var>
       <var>d2m   Sa_tdew</var>
       <var>msl   Sa_pslv</var>
-      <var>sp    Sa_pbot</var>
       <var>tp    Faxa_rain</var>
       <var>cp    Faxa_rainc</var>
       <var>lsp   Faxa_rainl</var>
@@ -2618,7 +2617,7 @@
     </stream_mapalgo>
     <!-- <stream_vectors>u:v taux:tauy</stream_vectors> -->
     <stream_vectors>u:v</stream_vectors>
-    <stream_year_align>1900</stream_year_align>
+    <stream_year_align>2019</stream_year_align>
     <stream_year_first>2019</stream_year_first>
     <stream_year_last>2019</stream_year_last>
     <stream_offset>0</stream_offset>
@@ -2626,7 +2625,7 @@
       <tintalgo>linear</tintalgo>
     </stream_tintalgo>
     <stream_taxmode>
-      <taxmode>cycle</taxmode>
+      <taxmode>limit</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
