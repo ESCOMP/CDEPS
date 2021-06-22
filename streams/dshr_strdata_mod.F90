@@ -1155,18 +1155,15 @@ contains
     write(sdat%logunit,F01) "pio_iotype  = ",sdat%io_type
 
     write(sdat%logunit,F01) "nstreams    = ",shr_strdata_get_stream_count(sdat)
+    write(sdat%logunit,F01) "nvectors    = ",sdat%nvectors
     do ns = 1, shr_strdata_get_stream_count(sdat)
        write(sdat%logunit,F04) "  taxMode (",ns,") = ",trim(sdat%stream(ns)%taxmode)
        write(sdat%logunit,F07) "  dtlimit (",ns,") = ",sdat%stream(ns)%dtlimit
        write(sdat%logunit,F04) "  mapalgo (",ns,") = ",trim(sdat%stream(ns)%mapalgo)
        write(sdat%logunit,F04) "  tintalgo(",ns,") = ",trim(sdat%stream(ns)%tinterpalgo)
        write(sdat%logunit,F04) "  readmode(",ns,") = ",trim(sdat%stream(ns)%readmode)
+       write(sdat%logunit,F04) "  vectors (",ns,") = ",trim(sdat%stream(ns)%stream_vectors)
        write(sdat%logunit,F01) " "
-    end do
-
-    write(sdat%logunit,F01) "nvectors    = ",sdat%nvectors
-    do n=1, sdat%nvectors
-       write(sdat%logunit,F04) "  vectors (",n,") = ",trim(sdat%stream(n)%stream_vectors)
     end do
     write(sdat%logunit,F90)
 
