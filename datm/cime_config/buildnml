@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """Namelist creator for CDEPS data atm model.
 """
@@ -19,15 +19,58 @@ _LIBDIR = os.path.join(_CIMEROOT, "scripts", "Tools")
 sys.path.append(_LIBDIR)
 sys.path.append(_CDEPS_CONFIG)
 
+from pathlib import Path
+from datetime import datetime
 from standard_script_setup import *
 from CIME.case import Case
 from CIME.nmlgen import NamelistGenerator
-from CIME.utils import expect, get_model, safe_copy
+from CIME.utils import expect, get_model, safe_copy, SharedArea
 from CIME.buildnml import create_namelist_infile, parse_input, copy_inputs_to_rundir
 from CIME.XML.files import Files
+from CIME.XML.inputdata import Inputdata
 from stream_cdeps import StreamCDEPS
 
 logger = logging.getLogger(__name__)
+
+def _get_neon_data_availability(case, neonsite):
+    """
+    Read the NEON inventory file and check availablity of tower data for this case.
+    """
+    inputdata = Inputdata()
+    protocol, address, user, passwd, _, _, inventory = inputdata.get_next_server(attributes={'CLM_USRDAT_NAME':'NEON'})
+    success = case.check_input_data(protocol=protocol, address=address, download=True)
+    logger.debug("HERE address {} inventory is {} success {}".format(address, inventory, success))
+
+    server = CIME.Servers.WGET.wget_login(address, user, passwd)
+    rundir = case.get_value("RUNDIR")
+    fullpath = os.path.join(rundir,"listing.csv")
+    if os.path.exists(fullpath):
+        os.remove(fullpath)
+    with SharedArea():
+        success = server.getfile(inventory, fullpath)
+        expect(success, "Could not download NEON data listing file from server")
+
+    datavaliddate = {}
+    oldestdate = None
+    newestdate = None
+    neonatm = None
+    with open(fullpath, "r") as fd:
+        for line in fd.readlines():
+            if 'cdeps/v1/'+neonsite+'/' in line:
+                neonatm, date = line.strip().split(',')
+                if neonatm.endswith('.nc'):
+                    neonatm = neonatm.split('/')[-1]
+                    newestdate = datetime.strptime(neonatm,"%Y-%m.nc")
+                    if not oldestdate:
+                        oldestdate = datetime.strptime(neonatm,"%Y-%m.nc")
+                    neonatm = 'cdeps/v1/'+neonsite+'/'+neonatm
+                    datavaliddate[neonatm] = datetime.strptime(date,"%Y-%m-%d %H:%M:%S")
+    expect(newestdate, "No tower data found on server for NEON site {}".format(neonsite))
+    logger.info("Found tower data for {} through {}".format(oldestdate, newestdate))
+
+    return datavaliddate
+
+
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
 ####################################################################################
@@ -69,10 +112,14 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
 
     # Initialize namelist defaults
     config = {}
+    available_neon_data = None
     if 'CLM_USRDAT' in model_grid:
         config['model_grid'] = 'CLM_USRDAT'
-        if case.get_value("NEONSITE"):
+        neonsite = case.get_value("NEONSITE")
+        if neonsite:
             config['neon'] = "True"
+            # download and use the listing.csv file to determine data availablity
+            available_neon_data = _get_neon_data_availability(case, neonsite)
     else:
         config['model_grid'] = model_grid
 
@@ -129,7 +176,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
         schema_file = os.path.join(_CDEPS_CONFIG,"stream_definition_v2.0.xsd")
         stream_file = os.path.join(_CDEPS_CONFIG,os.pardir, "datm","cime_config","stream_definition_datm.xml")
         streams = StreamCDEPS(stream_file, schema_file)
-        streams.create_stream_xml(streamlist, case, outfile, data_list_path)
+        streams.create_stream_xml(streamlist, case, outfile, data_list_path, available_neon_data=available_neon_data)
 
 ###############################################################################
 def buildnml(case, caseroot, compname):
