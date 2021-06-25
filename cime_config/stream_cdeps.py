@@ -57,7 +57,7 @@ class StreamCDEPS(GenericXML):
     def create_stream_xml(self, stream_names, case, streams_xml_file, data_list_file, available_neon_data=None):
         """
         Create the stream xml file and append the required stream input data to the input data list file
-        available_neon_data is an optional hash of NEON tower data available for the given case, if provided
+        available_neon_data is an optional list of NEON tower data available for the given case, if provided
         this data will be used to populate the NEON streamdata list
         """
         # write header of stream file
@@ -109,7 +109,7 @@ class StreamCDEPS(GenericXML):
                     for child in self.get_children(root=node):
                         if available_neon_data and stream_name.startswith("NEON"):
                             rundir = case.get_value("RUNDIR")
-                            for neon in available_neon_data.keys():
+                            for neon in available_neon_data:
                                 stream_datafiles += os.path.join(rundir,"inputdata","atm",neon) + "\n"
                         else:
                             stream_datafiles = child.xml_element.text
