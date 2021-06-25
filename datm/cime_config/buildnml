@@ -19,12 +19,11 @@ _LIBDIR = os.path.join(_CIMEROOT, "scripts", "Tools")
 sys.path.append(_LIBDIR)
 sys.path.append(_CDEPS_CONFIG)
 
-from pathlib import Path
 from datetime import datetime
 from standard_script_setup import *
 from CIME.case import Case
 from CIME.nmlgen import NamelistGenerator
-from CIME.utils import expect, get_model, safe_copy, SharedArea
+from CIME.utils import expect, safe_copy, SharedArea
 from CIME.buildnml import create_namelist_infile, parse_input, copy_inputs_to_rundir
 from CIME.XML.files import Files
 from CIME.XML.inputdata import Inputdata
@@ -35,11 +34,12 @@ logger = logging.getLogger(__name__)
 def _get_neon_data_availability(case, neonsite):
     """
     Read the NEON inventory file and check availablity of tower data for this case.
+    Put available data in datavaliddate structure (format: {pathandfilename:validdate}) and return it
     """
     inputdata = Inputdata()
     protocol, address, user, passwd, _, _, inventory = inputdata.get_next_server(attributes={'CLM_USRDAT_NAME':'NEON'})
     success = case.check_input_data(protocol=protocol, address=address, download=True)
-    logger.debug("HERE address {} inventory is {} success {}".format(address, inventory, success))
+    logger.debug("_get_neon_data_availablity: address {} inventory is {} success {}".format(address, inventory, success))
 
     server = CIME.Servers.WGET.wget_login(address, user, passwd)
     rundir = case.get_value("RUNDIR")

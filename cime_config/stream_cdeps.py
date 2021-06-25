@@ -57,6 +57,8 @@ class StreamCDEPS(GenericXML):
     def create_stream_xml(self, stream_names, case, streams_xml_file, data_list_file, available_neon_data=None):
         """
         Create the stream xml file and append the required stream input data to the input data list file
+        available_neon_data is an optional hash of NEON tower data available for the given case, if provided
+        this data will be used to populate the NEON streamdata list
         """
         # write header of stream file
         with open(streams_xml_file, 'w') as stream_file:
@@ -112,6 +114,7 @@ class StreamCDEPS(GenericXML):
                         else:
                             stream_datafiles = child.xml_element.text
                             stream_datafiles = self._resolve_values(case, stream_datafiles)
+                        #endif neon
                         if 'first_year' in child.xml_element.attrib and 'last_year' in child.xml_element.attrib:
                             value = child.xml_element.get('first_year')
                             value = self._resolve_values(case, value)
@@ -124,11 +127,10 @@ class StreamCDEPS(GenericXML):
                             stream_datafiles = self._sub_paths(stream_datafiles, year_first, year_last)
                             stream_datafiles = stream_datafiles.strip()
                         #endif
-                    if stream_vars[node_name]:
-                        stream_vars[node_name] += "\n      " + self._add_xml_delimiter(stream_datafiles.split("\n"), "file")
-                    else:
-                        stream_vars[node_name] = self._add_xml_delimiter(stream_datafiles.split("\n"), "file")
-                    #endif neon
+                        if stream_vars[node_name]:
+                            stream_vars[node_name] += "\n      " + self._add_xml_delimiter(stream_datafiles.split("\n"), "file")
+                        else:
+                            stream_vars[node_name] = self._add_xml_delimiter(stream_datafiles.split("\n"), "file")
                 elif (   node_name == 'stream_meshfile'
                       or node_name == 'stream_mapalgo'
                       or node_name == 'stream_tintalgo'
