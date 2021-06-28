@@ -58,7 +58,8 @@ def _get_neon_data_availability(case, neonsite):
     neonatm = None
     with open(fullpath, "r") as fd:
         for line in fd.readlines():
-            if 'cdeps/v1/'+neonsite+'/' in line:
+            fpath, fname = os.path.split(line)
+            if fpath.endswith('cdeps/v1/'+neonsite):
                 neonatm, date = line.strip().split(',')
                 if neonatm.endswith('.nc'):
                     neonatm = neonatm.split('/')[-1]
