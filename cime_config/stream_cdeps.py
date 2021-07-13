@@ -54,9 +54,11 @@ class StreamCDEPS(GenericXML):
         if os.path.exists(infile):
             GenericXML.read(self, infile, schema)
 
-    def create_stream_xml(self, stream_names, case, streams_xml_file, data_list_file):
+    def create_stream_xml(self, stream_names, case, streams_xml_file, data_list_file, available_neon_data=None):
         """
         Create the stream xml file and append the required stream input data to the input data list file
+        available_neon_data is an optional list of NEON tower data available for the given case, if provided
+        this data will be used to populate the NEON streamdata list
         """
         # write header of stream file
         with open(streams_xml_file, 'w') as stream_file:
@@ -103,9 +105,16 @@ class StreamCDEPS(GenericXML):
                 elif node_name == 'stream_datafiles':
                     # Get the resolved stream data files
                     stream_vars[node_name] = ""
+                    stream_datafiles = ""
                     for child in self.get_children(root=node):
-                        stream_datafiles = child.xml_element.text
-                        stream_datafiles = self._resolve_values(case, stream_datafiles)
+                        if available_neon_data and stream_name.startswith("NEON"):
+                            rundir = case.get_value("RUNDIR")
+                            for neon in available_neon_data:
+                                stream_datafiles += os.path.join(rundir,"inputdata","atm",neon) + "\n"
+                        else:
+                            stream_datafiles = child.xml_element.text
+                            stream_datafiles = self._resolve_values(case, stream_datafiles)
+                        #endif neon
                         if 'first_year' in child.xml_element.attrib and 'last_year' in child.xml_element.attrib:
                             value = child.xml_element.get('first_year')
                             value = self._resolve_values(case, value)
@@ -122,7 +131,6 @@ class StreamCDEPS(GenericXML):
                             stream_vars[node_name] += "\n      " + self._add_xml_delimiter(stream_datafiles.split("\n"), "file")
                         else:
                             stream_vars[node_name] = self._add_xml_delimiter(stream_datafiles.split("\n"), "file")
-
                 elif (   node_name == 'stream_meshfile'
                       or node_name == 'stream_mapalgo'
                       or node_name == 'stream_tintalgo'
@@ -418,5 +426,4 @@ class StreamCDEPS(GenericXML):
             stream_datafiles = []
             for fnode in filenodes:
                 stream_datafiles.append(self.text(fnode))
-            print("HERE {}".format(data_list_file))
             self._add_entries_to_inputdata_list(stream_meshfile, stream_datafiles, data_list_file)
