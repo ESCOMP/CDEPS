@@ -65,8 +65,18 @@ def buildlib(bldroot, libroot, case, compname=None):
         cmake_flags += " -DPIO_Fortran_LIBRARY={path}/lib -DPIO_Fortran_INCLUDE_DIR={path}/include ".format(path=os.path.join(case.get_value("EXEROOT"),sharedpath))
         cmake_flags += srcpath
         all_src_files = list(all_files_under(srcpath, ignoredirs=[".git","cmake","test",".github","cime_config","fox"]))
+        # Search SourceMods path for CDEPS files. We only look in the data component directories for these, files in cdeps share
+        # directories should be added to one of the data component directories
         srcmodsdir = os.path.join(case.get_value("CASEROOT"),"SourceMods")
-        all_files_in_srcmods = [x for x in all_files_under(srcmodsdir) if os.path.basename(x) != 'README']
+        all_files_in_srcmods = []
+        for comp_class in case.get_values("COMP_CLASSES"):
+            if comp_class == "CPL":
+                continue
+            comp = case.get_value("COMP_{}".format(comp_class))
+            cdeps_comp_name = "d"+comp_class.lower()
+            if comp == cdeps_comp_name:
+                all_files_in_srcmods.extend(list(all_files_under(os.path.join(srcmodsdir,"src."+cdeps_comp_name))))
+
         basenames1 = [os.path.basename(f) for f in all_src_files]
         basenames2 = [os.path.basename(f) for f in all_files_in_srcmods]
         srcmods = list(set(basenames1).intersection(set(basenames2)))
@@ -76,7 +86,7 @@ def buildlib(bldroot, libroot, case, compname=None):
                 for sfile in all_files_in_srcmods:
                     if os.path.basename(sfile) == os.path.basename(v):
                         all_src_files[i] = v.replace(os.path.dirname(v), os.path.dirname(sfile))
-
+        logger.debug("all_src_files: {}".format(all_src_files))
         latest_src_file = max(all_src_files, key=os.path.getmtime)
 
         src_time = os.path.getmtime(latest_src_file)
