@@ -11,7 +11,7 @@ if _CIMEROOT is None:
     raise SystemExit("ERROR: must set CIMEROOT environment variable")
 sys.path.append(os.path.join(_CIMEROOT, "scripts", "Tools"))
 
-_LIBDIR = os.path.join(_CIMEROOT, "scripts", "Tools")
+_LIBDIR = os.path.join(_CIMEROOT, "scripts", "lib")
 sys.path.append(_LIBDIR)
 
 from standard_script_setup import *
@@ -25,6 +25,7 @@ from CIME.XML.compilers import Compilers
 logger = logging.getLogger(__name__)
 
 def buildlib(bldroot, libroot, case, compname=None):
+    print("HERE cwd is {}".format(os.getcwd()))
     if bldroot.endswith("obj") and not compname:
         compname = os.path.basename(os.path.abspath(os.path.join(bldroot,os.pardir)))
 
@@ -63,8 +64,31 @@ def buildlib(bldroot, libroot, case, compname=None):
         cmake_flags += " -DPIO_C_LIBRARY={path}/lib -DPIO_C_INCLUDE_DIR={path}/include ".format(path=os.path.join(case.get_value("EXEROOT"),sharedpath))
         cmake_flags += " -DPIO_Fortran_LIBRARY={path}/lib -DPIO_Fortran_INCLUDE_DIR={path}/include ".format(path=os.path.join(case.get_value("EXEROOT"),sharedpath))
         cmake_flags += srcpath
+        all_src_files = list(all_files_under(srcpath, ignoredirs=[".git","cmake","test",".github","cime_config","fox"]))
+        # Search SourceMods path for CDEPS files. We only look in the data component directories for these, files in cdeps share
+        # directories should be added to one of the data component directories
+        srcmodsdir = os.path.join(case.get_value("CASEROOT"),"SourceMods")
+        all_files_in_srcmods = []
+        for comp_class in case.get_values("COMP_CLASSES"):
+            if comp_class == "CPL":
+                continue
+            comp = case.get_value("COMP_{}".format(comp_class))
+            cdeps_comp_name = "d"+comp_class.lower()
+            if comp == cdeps_comp_name:
+                all_files_in_srcmods.extend(list(all_files_under(os.path.join(srcmodsdir,"src."+cdeps_comp_name))))
 
-        latest_src_file = max(all_files_under(srcpath), key=os.path.getmtime)
+        basenames1 = [os.path.basename(f) for f in all_src_files]
+        basenames2 = [os.path.basename(f) for f in all_files_in_srcmods]
+        srcmods = list(set(basenames1).intersection(set(basenames2)))
+        if srcmods:
+            logger.info("Found SourceMods {}".format(srcmods))
+            for i, v in enumerate(all_src_files):
+                for sfile in all_files_in_srcmods:
+                    if os.path.basename(sfile) == os.path.basename(v):
+                        all_src_files[i] = v.replace(os.path.dirname(v), os.path.dirname(sfile))
+        logger.debug("all_src_files: {}".format(all_src_files))
+        latest_src_file = max(all_src_files, key=os.path.getmtime)
+
         src_time = os.path.getmtime(latest_src_file)
         if os.path.exists(os.path.join(bldroot,"CMakeFiles")):
             bld_time = os.path.getmtime(os.path.join(bldroot,"CMakeFiles"))
@@ -87,7 +111,6 @@ def buildlib(bldroot, libroot, case, compname=None):
                 if time_counter > time_to_wait:
                     break
             expect(time_counter <= time_to_wait," Timeout waiting for {}".format(dwav_lib))
-        print("HERE exeroot {} bldroot {}".format(exe_root, bldroot))
 
         s,o,e = run_cmd("make install VERBOSE=1 DESTDIR={}".format(libroot), from_dir=bldroot, verbose=True)
         expect(not s,"ERROR from make output={}, error={}".format(o,e))
@@ -101,9 +124,10 @@ def buildlib(bldroot, libroot, case, compname=None):
                     os.rmdir(comppath)
                 symlink_force(os.path.join(bldroot,compname), comppath)
 
-def all_files_under(path):
+def all_files_under(path, ignoredirs=[]):
     """Iterates through all files that are under the given path."""
-    for cur_path, dirnames, filenames in os.walk(path):
+    for cur_path, dirnames, filenames in os.walk(path, topdown=True):
+        [dirnames.remove(d) for d in list(dirnames) if d in ignoredirs]
         for filename in filenames:
             yield os.path.join(cur_path, filename)
 
@@ -113,11 +137,9 @@ def get_compiler_names(case):
     compobj = Compilers(machobj)
     compiler = case.get_value("COMPILER")
     if case.get_value("MPILIB") == 'mpi-serial':
-        print("HERE Compiler {} mach={}".format(compiler, machine))
         ccomp = compobj.get_value("SCC",{"COMPILER":compiler,"MACH":machine}).strip()
         cxxcomp = compobj.get_value("SCXX",{"COMPILER":compiler}).strip()
         fcomp = compobj.get_value("SFC",{"COMPILER":compiler}).strip()
-        print("HERE the compilers are {} {} {}".format(ccomp,cxxcomp, fcomp))
     else:
         ccomp = compobj.get_value("MPICC",{"COMPILER":compiler}).strip()
         cxxcomp = compobj.get_value("MPICXX",{"COMPILER":compiler}).strip()
@@ -128,6 +150,7 @@ def get_compiler_names(case):
 
 def _main_func(args):
     caseroot, libroot, bldroot = parse_input(args)
+    print("HERE cwd is {} caseroot is {}".format(os.getcwd(), caseroot))
     with Case(caseroot) as case:
         buildlib(bldroot, libroot, case)
 
