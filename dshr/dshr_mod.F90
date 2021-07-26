@@ -31,7 +31,7 @@ module dshr_mod
   use ESMF             , only : ESMF_TERMORDER_SRCSEQ, ESMF_FieldRegridStore, ESMF_SparseMatrixWrite
   use ESMF             , only : ESMF_Region_Flag, ESMF_REGION_TOTAL, ESMF_MAXSTR, ESMF_RC_NOT_VALID
   use ESMF             , only : ESMF_UtilStringUpperCase
-  use shr_kind_mod     , only : r8=>shr_kind_r8, cs=>shr_kind_cs, cl=>shr_kind_cl, cxx=>shr_kind_cxx, i8=>shr_kind_i8
+  use shr_kind_mod     , only : r8=>shr_kind_r8, cs=>shr_kind_cs, cl=>shr_kind_cl, cx=>shr_kind_cx, cxx=>shr_kind_cxx, i8=>shr_kind_i8
   use shr_sys_mod      , only : shr_sys_abort
   use shr_mpi_mod      , only : shr_mpi_bcast
   use shr_cal_mod      , only : shr_cal_noleap, shr_cal_gregorian, shr_cal_calendarname
@@ -42,6 +42,7 @@ module dshr_mod
   use shr_pio_mod      , only : shr_pio_getiosys, shr_pio_getiotype, shr_pio_getioformat
 #endif
   use dshr_strdata_mod , only : shr_strdata_type, SHR_STRDATA_GET_STREAM_COUNT
+  use shr_string_mod   , only : shr_string_toLower
   use dshr_methods_mod , only : chkerr
   use pio
 
@@ -124,10 +125,10 @@ contains
     ! local variables
     type(ESMF_VM)     :: vm
     logical           :: isPresent, isSet
-    character(len=CL) :: cvalue
-    character(len=CL) :: logmsg
-    character(len=CL) :: diro
-    character(len=CL) :: logfile
+    character(len=CX) :: cvalue
+    character(len=CX) :: logmsg
+    character(len=CX) :: diro
+    character(len=CX) :: logfile
     character(len=*),parameter  :: subname='(dshr_advertise)'
     ! ----------------------------------------------
 
@@ -176,12 +177,24 @@ contains
     endif
 
     ! set output logging
-    if (my_task == master_task) then
-       call NUOPC_CompAttributeGet(gcomp, name="diro", value=diro, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       call NUOPC_CompAttributeGet(gcomp, name="logfile", value=logfile, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       open(newunit=logunit,file=trim(diro)//"/"//trim(logfile))
+    call NUOPC_CompAttributeGet(gcomp, name="diro", value=diro, isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (.not. (isPresent .and. isSet)) then
+       diro = "."
+    endif
+
+    call NUOPC_CompAttributeGet(gcomp, name="logfile", value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (isPresent .and. isSet) then
+       read(cvalue,*) logfile
+    else
+       logfile = "d"//shr_string_toLower(compname)//".log"
+    endif
+
+    if (my_task == master_task) then 
+       call ESMF_LogWrite(trim(subname)//' : output logging is written to '//trim(diro)//"/"//trim(logfile), ESMF_LOGMSG_INFO)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       open(newunit=logunit, file=trim(diro)//"/"//trim(logfile))
     else
        logUnit = 6
     endif
