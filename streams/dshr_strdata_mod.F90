@@ -7,7 +7,7 @@ module dshr_strdata_mod
   use ESMF             , only : ESMF_Clock, ESMF_VM, ESMF_VMGet, ESMF_VMGetCurrent
   use ESMF             , only : ESMF_DistGrid, ESMF_SUCCESS, ESMF_MeshGet, ESMF_DistGridGet
   use ESMF             , only : ESMF_VMBroadCast, ESMF_MeshIsCreated, ESMF_MeshCreate
-  use ESMF             , only : ESMF_Calendar, ESMF_CALKIND_NOLEAP, ESMF_CALKIND_GREGORIAN
+  use ESMF             , only : ESMF_CALKIND_NOLEAP, ESMF_CALKIND_GREGORIAN
   use ESMF             , only : ESMF_CalKind_Flag, ESMF_Time, ESMF_TimeInterval
   use ESMF             , only : ESMF_TimeIntervalGet, ESMF_TYPEKIND_R8, ESMF_FieldCreate
   use ESMF             , only : ESMF_FILEFORMAT_ESMFMESH, ESMF_FieldCreate
@@ -233,7 +233,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Now finish initializing sdat
-    call shr_strdata_init(sdat, clock, rc)
+    call shr_strdata_init(sdat, clock, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine shr_strdata_init_from_config
@@ -244,7 +244,7 @@ contains
        stream_meshfile, stream_lev_dimname, stream_mapalgo, &
        stream_filenames, stream_fldlistFile, stream_fldListModel, &
        stream_yearFirst, stream_yearLast, stream_yearAlign, &
-       stream_offset, stream_taxmode, stream_dtlimit, stream_tintalgo, rc)
+       stream_offset, stream_taxmode, stream_dtlimit, stream_tintalgo, stream_name, rc)
 
     ! input/output variables
     type(shr_strdata_type) , intent(inout) :: sdat                   ! stream data type
@@ -266,6 +266,7 @@ contains
     character(*)           , intent(in)    :: stream_taxMode         ! time axis mode
     real(r8)               , intent(in)    :: stream_dtlimit         ! ratio of max/min stream delta times
     character(*)           , intent(in)    :: stream_tintalgo        ! time interpolation algorithm
+    character(*), optional , intent(in)    :: stream_name            ! name of stream
     integer                , intent(out)   :: rc                     ! error code
     ! ----------------------------------------------
 
@@ -300,7 +301,7 @@ contains
          logunit, trim(compname))
 
     ! Now finish initializing sdat
-    call shr_strdata_init(sdat, model_clock, rc)
+    call shr_strdata_init(sdat, model_clock, stream_name, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine shr_strdata_init_from_inline
@@ -369,11 +370,12 @@ contains
   end subroutine shr_strdata_init_model_domain
 
   !===============================================================================
-  subroutine shr_strdata_init(sdat, model_clock, rc)
+  subroutine shr_strdata_init(sdat, model_clock, stream_name, rc)
 
     ! input/output variables
     type(shr_strdata_type) , intent(inout), target :: sdat
     type(ESMF_Clock)       , intent(in)    :: model_clock
+    character(*), optional , intent(in)    :: stream_name
     integer                , intent(out)   :: rc
 
     ! local variables
@@ -608,7 +610,11 @@ contains
 
     ! print sdat output
     if (masterproc) then
-       call shr_strdata_print(sdat,'sdat data ')
+       if (present(stream_name)) then
+          call shr_strdata_print(sdat, trim(stream_name))
+       else
+          call shr_strdata_print(sdat, 'stream_data')
+       end if
        write(sdat%logunit,*) ' successfully initialized sdat'
     endif
   end subroutine shr_strdata_init
@@ -1149,18 +1155,15 @@ contains
     write(sdat%logunit,F01) "pio_iotype  = ",sdat%io_type
 
     write(sdat%logunit,F01) "nstreams    = ",shr_strdata_get_stream_count(sdat)
+    write(sdat%logunit,F01) "nvectors    = ",sdat%nvectors
     do ns = 1, shr_strdata_get_stream_count(sdat)
        write(sdat%logunit,F04) "  taxMode (",ns,") = ",trim(sdat%stream(ns)%taxmode)
        write(sdat%logunit,F07) "  dtlimit (",ns,") = ",sdat%stream(ns)%dtlimit
        write(sdat%logunit,F04) "  mapalgo (",ns,") = ",trim(sdat%stream(ns)%mapalgo)
        write(sdat%logunit,F04) "  tintalgo(",ns,") = ",trim(sdat%stream(ns)%tinterpalgo)
        write(sdat%logunit,F04) "  readmode(",ns,") = ",trim(sdat%stream(ns)%readmode)
+       write(sdat%logunit,F04) "  vectors (",ns,") = ",trim(sdat%stream(ns)%stream_vectors)
        write(sdat%logunit,F01) " "
-    end do
-
-    write(sdat%logunit,F01) "nvectors    = ",sdat%nvectors
-    do n=1, sdat%nvectors
-       write(sdat%logunit,F04) "  vectors (",n,") = ",trim(sdat%stream(n)%stream_vectors)
     end do
     write(sdat%logunit,F90)
 
