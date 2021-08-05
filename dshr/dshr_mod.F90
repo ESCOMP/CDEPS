@@ -77,6 +77,7 @@ module dshr_mod
   character(len=*) , parameter :: orb_fixed_year        = 'fixed_year'
   character(len=*) , parameter :: orb_variable_year     = 'variable_year'
   character(len=*) , parameter :: orb_fixed_parameters  = 'fixed_parameters'
+  logical :: write_restart_at_endofrun
 
   integer     , parameter :: master_task = 0
   character(*), parameter :: u_FILE_u = &
@@ -212,6 +213,14 @@ contains
        inst_suffix = ""
        inst_index=1
     endif
+
+    call NUOPC_CompAttributeGet(gcomp, name="write_restart_at_endofrun", value=cvalue, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (isPresent .and. isSet) then
+       read(cvalue,*) write_restart_at_endofrun
+    else
+       write_restart_at_endofrun = .false.
+    end if
 
 #ifdef CESMCOUPLED
     sdat%pio_subsystem => shr_pio_getiosys(trim(compname))
@@ -457,6 +466,10 @@ contains
     integer                  :: restart_n            ! Number until restart interval
     integer                  :: restart_ymd          ! Restart date (YYYYMMDD)
     type(ESMF_ALARM)         :: restart_alarm
+    character(len=256)       :: stop_option       ! Stop option units
+    integer                  :: stop_n            ! Number until stop interval
+    integer                  :: stop_ymd          ! Stop date (YYYYMMDD)
+    type(ESMF_ALARM)         :: stop_alarm
     character(len=128)       :: name
     integer                  :: alarmcount
     character(len=*),parameter :: subname='dshr_mod:(ModelSetRunClock) '
@@ -508,6 +521,30 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
        call ESMF_AlarmSet(restart_alarm, clock=mclock, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+       !----------------
+       ! Stop alarm
+       !----------------
+       call NUOPC_CompAttributeGet(gcomp, name="stop_option", value=stop_option, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+       call NUOPC_CompAttributeGet(gcomp, name="stop_n", value=cvalue, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       read(cvalue,*) stop_n
+
+       call NUOPC_CompAttributeGet(gcomp, name="stop_ymd", value=cvalue, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       read(cvalue,*) stop_ymd
+
+       call dshr_alarm_init(mclock, stop_alarm, stop_option, &
+            opt_n   = stop_n,           &
+            opt_ymd = stop_ymd,         &
+            RefTime = mcurrTime,           &
+            alarmname = 'alarm_stop', rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+       call ESMF_AlarmSet(stop_alarm, clock=mclock, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     end if
@@ -577,6 +614,7 @@ contains
          optMonthly        = "monthly"   , &
          optYearly         = "yearly"    , &
          optDate           = "date"      , &
+         optEnd            = "end"       , &
          optIfdays0        = "ifdays0"
     character(len=*), parameter :: subname = '(dshr_alarm_init): '
     !-------------------------------------------------------------------------------
@@ -617,6 +655,13 @@ contains
        update_nextalarm  = .false.
 
     case (optNever)
+       call ESMF_TimeIntervalSet(AlarmInterval, yy=9999, rc=rc)
+       if (chkerr(rc,__LINE__,u_FILE_u)) return
+       call ESMF_TimeSet( NextAlarm, yy=9999, mm=12, dd=1, s=0, calendar=cal, rc=rc )
+       if (chkerr(rc,__LINE__,u_FILE_u)) return
+       update_nextalarm  = .false.
+
+    case (optEnd)
        call ESMF_TimeIntervalSet(AlarmInterval, yy=9999, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
        call ESMF_TimeSet( NextAlarm, yy=9999, mm=12, dd=1, s=0, calendar=cal, rc=rc )
@@ -1845,4 +1890,52 @@ contains
 
   end subroutine dshr_pio_init
 
+  logical function dshr_check_restart_alarm(clock, rc)
+    use ESMF, only : ESMF_ClockGetAlarm, ESMF_AlarmIsRinging, ESMF_AlarmRingerOff
+    integer, intent(out)         :: rc
+    type(ESMF_CLOCK), intent(in) :: clock
+
+    type(ESMF_ALARM) :: alarm
+    logical :: nlend, rstwr
+    !--------------------------------
+    ! Determine if time to stop
+    !--------------------------------
+
+    rc = ESMF_SUCCESS
+    
+    call ESMF_ClockGetAlarm(clock, alarmname='alarm_stop', alarm=alarm, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    
+    if (ESMF_AlarmIsRinging(alarm, rc=rc)) then
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       nlend = .true.
+       call ESMF_AlarmRingerOff( alarm, rc=rc )
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    else
+       nlend = .false.
+    endif
+
+    !--------------------------------
+    ! Determine if time to write restart
+    !--------------------------------
+
+    if (nlend .and. write_restart_at_endofrun) then
+       rstwr = .true.
+    else
+       call ESMF_ClockGetAlarm(clock, alarmname='alarm_restart', alarm=alarm, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       
+       if (ESMF_AlarmIsRinging(alarm, rc=rc)) then
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          rstwr = .true.
+          call ESMF_AlarmRingerOff( alarm, rc=rc )
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       else
+          rstwr = .false.
+       endif
+    end if
+    dshr_check_restart_alarm = rstwr
+  end function dshr_check_restart_alarm
+
+  
 end module dshr_mod
