@@ -30,7 +30,7 @@ module cdeps_docn_comp
   use dshr_methods_mod , only : dshr_state_diagnose, chkerr, memcheck
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_advance, shr_strdata_init_from_config
   use dshr_mod         , only : dshr_model_initphase, dshr_init, dshr_mesh_init
-  use dshr_mod         , only : dshr_state_setscalar, dshr_set_runclock
+  use dshr_mod         , only : dshr_state_setscalar, dshr_set_runclock, dshr_check_restart_alarm
   use dshr_dfield_mod  , only : dfield_type, dshr_dfield_add, dshr_dfield_copy
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_realize
 
@@ -422,16 +422,7 @@ contains
     call shr_cal_ymd2date(yr, mon, day, next_ymd)
 
     ! determine if will write restart
-    call ESMF_ClockGetAlarm(clock, alarmname='alarm_restart', alarm=alarm, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    if (ESMF_AlarmIsRinging(alarm, rc=rc)) then
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call ESMF_AlarmRingerOff( alarm, rc=rc )
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       restart_write = .true.
-    else
-       restart_write = .false.
-    end if
+    restart_write = dshr_check_restart_alarm(clock, rc=rc)
 
     ! run docn
     call docn_comp_run(importState, exportState, clock, next_ymd, next_tod, restart_write, rc=rc)

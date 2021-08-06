@@ -34,7 +34,7 @@ module cdeps_datm_comp
   use dshr_strdata_mod , only : shr_strdata_get_stream_pointer, shr_strdata_setOrbs
   use dshr_mod         , only : dshr_model_initphase, dshr_init
   use dshr_mod         , only : dshr_state_setscalar, dshr_set_runclock, dshr_log_clock_advance
-  use dshr_mod         , only : dshr_restart_read, dshr_restart_write, dshr_mesh_init
+  use dshr_mod         , only : dshr_mesh_init, dshr_check_restart_alarm
   use dshr_mod         , only : dshr_orbital_init, dshr_orbital_update
   use dshr_dfield_mod  , only : dfield_type, dshr_dfield_add, dshr_dfield_copy
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add, dshr_fldlist_realize
@@ -448,7 +448,7 @@ contains
     type(ESMF_Time)         :: nextTime
     type(ESMF_TimeInterval) :: timeStep
     real(r8)                :: nextsw_cday
-    logical                 :: restart_write ! restart alarm is ringing
+    logical                 :: restart_write         ! restart alarm is ringing
     integer                 :: next_ymd      ! model date
     integer                 :: next_tod      ! model sec into model date
     integer                 :: yr, mon, day  ! year, month, day
@@ -485,18 +485,9 @@ contains
          orbEccen, orbObliqr, orbLambm0, orbMvelpp, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    ! determine if will write restart
-    call ESMF_ClockGetAlarm(clock, alarmname='alarm_restart', alarm=alarm, rc=rc)
+    restart_write = dshr_check_restart_alarm(clock, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    if (ESMF_AlarmIsRinging(alarm, rc=rc)) then
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call ESMF_AlarmRingerOff( alarm, rc=rc )
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       restart_write = .true.
-    else
-       restart_write = .false.
-    endif
-
+    
     ! Run datm
     call ESMF_TraceRegionEnter('datm_run')
     call datm_comp_run(importstate, exportstate, next_ymd, next_tod, mon, &
