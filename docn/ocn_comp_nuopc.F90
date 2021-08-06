@@ -1,8 +1,4 @@
-#ifdef CESMCOUPLED
 module ocn_comp_nuopc
-#else
-module cdeps_docn_comp
-#endif
 
   !----------------------------------------------------------------------------
   ! This is the NUOPC cap for DOCN
@@ -111,11 +107,7 @@ module cdeps_docn_comp
   logical                      :: aquaplanet = .false.
   logical                      :: diagnose_data = .true.
   integer      , parameter     :: master_task = 0                 ! task number of master task
-#ifdef CESMCOUPLED
   character(*) , parameter     :: module_name = "(ocn_comp_nuopc)"
-#else
-  character(*) , parameter     :: module_name = "(cdeps_docn_comp)"
-#endif
   character(*) , parameter     :: modelname = 'docn'
   character(*) , parameter     :: u_FILE_u = &
        __FILE__
@@ -183,10 +175,10 @@ contains
     integer           :: ierr               ! error code
     logical           :: exists             ! check for file existence
     character(len=*),parameter :: subname=trim(module_name)//':(InitializeAdvertise) '
-    character(*)    ,parameter :: F00 = "('(" // trim(module_name) // ") ',8a)"
-    character(*)    ,parameter :: F01 = "('(" // trim(module_name) // ") ',a,2x,i8)"
-    character(*)    ,parameter :: F02 = "('(" // trim(module_name) // ") ',a,l6)"
-    character(*)    ,parameter :: F03 = "('(" // trim(module_name) // ") ',a,f8.5,2x,f8.5)"
+    character(*)    ,parameter :: F00 = "('(ocn_comp_nuopc) ',8a)"
+    character(*)    ,parameter :: F01 = "('(ocn_comp_nuopc) ',a,2x,i8)"
+    character(*)    ,parameter :: F02 = "('(ocn_comp_nuopc) ',a,l6)"
+    character(*)    ,parameter :: F03 = "('(ocn_comp_nuopc) ',a,f8.5,2x,f8.5)"
     !-------------------------------------------------------------------------------
 
     namelist / docn_nml / datamode, &
@@ -239,7 +231,7 @@ contains
     call shr_mpi_bcast(sst_constant_value        , mpicom, 'sst_constant_value')
 
     ! Special logic for prescribed aquaplanet
-    if (datamode(1:9) == 'sst_aquap') then
+    if (datamode(1:9) == 'sst_aquap' .and. trim(datamode) /= 'sst_aquap_constant') then
        ! First determine the prescribed aquaplanet option
        if (len_trim(datamode) == 10) then
           read(datamode(10:10),'(i1)') aquap_option
@@ -262,6 +254,8 @@ contains
     else
        call shr_sys_abort(' ERROR illegal docn datamode = '//trim(datamode))
     endif
+
+    write(6,*)'DEBUG: datamode = ',trim(datamode)
 
     ! Advertise docn fields
     if (trim(datamode)=='sst_aquap_analytic' .or. trim(datamode)=='sst_aquap_constant') then
@@ -622,8 +616,4 @@ contains
     end if
   end subroutine ModelFinalize
 
-#ifdef CESMCOUPLED
 end module ocn_comp_nuopc
-#else
-end module cdeps_docn_comp
-#endif
