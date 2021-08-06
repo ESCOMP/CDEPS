@@ -28,7 +28,7 @@ module cdeps_dice_comp
   use shr_sys_mod          , only : shr_sys_abort
   use shr_cal_mod          , only : shr_cal_ymd2date, shr_cal_ymd2julian
   use shr_mpi_mod          , only : shr_mpi_bcast
-  use dshr_mod             , only : dshr_model_initphase, dshr_init, dshr_mesh_init
+  use dshr_mod             , only : dshr_model_initphase, dshr_init, dshr_mesh_init, dshr_check_restart_alarm
   use dshr_mod             , only : dshr_state_setscalar, dshr_set_runclock, dshr_log_clock_advance
   use dshr_methods_mod     , only : dshr_state_diagnose, chkerr, memcheck
   use dshr_strdata_mod     , only : shr_strdata_type, shr_strdata_init_from_config, shr_strdata_advance
@@ -415,16 +415,8 @@ contains
     cosArg = 2.0_R8*shr_const_pi*(jday - jday0)/365.0_R8
 
     ! Determine if will write restarts
-    call ESMF_ClockGetAlarm(clock, alarmname='alarm_restart', alarm=alarm, rc=rc)
+    restart_write = dshr_check_restart_alarm(clock, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    if (ESMF_AlarmIsRinging(alarm, rc=rc)) then
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call ESMF_AlarmRingerOff( alarm, rc=rc )
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       restart_write = .true.
-    else
-       restart_write = .false.
-    endif
 
     ! Run dice
     call dice_comp_run(importState, exportState, next_ymd, next_tod, cosarg, restart_write, rc)
