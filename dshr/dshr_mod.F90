@@ -1889,7 +1889,10 @@ contains
                              pio_rearr_comm_max_pend_req_io2comp)
 
   end subroutine dshr_pio_init
-
+!
+! Returns trun if the restart alarm is ringing or its the end of the run and 
+! REST_OPTION is not none or never
+!
   logical function dshr_check_restart_alarm(clock, rc)
     use ESMF, only : ESMF_ClockGetAlarm, ESMF_AlarmIsRinging, ESMF_AlarmRingerOff
     integer, intent(out)         :: rc

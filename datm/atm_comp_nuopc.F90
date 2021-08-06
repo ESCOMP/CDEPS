@@ -448,7 +448,7 @@ contains
     type(ESMF_Time)         :: nextTime
     type(ESMF_TimeInterval) :: timeStep
     real(r8)                :: nextsw_cday
-    logical                 :: rstwr         ! restart alarm is ringing
+    logical                 :: restart_write         ! restart alarm is ringing
     integer                 :: next_ymd      ! model date
     integer                 :: next_tod      ! model sec into model date
     integer                 :: yr, mon, day  ! year, month, day
@@ -485,13 +485,13 @@ contains
          orbEccen, orbObliqr, orbLambm0, orbMvelpp, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    rstwr = dshr_check_restart_alarm(clock, rc=rc)
+    restart_write = dshr_check_restart_alarm(clock, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     
     ! Run datm
     call ESMF_TraceRegionEnter('datm_run')
     call datm_comp_run(importstate, exportstate, next_ymd, next_tod, mon, &
-         orbEccen, orbMvelpp, orbLambm0, orbObliqr, rstwr,  rc)
+         orbEccen, orbMvelpp, orbLambm0, orbObliqr, restart_write,  rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_TraceRegionExit('datm_run')
 
