@@ -214,12 +214,10 @@ contains
        inst_index=1
     endif
 
-    call NUOPC_CompAttributeGet(gcomp, name="write_restart_at_endofrun", value=cvalue, rc=rc)
+    call NUOPC_CompAttributeGet(gcomp, name="write_restart_at_endofrun", value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (isPresent .and. isSet) then
-       read(cvalue,*) write_restart_at_endofrun
-    else
-       write_restart_at_endofrun = .false.
+       if (trim(cvalue) .eq. '.true.') write_restart_at_endofrun = .true.
     end if
 
 #ifdef CESMCOUPLED
@@ -462,9 +460,9 @@ contains
     type(ESMF_Time)          :: mstoptime
     type(ESMF_TimeInterval)  :: mtimestep, dtimestep
     character(len=256)       :: cvalue
-    character(len=256)       :: restart_option       ! Restart option units
-    integer                  :: restart_n            ! Number until restart interval
-    integer                  :: restart_ymd          ! Restart date (YYYYMMDD)
+    character(len=256)       :: restart_option      ! Restart option units
+    integer                  :: restart_n               ! Number until restart interval
+    integer                  :: restart_ymd         ! Restart date (YYYYMMDD)
     type(ESMF_ALARM)         :: restart_alarm
     character(len=256)       :: stop_option       ! Stop option units
     integer                  :: stop_n            ! Number until stop interval
