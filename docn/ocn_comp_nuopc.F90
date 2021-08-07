@@ -1,4 +1,8 @@
+#ifdef CESMCOUPLED
 module ocn_comp_nuopc
+#else
+module cdeps_docn_comp
+#endif
 
   !----------------------------------------------------------------------------
   ! This is the NUOPC cap for DOCN
@@ -107,7 +111,11 @@ module ocn_comp_nuopc
   logical                      :: aquaplanet = .false.
   logical                      :: diagnose_data = .true.
   integer      , parameter     :: master_task = 0                 ! task number of master task
+#ifdef CESMCOUPLED
   character(*) , parameter     :: module_name = "(ocn_comp_nuopc)"
+#else
+  character(*) , parameter     :: module_name = "(cdeps_docn_comp)"
+#endif
   character(*) , parameter     :: modelname = 'docn'
   character(*) , parameter     :: u_FILE_u = &
        __FILE__
@@ -175,10 +183,10 @@ contains
     integer           :: ierr               ! error code
     logical           :: exists             ! check for file existence
     character(len=*),parameter :: subname=trim(module_name)//':(InitializeAdvertise) '
-    character(*)    ,parameter :: F00 = "('(ocn_comp_nuopc) ',8a)"
-    character(*)    ,parameter :: F01 = "('(ocn_comp_nuopc) ',a,2x,i8)"
-    character(*)    ,parameter :: F02 = "('(ocn_comp_nuopc) ',a,l6)"
-    character(*)    ,parameter :: F03 = "('(ocn_comp_nuopc) ',a,f8.5,2x,f8.5)"
+    character(*)    ,parameter :: F00 = "('(" // trim(module_name) // ") ',8a)"
+    character(*)    ,parameter :: F01 = "('(" // trim(module_name) // ") ',a,2x,i8)"
+    character(*)    ,parameter :: F02 = "('(" // trim(module_name) // ") ',a,l6)"
+    character(*)    ,parameter :: F03 = "('(" // trim(module_name) // ") ',a,f8.5,2x,f8.5)"
     !-------------------------------------------------------------------------------
 
     namelist / docn_nml / datamode, &
@@ -254,8 +262,6 @@ contains
     else
        call shr_sys_abort(' ERROR illegal docn datamode = '//trim(datamode))
     endif
-
-    write(6,*)'DEBUG: datamode = ',trim(datamode)
 
     ! Advertise docn fields
     if (trim(datamode)=='sst_aquap_analytic' .or. trim(datamode)=='sst_aquap_constant') then
@@ -607,4 +613,8 @@ contains
     end if
   end subroutine ModelFinalize
 
+#ifdef CESMCOUPLED
 end module ocn_comp_nuopc
+#else
+end module cdeps_docn_comp
+#endif
