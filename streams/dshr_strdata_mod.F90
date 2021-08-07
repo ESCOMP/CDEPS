@@ -522,6 +522,8 @@ contains
              sdat%pstrm(ns)%field_stream = ESMF_FieldCreate(stream_mesh, &
                   ESMF_TYPEKIND_r8, meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
              if (chkerr(rc,__LINE__,u_FILE_u)) return
+             call ESMF_FieldFill(sdat%pstrm(ns)%field_stream, dataFillScheme="const", const1=1.0_r8, rc=rc)
+             if (chkerr(rc,__LINE__,u_FILE_u)) return
           end if
        endif
 

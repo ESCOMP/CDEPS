@@ -239,7 +239,7 @@ contains
     call shr_mpi_bcast(sst_constant_value        , mpicom, 'sst_constant_value')
 
     ! Special logic for prescribed aquaplanet
-    if (datamode(1:9) == 'sst_aquap') then
+    if (datamode(1:9) == 'sst_aquap' .and. trim(datamode) /= 'sst_aquap_constant') then
        ! First determine the prescribed aquaplanet option
        if (len_trim(datamode) == 10) then
           read(datamode(10:10),'(i1)') aquap_option
