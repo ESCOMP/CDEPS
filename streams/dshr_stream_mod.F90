@@ -291,7 +291,10 @@ contains
              streamdat(i)%varlist(n)%nameinmodel = tmpstr(index(trim(tmpstr), " ", .true.)+1:)
           enddo
        enddo
+#ifndef CPRPGI
+! PGI compiler has an issue with this call (empty procedure)
        call destroy(Sdoc)
+#endif
     endif
 
     ! allocate streamdat instance on all tasks
