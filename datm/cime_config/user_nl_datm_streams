@@ -1,0 +1,8 @@
+!------------------------------------------------------------------------
+! This file is used to modify datm.streams.xml generated in $RUNDIR
+! Entries should have the form 
+! <stream name>:<stream_variable><= new stream_value>  
+! As an example: 
+! CORE2_NYF.GISS:year_first = 1950
+! would change the CORE2_NYF.GISS year_first to 1950
+!------------------------------------------------------------------------

@@ -138,23 +138,23 @@ contains
     ! <file id="stream" version="1.0">
     !   <stream_info>
     !    <taxmode></taxmode>
-    !    <tInterpAlgo></tInterpAlgo>
-    !    <readMode></readMode>
+    !    <tinterpalgo></tinterpalgo>
+    !    <readmode></readmode>
     !    <mapalgo></mapalgo>
     !    <dtlimit></dtlimit>
-    !    <yearFirst></yearFirst>
-    !    <yearLast></yearLast>
-    !    <yearAlign></yearAlign>
-    !    <stream_vectors></stream_vectors>
-    !    <stream_mesh_file></stream_mesh_file>
-    !    <stream_lev_dimname></stream_lev_dimname>
-    !    <stream_data_files>
+    !    <yearfirst></yearfirst>
+    !    <yearlast></yearlast>
+    !    <yearalign></yearalign>
+    !    <vectors></vectors>
+    !    <mesh_file></mesh_file>
+    !    <lev_dimname></lev_dimname>
+    !    <data_files>
     !      <file></file>
-    !    </stream_data_files>
-    !    <stream_data_variables>
+    !    </data_files>
+    !    <data_variables>
     !      <var></var>
-    !    </stream_data_variables>
-    !    <stream_offset></stream_offset>
+    !    </data_variables>
+    !    <offset></offset>
     !  </stream_info>
     ! </file>
     ! ---------------------------------------------------------------------
@@ -195,7 +195,7 @@ contains
        streamlist => getElementsByTagname(Sdoc, "stream_info")
        nstrms = getLength(streamlist)
 
-       ! allocate an array of shr_stream_streamtype objects on just isroot_task
+       ! allocate an array of shr_streamtype objects on just isroot_task
        allocate(streamdat(nstrms))
 
        ! fill in non-default values for the streamdat attributes
@@ -211,27 +211,27 @@ contains
           if(associated(p)) then
              call extractDataContent(p, streamdat(i)%mapalgo)
           endif
-          p => item(getElementsByTagname(streamnode, "tInterpAlgo"), 0)
+          p => item(getElementsByTagname(streamnode, "tinterpalgo"), 0)
           if(associated(p)) then
              call extractDataContent(p, streamdat(i)%tInterpAlgo)
           endif
-          p => item(getElementsByTagname(streamnode, "readMode"), 0)
+          p => item(getElementsByTagname(streamnode, "readmode"), 0)
           if(associated(p)) then
              call extractDataContent(p, streamdat(i)%readMode)
           endif
-          p=> item(getElementsByTagname(streamnode, "yearFirst"), 0)
+          p=> item(getElementsByTagname(streamnode, "yearfirst"), 0)
           if(associated(p)) then
              call extractDataContent(p, streamdat(i)%yearFirst)
           else
              call shr_sys_abort("yearFirst must be provided")
           endif
-          p=> item(getElementsByTagname(streamnode, "yearLast"), 0)
+          p=> item(getElementsByTagname(streamnode, "yearlast"), 0)
           if(associated(p)) then
              call extractDataContent(p, streamdat(i)%yearLast)
           else
              call shr_sys_abort("yearLast must be provided")
           endif
-          p=> item(getElementsByTagname(streamnode, "yearAlign"), 0)
+          p=> item(getElementsByTagname(streamnode, "yearalign"), 0)
           if(associated(p)) then
              call extractDataContent(p, streamdat(i)%yearAlign)
           else
@@ -241,31 +241,31 @@ contains
           if(associated(p)) then
              call extractDataContent(p, streamdat(i)%dtlimit)
           endif
-          p=> item(getElementsByTagname(streamnode, "stream_offset"), 0)
+          p=> item(getElementsByTagname(streamnode, "offset"), 0)
           if(associated(p)) then
              call extractDataContent(p, streamdat(i)%offset)
           endif
-          p=> item(getElementsByTagname(streamnode, "stream_mesh_file"), 0)
+          p=> item(getElementsByTagname(streamnode, "mesh_file"), 0)
           if (associated(p)) then
              call extractDataContent(p, streamdat(i)%meshfile)
           else
              call shr_sys_abort("mesh file name must be provided")
           endif
-          p => item(getElementsByTagname(streamnode, "stream_vectors"), 0)
+          p => item(getElementsByTagname(streamnode, "vectors"), 0)
           if (associated(p)) then
              call extractDataContent(p, streamdat(i)%stream_vectors)
           else
              call shr_sys_abort("stream vectors must be provided")
           endif
 
-          p => item(getElementsByTagname(streamnode, "stream_lev_dimname"), 0)
+          p => item(getElementsByTagname(streamnode, "lev_dimname"), 0)
           if (associated(p)) then
              call extractDataContent(p, streamdat(i)%lev_dimname)
           else
              call shr_sys_abort("stream vertical level dimension name must be provided")
           endif
 
-          p => item(getElementsByTagname(streamnode, "stream_data_files"), 0)
+          p => item(getElementsByTagname(streamnode, "data_files"), 0)
           if (.not. associated(p)) then
              call shr_sys_abort("stream data files must be provided")
           endif
@@ -280,7 +280,7 @@ contains
           enddo
 
           ! Determine name of stream variables in file and model
-          p => item(getElementsByTagname(streamnode, "stream_data_variables"), 0)
+          p => item(getElementsByTagname(streamnode, "data_variables"), 0)
           varlist => getElementsByTagname(p, "var")
           streamdat(i)%nvars = getLength(varlist)
           allocate(streamdat(i)%varlist(streamdat(i)%nvars))

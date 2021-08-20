@@ -22,26 +22,41 @@ _ymd_re = re.compile(r"%(?P<digits>[1-9][0-9]*)?y(?P<month>m(?P<day>d)?)?")
 _stream_nuopc_file_template = """
   <stream_info name="{streamname}">
    <taxmode>{stream_taxmode}</taxmode>
-   <tInterpAlgo>{stream_tintalgo}</tInterpAlgo>
-   <readMode>{stream_readmode}</readMode>
+   <tinterpalgo>{stream_tintalgo}</tinterpalgo>
+   <readmode>{stream_readmode}</readmode>
    <mapalgo>{stream_mapalgo}</mapalgo>
    <dtlimit>{stream_dtlimit}</dtlimit>
-   <yearFirst>{stream_year_first}</yearFirst>
-   <yearLast>{stream_year_last}</yearLast>
-   <yearAlign>{stream_year_align}</yearAlign>
-   <stream_vectors>{stream_vectors}</stream_vectors>
-   <stream_mesh_file>{stream_meshfile}</stream_mesh_file>
-   <stream_lev_dimname>{stream_lev_dimname}</stream_lev_dimname>
-   <stream_data_files>
+   <year_first>{stream_year_first}</yearfirst>
+   <year_last>{stream_year_last}</yearlast>
+   <year_align>{stream_year_align}</yearalign>
+   <vectors>{stream_vectors}</vectors>
+   <meshfile>{stream_meshfile}</mesh_file>
+   <lev_dimname>{stream_lev_dimname}</lev_dimname>
+   <datafiles>
       {stream_datafiles}
-   </stream_data_files>
-   <stream_data_variables>
+   </datafiles>
+   <datavars>
       {stream_datavars}
-   </stream_data_variables>
-   <stream_offset>{stream_offset}</stream_offset>
+   </datavars>
+   <offset>{stream_offset}</offset>
  </stream_info>
 
 """
+
+_stream_key_dict = {"taxmode":"stream_taxmode",
+                    "tinterpalgo":"stream_tintalgo",
+                    "readmode":"stream_readmode",
+                    "mapalgo":"stream_mapalgo",
+                    "dtlimit":"stream_dtlimit",
+                    "year_first":"stream_year_first",
+                    "year_last":"stream_year_last",
+                    "year_align":"stream_year_align",
+                    "vectors":"stream_vectors",
+                    "meshfile":"stream_meshfile",
+                    "lev_dimname":"stream_lev_dimname",
+                    "datafiles":"stream_datafiles",
+                    "data_vars":"stream_datavars",
+                    "offset":"stream_offset"}
 
 class StreamCDEPS(GenericXML):
 
@@ -54,16 +69,51 @@ class StreamCDEPS(GenericXML):
         if os.path.exists(infile):
             GenericXML.read(self, infile, schema)
 
-    def create_stream_xml(self, stream_names, case, streams_xml_file, data_list_file, available_neon_data=None):
+    def create_stream_xml(self, stream_names, case, streams_xml_file, data_list_file, user_mods_file=None,
+                          available_neon_data=None):
         """
         Create the stream xml file and append the required stream input data to the input data list file
         available_neon_data is an optional list of NEON tower data available for the given case, if provided
         this data will be used to populate the NEON streamdata list
         """
+
+        # determine if there are user mods
+        lines_input = []
+        if user_mods_file is not None:
+            if os.path.isfile(user_mods_file):
+                with open(user_mods_file, "r") as stream_mods_file:
+                    lines_input = stream_mods_file.readlines()
+            else:
+                logger.error("ERROR: No file {} found in case directory".format(user_mods_file))
+        stream_mod_dict = {}
+        for line in lines_input:
+            if ('!' not in line ):
+                stream_mods = [x.strip() for x in line.strip().split(":") if x]
+                # TODO: check there are 2 entries
+                stream,varmod = stream_mods
+                if stream  not in stream_mod_dict:
+                    stream_mod_dict[stream] = {}
+                # check the varmod
+                varmod_args = [x.strip() for x in varmod.split("=") if x]
+                # check that varmod_args has two entries
+                # do not allow multiple entries for varmod_args
+                varname,varval = varmod_args
+                expect (varname not in stream_mod_dict[stream], 
+                        "varname {} is already in stream dictionary".format(varname))
+                if "data_variables" == varname or "data_files" == varname:
+                    if "data_variables" == varname:
+                        varvals = ["<var>{}</var>".format(x.strip()) for x in varval.split(",") if x]
+                    if "data_files" == varname:
+                        varvals = ["<file>{}</file>".format(x.strip()) for x in varval.split(",") if x]
+                    varval = "      " + "\n      ".join(varvals)
+                    varval = varval.strip()
+                stream_mod_dict[stream][varname] = varval
+
         # write header of stream file
         with open(streams_xml_file, 'w') as stream_file:
             stream_file.write('<?xml version="1.0"?>\n')
             stream_file.write('<file id="stream" version="2.0">\n')
+
         # write contents of stream file
         for stream_name in stream_names:
             if stream_name.startswith("NEON."):
@@ -80,7 +130,7 @@ class StreamCDEPS(GenericXML):
 
             # determine stream_year_first and stream_year_list
             data_year_first,data_year_last = self._get_stream_first_and_last_dates(self.stream_nodes, case)
-
+            
             # now write the data model streams xml file
             stream_vars = {}
             stream_vars['streamname'] = stream_name
@@ -147,6 +197,17 @@ class StreamCDEPS(GenericXML):
                 elif node_name.strip():
                     # Get the other dependencies
                     stream_dict = self._add_value_to_dict(stream_vars, case, node)
+
+            # substitute user_mods 
+            # TODO: trap error if var_key is not in stream_vars
+            mod_dict = {}
+            if stream_vars['streamname'] in stream_mod_dict:
+                mod_dict = stream_mod_dict[stream_vars['streamname']]
+                for var_key in mod_dict:
+                    print ("DEBUG: var_key = {}".format(var_key))
+                    if 'stream_' + var_key not in stream_vars:
+                        raise ValueError("stream mod {} is not a valid name ".format(var_key))
+                    stream_vars['stream_' + var_key] = mod_dict[var_key]
 
             # append to stream xml file
             stream_file_text = _stream_nuopc_file_template.format(**stream_vars)
