@@ -182,12 +182,10 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
 def buildnml(case, caseroot, compname):
 ###############################################################################
 
-    # Build the component namelist and required stream xml files
-    if compname != "datm":
-        raise AttributeError
-
     rundir = case.get_value("RUNDIR")
-    ninst = case.get_value("NINST_ATM")
+    inst_name = compname.upper()[1:]
+    ninst = case.get_value("NINST_"+inst_name)
+    print ("DEBUG: ninst is {}".format(ninst))
     if ninst is None:
         ninst = case.get_value("NINST")
 
@@ -206,9 +204,9 @@ def buildnml(case, caseroot, compname):
 
     # NOTE: User definition *replaces* existing definition.
     files = Files(comp_interface="nuopc")
-    definition_file = [files.get_value("NAMELIST_DEFINITION_FILE", {"component":"datm"})]
+    definition_file = [files.get_value("NAMELIST_DEFINITION_FILE", {"component":compname})]
 
-    user_definition = os.path.join(user_xml_dir, "namelist_definition_datm.xml")
+    user_definition = os.path.join(user_xml_dir, "namelist_definition_"+compname+".xml")
     if os.path.isfile(user_definition):
         definition_file = [user_definition]
     for file_ in definition_file:
@@ -220,7 +218,7 @@ def buildnml(case, caseroot, compname):
     #----------------------------------------------------
     # Clear out old data.
     #----------------------------------------------------
-    data_list_path = os.path.join(caseroot, "Buildconf", "datm.input_data_list")
+    data_list_path = os.path.join(caseroot, "Buildconf", compname+".input_data_list")
     if os.path.exists(data_list_path):
         os.remove(data_list_path)
 
@@ -286,6 +284,16 @@ def create_stream_infile(case, user_nl_file, namelist_infile, infile_text=""):
     lines_output.append("/ \n")
     with open(namelist_infile, "w") as file_infile:
         file_infile.write("\n".join(lines_output))
+
+###############################################################################
+def get_user_nl_list(case):
+###############################################################################
+    """Returns a list of user_nl_datm* files needed in this case
+    This function is called by CIME to stage the user_nl_datm* files in the case
+    directory.
+    """
+    user_nl_list = ["user_nl_datm", "user_nl_datm_streams"]
+    return user_nl_list
 
 ###############################################################################
 def _main_func():

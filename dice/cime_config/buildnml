@@ -181,6 +181,16 @@ def buildnml(case, caseroot, compname):
         copy_inputs_to_rundir(caseroot, compname, confdir, rundir, inst_string)
 
 ###############################################################################
+def get_user_nl_list(case):
+###############################################################################
+    """Returns a list of user_nl_dice* files needed in this case
+    This function is called by CIME to stage the user_nl_dice* files in the case
+    directory.
+    """
+    user_nl_list = ["user_nl_dice", "user_nl_dice_streams"]
+    return user_nl_list
+
+###############################################################################
 def _main_func():
     # Build the component namelist and required stream txt files
     caseroot = parse_input(sys.argv)

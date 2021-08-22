@@ -19,10 +19,10 @@ _var_ref_re = re.compile(r"\$(\{)?(?P<name>\w+)(?(1)\})")
 
 _ymd_re = re.compile(r"%(?P<digits>[1-9][0-9]*)?y(?P<month>m(?P<day>d)?)?")
 
-_stream_nuopc_file_template = """
+_stream_file_template = """
   <stream_info name="{streamname}">
    <taxmode>{stream_taxmode}</taxmode>
-   <tinterpalgo>{stream_tintalgo}</tinterpalgo>
+   <tintalgo>{stream_tintalgo}</tintalgo>
    <readmode>{stream_readmode}</readmode>
    <mapalgo>{stream_mapalgo}</mapalgo>
    <dtlimit>{stream_dtlimit}</dtlimit>
@@ -43,20 +43,7 @@ _stream_nuopc_file_template = """
 
 """
 
-_stream_key_dict = {"taxmode":"stream_taxmode",
-                    "tinterpalgo":"stream_tintalgo",
-                    "readmode":"stream_readmode",
-                    "mapalgo":"stream_mapalgo",
-                    "dtlimit":"stream_dtlimit",
-                    "year_first":"stream_year_first",
-                    "year_last":"stream_year_last",
-                    "year_align":"stream_year_align",
-                    "vectors":"stream_vectors",
-                    "meshfile":"stream_meshfile",
-                    "lev_dimname":"stream_lev_dimname",
-                    "datafiles":"stream_datafiles",
-                    "data_vars":"stream_datavars",
-                    "offset":"stream_offset"}
+xml_scalar_names = ["stream_meshfile","stream_mapalgo","stream_tintalgo","stream_taxmode","stream_dtlimit"]
 
 class StreamCDEPS(GenericXML):
 
@@ -87,23 +74,26 @@ class StreamCDEPS(GenericXML):
                 logger.error("ERROR: No file {} found in case directory".format(user_mods_file))
         stream_mod_dict = {}
         for line in lines_input:
+            # read in a single line in user_nl_xxx_streams and parse it if it is not a comment
             if ('!' not in line ):
                 stream_mods = [x.strip() for x in line.strip().split(":") if x]
-                # TODO: check there are 2 entries
+                expect(len(stream_mods) == 2,
+                       "input stream mod can only be of the form streamname:var=value(s)")
                 stream,varmod = stream_mods
                 if stream  not in stream_mod_dict:
                     stream_mod_dict[stream] = {}
-                # check the varmod
+                # var=value and check the validity
                 varmod_args = [x.strip() for x in varmod.split("=") if x]
-                # check that varmod_args has two entries
+                expect(len(varmod_args) == 2,
+                       "input stream mod can only be of the form streamname:var=value(s)")
                 # do not allow multiple entries for varmod_args
                 varname,varval = varmod_args
-                expect (varname not in stream_mod_dict[stream], 
-                        "varname {} is already in stream dictionary".format(varname))
-                if "data_variables" == varname or "data_files" == varname:
-                    if "data_variables" == varname:
+                expect (varname not in stream_mod_dict[stream],
+                        "varname {} is already in stream mod dictionary".format(varname))
+                if varname == "datavars" or varname == "datafiles":
+                    if varname == "datavars":
                         varvals = ["<var>{}</var>".format(x.strip()) for x in varval.split(",") if x]
-                    if "data_files" == varname:
+                    if varname == "datafiles":
                         varvals = ["<file>{}</file>".format(x.strip()) for x in varval.split(",") if x]
                     varval = "      " + "\n      ".join(varvals)
                     varval = varval.strip()
@@ -130,7 +120,7 @@ class StreamCDEPS(GenericXML):
 
             # determine stream_year_first and stream_year_list
             data_year_first,data_year_last = self._get_stream_first_and_last_dates(self.stream_nodes, case)
-            
+
             # now write the data model streams xml file
             stream_vars = {}
             stream_vars['streamname'] = stream_name
@@ -181,11 +171,7 @@ class StreamCDEPS(GenericXML):
                             stream_vars[node_name] += "\n      " + self._add_xml_delimiter(stream_datafiles.split("\n"), "file")
                         else:
                             stream_vars[node_name] = self._add_xml_delimiter(stream_datafiles.split("\n"), "file")
-                elif (   node_name == 'stream_meshfile'
-                      or node_name == 'stream_mapalgo'
-                      or node_name == 'stream_tintalgo'
-                      or node_name == 'stream_taxmode'
-                      or node_name == 'stream_dtlimit'):
+                elif (node_name in xml_scalar_names):
                     attributes['model_grid'] = case.get_value("GRID")
                     attributes['compset'] = case.get_value("COMPSET")
                     value = self._get_value_match(node, node_name[7:], attributes=attributes)
@@ -198,19 +184,17 @@ class StreamCDEPS(GenericXML):
                     # Get the other dependencies
                     stream_dict = self._add_value_to_dict(stream_vars, case, node)
 
-            # substitute user_mods 
-            # TODO: trap error if var_key is not in stream_vars
+            # substitute user_mods in generated stream file (i.e. stream_vars)
             mod_dict = {}
             if stream_vars['streamname'] in stream_mod_dict:
                 mod_dict = stream_mod_dict[stream_vars['streamname']]
                 for var_key in mod_dict:
-                    print ("DEBUG: var_key = {}".format(var_key))
-                    if 'stream_' + var_key not in stream_vars:
-                        raise ValueError("stream mod {} is not a valid name ".format(var_key))
+                    expect( 'stream_' + var_key in stream_vars,
+                            "stream mod {} is not a valid name in {}".format(var_key,user_mods_file))
                     stream_vars['stream_' + var_key] = mod_dict[var_key]
 
             # append to stream xml file
-            stream_file_text = _stream_nuopc_file_template.format(**stream_vars)
+            stream_file_text = _stream_file_template.format(**stream_vars)
             with open(streams_xml_file, 'a') as stream_file:
                 stream_file.write(stream_file_text)
 

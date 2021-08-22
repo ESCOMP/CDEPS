@@ -12,7 +12,9 @@ module dshr_strdata_mod
   use ESMF             , only : ESMF_TimeIntervalGet, ESMF_TYPEKIND_R8, ESMF_FieldCreate
   use ESMF             , only : ESMF_FILEFORMAT_ESMFMESH, ESMF_FieldCreate
   use ESMF             , only : ESMF_FieldBundleCreate, ESMF_MESHLOC_ELEMENT, ESMF_FieldBundleAdd
-  use ESMF             , only : ESMF_POLEMETHOD_ALLAVG, ESMF_EXTRAPMETHOD_NEAREST_STOD, ESMF_REGRIDMETHOD_BILINEAR, ESMF_REGRIDMETHOD_NEAREST_STOD
+  use ESMF             , only : ESMF_POLEMETHOD_ALLAVG, 
+  use ESMF             , only : ESMF_EXTRAPMETHOD_NEAREST_STOD, ESMF_REGRIDMETHOD_BILINEAR, 
+  use ESMF             , only : ESMF_REGRIDMETHOD_CONSERVE, ESMF_NORMTYPE_FRACAREA, ESMF_NORMTYPE_DSTAREA
   use ESMF             , only : ESMF_ClockGet, operator(-), operator(==), ESMF_CALKIND_NOLEAP
   use ESMF             , only : ESMF_FieldReGridStore, ESMF_FieldRedistStore, ESMF_UNMAPPEDACTION_IGNORE
   use ESMF             , only : ESMF_TERMORDER_SRCSEQ, ESMF_FieldRegrid, ESMF_FieldFill
@@ -554,6 +556,24 @@ contains
              call ESMF_FieldReGridStore(sdat%pstrm(ns)%field_stream, lfield_dst, &
                   routehandle=sdat%pstrm(ns)%routehandle, &
                   regridmethod=ESMF_REGRIDMETHOD_NEAREST_STOD, &
+                  dstMaskValues = (/0/), &  ! ignore destination points where the mask is 0
+                  srcMaskValues = (/0/), &  ! ignore source points where the mask is 0
+                  srcTermProcessing=srcTermProcessing_Value, ignoreDegenerate=.true., &
+                  unmappedaction=ESMF_UNMAPPEDACTION_IGNORE, rc=rc)
+          else if (trim(sdat%stream(ns)%mapalgo) == 'consf') then
+             call ESMF_FieldReGridStore(sdat%pstrm(ns)%field_stream, lfield_dst, &
+                  routehandle=sdat%pstrm(ns)%routehandle, &
+                  regridmethod=ESMF_REGRIDMETHOD_CONSERVE, &
+                  normType=ESMF_NORMTYPE_FRACAREA, &
+                  dstMaskValues = (/0/), &  ! ignore destination points where the mask is 0
+                  srcMaskValues = (/0/), &  ! ignore source points where the mask is 0
+                  srcTermProcessing=srcTermProcessing_Value, ignoreDegenerate=.true., &
+                  unmappedaction=ESMF_UNMAPPEDACTION_IGNORE, rc=rc)
+          else if (trim(sdat%stream(ns)%mapalgo) == 'consd') then
+             call ESMF_FieldReGridStore(sdat%pstrm(ns)%field_stream, lfield_dst, &
+                  routehandle=sdat%pstrm(ns)%routehandle, &
+                  regridmethod=ESMF_REGRIDMETHOD_CONSERVE, &
+                  normType=ESMF_NORMTYPE_DSTAREA, &
                   dstMaskValues = (/0/), &  ! ignore destination points where the mask is 0
                   srcMaskValues = (/0/), &  ! ignore source points where the mask is 0
                   srcTermProcessing=srcTermProcessing_Value, ignoreDegenerate=.true., &
