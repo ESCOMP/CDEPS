@@ -26,11 +26,11 @@ _stream_file_template = """
    <readmode>{stream_readmode}</readmode>
    <mapalgo>{stream_mapalgo}</mapalgo>
    <dtlimit>{stream_dtlimit}</dtlimit>
-   <year_first>{stream_year_first}</yearfirst>
-   <year_last>{stream_year_last}</yearlast>
-   <year_align>{stream_year_align}</yearalign>
+   <year_first>{stream_year_first}</year_first>
+   <year_last>{stream_year_last}</year_last>
+   <year_align>{stream_year_align}</year_align>
    <vectors>{stream_vectors}</vectors>
-   <meshfile>{stream_meshfile}</mesh_file>
+   <meshfile>{stream_meshfile}</meshfile>
    <lev_dimname>{stream_lev_dimname}</lev_dimname>
    <datafiles>
       {stream_datafiles}

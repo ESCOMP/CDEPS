@@ -181,11 +181,9 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
 ###############################################################################
 def buildnml(case, caseroot, compname):
 ###############################################################################
-
     rundir = case.get_value("RUNDIR")
     inst_name = compname.upper()[1:]
     ninst = case.get_value("NINST_"+inst_name)
-    print ("DEBUG: ninst is {}".format(ninst))
     if ninst is None:
         ninst = case.get_value("NINST")
 
@@ -256,34 +254,6 @@ def buildnml(case, caseroot, compname):
 
         # copy namelist files and stream text files, to rundir
         copy_inputs_to_rundir(caseroot, compname, confdir, rundir, inst_string)
-
-###############################################################################
-def create_stream_infile(case, user_nl_file, namelist_infile, infile_text=""):
-###############################################################################
-    lines_input = []
-    if os.path.isfile(user_nl_file):
-        with open(user_nl_file, "r") as file_usernl:
-            lines_input = file_usernl.readlines()
-    else:
-        logger.warning("WARNING: No file {} found in case directory".format(user_nl_file))
-
-    lines_output = []
-    lines_output.append("&comp_inparm \n")
-    if infile_text:
-        lines_output.append(infile_text)
-        logger.debug("file_infile {} ".format(infile_text))
-
-    for line in lines_input:
-        match1 = re.search(r"^[\&\/\!]", line)
-        match2 = re.search(r"\$([\w\_])+", line)
-        if match1 is None and match2 is not None:
-            line = case.get_resolved_value(line)
-        if match1 is None:
-            lines_output.append(line)
-
-    lines_output.append("/ \n")
-    with open(namelist_infile, "w") as file_infile:
-        file_infile.write("\n".join(lines_output))
 
 ###############################################################################
 def get_user_nl_list(case):
