@@ -1,5 +1,5 @@
 !------------------------------------------------------------------------
-! This file is used to modify docn.streams.xml generated in $RUNDIR
+! This file is used to modify dice.streams.xml generated in $RUNDIR
 ! Entries should have the form
 !  streamname:<stream_variable><= new stream_value>
 ! The following are accepted values

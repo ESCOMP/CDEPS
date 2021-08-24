@@ -39,11 +39,16 @@ _stream_file_template = """
       {stream_datavars}
    </datavars>
    <offset>{stream_offset}</offset>
- </stream_info>
+  </stream_info>
 
 """
 
-xml_scalar_names = ["stream_meshfile","stream_mapalgo","stream_tintalgo","stream_taxmode","stream_dtlimit"]
+valid_values = {}
+valid_values["mapalgo"]  = ["bilinear", "nn", "redist", "mapconsd", "mapconf"]
+valid_values["tintalgo"] = ["lower", "upper", "nearest", "linear", "coszen"]
+valid_values["tintalgo"] = ["cycle", "extend", "limit"]
+
+xml_scalar_names = ["stream_meshfile", "stream_mapalgo", "stream_tintalgo", "stream_taxmode", "stream_dtlimit"]
 
 class StreamCDEPS(GenericXML):
 
@@ -80,6 +85,9 @@ class StreamCDEPS(GenericXML):
                 expect(len(stream_mods) == 2,
                        "input stream mod can only be of the form streamname:var=value(s)")
                 stream,varmod = stream_mods
+                expect (stream in stream_names, 
+                        "{} contains a streamname \'{}\' that is not part of valid streamnames {}".
+                        format(user_mods_file,stream,stream_names)) 
                 if stream  not in stream_mod_dict:
                     stream_mod_dict[stream] = {}
                 # var=value and check the validity
@@ -191,6 +199,9 @@ class StreamCDEPS(GenericXML):
                 for var_key in mod_dict:
                     expect( 'stream_' + var_key in stream_vars,
                             "stream mod {} is not a valid name in {}".format(var_key,user_mods_file))
+                    if var_key in valid_values:
+                        expect(mod_dict[var_key] in valid_values[var_key],
+                               "{} can only have values of {}".format(var_key, valid_values[var_key]))
                     stream_vars['stream_' + var_key] = mod_dict[var_key]
 
             # append to stream xml file
