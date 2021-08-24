@@ -93,7 +93,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     stream_file = os.path.join(_CDEPS_CONFIG,os.pardir, "dlnd","cime_config","stream_definition_dlnd.xml")
     streams = StreamCDEPS(stream_file, schema_file)
     streams.create_stream_xml(streamlist, case, outfile, data_list_path,
-                              user_mods_file=os.path.join(caseroot,'user_nl_dlnd_streams'))
+                              os.path.join(caseroot,'user_nl_dlnd_streams'))
 
 ###############################################################################
 def buildnml(case, caseroot, compname):
