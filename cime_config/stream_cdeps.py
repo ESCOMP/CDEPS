@@ -76,34 +76,55 @@ class StreamCDEPS(GenericXML):
         with open(user_mods_file, "r", encoding='utf-8') as stream_mods_file:
             lines_input = stream_mods_file.readlines()
         stream_mod_dict = {}
-        for line in lines_input:
+        n = len(lines_input)
+
+        index = 0
+        lines_input_new = []
+        while index < len(lines_input):
+            line = lines_input[index].strip()
+            if line.startswith('!') or (not line):
+                index = index + 1
+                continue
+            while line[-1] == '\\':
+                index += 1
+                if index < len(lines_input):
+                    line = line[:-1].strip() + ' ' + lines_input[index].strip()
+                else:
+                    line = line.replace('\\', '').strip()
+                    break
+                # endif
+            # end while
+            index += 1 
+            lines_input_new.append(line)
+        #end while
+
+        for line in lines_input_new:
             # read in a single line in user_nl_xxx_streams and parse it if it is not a comment
-            if ('!' not in line ):
-                stream_mods = [x.strip() for x in line.strip().split(":") if x]
-                expect(len(stream_mods) == 2,
-                       "input stream mod can only be of the form streamname:var=value(s)")
-                stream,varmod = stream_mods
-                expect (stream in stream_names, 
-                        "{} contains a streamname \'{}\' that is not part of valid streamnames {}".
-                        format(user_mods_file,stream,stream_names)) 
-                if stream  not in stream_mod_dict:
-                    stream_mod_dict[stream] = {}
-                # var=value and check the validity
-                varmod_args = [x.strip() for x in varmod.split("=") if x]
-                expect(len(varmod_args) == 2,
-                       "input stream mod can only be of the form streamname:var=value(s)")
-                # do not allow multiple entries for varmod_args
-                varname,varval = varmod_args
-                expect (varname not in stream_mod_dict[stream],
-                        "varname {} is already in stream mod dictionary".format(varname))
-                if varname == "datavars" or varname == "datafiles":
-                    if varname == "datavars":
-                        varvals = ["<var>{}</var>".format(x.strip()) for x in varval.split(",") if x]
-                    if varname == "datafiles":
-                        varvals = ["<file>{}</file>".format(x.strip()) for x in varval.split(",") if x]
-                    varval = "      " + "\n      ".join(varvals)
-                    varval = varval.strip()
-                stream_mod_dict[stream][varname] = varval
+            stream_mods = [x.strip() for x in line.strip().split(":") if x]
+            expect(len(stream_mods) == 2,
+                   "input stream mod can only be of the form streamname:var=value(s)")
+            stream,varmod = stream_mods
+            expect (stream in stream_names, 
+                    "{} contains a streamname \'{}\' that is not part of valid streamnames {}".
+                    format(user_mods_file,stream,stream_names)) 
+            if stream  not in stream_mod_dict:
+                stream_mod_dict[stream] = {}
+            # var=value and check the validity
+            varmod_args = [x.strip() for x in varmod.split("=") if x]
+            expect(len(varmod_args) == 2,
+                   "input stream mod can only be of the form streamname:var=value(s)")
+            # do not allow multiple entries for varmod_args
+            varname,varval = varmod_args
+            expect (varname not in stream_mod_dict[stream],
+                    "varname {} is already in stream mod dictionary".format(varname))
+            if varname == "datavars" or varname == "datafiles":
+                if varname == "datavars":
+                    varvals = ["<var>{}</var>".format(x.strip()) for x in varval.split(",") if x]
+                if varname == "datafiles":
+                    varvals = ["<file>{}</file>".format(x.strip()) for x in varval.split(",") if x]
+                varval = "      " + "\n      ".join(varvals)
+                varval = varval.strip()
+            stream_mod_dict[stream][varname] = varval
 
         # write header of stream file
         with open(streams_xml_file, 'w', encoding='utf-8') as stream_file:
