@@ -9,7 +9,7 @@
 !  foo:taxmode = one of [cycle, extend, limit]
 !  foo:tintalgo = one of [lower,upper,nearest,linear,coszen]
 !  foo:readmode = single (only suported mode right now)
-!  foo:mapalgo = one of [bilinear,redist,nn,consf,consd]
+!  foo:mapalgo = one of [bilinear,redist,nn,consf,consd,none]
 !  foo:dtlimit = real (1.5 is default)
 !  foo:year_first = integer
 !  foo:year_last = integer
