@@ -19,29 +19,36 @@ _var_ref_re = re.compile(r"\$(\{)?(?P<name>\w+)(?(1)\})")
 
 _ymd_re = re.compile(r"%(?P<digits>[1-9][0-9]*)?y(?P<month>m(?P<day>d)?)?")
 
-_stream_nuopc_file_template = """
+_stream_file_template = """
   <stream_info name="{streamname}">
    <taxmode>{stream_taxmode}</taxmode>
-   <tInterpAlgo>{stream_tintalgo}</tInterpAlgo>
-   <readMode>{stream_readmode}</readMode>
+   <tintalgo>{stream_tintalgo}</tintalgo>
+   <readmode>{stream_readmode}</readmode>
    <mapalgo>{stream_mapalgo}</mapalgo>
    <dtlimit>{stream_dtlimit}</dtlimit>
-   <yearFirst>{stream_year_first}</yearFirst>
-   <yearLast>{stream_year_last}</yearLast>
-   <yearAlign>{stream_year_align}</yearAlign>
-   <stream_vectors>{stream_vectors}</stream_vectors>
-   <stream_mesh_file>{stream_meshfile}</stream_mesh_file>
-   <stream_lev_dimname>{stream_lev_dimname}</stream_lev_dimname>
-   <stream_data_files>
+   <year_first>{stream_year_first}</year_first>
+   <year_last>{stream_year_last}</year_last>
+   <year_align>{stream_year_align}</year_align>
+   <vectors>{stream_vectors}</vectors>
+   <meshfile>{stream_meshfile}</meshfile>
+   <lev_dimname>{stream_lev_dimname}</lev_dimname>
+   <datafiles>
       {stream_datafiles}
-   </stream_data_files>
-   <stream_data_variables>
+   </datafiles>
+   <datavars>
       {stream_datavars}
-   </stream_data_variables>
-   <stream_offset>{stream_offset}</stream_offset>
- </stream_info>
+   </datavars>
+   <offset>{stream_offset}</offset>
+  </stream_info>
 
 """
+
+valid_values = {}
+valid_values["mapalgo"]  = ["bilinear", "nn", "redist", "mapconsd", "mapconf"]
+valid_values["tintalgo"] = ["lower", "upper", "nearest", "linear", "coszen"]
+valid_values["taxmode"]  = ["cycle", "extend", "limit"]
+
+xml_scalar_names = ["stream_meshfile", "stream_mapalgo", "stream_tintalgo", "stream_taxmode", "stream_dtlimit"]
 
 class StreamCDEPS(GenericXML):
 
@@ -54,16 +61,76 @@ class StreamCDEPS(GenericXML):
         if os.path.exists(infile):
             GenericXML.read(self, infile, schema)
 
-    def create_stream_xml(self, stream_names, case, streams_xml_file, data_list_file, available_neon_data=None):
+    def create_stream_xml(self, stream_names, case, streams_xml_file, data_list_file, user_mods_file,
+                          available_neon_data=None):
         """
         Create the stream xml file and append the required stream input data to the input data list file
         available_neon_data is an optional list of NEON tower data available for the given case, if provided
         this data will be used to populate the NEON streamdata list
         """
+
+        # determine if there are user mods
+        lines_input = []
+        expect (os.path.isfile(user_mods_file),
+                "No file {} found in case directory".format(user_mods_file))
+        with open(user_mods_file, "r", encoding='utf-8') as stream_mods_file:
+            lines_input = stream_mods_file.readlines()
+        stream_mod_dict = {}
+        n = len(lines_input)
+
+        index = 0
+        lines_input_new = []
+        while index < len(lines_input):
+            line = lines_input[index].strip()
+            if line.startswith('!') or (not line):
+                index = index + 1
+                continue
+            while line[-1] == '\\':
+                index += 1
+                if index < len(lines_input):
+                    line = line[:-1].strip() + ' ' + lines_input[index].strip()
+                else:
+                    line = line.replace('\\', '').strip()
+                    break
+                # endif
+            # end while
+            index += 1 
+            lines_input_new.append(line)
+        #end while
+
+        for line in lines_input_new:
+            # read in a single line in user_nl_xxx_streams and parse it if it is not a comment
+            stream_mods = [x.strip() for x in line.strip().split(":") if x]
+            expect(len(stream_mods) == 2,
+                   "input stream mod can only be of the form streamname:var=value(s)")
+            stream,varmod = stream_mods
+            expect (stream in stream_names, 
+                    "{} contains a streamname \'{}\' that is not part of valid streamnames {}".
+                    format(user_mods_file,stream,stream_names)) 
+            if stream  not in stream_mod_dict:
+                stream_mod_dict[stream] = {}
+            # var=value and check the validity
+            varmod_args = [x.strip() for x in varmod.split("=") if x]
+            expect(len(varmod_args) == 2,
+                   "input stream mod can only be of the form streamname:var=value(s)")
+            # do not allow multiple entries for varmod_args
+            varname,varval = varmod_args
+            expect (varname not in stream_mod_dict[stream],
+                    "varname {} is already in stream mod dictionary".format(varname))
+            if varname == "datavars" or varname == "datafiles":
+                if varname == "datavars":
+                    varvals = ["<var>{}</var>".format(x.strip()) for x in varval.split(",") if x]
+                if varname == "datafiles":
+                    varvals = ["<file>{}</file>".format(x.strip()) for x in varval.split(",") if x]
+                varval = "      " + "\n      ".join(varvals)
+                varval = varval.strip()
+            stream_mod_dict[stream][varname] = varval
+
         # write header of stream file
-        with open(streams_xml_file, 'w') as stream_file:
+        with open(streams_xml_file, 'w', encoding='utf-8') as stream_file:
             stream_file.write('<?xml version="1.0"?>\n')
             stream_file.write('<file id="stream" version="2.0">\n')
+
         # write contents of stream file
         for stream_name in stream_names:
             if stream_name.startswith("NEON."):
@@ -131,11 +198,8 @@ class StreamCDEPS(GenericXML):
                             stream_vars[node_name] += "\n      " + self._add_xml_delimiter(stream_datafiles.split("\n"), "file")
                         else:
                             stream_vars[node_name] = self._add_xml_delimiter(stream_datafiles.split("\n"), "file")
-                elif (   node_name == 'stream_meshfile'
-                      or node_name == 'stream_mapalgo'
-                      or node_name == 'stream_tintalgo'
-                      or node_name == 'stream_taxmode'
-                      or node_name == 'stream_dtlimit'):
+                        #endif
+                elif (node_name in xml_scalar_names):
                     attributes['model_grid'] = case.get_value("GRID")
                     attributes['compset'] = case.get_value("COMPSET")
                     value = self._get_value_match(node, node_name[7:], attributes=attributes)
@@ -148,9 +212,25 @@ class StreamCDEPS(GenericXML):
                     # Get the other dependencies
                     stream_dict = self._add_value_to_dict(stream_vars, case, node)
 
+            # substitute user_mods in generated stream file (i.e. stream_vars)
+            mod_dict = {}
+            if stream_vars['streamname'] in stream_mod_dict:
+                mod_dict = stream_mod_dict[stream_vars['streamname']]
+                for var_key in mod_dict:
+                    expect( 'stream_' + var_key in stream_vars,
+                            "stream mod {} is not a valid name in {}".format(var_key,user_mods_file))
+                    if var_key in valid_values:
+                        expect(mod_dict[var_key] in valid_values[var_key],
+                               "{} can only have values of {} for stream {} in file {}".
+                               format(var_key, valid_values[var_key], stream_name, user_mods_file))
+                    stream_vars['stream_' + var_key] = mod_dict[var_key]
+                    if var_key == 'datafiles':
+                        stream_datafiles = mod_dict[var_key]
+                        stream_datafiles = stream_datafiles.replace('<file>','').replace('</file>','')
+
             # append to stream xml file
-            stream_file_text = _stream_nuopc_file_template.format(**stream_vars)
-            with open(streams_xml_file, 'a') as stream_file:
+            stream_file_text = _stream_file_template.format(**stream_vars)
+            with open(streams_xml_file, 'a', encoding='utf-8') as stream_file:
                 stream_file.write(stream_file_text)
 
             # append to input_data_list
@@ -159,7 +239,7 @@ class StreamCDEPS(GenericXML):
                 self._add_entries_to_inputdata_list(stream_meshfile, stream_datafiles.split("\n"), data_list_file)
 
         # write close of stream xml file
-        with open(streams_xml_file, 'a') as stream_file:
+        with open(streams_xml_file, 'a', encoding='utf-8') as stream_file:
             stream_file.write("</file>\n")
 
     def _get_stream_first_and_last_dates(self, stream, case):
@@ -181,7 +261,7 @@ class StreamCDEPS(GenericXML):
         and writes out the new file
         """
         lines_hash = self._get_input_file_hash(data_list_file)
-        with open(data_list_file, 'a') as input_data_list:
+        with open(data_list_file, 'a', encoding='utf-8') as input_data_list:
             # write out the mesh file separately
             string = "mesh = {}\n".format(stream_meshfile)
             hashValue = hashlib.md5(string.rstrip().encode('utf-8')).hexdigest()
@@ -191,7 +271,7 @@ class StreamCDEPS(GenericXML):
             for i, filename in enumerate(stream_datafiles):
                 if filename.strip() == '':
                     continue
-                string = "file{:d} = {}\n".format(i+1, filename)
+                string = "file{:d} = {}\n".format(i+1, filename.strip())
                 hashValue = hashlib.md5(string.rstrip().encode('utf-8')).hexdigest()
                 if hashValue not in lines_hash:
                     input_data_list.write(string)
@@ -202,7 +282,7 @@ class StreamCDEPS(GenericXML):
         """
         lines_hash = set()
         if os.path.isfile(data_list_file):
-            with open(data_list_file, "r") as input_data_list:
+            with open(data_list_file, "r", encoding='utf-8') as input_data_list:
                 for line in input_data_list:
                     hashValue = hashlib.md5(line.rstrip().encode('utf-8')).hexdigest()
                     logger.debug( "Found line {} with hash {}".format(line,hashValue))

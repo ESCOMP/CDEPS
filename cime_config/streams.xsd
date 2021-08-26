@@ -12,25 +12,25 @@
   <!-- simple elements -->
   <!-- ======================== -->
 
-  <xs:element name="taxmode" type="xs:string"/>
-  <xs:element name="tInterpAlgo"  type="xs:string"/>
-  <xs:element name="readMode"   type="xs:string"/>
-  <xs:element name="mapalgo"  type="xs:string"/>
-  <xs:element name="dtlimit"      type="xs:double"/>
-  <xs:element name="yearFirst" type="xs:integer"/>
-  <xs:element name="yearLast" type="xs:integer"/>
-  <xs:element name="yearAlign" type="xs:integer"/>
-  <xs:element name="stream_offset" type="xs:integer"/>
-  <xs:element name="stream_vectors" type="xs:string"/>
-  <xs:element name="stream_mesh_file" type="xs:anyURI"/>
-  <xs:element name="stream_lev_dimname" type="xs:string"/>
-  <xs:element name="var" type="xs:string"/>
+  <xs:element name="taxmode"     type="xs:string"/>
+  <xs:element name="tintalgo"    type="xs:string"/>
+  <xs:element name="readmode"    type="xs:string"/>
+  <xs:element name="mapalgo"     type="xs:string"/>
+  <xs:element name="dtlimit"     type="xs:double"/>
+  <xs:element name="year_first"  type="xs:integer"/>
+  <xs:element name="year_last"   type="xs:integer"/>
+  <xs:element name="year_align"  type="xs:integer"/>
+  <xs:element name="offset"      type="xs:integer"/>
+  <xs:element name="vectors"     type="xs:string"/>
+  <xs:element name="meshfile"    type="xs:anyURI"/>
+  <xs:element name="lev_dimname" type="xs:string"/>
+  <xs:element name="var"         type="xs:string"/>
 
   <!-- ======================== -->
   <!-- complex elements -->
   <!-- ======================== -->
 
-  <xs:element name="stream_data_files">
+  <xs:element name="datafiles">
     <xs:complexType>
       <xs:sequence>
         <xs:element name="file" type="xs:anyURI"  minOccurs="1" maxOccurs="unbounded"/>
@@ -38,7 +38,7 @@
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="stream_data_variables">
+  <xs:element name="datavars">
     <xs:complexType>
       <xs:sequence>
         <xs:element ref="var" minOccurs="1" maxOccurs="unbounded"/>
@@ -49,20 +49,20 @@
   <xs:element name="stream_info">
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="taxmode"/>
-        <xs:element ref="tInterpAlgo" />
-        <xs:element ref="readMode" />
-        <xs:element ref="mapalgo" />
-        <xs:element ref="dtlimit" />
-        <xs:element ref="yearFirst" />
-        <xs:element ref="yearLast" />
-        <xs:element ref="yearAlign" />
-        <xs:element ref="stream_vectors" />
-        <xs:element ref="stream_mesh_file" />
-        <xs:element ref="stream_lev_dimname"/>
-        <xs:element ref="stream_data_files" />
-        <xs:element ref="stream_data_variables" />
-        <xs:element ref="stream_offset" />
+        <xs:element ref="taxmode"     />
+        <xs:element ref="tintalgo"    />
+        <xs:element ref="readmode"    />
+        <xs:element ref="mapalgo"     />
+        <xs:element ref="dtlimit"     />
+        <xs:element ref="year_first"   />
+        <xs:element ref="year_last"    />
+        <xs:element ref="year_align"   />
+        <xs:element ref="vectors"     />
+        <xs:element ref="meshfile"    />
+        <xs:element ref="lev_dimname" />
+        <xs:element ref="datafiles"   />
+        <xs:element ref="datavars"    />
+        <xs:element ref="offset"      />
       </xs:sequence>
       <xs:attribute ref="name" />
     </xs:complexType>

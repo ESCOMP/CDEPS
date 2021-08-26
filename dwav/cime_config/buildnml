@@ -80,33 +80,25 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     namelist_file = os.path.join(confdir, "dwav_in")
     nmlgen.write_output_file(namelist_file, data_list_path, groups=['dwav_nml'])
 
+    # Determine streams
+    streamlist = nmlgen.get_streams()
+    if type(streamlist) == type(str()):
+        streamlist = []
+
     # Generate dwav.streams.xml
     outfile = os.path.join(confdir, "dwav.streams"+inst_string+".xml" )
-    user_stream_file = os.path.join(case.get_value("CASEROOT"),os.path.basename(outfile))
-    if os.path.isfile(user_stream_file):
-        schema_file = os.path.join(_CDEPS_CONFIG,"streams.xsd")
-        streams = StreamCDEPS(user_stream_file, schema_file)
-        streams.update_input_data_list(os.path.join(caseroot,"Buildconf","dwav.input_data_list"))
-    else:
-        streamlist = nmlgen.get_streams()
-        if type(streamlist) == type(str()):
-            streamlist = []
-        schema_file = os.path.join(_CDEPS_CONFIG,"stream_definition_v2.0.xsd")
-        stream_file = os.path.join(_CDEPS_CONFIG,os.pardir, "dwav","cime_config","stream_definition_dwav.xml")
-        streams = StreamCDEPS(stream_file, schema_file)
-        streams.create_stream_xml(streamlist, case, outfile, data_list_path)
+    schema_file = os.path.join(_CDEPS_CONFIG,"stream_definition_v2.0.xsd")
+    stream_file = os.path.join(_CDEPS_CONFIG,os.pardir, "dwav","cime_config","stream_definition_dwav.xml")
+    streams = StreamCDEPS(stream_file, schema_file)
+    streams.create_stream_xml(streamlist, case, outfile, data_list_path,
+                              os.path.join(caseroot,'user_nl_dwav_streams'))
 
 ###############################################################################
 def buildnml(case, caseroot, compname):
 ###############################################################################
-
-    # Build the component namelist and required stream txt files
-
-    if compname != "dwav":
-        raise AttributeError
-
     rundir = case.get_value("RUNDIR")
-    ninst = case.get_value("NINST_WAV")
+    inst_name = compname.upper()[1:]
+    ninst = case.get_value("NINST_"+inst_name)
     if ninst is None:
         ninst = case.get_value("NINST")
 
@@ -125,9 +117,9 @@ def buildnml(case, caseroot, compname):
 
     # NOTE: User definition *replaces* existing definition.
     files = Files(comp_interface="nuopc")
-    definition_file = [files.get_value("NAMELIST_DEFINITION_FILE", {"component":"dwav"})]
+    definition_file = [files.get_value("NAMELIST_DEFINITION_FILE", {"component":compname})]
 
-    user_definition = os.path.join(user_xml_dir, "namelist_definition_dwav.xml")
+    user_definition = os.path.join(user_xml_dir, "namelist_definition_"+compname+".xml")
     if os.path.isfile(user_definition):
         definition_file = [user_definition]
     for file_ in definition_file:
@@ -139,7 +131,7 @@ def buildnml(case, caseroot, compname):
     #----------------------------------------------------
     # Clear out old data.
     #----------------------------------------------------
-    data_list_path = os.path.join(case.get_case_root(), "Buildconf", "dwav.input_data_list")
+    data_list_path = os.path.join(caseroot, "Buildconf", compname+".input_data_list")
     if os.path.exists(data_list_path):
         os.remove(data_list_path)
 
@@ -177,6 +169,16 @@ def buildnml(case, caseroot, compname):
 
         # copy namelist files and stream text files, to rundir
         copy_inputs_to_rundir(caseroot, compname, confdir, rundir, inst_string)
+
+###############################################################################
+def get_user_nl_list(case):
+###############################################################################
+    """Returns a list of user_nl_dwav* files needed in this case
+    This function is called by CIME to stage the user_nl_dwav* files in the case
+    directory.
+    """
+    user_nl_list = ["user_nl_dwav", "user_nl_dwav_streams"]
+    return user_nl_list
 
 ###############################################################################
 def _main_func():

@@ -60,10 +60,27 @@ module dshr_stream_mod
   public :: shr_stream_dataDump          ! internal stream data for debugging
   public :: shr_stream_restIO            ! read or write to netcdf restart file
 
+  character(CS),parameter,public :: shr_stream_file_null    = 'not_set'
+
+  ! valid values for time extrapoloation
   character(CS),parameter,public :: shr_stream_taxis_cycle  = 'cycle'
   character(CS),parameter,public :: shr_stream_taxis_extend = 'extend'
   character(CS),parameter,public :: shr_stream_taxis_limit  = 'limit'
-  character(CS),parameter,public :: shr_stream_file_null    = 'not_set'
+
+  ! valid values for time interpolation
+  character(CS),parameter,public :: shr_stream_tinterp_lower   = 'lower'
+  character(CS),parameter,public :: shr_stream_tinterp_upper   = 'upper'
+  character(CS),parameter,public :: shr_stream_tinterp_nearest = 'nearest'
+  character(CS),parameter,public :: shr_stream_tinterp_linear  = 'linear'
+  character(CS),parameter,public :: shr_stream_tinterp_coszen  = 'coszen'
+
+  ! valid values for mapping interpolation
+  character(CS),parameter,public :: shr_stream_mapalgo_bilinear = 'bilinear'
+  character(CS),parameter,public :: shr_stream_mapalgo_redist   = 'redist'
+  character(CS),parameter,public :: shr_stream_mapalgo_nn       = 'nn'
+  character(CS),parameter,public :: shr_stream_mapalgo_consf    = 'consf'
+  character(CS),parameter,public :: shr_stream_mapalgo_consd    = 'consd'
+  character(CS),parameter,public :: shr_stream_mapalgo_none     = 'none'
 
   ! a useful derived type to use inside shr_streamType ---
   type shr_stream_file_type
@@ -82,10 +99,10 @@ module dshr_stream_mod
 
   type shr_stream_streamType
      !private ! no public access to internal components
-     integer           :: logunit                               ! stdout log unit
      type(iosystem_desc_t), pointer :: pio_subsystem
      integer           :: pio_iotype
      integer           :: pio_ioformat
+     integer           :: logunit                               ! stdout log unit
      logical           :: init         = .false.                ! has stream been initialized
      integer           :: nFiles       = 0                      ! number of data files
      integer           :: yearFirst    = -1                     ! first year to use in t-axis (yyyymmdd)
@@ -138,23 +155,23 @@ contains
     ! <file id="stream" version="1.0">
     !   <stream_info>
     !    <taxmode></taxmode>
-    !    <tInterpAlgo></tInterpAlgo>
-    !    <readMode></readMode>
+    !    <tintalgo></tintalgo>
     !    <mapalgo></mapalgo>
+    !    <readmode></readmode>
     !    <dtlimit></dtlimit>
-    !    <yearFirst></yearFirst>
-    !    <yearLast></yearLast>
-    !    <yearAlign></yearAlign>
-    !    <stream_vectors></stream_vectors>
-    !    <stream_mesh_file></stream_mesh_file>
-    !    <stream_lev_dimname></stream_lev_dimname>
-    !    <stream_data_files>
+    !    <year_first></year_first>
+    !    <year_last></year_last>
+    !    <year_align></year_align>
+    !    <vectors></vectors>
+    !    <meshfile></meshfile>
+    !    <lev_dimname></lev_dimname>
+    !    <data_files>
     !      <file></file>
-    !    </stream_data_files>
-    !    <stream_data_variables>
+    !    </data_files>
+    !    <data_variables>
     !      <var></var>
-    !    </stream_data_variables>
-    !    <stream_offset></stream_offset>
+    !    </data_variables>
+    !    <offset></offset>
     !  </stream_info>
     ! </file>
     ! ---------------------------------------------------------------------
@@ -195,7 +212,7 @@ contains
        streamlist => getElementsByTagname(Sdoc, "stream_info")
        nstrms = getLength(streamlist)
 
-       ! allocate an array of shr_stream_streamtype objects on just isroot_task
+       ! allocate an array of shr_streamtype objects on just isroot_task
        allocate(streamdat(nstrms))
 
        ! fill in non-default values for the streamdat attributes
@@ -205,82 +222,111 @@ contains
           p => item(getElementsByTagname(streamnode, "taxmode"), 0)
           if (associated(p)) then
              call extractDataContent(p, streamdat(i)%taxmode)
+             if (streamdat(i)%taxmode /= shr_stream_taxis_cycle   .and. &  
+                 streamdat(i)%taxmode /= shr_stream_taxis_extend  .and. & 
+                 streamdat(i)%taxmode /= shr_stream_taxis_limit) then
+                call shr_sys_abort("tintalgo must have a value of either cycle, extend or limit")
+             end if
           endif
 
           p => item(getElementsByTagname(streamnode, "mapalgo"), 0)
-          if(associated(p)) then
+          if (associated(p)) then
              call extractDataContent(p, streamdat(i)%mapalgo)
+             if (streamdat(i)%mapalgo /= shr_stream_mapalgo_bilinear .and. &  
+                 streamdat(i)%mapalgo /= shr_stream_mapalgo_redist   .and. & 
+                 streamdat(i)%mapalgo /= shr_stream_mapalgo_nn       .and. &
+                 streamdat(i)%mapalgo /= shr_stream_mapalgo_consf    .and. &
+                 streamdat(i)%mapalgo /= shr_stream_mapalgo_consd    .and. &
+                 streamdat(i)%mapalgo /= shr_stream_mapalgo_none) then
+                call shr_sys_abort("mapaglo must have a value of either bilinear, redist, nn, consf or consd")
+             end if
           endif
-          p => item(getElementsByTagname(streamnode, "tInterpAlgo"), 0)
-          if(associated(p)) then
+
+          p => item(getElementsByTagname(streamnode, "tintalgo"), 0)
+          if (associated(p)) then
              call extractDataContent(p, streamdat(i)%tInterpAlgo)
+             if (streamdat(i)%tInterpAlgo /= shr_stream_tinterp_lower   .and. &  
+                 streamdat(i)%tInterpAlgo /= shr_stream_tinterp_upper   .and. & 
+                 streamdat(i)%tInterpAlgo /= shr_stream_tinterp_nearest .and. &
+                 streamdat(i)%tInterpAlgo /= shr_stream_tinterp_linear  .and. &
+                 streamdat(i)%tInterpAlgo /= shr_stream_tinterp_coszen) then
+                call shr_sys_abort("tintalgo must have a value of either lower, upper, nearest, linear or coszen")
+             end if
           endif
-          p => item(getElementsByTagname(streamnode, "readMode"), 0)
-          if(associated(p)) then
+
+          p => item(getElementsByTagname(streamnode, "readmode"), 0)
+          if (associated(p)) then
              call extractDataContent(p, streamdat(i)%readMode)
           endif
-          p=> item(getElementsByTagname(streamnode, "yearFirst"), 0)
+
+          p=> item(getElementsByTagname(streamnode, "year_first"), 0)
           if(associated(p)) then
              call extractDataContent(p, streamdat(i)%yearFirst)
           else
              call shr_sys_abort("yearFirst must be provided")
           endif
-          p=> item(getElementsByTagname(streamnode, "yearLast"), 0)
+
+          p=> item(getElementsByTagname(streamnode, "year_last"), 0)
           if(associated(p)) then
              call extractDataContent(p, streamdat(i)%yearLast)
           else
              call shr_sys_abort("yearLast must be provided")
           endif
-          p=> item(getElementsByTagname(streamnode, "yearAlign"), 0)
+
+          p=> item(getElementsByTagname(streamnode, "year_align"), 0)
           if(associated(p)) then
              call extractDataContent(p, streamdat(i)%yearAlign)
           else
              call shr_sys_abort("yearAlign must be provided")
           endif
+
           p=> item(getElementsByTagname(streamnode, "dtlimit"), 0)
           if(associated(p)) then
              call extractDataContent(p, streamdat(i)%dtlimit)
           endif
-          p=> item(getElementsByTagname(streamnode, "stream_offset"), 0)
+
+          p=> item(getElementsByTagname(streamnode, "offset"), 0)
           if(associated(p)) then
              call extractDataContent(p, streamdat(i)%offset)
           endif
-          p=> item(getElementsByTagname(streamnode, "stream_mesh_file"), 0)
+
+          p=> item(getElementsByTagname(streamnode, "meshfile"), 0)
           if (associated(p)) then
              call extractDataContent(p, streamdat(i)%meshfile)
           else
              call shr_sys_abort("mesh file name must be provided")
           endif
-          p => item(getElementsByTagname(streamnode, "stream_vectors"), 0)
+
+          p => item(getElementsByTagname(streamnode, "vectors"), 0)
           if (associated(p)) then
              call extractDataContent(p, streamdat(i)%stream_vectors)
           else
              call shr_sys_abort("stream vectors must be provided")
           endif
 
-          p => item(getElementsByTagname(streamnode, "stream_lev_dimname"), 0)
+          ! Determine name of vertical dimension
+          p => item(getElementsByTagname(streamnode, "lev_dimname"), 0)
           if (associated(p)) then
              call extractDataContent(p, streamdat(i)%lev_dimname)
           else
              call shr_sys_abort("stream vertical level dimension name must be provided")
           endif
 
-          p => item(getElementsByTagname(streamnode, "stream_data_files"), 0)
+          ! Determine input data files
+          p => item(getElementsByTagname(streamnode, "datafiles"), 0)
           if (.not. associated(p)) then
              call shr_sys_abort("stream data files must be provided")
           endif
-
           filelist => getElementsByTagname(p,"file")
           streamdat(i)%nfiles = getLength(filelist)
-
           allocate(streamdat(i)%file( streamdat(i)%nfiles))
           do n=1, streamdat(i)%nfiles
              p => item(filelist, n-1)
              call extractDataContent(p, streamdat(i)%file(n)%name)
           enddo
 
-          ! Determine name of stream variables in file and model
-          p => item(getElementsByTagname(streamnode, "stream_data_variables"), 0)
+          ! Determine name(s) of stream variable(s) in file and model
+          p => item(getElementsByTagname(streamnode, "datavars"), 0)
           varlist => getElementsByTagname(p, "var")
           streamdat(i)%nvars = getLength(varlist)
           allocate(streamdat(i)%varlist(streamdat(i)%nvars))
@@ -290,6 +336,7 @@ contains
              streamdat(i)%varlist(n)%nameinfile = tmpstr(1:index(tmpstr, " "))
              streamdat(i)%varlist(n)%nameinmodel = tmpstr(index(trim(tmpstr), " ", .true.)+1:)
           enddo
+
        enddo
 #ifndef CPRPGI
 ! PGI compiler has an issue with this call (empty procedure)
