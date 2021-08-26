@@ -3524,8 +3524,8 @@
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
-    <stream_year_align>2015</stream_year_align>
-    <stream_year_first>2015</stream_year_first>
+    <stream_year_align>2014</stream_year_align>
+    <stream_year_first>2014</stream_year_first>
     <stream_year_last>2101</stream_year_last>
     <stream_offset>0</stream_offset>
     <stream_tintalgo>
