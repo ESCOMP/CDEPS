@@ -1364,6 +1364,7 @@ contains
     character(*), parameter  :: subname = '(shr_strdata_readstrm) '
     character(*), parameter  :: F00   = "('(shr_strdata_readstrm) ',8a)"
     character(*), parameter  :: F02   = "('(shr_strdata_readstrm) ',2a,i8)"
+    character(CL)            :: errmsg
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -1512,6 +1513,12 @@ contains
                 call shr_sys_abort(' ERROR: reading in variable: '// trim(per_stream%fldlist_stream(nf)))
              end if
              if (handlefill) then
+                ! Single point streams are not allowed to have missing values
+                if (stream%mapalgo == 'none' .and. any(data_real2d == fillvalue_r4)) then
+                   write(errmsg,*) ' ERROR: _Fillvalue found in stream input variable: '// trim(per_stream%fldlist_stream(nf))
+                   if(sdat%masterproc) write(sdat%logunit,*) trim(errmsg)
+                   call shr_sys_abort(errmsg)
+                endif
                 do lev = 1,stream_nlev
                    do n = 1,size(dataptr2d, dim=2)
                       if (.not. shr_infnan_isnan(data_real2d(n,lev)) .and. data_real2d(n,lev) .ne. fillvalue_r4) then
@@ -1538,6 +1545,13 @@ contains
                 call shr_sys_abort(' ERROR: reading in variable: '// trim(per_stream%fldlist_stream(nf)))
              end if
              if (handlefill) then
+                ! Single point streams are not allowed to have missing values
+                if (stream%mapalgo == 'none' .and. any(data_real1d == fillvalue_r4)) then
+                   write(errmsg,*) ' ERROR: _Fillvalue found in stream input variable: '// trim(per_stream%fldlist_stream(nf))
+                   if(sdat%masterproc) write(sdat%logunit,*) trim(errmsg)
+                   call shr_sys_abort(errmsg)
+                endif
+
                 do n=1,size(dataptr1d)
                    if(.not. shr_infnan_isnan(data_real1d(n)) .and. data_real1d(n) .ne. fillvalue_r4) then
                       dataptr1d(n) = real(data_real1d(n), kind=r8)
@@ -1564,6 +1578,12 @@ contains
                 call shr_sys_abort(' ERROR: reading in 2d double variable: '// trim(per_stream%fldlist_stream(nf)))
              end if
              if (handlefill) then
+                ! Single point streams are not allowed to have missing values
+                if (stream%mapalgo == 'none' .and. any(data_dbl2d == fillvalue_r8)) then
+                   write(errmsg,*) ' ERROR: _Fillvalue found in stream input variable: '// trim(per_stream%fldlist_stream(nf))
+                   if(sdat%masterproc) write(sdat%logunit,*) trim(errmsg)
+                   call shr_sys_abort(errmsg)
+                endif
                 do lev = 1,stream_nlev
                    do n = 1,size(dataptr2d, dim=2)
                       if (.not. shr_infnan_isnan(data_dbl2d(n,lev)) .and. data_dbl2d(n,lev) .ne. fillvalue_r8) then
@@ -1590,6 +1610,12 @@ contains
                 call shr_sys_abort(' ERROR: reading in variable: '// trim(per_stream%fldlist_stream(nf)))
              end if
              if (handlefill) then
+                ! Single point streams are not allowed to have missing values
+                if (stream%mapalgo == 'none' .and. any(data_dbl1d == fillvalue_r8)) then
+                   write(errmsg,*) ' ERROR: _Fillvalue found in stream input variable: '// trim(per_stream%fldlist_stream(nf))
+                   if(sdat%masterproc) write(sdat%logunit,*) trim(errmsg)
+                   call shr_sys_abort(errmsg)
+                endif
                 do n = 1,size(dataptr1d)
                    if (.not. shr_infnan_isnan(data_dbl1d(n)) .and. data_dbl1d(n) .ne. fillvalue_r8) then
                       dataptr1d(n) = data_dbl1d(n)
