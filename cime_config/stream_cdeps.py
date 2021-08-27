@@ -113,10 +113,11 @@ class StreamCDEPS(GenericXML):
             varmod_args = [x.strip() for x in varmod.split("=") if x]
             expect(len(varmod_args) == 2,
                    "input stream mod can only be of the form streamname:var=value(s)")
-            # do not allow multiple entries for varmod_args
+            # allow multiple entries for varmod_args, most recent wins
             varname,varval = varmod_args
-            expect (varname not in stream_mod_dict[stream],
-                    "varname {} is already in stream mod dictionary".format(varname))
+            if varname in stream_mod_dict[stream]:
+                logger.warning("varname {} is already in stream mod dictionary".format(varname))
+
             if varname == "datavars" or varname == "datafiles":
                 if varname == "datavars":
                     varvals = ["<var>{}</var>".format(x.strip()) for x in varval.split(",") if x]
@@ -231,7 +232,7 @@ class StreamCDEPS(GenericXML):
             # append to stream xml file
             stream_file_text = _stream_file_template.format(**stream_vars)
             with open(streams_xml_file, 'a', encoding='utf-8') as stream_file:
-                stream_file.write(stream_file_text)
+                stream_file.write(case.get_resolved_value(stream_file_text))
 
             # append to input_data_list
             if stream_vars['stream_meshfile']:
