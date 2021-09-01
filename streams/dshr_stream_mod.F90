@@ -698,6 +698,7 @@ contains
           streamdat(i)%varlist(n)%nameinfile = strm_tmpstrings(n)(1:index(trim(strm_tmpstrings(n)), " "))
           streamdat(i)%varlist(n)%nameinmodel = strm_tmpstrings(n)(index(trim(strm_tmpstrings(n)), " ", .true.)+1:)
         enddo
+        deallocate(strm_tmpstrings)
       else
         call shr_sys_abort("stream data variables must be provided")
       endif
