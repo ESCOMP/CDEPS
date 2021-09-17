@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 include(ExternalProject)
 include(FetchContent)
+enable_language(Fortran)
 
 if (DEFINED CIMEROOT)
   message("Using CIME in ${CIMEROOT} with compiler ${COMPILER}")
@@ -8,24 +9,15 @@ if (DEFINED CIMEROOT)
   if (${PIO_VERSION} LESS 2)
     message( FATAL_ERROR "Version 2 of the PIO library required")
   endif()
-  if (${MPILIB} STREQUAL "mpi-serial")
-    set(CMAKE_C_COMPILER ${SCC})
-    set(CMAKE_Fortran_COMPILER ${SFC})
-    set(CMAKE_CXX_COMPILER ${SCXX})
-  else()
-    set(CMAKE_C_COMPILER ${MPICC})
-    set(CMAKE_Fortran_COMPILER ${MPIFC})
-    set(CMAKE_CXX_COMPILER ${MPICXX})
-  endif()
   set(CMAKE_Fortran_FLAGS "${FFLAGS} ${CPPDEFS} -I${LIBROOT}/include -I${LIBROOT}/finclude -I${LIBROOT}/nuopc/esmf/${NINST_VALUE}/include")
   add_compile_definitions(CESMCOUPLED)
+  list(APPEND CMAKE_MODULE_PATH ${SRC_ROOT}/components/cdeps/cmake)
 else()
   set(BLD_STANDALONE TRUE)
+  project(NUOPC_DATA_MODELS LANGUAGES Fortran VERSION 0.1)
 endif()
 
-project(NUOPC_DATA_MODELS LANGUAGES Fortran VERSION 0.1)
-
-list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+list(APPEND CMAKE_MODULE_PATH ${SRC_ROOT}/components/cdeps/cmake)
 
 message("CMAKE_MODULE_PATH is ${CMAKE_MODULE_PATH}")
 
@@ -61,15 +53,15 @@ endif()
 add_subdirectory(streams)
 add_subdirectory(dshr)
 
-if(IS_DIRECTORY "${PROJECT_SOURCE_DIR}/fox")
+if(IS_DIRECTORY "${SRC_ROOT}/components/cdeps/fox")
   message(STATUS "FoX library is already checked out!")
-  message(STATUS "FoX source dir: ${PROJECT_SOURCE_DIR}/fox")
+  message(STATUS "FoX source dir: ${SRC_ROOT}/components/cdeps/fox")
 else()
   FetchContent_Declare(fox
     GIT_REPOSITORY https://github.com/ESMCI/fox.git
     GIT_TAG 4.1.2.1
-    SOURCE_DIR ${PROJECT_SOURCE_DIR}/fox
-    BINARY_DIR ${PROJECT_SOURCE_DIR}
+    SOURCE_DIR ${SRC_ROOT}/components/cdeps/fox
+    BINARY_DIR ${SRC_ROOT}/components/cdeps
   )
   FetchContent_GetProperties(fox)
   if(NOT fox_POPULATED)
