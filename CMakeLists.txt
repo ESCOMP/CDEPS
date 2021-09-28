@@ -15,9 +15,8 @@ if (DEFINED CIMEROOT)
 else()
   set(BLD_STANDALONE TRUE)
   project(NUOPC_DATA_MODELS LANGUAGES Fortran VERSION 0.1)
+  list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 endif()
-
-list(APPEND CMAKE_MODULE_PATH ${SRC_ROOT}/components/cdeps/cmake)
 
 message("CMAKE_MODULE_PATH is ${CMAKE_MODULE_PATH}")
 
