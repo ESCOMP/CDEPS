@@ -92,7 +92,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     stream_file = os.path.join(_CDEPS_CONFIG,os.pardir, "drof","cime_config","stream_definition_drof.xml")
     streams = StreamCDEPS(stream_file, schema_file)
     streams.create_stream_xml(streamlist, case, outfile, data_list_path,
-                              os.path.join(caseroot,'user_nl_drof_streams'))
+                              os.path.join(caseroot,'user_nl_drof_streams'+inst_string))
 
 ###############################################################################
 def buildnml(case, caseroot, compname):
