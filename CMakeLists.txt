@@ -12,10 +12,12 @@ if (DEFINED CIMEROOT)
   set(CMAKE_Fortran_FLAGS "${FFLAGS} ${CPPDEFS} -I${LIBROOT}/include -I${LIBROOT}/finclude -I${LIBROOT}/nuopc/esmf/${NINST_VALUE}/include")
   add_compile_definitions(CESMCOUPLED)
   list(APPEND CMAKE_MODULE_PATH ${SRC_ROOT}/components/cdeps/cmake)
+  set(FOX_ROOT ${SRC_ROOT}/components/cdeps/fox)  
 else()
   set(BLD_STANDALONE TRUE)
   project(NUOPC_DATA_MODELS LANGUAGES Fortran VERSION 0.1)
   list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+  set(FOX_ROOT ${CMAKE_SOURCE_DIR}/fox)  
 endif()
 
 message("CMAKE_MODULE_PATH is ${CMAKE_MODULE_PATH}")
@@ -52,15 +54,15 @@ endif()
 add_subdirectory(streams)
 add_subdirectory(dshr)
 
-if(IS_DIRECTORY "${SRC_ROOT}/components/cdeps/fox")
+if(IS_DIRECTORY "${FOX_ROOT}")
   message(STATUS "FoX library is already checked out!")
-  message(STATUS "FoX source dir: ${SRC_ROOT}/components/cdeps/fox")
+  message(STATUS "FoX source dir: ${FOX_ROOT}")
 else()
   FetchContent_Declare(fox
     GIT_REPOSITORY https://github.com/ESMCI/fox.git
     GIT_TAG 4.1.2.1
-    SOURCE_DIR ${SRC_ROOT}/components/cdeps/fox
-    BINARY_DIR ${SRC_ROOT}/components/cdeps
+    SOURCE_DIR ${FOX_ROOT}
+    BINARY_DIR ${FOX_ROOT}/..
   )
   FetchContent_GetProperties(fox)
   if(NOT fox_POPULATED)
