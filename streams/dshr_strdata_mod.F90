@@ -1255,7 +1255,7 @@ contains
     call ESMF_TraceRegionExit(trim(istr)//'_setup')
 
     ! if model current date is outside of model lower or upper bound - find the stream bounds
-    if (rDateM < rDateLB .or. rDateM > rDateUB) then
+    if (rDateM < rDateLB .or. rDateM >= rDateUB) then
        call ESMF_TraceRegionEnter(trim(istr)//'_fbound')
        call shr_stream_findBounds(stream, mDate, mSec,  sdat%masterproc, &
             sdat%pstrm(ns)%ymdLB, dDateLB, sdat%pstrm(ns)%todLB, n_lb, filename_lb, &
