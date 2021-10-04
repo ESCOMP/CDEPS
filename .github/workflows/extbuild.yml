@@ -110,6 +110,7 @@ jobs:
         run: |
           export ESMFMKFILE=$HOME/ESMF/lib/libg/Linux.gfortran.64.openmpi.default/esmf.mk
           export PIO=$HOME/pio
+          export SRC_ROOT=
           git submodule init
           git submodule update
           mkdir build-cdeps
