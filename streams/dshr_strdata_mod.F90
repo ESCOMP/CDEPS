@@ -397,6 +397,7 @@ contains
     logical                      :: masterproc
     integer                      :: nvars
     integer                      :: i, stream_nlev, index
+    integer,  allocatable        :: mask(:)
     character(CL)                :: stream_vectors
     character(len=*), parameter  :: subname='(shr_sdat_init)'
     ! ----------------------------------------------
@@ -426,6 +427,10 @@ contains
              call shr_sys_abort(subName//"ERROR: file does not exist: "//trim(fileName))
           end if
        endif
+       !
+       ! We do not yet have mask information, but we are required to set it here and change it 
+       ! later.
+       !
        if(filename /= 'none') then
           stream_mesh = ESMF_MeshCreate(trim(filename), fileformat=ESMF_FILEFORMAT_ESMFMESH, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -811,6 +816,7 @@ contains
     integer                ,intent(out)         :: rc
 
     ! local variables
+
     integer                             :: ns               ! stream index
     integer                             :: nf               ! field index
     integer                             :: i,lev            ! generic indices
@@ -841,6 +847,8 @@ contains
     integer                             :: year,month,day   ! date year month day
     integer                             :: nstreams
     integer                             :: stream_index
+    integer                             :: lsize
+    integer          ,allocatable       :: mask(:)
     real(r8)         ,parameter         :: solZenMin = 0.001_r8 ! minimum solar zenith angle
     integer          ,parameter         :: tadj = 2
     character(len=*) ,parameter         :: timname = "_strd_adv"
@@ -976,6 +984,15 @@ contains
        ! ---------------------------------------------------------
 
        do ns = 1,nstreams
+          call ESMF_MeshGet(sdat%pstrm(ns)%stream_mesh, elementCount=lsize)
+          if (chkerr(rc,__LINE__,u_FILE_u)) return
+
+          call ESMF_MeshGet(sdat%pstrm(ns)%stream_mesh, elementCount=lsize)
+          if (chkerr(rc,__LINE__,u_FILE_u)) return
+          allocate(mask(lsize))
+          call ESMF_MeshGet(sdat%pstrm(ns)%stream_mesh, elementMask=mask)
+          if (chkerr(rc,__LINE__,u_FILE_u)) return
+          
           if (trim(sdat%stream(ns)%tinterpalgo) == 'coszen') then
 
              ! Determine stream lower bound index
@@ -1019,7 +1036,7 @@ contains
                    if (ChkErr(rc,__LINE__,u_FILE_u)) return
                    do i = 1,size(dataptr2d,dim=2)
                       if (coszen(i) > solZenMin) then
-                         dataptr2d(:,i) = dataptr2d_lb(:,i)*coszen(i)/sdat%tavCoszen(i)
+                         dataptr2d(:,i) = mask(i)*dataptr2d_lb(:,i)*coszen(i)/sdat%tavCoszen(i)
                       else
                          dataptr2d(:,i) = 0._r8
                       endif
@@ -1033,7 +1050,7 @@ contains
                    if (ChkErr(rc,__LINE__,u_FILE_u)) return
                    do i = 1,size(dataptr1d)
                       if (coszen(i) > solZenMin) then
-                         dataptr1d(i) = dataptr1d_lb(i)*coszen(i)/sdat%tavCoszen(i)
+                         dataptr1d(i) = mask(i)*dataptr1d_lb(i)*coszen(i)/sdat%tavCoszen(i)
                       else
                          dataptr1d(i) = 0._r8
                       endif
@@ -1071,7 +1088,7 @@ contains
                         sdat%pstrm(ns)%fldlist_model(nf), fldptr2=dataptr2d_ub, rc=rc)
                    if (ChkErr(rc,__LINE__,u_FILE_u)) return
                    do lev = 1,sdat%pstrm(ns)%stream_nlev
-                      dataptr2d(lev,:) = dataptr2d_lb(lev,:) * flb + dataptr2d_ub(lev,:) * fub
+                      dataptr2d(lev,:) = mask(:)*(dataptr2d_lb(lev,:) * flb + dataptr2d_ub(lev,:) * fub)
                    end do
                 else
                    call dshr_fldbun_getfldptr(sdat%pstrm(ns)%fldbun_model, &
@@ -1083,7 +1100,7 @@ contains
                    call dshr_fldbun_getfldptr(sdat%pstrm(ns)%fldbun_data(sdat%pstrm(ns)%stream_ub), &
                         sdat%pstrm(ns)%fldlist_model(nf), fldptr1=dataptr1d_ub, rc=rc)
                    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-                   dataptr1d(:) = dataptr1d_lb(:) * flb + dataptr1d_ub(:) * fub
+                   dataptr1d(:) = mask(:)*(dataptr1d_lb(:) * flb + dataptr1d_ub(:) * fub)
                 end if
              end do
              call ESMF_TraceRegionExit(trim(lstr)//trim(timname)//'_tint')
@@ -1111,7 +1128,7 @@ contains
              call ESMF_TraceRegionExit(trim(lstr)//trim(timname)//'_zero')
 
           endif
-
+          deallocate(mask)
        end do  ! loop over ns (number of streams)
 
        deallocate(newData)
@@ -1348,6 +1365,7 @@ contains
     real(r8), allocatable    :: data_dbl2d(:,:)              ! stream input data
     integer(i2), allocatable :: data_short1d(:)              ! stream input data
     integer(i2), allocatable :: data_short2d(:,:)            ! stream input data
+    integer,     allocatable :: mask(:)
     integer                  :: lsize, n
     integer                  :: spatialDim, numOwnedElements
     integer                  :: pio_iovartype
@@ -1498,6 +1516,12 @@ contains
 
        ! read the data
        call pio_setframe(pioid, varid, int(nt,kind=Pio_Offset_Kind))
+       
+       call ESMF_MeshGet(per_stream%stream_mesh, elementCount=lsize)
+       if (chkerr(rc,__LINE__,u_FILE_u)) return
+       allocate(mask(lsize))
+       call ESMF_MeshGet(per_stream%stream_mesh, elementMask=mask)
+       if (chkerr(rc,__LINE__,u_FILE_u)) return
 
        if (pio_iovartype == PIO_REAL) then
           ! -----------------------------
@@ -1649,14 +1673,14 @@ contains
                       if(data_short2d(n,lev) .eq. fillvalue_i2) then
                          dataptr2d(lev,n) = r8fill
                       else
-                         dataptr2d(lev,n) = real(data_short2d(lev,n),r8) * scale_factor + add_offset
+                         dataptr2d(lev,n) = mask(n)*(real(data_short2d(lev,n),r8) * scale_factor + add_offset)
                       endif
                    enddo
                 end do
              else
                 do lev = 1,stream_nlev
                    do n = 1,lsize
-                      dataptr2d(lev,n) = real(data_short2d(n,lev),r8) * scale_factor + add_offset
+                      dataptr2d(lev,n) = mask(n)*(real(data_short2d(n,lev),r8) * scale_factor + add_offset)
                    enddo
                 end do
              end if
@@ -1674,12 +1698,12 @@ contains
                    if(data_short1d(n).eq.fillvalue_i2) then
                       dataptr1d(n) = r8fill
                    else
-                      dataptr1d(n) = real(data_short1d(n),r8) * scale_factor + add_offset
+                      dataptr1d(n) = mask(n)*(real(data_short1d(n),r8) * scale_factor + add_offset)
                    endif
                 enddo
              else
                 do n=1,lsize
-                   dataptr1d(n) = real(data_short1d(n),r8) * scale_factor + add_offset
+                   dataptr1d(n) = mask(n)*(real(data_short1d(n),r8) * scale_factor + add_offset)
                 enddo
              endif
           end if
@@ -1710,10 +1734,16 @@ contains
           call ESMF_FieldFill(field_dst, dataFillScheme="const", const1=dataptr1d(1), rc=rc)
           if (chkerr(rc,__LINE__,u_FILE_u)) return
        endif
+       deallocate(mask)
     enddo
 
     ! Both components of a vector stream must be in the same input stream file
     if (associated(dataptr2d_src) .and. associated(dataptr1d)) then
+       call ESMF_MeshGet(per_stream%stream_mesh, elementCount=lsize)
+       if (chkerr(rc,__LINE__,u_FILE_u)) return
+       allocate(mask(lsize))
+       call ESMF_MeshGet(per_stream%stream_mesh, elementMask=mask)
+       if (chkerr(rc,__LINE__,u_FILE_u)) return
 
        ! get lon and lat of stream u and v fields
        lsize = size(dataptr1d)
@@ -1736,8 +1766,8 @@ contains
           lat = nu_coords(2*i)
           sinlon = sin(lon*deg2rad); coslon = cos(lon*deg2rad)
           sinlat = sin(lat*deg2rad); coslat = cos(lat*deg2rad)
-          dataptr2d_src(1,i) = coslon * dataptr(i) - sinlon * dataptr2d_src(2,i)
-          dataptr2d_src(2,i) = sinlon * dataptr(i) + coslon * dataptr2d_src(2,i)
+          dataptr2d_src(1,i) = mask(i)*(coslon * dataptr(i) - sinlon * dataptr2d_src(2,i))
+          dataptr2d_src(2,i) = mask(i)*(sinlon * dataptr(i) + coslon * dataptr2d_src(2,i))
        enddo
        vector_dst = ESMF_FieldCreate(sdat%model_mesh, ESMF_TYPEKIND_r8, name='vector_dst', &
             ungriddedLbound=(/1/), ungriddedUbound=(/2/), gridToFieldMap=(/2/), meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
@@ -1762,7 +1792,7 @@ contains
           data_u_dst(i) =  coslon * dataptr2d_dst(1,i) + sinlon * dataptr2d_dst(2,i)
           data_v_dst(i) = -sinlon * dataptr2d_dst(1,i) + coslon * dataptr2d_dst(2,i)
        enddo
-
+       deallocate(mask)
        deallocate(dataptr)
     endif
 
