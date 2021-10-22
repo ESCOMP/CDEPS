@@ -19,7 +19,7 @@ module dshr_strdata_mod
   use ESMF             , only : ESMF_FieldReGridStore, ESMF_FieldRedistStore, ESMF_UNMAPPEDACTION_IGNORE
   use ESMF             , only : ESMF_TERMORDER_SRCSEQ, ESMF_FieldRegrid, ESMF_FieldFill
   use ESMF             , only : ESMF_REGION_TOTAL, ESMF_FieldGet, ESMF_TraceRegionExit, ESMF_TraceRegionEnter
-  use ESMF             , only : ESMF_LOGMSG_INFO, ESMF_LogWrite
+  use ESMF             , only : ESMF_LOGMSG_INFO, ESMF_LogWrite, ESMF_RC_ARG_VALUE
   use shr_kind_mod     , only : r8=>shr_kind_r8, r4=>shr_kind_r4, i2=>shr_kind_I2
   use shr_kind_mod     , only : cs=>shr_kind_cs, cl=>shr_kind_cl, cxx=>shr_kind_cxx
   use shr_sys_mod      , only : shr_sys_abort
@@ -984,12 +984,16 @@ contains
        ! ---------------------------------------------------------
 
        do ns = 1,nstreams
-          call ESMF_MeshGet(sdat%model_mesh, elementCount=lsize)
+          call ESMF_MeshGet(sdat%model_mesh, elementCount=lsize, rc=rc)
           if (chkerr(rc,__LINE__,u_FILE_u)) return
           allocate(mask(lsize))
-          call ESMF_MeshGet(sdat%model_mesh, elementMask=mask)
-          if (chkerr(rc,__LINE__,u_FILE_u)) return
-          
+          !          call ESMF_MeshGet(sdat%model_mesh, elementMask=mask, rc=rc)
+          ! for unstructured grids mask is undetermined, setting it to 1 disables the feature.
+          !          if (rc == ESMF_RC_ARG_VALUE) then
+          mask = 1
+          !          else if (chkerr(rc,__LINE__,u_FILE_u)) then
+          !             return
+          !          endif
           if (trim(sdat%stream(ns)%tinterpalgo) == 'coszen') then
 
              ! Determine stream lower bound index
@@ -1514,12 +1518,12 @@ contains
        ! read the data
        call pio_setframe(pioid, varid, int(nt,kind=Pio_Offset_Kind))
        
-       call ESMF_MeshGet(per_stream%stream_mesh, elementCount=lsize)
+       call ESMF_MeshGet(per_stream%stream_mesh, elementCount=lsize, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
        allocate(mask(lsize))
-       call ESMF_MeshGet(per_stream%stream_mesh, elementMask=mask)
+       call ESMF_LogWrite(trim(subname)//' calling ESMF_MeshGet mask', ESMF_LOGMSG_INFO)
+       call ESMF_MeshGet(per_stream%stream_mesh, elementMask=mask, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
-
        if (pio_iovartype == PIO_REAL) then
           ! -----------------------------
           ! pio_iovartype is PIO_REAL
