@@ -349,7 +349,7 @@ contains
        rtmp = maxval(Sa_tbot(:))
        call shr_mpi_max(rtmp, tbotmax, mpicom, 'datm_tbot', all=.true.)
        if (masterproc) write(logunit,*) trim(subname),' tbotmax = ',tbotmax
-       if(tbotmax <= 0 .or. tbotmax > 1000.0) then
+       if(tbotmax <= 0) then
           call shr_sys_abort(subname//'ERROR: bad value in tbotmax')
        endif
 
