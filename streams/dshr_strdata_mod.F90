@@ -984,10 +984,13 @@ contains
        ! ---------------------------------------------------------
 
        do ns = 1,nstreams
-          call ESMF_MeshGet(sdat%model_mesh, elementCount=lsize)
+          call ESMF_MeshGet(sdat%pstrm(ns)%stream_mesh, elementCount=lsize)
+          if (chkerr(rc,__LINE__,u_FILE_u)) return
+
+          call ESMF_MeshGet(sdat%pstrm(ns)%stream_mesh, elementCount=lsize)
           if (chkerr(rc,__LINE__,u_FILE_u)) return
           allocate(mask(lsize))
-          call ESMF_MeshGet(sdat%model_mesh, elementMask=mask)
+          call ESMF_MeshGet(sdat%pstrm(ns)%stream_mesh, elementMask=mask)
           if (chkerr(rc,__LINE__,u_FILE_u)) return
           
           if (trim(sdat%stream(ns)%tinterpalgo) == 'coszen') then
