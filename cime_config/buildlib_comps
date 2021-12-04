@@ -4,7 +4,7 @@
 build cime component model library.   This buildlib script is used by all CDEPS components.
 """
 
-import sys, os, time
+import sys, os
 
 _CIMEROOT = os.environ.get("CIMEROOT")
 if _CIMEROOT is None:
@@ -18,135 +18,24 @@ from standard_script_setup import *
 from CIME.buildlib import parse_input
 from CIME.case import Case
 from CIME.utils import run_cmd, symlink_force, expect
-from CIME.build import get_standard_cmake_args
-from CIME.XML.machines import Machines
-from CIME.XML.compilers import Compilers
 
 logger = logging.getLogger(__name__)
 
 def buildlib(bldroot, libroot, case, compname=None):
-    if bldroot.endswith("obj") and not compname:
+    if not compname:
+        expect(bldroot.endswith("obj"),
+               "It appears that buildlib_comps is being called for the main CDEPS build\n"
+               "(the main CDEPS build should use buildlib, not buildlib_comps)")
         compname = os.path.basename(os.path.abspath(os.path.join(bldroot,os.pardir)))
 
-    if case.get_value("DEBUG"):
-        strdebug = "debug"
+    _, o, e = run_cmd("make d{}".format(compname), from_dir=bldroot, verbose=True)
+    libname = "lib{}.a".format(compname)
+    dlibname = "libd{}.a".format(compname)
+    dlibpath = os.path.join(bldroot, dlibname)
+    if os.path.exists(dlibpath):
+        symlink_force(os.path.join(bldroot,dlibname), os.path.join(libroot,libname))
     else:
-        strdebug = "nodebug"
-    if case.get_value("BUILD_THREADED"):
-        strthread = "threads"
-    else:
-        strthread = "nothreads"
-    mpilib = case.get_value("MPILIB")
-
-    sharedpath = os.path.join(case.get_value("COMPILER"),mpilib,
-                              strdebug, strthread, "nuopc")
-
-    exe_root = case.get_value("EXEROOT")
-
-    if compname:
-        s, o, e = run_cmd("make d{}".format(compname), from_dir=bldroot, verbose=True)
-        libname = "lib{}.a".format(compname)
-        dlibname = "libd{}.a".format(compname)
-        dlibpath = os.path.join(bldroot, dlibname)
-        if os.path.exists(dlibpath):
-            symlink_force(os.path.join(bldroot,dlibname), os.path.join(libroot,libname))
-        else:
-            expect(False, "ERROR in {} build {} {}".format(compname,o,e))
-    else:
-        logger.info("Running cmake for CDEPS")
-        srcpath = os.path.abspath(os.path.join(os.path.dirname(__file__),os.pardir))
-        cmake_flags = get_standard_cmake_args(case, os.path.join(sharedpath,"cdeps"), shared_lib=True)
-        # base path of install to be completed by setting DESTDIR in make install
-        cmake_flags += " -DCMAKE_INSTALL_PREFIX:PATH=/"
-        cmake_flags += " -DLIBROOT={} ".format(libroot)
-        cmake_flags += " -DMPILIB={} ".format(mpilib)
-        cmake_flags += " -DPIO_C_LIBRARY={path}/lib -DPIO_C_INCLUDE_DIR={path}/include ".format(path=os.path.join(case.get_value("EXEROOT"),sharedpath))
-        cmake_flags += " -DPIO_Fortran_LIBRARY={path}/lib -DPIO_Fortran_INCLUDE_DIR={path}/include ".format(path=os.path.join(case.get_value("EXEROOT"),sharedpath))
-        cmake_flags += srcpath
-        all_src_files = list(all_files_under(srcpath, ignoredirs=[".git","cmake","test",".github","cime_config","fox"]))
-        # Search SourceMods path for CDEPS files. We only look in the data component directories for these, files in cdeps share
-        # directories should be added to one of the data component directories
-        srcmodsdir = os.path.join(case.get_value("CASEROOT"),"SourceMods")
-        all_files_in_srcmods = []
-        for comp_class in case.get_values("COMP_CLASSES"):
-            if comp_class == "CPL":
-                continue
-            comp = case.get_value("COMP_{}".format(comp_class))
-            cdeps_comp_name = "d"+comp_class.lower()
-            if comp == cdeps_comp_name:
-                all_files_in_srcmods.extend(list(all_files_under(os.path.join(srcmodsdir,"src."+cdeps_comp_name))))
-
-        basenames1 = [os.path.basename(f) for f in all_src_files]
-        basenames2 = [os.path.basename(f) for f in all_files_in_srcmods]
-        srcmods = list(set(basenames1).intersection(set(basenames2)))
-        if srcmods:
-            logger.info("Found SourceMods {}".format(srcmods))
-            for i, v in enumerate(all_src_files):
-                for sfile in all_files_in_srcmods:
-                    if os.path.basename(sfile) == os.path.basename(v):
-                        all_src_files[i] = v.replace(os.path.dirname(v), os.path.dirname(sfile))
-        logger.debug("all_src_files: {}".format(all_src_files))
-        latest_src_file = max(all_src_files, key=os.path.getmtime)
-
-        src_time = os.path.getmtime(latest_src_file)
-        if os.path.exists(os.path.join(bldroot,"CMakeFiles")):
-            bld_time = os.path.getmtime(os.path.join(bldroot,"CMakeFiles"))
-        else:
-            bld_time = src_time - 1
-
-        # if any file in src is newer than CmakeFiles in the build directory, rerun cmake
-
-        if src_time > bld_time:
-            logger.info("cmake_flags {}".format(cmake_flags))
-            s,o,e = run_cmd("cmake {} ".format(cmake_flags), from_dir=bldroot, verbose=True)
-            expect(not s,"ERROR from cmake output={}, error={}".format(o,e))
-        else:
-            # The dwav_lib is the last file built in cdeps, wait for it to be built
-            dwav_lib = os.path.join(bldroot,"dwav","libdwav.a")
-            time_to_wait = 300
-            time_counter = 0
-            while not os.path.exists(dwav_lib):
-                time.sleep(1)
-                time_counter += 1
-                if time_counter > time_to_wait:
-                    break
-            expect(time_counter <= time_to_wait," Timeout waiting for {}".format(dwav_lib))
-
-        s,o,e = run_cmd("make install VERBOSE=1 DESTDIR={}".format(libroot), from_dir=bldroot, verbose=True)
-        expect(not s,"ERROR from make output={}, error={}".format(o,e))
-
-        # Link the CDEPS component directories to the location expected by cime
-        for comp in ("atm", "lnd", "ice", "ocn", "rof", "wav"):
-            compname = case.get_value("COMP_{}".format(comp.upper()))
-            comppath = os.path.join(case.get_value("EXEROOT"),comp,"obj")
-            if compname == "d"+comp:
-                if not os.path.islink(comppath):
-                    os.rmdir(comppath)
-                symlink_force(os.path.join(bldroot,compname), comppath)
-
-def all_files_under(path, ignoredirs=[]):
-    """Iterates through all files that are under the given path."""
-    for cur_path, dirnames, filenames in os.walk(path, topdown=True):
-        [dirnames.remove(d) for d in list(dirnames) if d in ignoredirs]
-        for filename in filenames:
-            yield os.path.join(cur_path, filename)
-
-def get_compiler_names(case):
-    machine=case.get_value("MACH")
-    machobj = Machines(machine=machine)
-    compobj = Compilers(machobj)
-    compiler = case.get_value("COMPILER")
-    if case.get_value("MPILIB") == 'mpi-serial':
-        ccomp = compobj.get_value("SCC",{"COMPILER":compiler,"MACH":machine}).strip()
-        cxxcomp = compobj.get_value("SCXX",{"COMPILER":compiler}).strip()
-        fcomp = compobj.get_value("SFC",{"COMPILER":compiler}).strip()
-    else:
-        ccomp = compobj.get_value("MPICC",{"COMPILER":compiler}).strip()
-        cxxcomp = compobj.get_value("MPICXX",{"COMPILER":compiler}).strip()
-        fcomp = compobj.get_value("MPIFC",{"COMPILER":compiler}).strip()
-
-    return ccomp, cxxcomp, fcomp
-
+        expect(False, "ERROR in {} build {} {}".format(compname,o,e))
 
 def _main_func(args):
     caseroot, libroot, bldroot = parse_input(args)
