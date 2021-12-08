@@ -4,7 +4,7 @@
 
 Contributors other than yourself, if any:
 
-CMEPS Issues Fixed (include github issue #):
+CDEPS Issues Fixed (include github issue #):
 
 Are there dependencies on other component PRs
  - [ ] CIME (list)
