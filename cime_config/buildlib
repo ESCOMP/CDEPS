@@ -60,8 +60,13 @@ def buildlib(bldroot, libroot, case, compname=None):
         cmake_flags += " -DCMAKE_INSTALL_PREFIX:PATH=/"
         cmake_flags += " -DLIBROOT={} ".format(libroot)
         cmake_flags += " -DMPILIB={} ".format(mpilib)
-        cmake_flags += " -DPIO_C_LIBRARY={path}/lib -DPIO_C_INCLUDE_DIR={path}/include ".format(path=os.path.join(case.get_value("EXEROOT"),sharedpath))
-        cmake_flags += " -DPIO_Fortran_LIBRARY={path}/lib -DPIO_Fortran_INCLUDE_DIR={path}/include ".format(path=os.path.join(case.get_value("EXEROOT"),sharedpath))
+        pio_libdir = os.getenv("PIO_LIBDIR") 
+        pio_incdir = os.getenv("PIO_INCDIR")
+        if not pio_libdir:
+            pio_libdir = os.path.join(case.get_value("EXEROOT"),sharedpath,"lib")
+            pio_incdir = os.path.join(case.get_value("EXEROOT"),sharedpath, "include")
+        cmake_flags += " -DPIO_C_LIBRARY={libpath} -DPIO_C_INCLUDE_DIR={incpath} ".format(libpath=pio_libdir, incpath=pio_incdir)
+        cmake_flags += " -DPIO_Fortran_LIBRARY={libpath} -DPIO_Fortran_INCLUDE_DIR={incpath} ".format(libpath=pio_libdir, incpath=pio_incdir)
         cmake_flags += srcpath
         all_src_files = list(all_files_under(srcpath, ignoredirs=[".git","cmake","test",".github","cime_config","fox"]))
         # Search SourceMods path for CDEPS files. We only look in the data component directories for these, files in cdeps share

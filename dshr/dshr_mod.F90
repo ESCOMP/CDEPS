@@ -14,7 +14,7 @@ module dshr_mod
   use ESMF             , only : ESMF_DistGrid, ESMF_DistGridGet, ESMF_Array, ESMF_ArrayCreate, ESMF_ArrayDestroy
   use ESMF             , only : ESMF_GridComp, ESMF_GridCompGet, ESMF_GridCompSet
   use ESMF             , only : ESMF_GeomType_Flag, ESMF_FieldStatus_Flag
-  use ESMF             , only : ESMF_Mesh, ESMF_MeshGet, ESMF_MeshSet, ESMF_MeshCreate, ESMF_MeshDestroy
+  use ESMF             , only : ESMF_Mesh, ESMF_MeshGet, ESMF_MeshSet, ESMF_MeshCreate, ESMF_MeshCreateFromFileNew, ESMF_MeshDestroy
   use ESMF             , only : ESMF_STAGGERLOC_CENTER, ESMF_STAGGERLOC_CORNER, ESMF_GRIDCREATENOPERIDIMUFRM
   use ESMF             , only : ESMF_FILEFORMAT_ESMFMESH, ESMF_Grid
   use ESMF             , only : ESMF_GEOMTYPE_MESH, ESMF_GEOMTYPE_GRID, ESMF_FIELDSTATUS_COMPLETE
@@ -31,6 +31,7 @@ module dshr_mod
   use ESMF             , only : ESMF_TERMORDER_SRCSEQ, ESMF_FieldRegridStore, ESMF_SparseMatrixWrite
   use ESMF             , only : ESMF_Region_Flag, ESMF_REGION_TOTAL, ESMF_MAXSTR, ESMF_RC_NOT_VALID
   use ESMF             , only : ESMF_UtilStringUpperCase
+  use ESMF             , only : ESMF_VMLogMemInfo
   use shr_kind_mod     , only : r8=>shr_kind_r8, cs=>shr_kind_cs, cl=>shr_kind_cl, cx=>shr_kind_cx, cxx=>shr_kind_cxx, i8=>shr_kind_i8
   use shr_sys_mod      , only : shr_sys_abort
   use shr_mpi_mod      , only : shr_mpi_bcast
@@ -328,8 +329,10 @@ contains
        endif
 
        ! Read in the input model mesh
-       model_mesh = ESMF_MeshCreate(trim(model_meshfile), fileformat=ESMF_FILEFORMAT_ESMFMESH, rc=rc)
+       call ESMF_VMLogMemInfo('Before: mesh create from docn read')
+       model_mesh = ESMF_MeshCreateFromFileNew(trim(model_meshfile), fileformat=ESMF_FILEFORMAT_ESMFMESH, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call ESMF_VMLogMemInfo('After: mesh create from docn read')
 
        ! Reset the model mesh mask if the mask file is different from the mesh file
        if (trim(model_meshfile) /= trim(model_maskfile)) then
