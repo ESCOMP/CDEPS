@@ -348,7 +348,7 @@ contains
        ! determine tbotmax (see below for use)
        rtmp = maxval(Sa_tbot(:))
        call shr_mpi_max(rtmp, tbotmax, mpicom, 'datm_tbot', all=.true.)
-       write(logunit,*) trim(subname),' tbotmax = ',tbotmax
+       if (masterproc) write(logunit,*) trim(subname),' tbotmax = ',tbotmax
        if(tbotmax <= 0) then
           call shr_sys_abort(subname//'ERROR: bad value in tbotmax')
        endif
@@ -418,7 +418,6 @@ contains
        else
           call shr_sys_abort(subname//'ERROR: cannot compute shum')
        endif
-
        !--- density ---
        vp = (Sa_shum(n)*pbot) / (0.622_r8 + 0.378_r8 * Sa_shum(n))
        Sa_dens(n) = (pbot - 0.378_r8 * vp) / (tbot*rdair)

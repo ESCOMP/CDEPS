@@ -15,7 +15,7 @@ module cdeps_docn_comp
   use ESMF             , only : ESMF_Alarm, ESMF_MethodRemove, ESMF_MethodAdd
   use ESMF             , only : ESMF_GridCompSetEntryPoint, ESMF_ClockGetAlarm, ESMF_AlarmIsRinging
   use ESMF             , only : ESMF_StateGet, operator(+), ESMF_AlarmRingerOff, ESMF_LogWrite
-  use ESMF             , only : ESMF_Field, ESMF_FieldGet
+  use ESMF             , only : ESMF_Field, ESMF_FieldGet, ESMF_VmLogMemInfo
   use NUOPC            , only : NUOPC_CompDerive, NUOPC_CompSetEntryPoint, NUOPC_CompSpecialize
   use NUOPC            , only : NUOPC_Advertise, NUOPC_CompAttributeGet
   use NUOPC_Model      , only : model_routine_SS        => SetServices
@@ -306,7 +306,7 @@ contains
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
-
+    call ESMF_VMLogMemInfo("Entering "//trim(subname))
     ! Initialize model mesh, restart flag, logunit, model_mask and model_frac
     call ESMF_TraceRegionEnter('docn_strdata_init')
     call dshr_mesh_init(gcomp, sdat, nullstr, logunit, 'OCN', nx_global, ny_global, &
@@ -355,6 +355,7 @@ contains
        ! *******************
        ! *** RETURN HERE ***
        ! *******************
+       call ESMF_VMLogMemInfo("Leaving "//trim(subname))
        RETURN
     end if
 
@@ -374,7 +375,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_SetScalar(dble(ny_global),flds_scalar_index_ny, exportState, flds_scalar_name, flds_scalar_num, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
+    call ESMF_VMLogMemInfo("Leaving "//trim(subname))
    end subroutine InitializeRealize
 
   !===============================================================================

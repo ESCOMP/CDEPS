@@ -19,7 +19,7 @@ module dshr_strdata_mod
   use ESMF             , only : ESMF_FieldReGridStore, ESMF_FieldRedistStore, ESMF_UNMAPPEDACTION_IGNORE
   use ESMF             , only : ESMF_TERMORDER_SRCSEQ, ESMF_FieldRegrid, ESMF_FieldFill
   use ESMF             , only : ESMF_REGION_TOTAL, ESMF_FieldGet, ESMF_TraceRegionExit, ESMF_TraceRegionEnter
-  use ESMF             , only : ESMF_LOGMSG_INFO, ESMF_LogWrite
+  use ESMF             , only : ESMF_LOGMSG_INFO, ESMF_LogWrite, ESMF_RC_ARG_VALUE
   use shr_kind_mod     , only : r8=>shr_kind_r8, r4=>shr_kind_r4, i2=>shr_kind_I2
   use shr_kind_mod     , only : cs=>shr_kind_cs, cl=>shr_kind_cl, cxx=>shr_kind_cxx
   use shr_sys_mod      , only : shr_sys_abort
@@ -397,6 +397,7 @@ contains
     logical                      :: masterproc
     integer                      :: nvars
     integer                      :: i, stream_nlev, index
+    integer,  allocatable        :: mask(:)
     character(CL)                :: stream_vectors
     character(len=*), parameter  :: subname='(shr_sdat_init)'
     ! ----------------------------------------------
@@ -426,6 +427,10 @@ contains
              call shr_sys_abort(subName//"ERROR: file does not exist: "//trim(fileName))
           end if
        endif
+       !
+       ! We do not yet have mask information, but we are required to set it here and change it 
+       ! later.
+       !
        if(filename /= 'none') then
           stream_mesh = ESMF_MeshCreate(trim(filename), fileformat=ESMF_FILEFORMAT_ESMFMESH, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -811,6 +816,7 @@ contains
     integer                ,intent(out)         :: rc
 
     ! local variables
+
     integer                             :: ns               ! stream index
     integer                             :: nf               ! field index
     integer                             :: i,lev            ! generic indices
@@ -841,6 +847,7 @@ contains
     integer                             :: year,month,day   ! date year month day
     integer                             :: nstreams
     integer                             :: stream_index
+    integer                             :: lsize
     real(r8)         ,parameter         :: solZenMin = 0.001_r8 ! minimum solar zenith angle
     integer          ,parameter         :: tadj = 2
     character(len=*) ,parameter         :: timname = "_strd_adv"
@@ -1111,7 +1118,6 @@ contains
              call ESMF_TraceRegionExit(trim(lstr)//trim(timname)//'_zero')
 
           endif
-
        end do  ! loop over ns (number of streams)
 
        deallocate(newData)
@@ -1498,7 +1504,6 @@ contains
 
        ! read the data
        call pio_setframe(pioid, varid, int(nt,kind=Pio_Offset_Kind))
-
        if (pio_iovartype == PIO_REAL) then
           ! -----------------------------
           ! pio_iovartype is PIO_REAL
@@ -1736,8 +1741,8 @@ contains
           lat = nu_coords(2*i)
           sinlon = sin(lon*deg2rad); coslon = cos(lon*deg2rad)
           sinlat = sin(lat*deg2rad); coslat = cos(lat*deg2rad)
-          dataptr2d_src(1,i) = coslon * dataptr(i) - sinlon * dataptr2d_src(2,i)
-          dataptr2d_src(2,i) = sinlon * dataptr(i) + coslon * dataptr2d_src(2,i)
+          dataptr2d_src(1,i) = (coslon * dataptr(i) - sinlon * dataptr2d_src(2,i))
+          dataptr2d_src(2,i) = (sinlon * dataptr(i) + coslon * dataptr2d_src(2,i))
        enddo
        vector_dst = ESMF_FieldCreate(sdat%model_mesh, ESMF_TYPEKIND_r8, name='vector_dst', &
             ungriddedLbound=(/1/), ungriddedUbound=(/2/), gridToFieldMap=(/2/), meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
@@ -1762,7 +1767,6 @@ contains
           data_u_dst(i) =  coslon * dataptr2d_dst(1,i) + sinlon * dataptr2d_dst(2,i)
           data_v_dst(i) = -sinlon * dataptr2d_dst(1,i) + coslon * dataptr2d_dst(2,i)
        enddo
-
        deallocate(dataptr)
     endif
 

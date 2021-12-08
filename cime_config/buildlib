@@ -95,6 +95,7 @@ def buildlib(bldroot, libroot, case, compname=None):
             bld_time = src_time - 1
 
         # if any file in src is newer than CmakeFiles in the build directory, rerun cmake
+
         if src_time > bld_time:
             logger.info("cmake_flags {}".format(cmake_flags))
             s,o,e = run_cmd("cmake {} ".format(cmake_flags), from_dir=bldroot, verbose=True)
