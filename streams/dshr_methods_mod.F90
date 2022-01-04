@@ -590,12 +590,12 @@ contains
   end subroutine dshr_field_getfldptr
 
   !===============================================================================
-  subroutine memcheck(string, level, mastertask)
+  subroutine memcheck(string, level, maintask)
 
     ! input/output variables
     character(len=*) , intent(in) :: string
     integer          , intent(in) :: level
-    logical          , intent(in) :: mastertask
+    logical          , intent(in) :: maintask
 
     ! local variables
     integer :: ierr
@@ -605,7 +605,7 @@ contains
     !-----------------------------------------------------------------------
 
 #ifdef CESMCOUPLED
-    if ((mastertask .and. memdebug_level > level) .or. memdebug_level > level+1) then
+    if ((maintask .and. memdebug_level > level) .or. memdebug_level > level+1) then
        ierr = GPTLprint_memusage(string)
     endif
 #endif

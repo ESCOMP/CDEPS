@@ -105,7 +105,7 @@ module cdeps_datm_comp
   integer                      :: flds_scalar_index_nextsw_cday = 0
   integer                      :: mpicom                    ! mpi communicator
   integer                      :: my_task                   ! my task in mpi communicator mpicom
-  logical                      :: masterproc                ! true of my_task == master_task
+  logical                      :: mainproc                ! true of my_task == main_task
   integer                      :: inst_index                ! number of current instance (ie. 1)
   character(len=16)            :: inst_suffix = ""          ! char string associated with instance (ie. "_0001" or "")
   integer                      :: logunit                   ! logging unit number
@@ -144,7 +144,7 @@ module cdeps_datm_comp
   ! constants
   integer                      :: idt                                 ! integer model timestep
   logical                      :: diagnose_data = .true.
-  integer          , parameter :: master_task   = 0                   ! task number of master task
+  integer          , parameter :: main_task   = 0                   ! task number of main task
   character(len=*) , parameter :: rpfile        = 'rpointer.atm'
 #ifdef CESMCOUPLED
   character(*)     , parameter :: modName       = "(atm_comp_nuopc)"
@@ -241,11 +241,11 @@ contains
          logunit, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    ! Determine logical masterproc
-    masterproc = (my_task == master_task)
+    ! Determine logical mainproc
+    mainproc = (my_task == main_task)
 
     ! Read atm_nml from nlfilename
-    if (my_task == master_task) then
+    if (my_task == main_task) then
        nlfilename = "datm_in"//trim(inst_suffix)
        open (newunit=nu,file=trim(nlfilename),status="old",action="read")
        read (nu,nml=datm_nml,iostat=ierr)
@@ -270,7 +270,7 @@ contains
     call shr_mpi_bcast(flds_wiso                 , mpicom, 'flds_wiso')
 
     ! write namelist input to standard out
-    if (my_task == master_task) then
+    if (my_task == main_task) then
        write(logunit,F00)' case_name      = ',trim(case_name)
        write(logunit,F00)' datamode       = ',trim(datamode)
        write(logunit,F00)' model_meshfile = ',trim(model_meshfile)
@@ -287,7 +287,7 @@ contains
     end if
 
     ! Validate sdat datamode
-    if (masterproc) write(logunit,*) ' datm datamode = ',trim(datamode)
+    if (mainproc) write(logunit,*) ' datm datamode = ',trim(datamode)
     if ( trim(datamode) == 'CORE2_NYF'    .or. &
          trim(datamode) == 'CORE2_IAF'    .or. &
          trim(datamode) == 'CORE_IAF_JRA' .or. &
@@ -401,9 +401,9 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Initialize and update orbital values
-    call dshr_orbital_init(gcomp, logunit, my_task == master_task, rc)
+    call dshr_orbital_init(gcomp, logunit, my_task == main_task, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call dshr_orbital_update(clock, logunit, my_task == master_task, &
+    call dshr_orbital_update(clock, logunit, my_task == main_task, &
          orbEccen, orbObliqr, orbLambm0, orbMvelpp, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
@@ -464,7 +464,7 @@ contains
     rc = ESMF_SUCCESS
 
     call ESMF_TraceRegionEnter(subname)
-    call memcheck(subname, 5, my_task==master_task)
+    call memcheck(subname, 5, my_task==main_task)
 
     ! Query the Component for its clock, importState and exportState
     call NUOPC_ModelGet(gcomp, modelClock=clock, importState=importState, exportState=exportState, rc=rc)
@@ -481,7 +481,7 @@ contains
     call shr_cal_ymd2date(yr, mon, day, next_ymd)
 
     ! Update the orbital values
-    call dshr_orbital_update(clock, logunit, my_task == master_task, &
+    call dshr_orbital_update(clock, logunit, my_task == main_task, &
          orbEccen, orbObliqr, orbLambm0, orbMvelpp, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
@@ -627,20 +627,20 @@ contains
        call datm_datamode_jra_advance(exportstate, target_ymd, target_tod, sdat%model_calendar, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('CLMNCEP')
-       call datm_datamode_clmncep_advance(masterproc, logunit, mpicom,  rc)
+       call datm_datamode_clmncep_advance(mainproc, logunit, mpicom,  rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('CPLHIST')
-       call datm_datamode_cplhist_advance(masterproc, logunit, mpicom,  rc)
+       call datm_datamode_cplhist_advance(mainproc, logunit, mpicom,  rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('ERA5')
-       call datm_datamode_era5_advance(exportstate, masterproc, logunit, mpicom, target_ymd, &
+       call datm_datamode_era5_advance(exportstate, mainproc, logunit, mpicom, target_ymd, &
             target_tod, sdat%model_calendar, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('GEFS')
-       call datm_datamode_gefs_advance(exportstate, masterproc, logunit, mpicom, target_ymd, &
+       call datm_datamode_gefs_advance(exportstate, mainproc, logunit, mpicom, target_ymd, &
             target_tod, sdat%model_calendar, rc)
     case('CFSR')
-       call datm_datamode_cfsr_advance(exportstate, masterproc, logunit, mpicom, target_ymd, &
+       call datm_datamode_cfsr_advance(exportstate, mainproc, logunit, mpicom, target_ymd, &
             target_tod, sdat%model_calendar, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end select
@@ -675,7 +675,7 @@ contains
     end if
 
     ! Log output for model date
-    if (masterproc) write(logunit,*) 'atm : model date ', target_ymd, target_tod
+    if (mainproc) write(logunit,*) 'atm : model date ', target_ymd, target_tod
 
     ! Diagnostics
     if (diagnose_data) then
@@ -724,41 +724,41 @@ contains
          if (chkerr(rc,__LINE__,u_FILE_u)) return
          if (rank == 1) then
             call dshr_dfield_add( dfields, sdat, trim(lfieldnames(n)), trim(lfieldnames(n)), &
-                 exportState, logunit, masterproc, rc=rc)
+                 exportState, logunit, mainproc, rc=rc)
             if (ChkErr(rc,__LINE__,u_FILE_u)) return
          else if (rank == 2) then
             select case (trim(lfieldnames(n)))
             case('Faxa_bcph')
                strm_flds3 = (/'Faxa_bcphidry', 'Faxa_bcphodry', 'Faxa_bcphiwet'/)
-               call dshr_dfield_add(dfields, sdat, trim(lfieldnames(n)), strm_flds3, exportState, logunit, masterproc, rc)
+               call dshr_dfield_add(dfields, sdat, trim(lfieldnames(n)), strm_flds3, exportState, logunit, mainproc, rc)
                if (ChkErr(rc,__LINE__,u_FILE_u)) return
             case('Faxa_ocph')
                strm_flds3 = (/'Faxa_ocphidry', 'Faxa_ocphodry', 'Faxa_ocphiwet'/)
-               call dshr_dfield_add(dfields, sdat, trim(lfieldnames(n)), strm_flds3, exportState, logunit, masterproc, rc)
+               call dshr_dfield_add(dfields, sdat, trim(lfieldnames(n)), strm_flds3, exportState, logunit, mainproc, rc)
                if (ChkErr(rc,__LINE__,u_FILE_u)) return
             case('Faxa_dstwet')
                strm_flds4 = (/'Faxa_dstwet1', 'Faxa_dstwet2', 'Faxa_dstwet3', 'Faxa_dstwet4'/)
-               call dshr_dfield_add(dfields, sdat, trim(lfieldnames(n)), strm_flds4, exportState, logunit, masterproc, rc)
+               call dshr_dfield_add(dfields, sdat, trim(lfieldnames(n)), strm_flds4, exportState, logunit, mainproc, rc)
                if (ChkErr(rc,__LINE__,u_FILE_u)) return
             case('Faxa_dstdry')
                strm_flds4 = (/'Faxa_dstdry1', 'Faxa_dstdry2', 'Faxa_dstdry3', 'Faxa_dstdry4'/)
-               call dshr_dfield_add(dfields, sdat, trim(lfieldnames(n)), strm_flds4, exportState, logunit, masterproc, rc)
+               call dshr_dfield_add(dfields, sdat, trim(lfieldnames(n)), strm_flds4, exportState, logunit, mainproc, rc)
                if (ChkErr(rc,__LINE__,u_FILE_u)) return
             case('Faxa_rainc_wiso')
                strm_flds3 = (/'Faxa_rainc_16O', 'Faxa_rainc_18O', 'Faxa_rainc_HDO'/)
-               call dshr_dfield_add(dfields, sdat, trim(lfieldnames(n)), strm_flds3, exportState, logunit, masterproc, rc)
+               call dshr_dfield_add(dfields, sdat, trim(lfieldnames(n)), strm_flds3, exportState, logunit, mainproc, rc)
                if (ChkErr(rc,__LINE__,u_FILE_u)) return
             case('Faxa_rainl_wiso')
                strm_flds3 = (/'Faxa_rainl_16O', 'Faxa_rainl_18O', 'Faxa_rainl_HDO'/)
-               call dshr_dfield_add(dfields, sdat, trim(lfieldnames(n)), strm_flds3, exportState, logunit, masterproc, rc)
+               call dshr_dfield_add(dfields, sdat, trim(lfieldnames(n)), strm_flds3, exportState, logunit, mainproc, rc)
                if (ChkErr(rc,__LINE__,u_FILE_u)) return
             case('Faxa_snowc_wiso')
                strm_flds3 = (/'Faxa_snowc_16O', 'Faxa_snowc_18O', 'Faxa_snowc_HDO'/)
-               call dshr_dfield_add(dfields, sdat, trim(lfieldnames(n)), strm_flds3, exportState, logunit, masterproc, rc)
+               call dshr_dfield_add(dfields, sdat, trim(lfieldnames(n)), strm_flds3, exportState, logunit, mainproc, rc)
                if (ChkErr(rc,__LINE__,u_FILE_u)) return
             case('Faxa_snowl_wiso')
                strm_flds3 = (/'Faxa_snowl_16O', 'Faxa_snowl_18O', 'Faxa_snowl_HDO'/)
-               call dshr_dfield_add(dfields, sdat, trim(lfieldnames(n)), strm_flds3, exportState, logunit, masterproc, rc)
+               call dshr_dfield_add(dfields, sdat, trim(lfieldnames(n)), strm_flds3, exportState, logunit, mainproc, rc)
                if (ChkErr(rc,__LINE__,u_FILE_u)) return
             end select
          end if
@@ -827,7 +827,7 @@ contains
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
-    if (my_task == master_task) then
+    if (my_task == main_task) then
        write(logunit,*)
        write(logunit,*) 'datm : end of main integration loop'
        write(logunit,*)

@@ -355,7 +355,7 @@ contains
        allocate(streamdat(nstrms))
     endif
 
-    ! broadcast the contents of streamdat from master to all tasks
+    ! broadcast the contents of streamdat from the main task  to all tasks
     do i=1,nstrms
        tmp(1) = streamdat(i)%nfiles
        tmp(2) = streamdat(i)%nvars
