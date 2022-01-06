@@ -44,7 +44,7 @@ _stream_file_template = """
 """
 
 valid_values = {}
-valid_values["mapalgo"]  = ["bilinear", "nn", "redist", "mapconsd", "mapconf"]
+valid_values["mapalgo"]  = ["bilinear", "nn", "redist", "mapconsd", "mapconf", "none"]
 valid_values["tintalgo"] = ["lower", "upper", "nearest", "linear", "coszen"]
 valid_values["taxmode"]  = ["cycle", "extend", "limit"]
 
@@ -94,7 +94,7 @@ class StreamCDEPS(GenericXML):
                     break
                 # endif
             # end while
-            index += 1 
+            index += 1
             lines_input_new.append(line)
         #end while
 
@@ -104,9 +104,9 @@ class StreamCDEPS(GenericXML):
             expect(len(stream_mods) == 2,
                    "input stream mod can only be of the form streamname:var=value(s)")
             stream,varmod = stream_mods
-            expect (stream in stream_names, 
+            expect (stream in stream_names,
                     "{} contains a streamname \'{}\' that is not part of valid streamnames {}".
-                    format(user_mods_file,stream,stream_names)) 
+                    format(user_mods_file,stream,stream_names))
             if stream  not in stream_mod_dict:
                 stream_mod_dict[stream] = {}
             # var=value and check the validity
