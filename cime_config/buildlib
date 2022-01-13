@@ -81,6 +81,7 @@ def buildlib(bldroot, libroot, case):
     cmake_flags += " -DCMAKE_INSTALL_PREFIX:PATH=/"
     cmake_flags += " -DLIBROOT={} ".format(libroot)
     cmake_flags += " -DMPILIB={} ".format(mpilib)
+    cmake_flags += " -DSRCROOT={} ".format(case.get_value("SRCROOT"))
     cmake_flags += " -DPIO_C_LIBRARY={path}/lib -DPIO_C_INCLUDE_DIR={path}/include ".format(path=os.path.join(case.get_value("EXEROOT"),sharedpath))
     cmake_flags += " -DPIO_Fortran_LIBRARY={path}/lib -DPIO_Fortran_INCLUDE_DIR={path}/include ".format(path=os.path.join(case.get_value("EXEROOT"),sharedpath))
     cmake_flags += srcpath
