@@ -59,14 +59,14 @@ def _get_neon_data_availability(case, neonsite):
     with open(fullpath, "r") as fd:
         for line in fd.readlines():
             fpath, fname = os.path.split(line)
-            if fpath.endswith('cdeps/v1/'+neonsite):
+            if fpath.endswith('cdeps/v2/'+neonsite):
                 neonatm, date, _ = line.strip().split(',')
                 if neonatm.endswith('.nc'):
                     neonatm = neonatm.split('/')[-1]
                     newestdate = datetime.strptime(neonatm[-10:],"%Y-%m.nc")
                     if not oldestdate:
                         oldestdate = datetime.strptime(neonatm[-10:],"%Y-%m.nc")
-                    neonatm = 'cdeps/v1/'+neonsite+'/'+neonatm
+                    neonatm = 'cdeps/v2/'+neonsite+'/'+neonatm
                     datavaliddate.append(neonatm)
     expect(newestdate, "No tower data found on server for NEON site {}".format(neonsite))
     logger.info("Found tower data for {} through {}".format(oldestdate, newestdate))
