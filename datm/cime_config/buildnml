@@ -56,8 +56,8 @@ def _get_neon_data_availability(case, neonsite):
     oldestdate = None
     newestdate = None
     neonatm = None
-    if not newestdate:
-        for version in ["v2", "v1"]:
+    for version in ["v2", "v1"]:
+        if not newestdate:
             with open(fullpath, "r") as fd:
                 for line in fd.readlines():
                     fpath, fname = os.path.split(line)
