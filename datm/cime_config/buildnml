@@ -70,14 +70,13 @@ def _get_neon_data_availability(case, neonsite):
                                 oldestdate = datetime.strptime(neonatm[-10:],"%Y-%m.nc")
                             neonatm = f'cdeps/{version}/{neonsite}/'+neonatm
                             datavaliddate.append(neonatm)
-                        
+            if newestdate:                                        
+                logger.info("Found tower data version {} for {} through {}".format(version, oldestdate, newestdate))
+                datavaliddate.sort()
+                return datavaliddate
+
     expect(newestdate, "No tower data found on server for NEON site {}".format(neonsite))
-    logger.info("Found tower data version {} for {} through {}".format(version, oldestdate, newestdate))
-    datavaliddate.sort()
-
-    return datavaliddate
-
-
+    return NONE
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
 ####################################################################################
