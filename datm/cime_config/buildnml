@@ -56,7 +56,13 @@ def _get_neon_data_availability(case, neonsite):
     oldestdate = None
     newestdate = None
     neonatm = None
-    for version in ["v2", "v1"]:
+    dataversion = case.get_value("NEONVERSION")
+    if dataversion == "latest":
+        dataversions = ["v2", "v1"]
+    else:
+        dataversions = [dataversion]
+
+    for version in dataversions:
         if not newestdate:
             with open(fullpath, "r") as fd:
                 for line in fd.readlines():
