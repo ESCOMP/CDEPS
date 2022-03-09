@@ -60,7 +60,7 @@ module cdeps_dwav_comp
   integer                      :: flds_scalar_index_ny = 0
   integer                      :: mpicom                              ! mpi communicator
   integer                      :: my_task                             ! my task in mpi communicator mpicom
-  logical                      :: masterproc                          ! true of my_task == master_task
+  logical                      :: mainproc                          ! true of my_task == main_task
   character(len=16)            :: inst_suffix = ""                    ! char string associated with instance (ie. "_0001" or "")
   integer                      :: logunit                             ! logging unit number
   logical                      :: restart_read
@@ -79,7 +79,7 @@ module cdeps_dwav_comp
 
   ! constants
   logical                      :: diagnose_data = .true.
-  integer      , parameter     :: master_task=0                       ! task number of master task
+  integer      , parameter     :: main_task=0                       ! task number of main task
   character(*) , parameter     :: rpfile = 'rpointer.wav'
 #ifdef CESMCOUPLED
   character(*) , parameter     :: modName =  "(wav_comp_nuopc)"
@@ -182,11 +182,11 @@ contains
          logunit, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    ! Determine logical masterproc
-    masterproc = (my_task == master_task)
+    ! Determine logical mainproc
+    mainproc = (my_task == main_task)
 
     ! Read dwav_nml from nlfilename
-    if (my_task == master_task) then
+    if (my_task == main_task) then
        nlfilename = "dwav_in"//trim(inst_suffix)
        open (newunit=nu,file=trim(nlfilename),status="old",action="read")
        read (nu,nml=dwav_nml,iostat=ierr)
@@ -215,7 +215,7 @@ contains
 
     ! Call advertise phase
     if (trim(datamode) == 'copyall') then
-       if (my_task == master_task) write(logunit,*) 'dwav datamode = ',trim(datamode)
+       if (my_task == main_task) write(logunit,*) 'dwav datamode = ',trim(datamode)
     else
        call shr_sys_abort(' ERROR illegal dwav datamode = '//trim(datamode))
     end if
@@ -314,7 +314,7 @@ contains
     rc = ESMF_SUCCESS
 
     call ESMF_TraceRegionEnter(subname)
-    call memcheck(subname, 5, my_task == master_task)
+    call memcheck(subname, 5, my_task == main_task)
 
     ! query the Component for its clock, importState and exportState
     call NUOPC_ModelGet(gcomp, modelClock=clock, importState=importState, exportState=exportState, rc=rc)
@@ -365,7 +365,7 @@ contains
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
-    if (my_task == master_task) then
+    if (my_task == main_task) then
        write(logunit,*)
        write(logunit,*) ' dwav : end of main integration loop'
        write(logunit,*)
@@ -436,13 +436,13 @@ contains
     ! Create stream-> export state mapping
 
     call dshr_dfield_add(dfields, sdat, state_fld='Sw_lamult' , strm_fld='Sw_lamult' , state=exportstate, &
-         logunit=logunit, masterproc=masterproc, rc=rc)
+         logunit=logunit, mainproc=mainproc, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_dfield_add(dfields, sdat, state_fld='Sw_ustokes', strm_fld='Sw_ustokes', state=exportstate, &
-         logunit=logunit, masterproc=masterproc, rc=rc)
+         logunit=logunit, mainproc=mainproc, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_dfield_add(dfields, sdat, state_fld='Sw_vstokes', strm_fld='Sw_vstokes', state=exportstate, &
-         logunit=logunit, masterproc=masterproc, rc=rc)
+         logunit=logunit, mainproc=mainproc, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine dwav_comp_realize

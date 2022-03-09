@@ -95,7 +95,7 @@
     <type>char</type>
     <category>drof</category>
     <group>drof_nml</group>
-    <desc>Master restart file name for drof model</desc>
+    <desc>main restart file name for drof model</desc>
     <values>
       <value>null</value>
     </values>

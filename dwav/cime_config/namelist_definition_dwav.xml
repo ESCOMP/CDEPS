@@ -90,7 +90,7 @@
     <category>dwav</category>
     <group>dwav_nml</group>
     <desc>
-      Master restart file name for dwav model
+      main restart file name for dwav model
     </desc>
     <values>
       <value>null</value>

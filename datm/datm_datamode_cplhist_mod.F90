@@ -178,10 +178,10 @@ contains
   end subroutine datm_datamode_cplhist_init_pointers
 
   !===============================================================================
-  subroutine datm_datamode_cplhist_advance(masterproc, logunit, mpicom, rc)
+  subroutine datm_datamode_cplhist_advance(mainproc, logunit, mpicom, rc)
 
     ! input/output variables
-    logical                , intent(in)    :: masterproc
+    logical                , intent(in)    :: mainproc
     integer                , intent(in)    :: logunit
     integer                , intent(in)    :: mpicom
     integer                , intent(out)   :: rc

@@ -92,7 +92,7 @@
     <category>dlnd</category>
     <group>dlnd_nml</group>
     <desc>
-      Master restart file name for dlnd model
+      main restart file name for dlnd model
     </desc>
     <values>
       <value>null</value>

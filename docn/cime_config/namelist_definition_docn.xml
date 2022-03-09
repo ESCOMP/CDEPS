@@ -169,7 +169,7 @@
     <category>docn</category>
     <group>docn_nml</group>
     <desc>
-      Master restart file name for docn model
+      main restart file name for docn model
     </desc>
     <values>
       <value>null</value>
