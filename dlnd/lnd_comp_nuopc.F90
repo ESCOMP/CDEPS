@@ -61,7 +61,7 @@ module cdeps_dlnd_comp
   integer                  :: flds_scalar_index_ny = 0
   integer                  :: mpicom                              ! mpi communicator
   integer                  :: my_task                             ! my task in mpi communicator mpicom
-  logical                  :: masterproc                          ! true of my_task == master_task
+  logical                  :: mainproc                          ! true of my_task == main_task
   integer                  :: inst_index                          ! number of current instance (ie. 1)
   character(len=16)        :: inst_suffix = ""                    ! char string associated with instance (ie. "_0001" or "")
   integer                  :: logunit                             ! logging unit number
@@ -94,7 +94,7 @@ module cdeps_dlnd_comp
   ! module constants
   integer                      :: glc_nec
   logical                      :: diagnose_data = .true.
-  integer      , parameter     :: master_task=0                   ! task number of master task
+  integer      , parameter     :: main_task=0                   ! task number of main task
   character(*) , parameter     :: rpfile = 'rpointer.lnd'
 #ifdef CESMCOUPLED
   character(*) , parameter     :: modName =  "(lnd_comp_nuopc)"
@@ -187,11 +187,11 @@ contains
          logunit, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    ! Determine logical masterproc
-    masterproc = (my_task == master_task)
+    ! Determine logical mainproc
+    mainproc = (my_task == main_task)
 
     ! Read dlnd_nml from nlfilename
-    if (my_task == master_task) then
+    if (my_task == main_task) then
        nlfilename = "dlnd_in"//trim(inst_suffix)
        open (newunit=nu, file=trim(nlfilename), status="old", action="read")
        read (nu,nml=dlnd_nml,iostat=ierr)
@@ -210,7 +210,7 @@ contains
     call shr_mpi_bcast(force_prognostic_true     , mpicom, 'force_prognostic_true')
 
     ! write namelist input to standard out
-    if (my_task == master_task) then
+    if (my_task == main_task) then
        write(logunit,F00)' model_meshfile = ',trim(model_meshfile)
        write(logunit,F00)' model_maskfile = ',trim(model_maskfile)
        write(logunit ,*)' datamode              = ',datamode
@@ -222,7 +222,7 @@ contains
 
     ! Validate sdat datamode
     if (trim(datamode) == 'copyall') then
-       if (my_task == master_task) write(logunit,*) 'dlnd datamode = ',trim(datamode)
+       if (my_task == main_task) write(logunit,*) 'dlnd datamode = ',trim(datamode)
     else
        call shr_sys_abort(' ERROR illegal dlnd datamode = '//trim(datamode))
     end if
@@ -331,7 +331,7 @@ contains
 
     rc = ESMF_SUCCESS
 
-    call memcheck(subname, 5, my_task==master_task)
+    call memcheck(subname, 5, my_task==main_task)
 
     ! query the Component for its clock, importState and exportState
     call NUOPC_ModelGet(gcomp, modelClock=clock, importState=importState, exportState=exportState, rc=rc)
@@ -383,7 +383,7 @@ contains
 
     rc = ESMF_SUCCESS
     call ESMF_LogWrite(subname//' called', ESMF_LOGMSG_INFO)
-    if (my_task == master_task) then
+    if (my_task == main_task) then
        write(logunit,F91)
        write(logunit,F00) ' dlnd : end of main integration loop'
        write(logunit,F91)
@@ -514,7 +514,7 @@ contains
           strm_flds(n) = 'Sl_tsrf_elev' // trim(nec_str)
        end do
        call dshr_dfield_add(dfields, sdat, state_fld='Sl_tsrf_elev', strm_flds=strm_flds, state=exportState, &
-            logunit=logunit, masterproc=masterproc, rc=rc)
+            logunit=logunit, mainproc=mainproc, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
        do n = 0,glc_nec
@@ -522,7 +522,7 @@ contains
           strm_flds(n) = 'Sl_topo_elev' // trim(nec_str)
        end do
        call dshr_dfield_add(dfields, sdat, state_fld='Sl_topo_elev', strm_flds=strm_flds, state=exportState, &
-            logunit=logunit, masterproc=masterproc, rc=rc)
+            logunit=logunit, mainproc=mainproc, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
        do n = 0,glc_nec
@@ -530,7 +530,7 @@ contains
           strm_flds(n) = 'Flgl_qice_elev' // trim(nec_str)
        end do
        call dshr_dfield_add(dfields, sdat, state_fld='Flgl_qice_elev', strm_flds=strm_flds, state=exportState, &
-            logunit=logunit, masterproc=masterproc, rc=rc)
+            logunit=logunit, mainproc=mainproc, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
        first_time = .false.

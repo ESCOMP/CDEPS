@@ -175,7 +175,6 @@ SUBROUTINE shr_sys_getenv(name, val, rcode)
 
 !$OMP master
 
-
 #ifdef HAVE_GET_ENVIRONMENT
    call get_environment_variable(name=name,value=val,status=rcode)  ! Intrinsic in F2003
 #else

@@ -316,10 +316,10 @@ contains
   end subroutine datm_datamode_clmncep_init_pointers
 
   !===============================================================================
-  subroutine datm_datamode_clmncep_advance(masterproc, logunit, mpicom, rc)
+  subroutine datm_datamode_clmncep_advance(mainproc, logunit, mpicom, rc)
 
     ! input/output variables
-    logical                , intent(in)    :: masterproc
+    logical                , intent(in)    :: mainproc
     integer                , intent(in)    :: logunit
     integer                , intent(in)    :: mpicom
     integer                , intent(out)   :: rc
@@ -348,7 +348,7 @@ contains
        ! determine tbotmax (see below for use)
        rtmp = maxval(Sa_tbot(:))
        call shr_mpi_max(rtmp, tbotmax, mpicom, 'datm_tbot', all=.true.)
-       if (masterproc) write(logunit,*) trim(subname),' tbotmax = ',tbotmax
+       if (mainproc) write(logunit,*) trim(subname),' tbotmax = ',tbotmax
        if(tbotmax <= 0) then
           call shr_sys_abort(subname//'ERROR: bad value in tbotmax')
        endif
@@ -360,13 +360,13 @@ contains
        else
           anidrmax = SHR_CONST_SPVAL
        end if
-       if (masterproc) write(logunit,*) trim(subname),' anidrmax = ',anidrmax
+       if (mainproc) write(logunit,*) trim(subname),' anidrmax = ',anidrmax
 
        ! determine tdewmax (see below for use)
        if (associated(strm_tdew)) then
           rtmp = maxval(strm_tdew(:))
           call shr_mpi_max(rtmp, tdewmax, mpicom, 'datm_tdew', all=.true.)
-          if (masterproc) write(logunit,*) trim(subname),' tdewmax = ',tdewmax
+          if (mainproc) write(logunit,*) trim(subname),' tdewmax = ',tdewmax
        endif
 
        ! reset first_time

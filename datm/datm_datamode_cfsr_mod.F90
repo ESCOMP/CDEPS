@@ -165,11 +165,11 @@ contains
   end subroutine datm_datamode_cfsr_init_pointers
 
   !===============================================================================
-  subroutine datm_datamode_cfsr_advance(exportstate, masterproc, logunit, mpicom, target_ymd, target_tod, model_calendar, rc)
+  subroutine datm_datamode_cfsr_advance(exportstate, mainproc, logunit, mpicom, target_ymd, target_tod, model_calendar, rc)
 
     ! input/output variables
     type(ESMF_State)       , intent(inout) :: exportState
-    logical                , intent(in)    :: masterproc
+    logical                , intent(in)    :: mainproc
     integer                , intent(in)    :: logunit
     integer                , intent(in)    :: mpicom
     integer                , intent(in)    :: target_ymd
@@ -194,12 +194,12 @@ contains
        ! determine tbotmax (see below for use)
        rtmp = maxval(Sa_tbot(:))
        call shr_mpi_max(rtmp, tbotmax, mpicom, 'datm_tbot', all=.true.)
-       if (masterproc) write(logunit,*) trim(subname),' tbotmax = ',tbotmax
+       if (mainproc) write(logunit,*) trim(subname),' tbotmax = ',tbotmax
 
        ! determine maskmax (see below for use)
        rtmp = maxval(strm_mask(:))
        call shr_mpi_max(rtmp, maskmax, mpicom, 'datm_mask', all=.true.)
-       if (masterproc) write(logunit,*) trim(subname),' maskmax = ',maskmax
+       if (mainproc) write(logunit,*) trim(subname),' maskmax = ',maskmax
 
        ! reset first_time
        first_time = .false.

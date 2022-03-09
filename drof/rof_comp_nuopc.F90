@@ -60,7 +60,7 @@ module cdeps_drof_comp
   integer                      :: flds_scalar_index_ny = 0
   integer                      :: mpicom                              ! mpi communicator
   integer                      :: my_task                             ! my task in mpi communicator mpicom
-  logical                      :: masterproc                          ! true of my_task == master_task
+  logical                      :: mainproc                          ! true of my_task == main_task
   character(len=16)            :: inst_suffix = ""                    ! char string associated with instance (ie. "_0001" or "")
   integer                      :: logunit                             ! logging unit number
   logical                      :: restart_read
@@ -77,7 +77,7 @@ module cdeps_drof_comp
   integer                      :: ny_global
 
   logical                      :: diagnose_data = .true.
-  integer      , parameter     :: master_task=0                       ! task number of master task
+  integer      , parameter     :: main_task=0                       ! task number of main task
   character(*) , parameter     :: rpfile = 'rpointer.rof'
 #ifdef CESMCOUPLED
   character(*) , parameter     :: modName =  "(rof_comp_nuopc)"
@@ -185,11 +185,11 @@ contains
          logunit, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    ! determine logical masterproc
-    masterproc = (my_task == master_task)
+    ! determine logical mainproc
+    mainproc = (my_task == main_task)
 
     ! Read drof_nml from nlfilename
-    if (masterproc) then
+    if (mainproc) then
        nlfilename = "drof_in"//trim(inst_suffix)
        open (newunit=nu,file=trim(nlfilename),status="old",action="read")
        read (nu,nml=drof_nml,iostat=ierr)
@@ -218,7 +218,7 @@ contains
 
     ! Validate datamode
     if (trim(datamode) == 'copyall') then
-       if (masterproc) write(logunit,*) 'drof datamode = ',trim(datamode)
+       if (mainproc) write(logunit,*) 'drof datamode = ',trim(datamode)
     else
        call shr_sys_abort(' ERROR illegal drof datamode = '//trim(datamode))
     end if
@@ -323,7 +323,7 @@ contains
 
     rc = ESMF_SUCCESS
 
-    call memcheck(subname, 5, masterproc)
+    call memcheck(subname, 5, mainproc)
 
     ! query the Component for its clock, importState and exportState
     call NUOPC_ModelGet(gcomp, modelClock=clock, importState=importState, exportState=exportState, rc=rc)
@@ -377,9 +377,9 @@ contains
 
     if (first_time) then
        ! Initialize dfields
-       call dshr_dfield_add(dfields, sdat, 'Forr_rofl', 'Forr_rofl', exportState, logunit, masterproc, rc=rc)
+       call dshr_dfield_add(dfields, sdat, 'Forr_rofl', 'Forr_rofl', exportState, logunit, mainproc, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call dshr_dfield_add(dfields, sdat, 'Forr_rofi', 'Forr_rofi', exportState, logunit, masterproc, rc=rc)
+       call dshr_dfield_add(dfields, sdat, 'Forr_rofi', 'Forr_rofi', exportState, logunit, mainproc, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
        ! Initialize module ponters
@@ -448,7 +448,7 @@ contains
     type(ESMF_GridComp)  :: gcomp
     integer, intent(out) :: rc
     rc = ESMF_SUCCESS
-    if (masterproc) then
+    if (mainproc) then
        write(logunit,*)
        write(logunit,*) 'drof : end of main integration loop'
        write(logunit,*)
