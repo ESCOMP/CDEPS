@@ -56,25 +56,33 @@ def _get_neon_data_availability(case, neonsite):
     oldestdate = None
     newestdate = None
     neonatm = None
-    with open(fullpath, "r") as fd:
-        for line in fd.readlines():
-            fpath, fname = os.path.split(line)
-            if fpath.endswith('cdeps/v1/'+neonsite):
-                neonatm, date, _ = line.strip().split(',')
-                if neonatm.endswith('.nc'):
-                    neonatm = neonatm.split('/')[-1]
-                    newestdate = datetime.strptime(neonatm[-10:],"%Y-%m.nc")
-                    if not oldestdate:
-                        oldestdate = datetime.strptime(neonatm[-10:],"%Y-%m.nc")
-                    neonatm = 'cdeps/v1/'+neonsite+'/'+neonatm
-                    datavaliddate.append(neonatm)
+    dataversion = case.get_value("NEONVERSION")
+    if dataversion == "latest":
+        dataversions = ["v2", "v1"]
+    else:
+        dataversions = [dataversion]
+
+    for version in dataversions:
+        if not newestdate:
+            with open(fullpath, "r") as fd:
+                for line in fd.readlines():
+                    fpath, fname = os.path.split(line)
+                    if fpath.endswith(f'cdeps/{version}/{neonsite}'):
+                        neonatm, date, _ = line.strip().split(',')
+                        if neonatm.endswith('.nc'):
+                            neonatm = neonatm.split('/')[-1]
+                            newestdate = datetime.strptime(neonatm[-10:],"%Y-%m.nc")
+                            if not oldestdate:
+                                oldestdate = datetime.strptime(neonatm[-10:],"%Y-%m.nc")
+                            neonatm = f'cdeps/{version}/{neonsite}/'+neonatm
+                            datavaliddate.append(neonatm)
+            if newestdate:                                        
+                logger.info("Found tower data version {} for {} through {}".format(version, oldestdate, newestdate))
+                datavaliddate.sort()
+                return datavaliddate
+
     expect(newestdate, "No tower data found on server for NEON site {}".format(neonsite))
-    logger.info("Found tower data for {} through {}".format(oldestdate, newestdate))
-    datavaliddate.sort()
-
-    return datavaliddate
-
-
+    return NONE
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
 ####################################################################################
