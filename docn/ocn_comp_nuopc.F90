@@ -78,7 +78,7 @@ module cdeps_docn_comp
   integer                      :: flds_scalar_index_ny = 0
   integer                      :: mpicom           ! mpi communicator
   integer                      :: my_task          ! my task in mpi communicator mpicom
-  logical                      :: masterproc       ! true of my_task == master_task
+  logical                      :: mainproc       ! true of my_task == main_task
   character(len=16)            :: inst_suffix = "" ! char string associated with instance (ie. "_0001" or "")
   integer                      :: logunit          ! logging unit number
   logical                      :: restart_read     ! start from restart
@@ -110,7 +110,7 @@ module cdeps_docn_comp
   ! constants
   logical                      :: aquaplanet = .false.
   logical                      :: diagnose_data = .true.
-  integer      , parameter     :: master_task = 0                 ! task number of master task
+  integer      , parameter     :: main_task = 0                 ! task number of main task
 #ifdef CESMCOUPLED
   character(*) , parameter     :: module_name = "(ocn_comp_nuopc)"
 #else
@@ -204,10 +204,10 @@ contains
          flds_scalar_name, flds_scalar_num, flds_scalar_index_nx, flds_scalar_index_ny, logunit, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    ! Determine logical masterproc
-    masterproc = (my_task == master_task)
+    ! Determine logical mainproc
+    mainproc = (my_task == main_task)
 
-    if (my_task == master_task) then
+    if (my_task == main_task) then
 
        ! Read docn_nml from nlfilename
        nlfilename = "docn_in"//trim(inst_suffix)
@@ -407,7 +407,7 @@ contains
        RETURN
     end if
 
-    call memcheck(subname, 5, my_task == master_task)
+    call memcheck(subname, 5, my_task == main_task)
 
     ! query the Component for its clock, importState and exportState
     call NUOPC_ModelGet(gcomp, modelClock=clock, importState=importState, exportState=exportState, rc=rc)
@@ -593,7 +593,7 @@ contains
          if (chkerr(rc,__LINE__,u_FILE_u)) return
          if (trim(lfieldnamelist(n)) /= flds_scalar_name) then
             call dshr_dfield_add( dfields, sdat, trim(lfieldnamelist(n)), trim(lfieldnamelist(n)), exportState, &
-                 logunit, masterproc, rc)
+                 logunit, mainproc, rc)
             if (chkerr(rc,__LINE__,u_FILE_u)) return
          end if
       end do
@@ -607,7 +607,7 @@ contains
     integer, intent(out) :: rc
     !-------------------------------------------------------------------------------
     rc = ESMF_SUCCESS
-    if (my_task == master_task) then
+    if (my_task == main_task) then
        write(logunit,*)
        write(logunit,*) 'docn : end of main integration loop'
        write(logunit,*)

@@ -184,7 +184,7 @@ all the streams that are active for the target data model.
      type(shr_strdata_perstream), allocatable :: pstrm(:)              ! stream info
      type(shr_stream_streamType), pointer :: stream(:)=> null()        ! stream datatype
      integer                        :: nvectors                        ! number of vectors
-     logical                        :: masterproc
+     logical                        :: mainproc                        ! main task 
      integer                        :: logunit                         ! stdout unit
      integer                        :: io_type                         ! pio info
      integer                        :: io_format                       ! pio info

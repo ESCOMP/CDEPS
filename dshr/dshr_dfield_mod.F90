@@ -47,7 +47,7 @@ module dshr_dfield_mod
 contains
 !===============================================================================
 
-  subroutine dshr_dfield_add_1d(dfields, sdat, state_fld, strm_fld, state, logunit, masterproc, rc)
+  subroutine dshr_dfield_add_1d(dfields, sdat, state_fld, strm_fld, state, logunit, mainproc, rc)
 
     ! Set 1d dfield values
 
@@ -57,7 +57,7 @@ contains
     character(len=*)       , intent(in)    :: strm_fld
     type(ESMF_State)       , intent(inout) :: state
     integer                , intent(in)    :: logunit
-    logical                , intent(in)    :: masterproc
+    logical                , intent(in)    :: mainproc
     integer                , intent(out)   :: rc
 
     ! local variables
@@ -115,7 +115,7 @@ contains
     call dshr_state_getfldptr(State, fldname=trim(state_fld), fldptr1=dfield_new%state_data1d, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     dfield_new%state_data1d = 0.0_r8
-    if (masterproc) then
+    if (mainproc) then
        write(logunit,110)'(dshr_addfield_add) setting pointer for export state '//trim(state_fld)
 110    format(a)
     end if
@@ -123,7 +123,7 @@ contains
   end subroutine dshr_dfield_add_1d
 
   !===============================================================================
-  subroutine dshr_dfield_add_1d_stateptr(dfields, sdat, state_fld, strm_fld, state, state_ptr, logunit, masterproc, rc)
+  subroutine dshr_dfield_add_1d_stateptr(dfields, sdat, state_fld, strm_fld, state, state_ptr, logunit, mainproc, rc)
 
     ! Set 1d dfield values
 
@@ -134,7 +134,7 @@ contains
     type(ESMF_State)       , intent(inout) :: state
     real(r8)               , pointer       :: state_ptr(:)
     integer                , intent(in)    :: logunit
-    logical                , intent(in)    :: masterproc
+    logical                , intent(in)    :: mainproc
     integer                , intent(out)   :: rc
 
     ! local variables
@@ -192,7 +192,7 @@ contains
     call dshr_state_getfldptr(State, fldname=trim(state_fld), fldptr1=dfield_new%state_data1d, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     dfield_new%state_data1d = 0.0_r8
-    if (masterproc) then
+    if (mainproc) then
        write(logunit,110)'(dshr_addfield_add) setting pointer for export state '//trim(state_fld)
 110    format(a)
     end if
@@ -201,7 +201,7 @@ contains
     state_ptr => dfield_new%state_data1d
 
     ! write output
-    if (masterproc) then
+    if (mainproc) then
        if (found) then
           write(logunit,100)'(dshr_addfield_add) set pointer to stream field strm_'//trim(strm_fld)//&
                ' stream index = ',ns,' field bundle index= ',nf
@@ -214,7 +214,7 @@ contains
 
   !===============================================================================
   subroutine dshr_dfield_add_2d(dfields, sdat, state_fld, strm_flds, state, &
-       logunit, masterproc, rc)
+       logunit, mainproc, rc)
 
     ! input/output variables
     type(dfield_type)      , pointer       :: dfields
@@ -223,7 +223,7 @@ contains
     character(len=*)       , intent(in)    :: strm_flds(:)
     type(ESMF_State)       , intent(inout) :: state
     integer                , intent(in)    :: logunit
-    logical                , intent(in)    :: masterproc
+    logical                , intent(in)    :: mainproc
     integer                , intent(out)   :: rc
 
     ! local variables
@@ -292,7 +292,7 @@ contains
              do n = 1,fieldcount
                 if (trim(strm_flds(nf)) == trim(lfieldnamelist(n))) then
                    dfield_new%fldbun_indices(nf) = n
-                   if (masterproc) then
+                   if (mainproc) then
                       write(logunit,*)'(dshr_addfield_add) using stream field strm_'//&
                            trim(strm_flds(nf))//' for 2d '//trim(state_fld)
                    end if
@@ -309,7 +309,7 @@ contains
     call dshr_state_getfldptr(State, fldname=trim(state_fld), fldptr2=dfield_new%state_data2d, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     dfield_new%state_data2d(:,:) = 0._r8
-    if (masterproc) then
+    if (mainproc) then
        write(logunit,*)'(dshr_addfield_add) setting pointer for export state '//trim(state_fld)
     end if
 
@@ -317,7 +317,7 @@ contains
 
   !===============================================================================
   subroutine dshr_dfield_add_2d_stateptr(dfields, sdat, state_fld, strm_flds, state, &
-       state_ptr, logunit, masterproc, rc)
+       state_ptr, logunit, mainproc, rc)
 
     ! input/output variables
     type(dfield_type)      , pointer       :: dfields
@@ -327,7 +327,7 @@ contains
     type(ESMF_State)       , intent(inout) :: state
     real(r8)               , pointer       :: state_ptr(:,:)
     integer                , intent(in)    :: logunit
-    logical                , intent(in)    :: masterproc
+    logical                , intent(in)    :: mainproc
     integer                , intent(out)   :: rc
 
     ! local variables
@@ -396,7 +396,7 @@ contains
              do n = 1,fieldcount
                 if (trim(strm_flds(nf)) == trim(lfieldnamelist(n))) then
                    dfield_new%fldbun_indices(nf) = n
-                   if (masterproc) then
+                   if (mainproc) then
                       write(logunit,*)'(dshr_addfield_add) using stream field strm_'//&
                            trim(strm_flds(nf))//' for 2d '//trim(state_fld)
                    end if
@@ -413,7 +413,7 @@ contains
     call dshr_state_getfldptr(State, fldname=trim(state_fld), fldptr2=dfield_new%state_data2d, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     dfield_new%state_data2d(:,:) = 0._r8
-    if (masterproc) then
+    if (mainproc) then
        write(logunit,*)'(dshr_addfield_add) setting pointer for export state '//trim(state_fld)
     end if
     state_ptr => dfield_new%state_data2d

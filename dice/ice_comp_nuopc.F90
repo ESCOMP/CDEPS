@@ -64,7 +64,7 @@ module cdeps_dice_comp
   integer                      :: flds_scalar_index_ny = 0
   integer                      :: mpicom                              ! mpi communicator
   integer                      :: my_task                             ! my task in mpi communicator mpicom
-  logical                      :: masterproc                          ! true of my_task == master_task
+  logical                      :: mainproc                          ! true of my_task == main_task
   character(len=16)            :: inst_suffix = ""                    ! char string associated with instance (ie. "_0001" or "")
   integer                      :: logunit                             ! logging unit number
   logical                      :: restart_read                        ! start from restart
@@ -100,7 +100,7 @@ module cdeps_dice_comp
   real(R8)                     :: dt                                  ! real model timestep
 
   logical                      :: diagnose_data = .true.
-  integer      , parameter     :: master_task=0                       ! task number of master task
+  integer      , parameter     :: main_task=0                       ! task number of main task
 #ifdef CESMCOUPLED
   character(*) , parameter     :: modName =  "(ice_comp_nuopc)"
 #else
@@ -194,11 +194,11 @@ contains
          logunit, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    ! determine logical masterproc
-    masterproc = (my_task == master_task)
+    ! determine logical mainproc
+    mainproc = (my_task == main_task)
 
     ! Read dice_nml from nlfilename
-    if (my_task == master_task) then
+    if (my_task == main_task) then
        nlfilename = "dice_in"//trim(inst_suffix)
        open (newunit=nu,file=trim(nlfilename),status="old",action="read")
        read (nu,nml=dice_nml,iostat=ierr)
@@ -235,7 +235,7 @@ contains
 
     ! Validate datamode
     if ( trim(datamode) == 'ssmi' .or. trim(datamode) == 'ssmi_iaf') then
-       if (my_task == master_task) write(logunit,*) ' dice datamode = ',trim(datamode)
+       if (my_task == main_task) write(logunit,*) ' dice datamode = ',trim(datamode)
     else
        call shr_sys_abort(' ERROR illegal dice datamode = '//trim(datamode))
     endif
@@ -393,7 +393,7 @@ contains
     rc = ESMF_SUCCESS
 
     call ESMF_TraceRegionEnter(subname)
-    call memcheck(subname, 5, my_task == master_task)
+    call memcheck(subname, 5, my_task == main_task)
 
     ! Query the Component for its clock, importState and exportState
     call NUOPC_ModelGet(gcomp, modelClock=clock, importState=importState, exportState=exportState, rc=rc)
@@ -459,7 +459,7 @@ contains
 
        ! Initialize dfields with export state data that has corresponding stream field
        call dshr_dfield_add(dfields, sdat, state_fld='Si_ifrac', strm_fld='Si_ifrac', &
-            state=exportState, logunit=logunit, masterproc=masterproc, rc=rc)
+            state=exportState, logunit=logunit, mainproc=mainproc, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
 
        ! Initialize datamode module ponters
@@ -544,7 +544,7 @@ contains
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
-    if (my_task == master_task) then
+    if (my_task == main_task) then
        write(logunit,*)
        write(logunit,*) 'dice : end of main integration loop'
        write(logunit,*)

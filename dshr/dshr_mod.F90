@@ -79,7 +79,7 @@ module dshr_mod
   character(len=*) , parameter :: orb_fixed_parameters  = 'fixed_parameters'
   logical :: write_restart_at_endofrun
 
-  integer     , parameter :: master_task = 0
+  integer     , parameter :: main_task = 0
   character(*), parameter :: u_FILE_u = &
        __FILE__
 
@@ -192,7 +192,7 @@ contains
        logfile = "d"//shr_string_toLower(compname)//".log"
     endif
 
-    if (my_task == master_task) then 
+    if (my_task == main_task) then 
        call ESMF_LogWrite(trim(subname)//' : output logging is written to '//trim(diro)//"/"//trim(logfile), ESMF_LOGMSG_INFO)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        open(newunit=logunit, file=trim(diro)//"/"//trim(logfile))
@@ -256,7 +256,7 @@ contains
 
     ! local variables
     type(ESMF_VM)                  :: vm
-    logical                        :: masterproc
+    logical                        :: mainproc
     type(ESMF_DistGrid)            :: distGrid
     integer                        :: my_task
     real(r8)                       :: scol_lon
@@ -278,7 +278,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_VMGet(vm, localPet=my_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    masterproc = (my_task == master_task)
+    mainproc = (my_task == main_task)
 
     ! Set restart flag
     call NUOPC_CompAttributeGet(gcomp, name='read_restart', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
@@ -314,7 +314,7 @@ contains
     else
 
        ! check that model_meshfile and model_maskfile exists
-       if (my_task == master_task) then
+       if (my_task == main_task) then
           inquire(file=trim(model_meshfile), exist=exists)
           if (.not.exists) then
              write(logunit, *)' ERROR: model_meshfile '//trim(model_meshfile)//' does not exist'
@@ -339,7 +339,7 @@ contains
           call dshr_set_modelmask(model_mesh, model_maskfile, compname, model_mask, model_frac, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-          if (masterproc) then
+          if (mainproc) then
              write(logunit,F00) trim(subname)// " obtained "//trim(compname)//" mesh from "// &
                   trim(model_meshfile)
              write(logunit,F00) trim(subname)// " obtained "//trim(compname)//" mask from "// &
@@ -367,7 +367,7 @@ contains
           call ESMF_ArrayDestroy(elemMaskArray, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-          if (masterproc) then
+          if (mainproc) then
              write(logunit,F00) trim(subname)// " obtained "//trim(compname)//" mesh and mask from "// &
                   trim(model_meshfile)
           end if
@@ -970,7 +970,7 @@ contains
     if(shr_strdata_get_stream_count(sdat) <= 0) return
 
     if (trim(rest_filem) == trim(nullstr)) then
-       if (my_task == master_task) then
+       if (my_task == main_task) then
           write(logunit,F00) ' restart filename from rpointer'
           inquire(file=trim(rpfile)//trim(inst_suffix), exist=exists)
           if (.not.exists) then
@@ -985,14 +985,14 @@ contains
        call shr_mpi_bcast(rest_filem, mpicom, 'rest_filem')
     else
        ! use namelist already read
-       if (my_task == master_task) then
+       if (my_task == main_task) then
           write(logunit, F00) ' restart filenames from namelist '
           inquire(file=trim(rest_filem), exist=exists)
        endif
     endif
     call shr_mpi_bcast(exists, mpicom, 'exists')
     if (exists) then
-       if (my_task == master_task) write(logunit, F00) ' reading data model restart ', trim(rest_filem)
+       if (my_task == main_task) write(logunit, F00) ' reading data model restart ', trim(rest_filem)
        rcode = pio_openfile(sdat%pio_subsystem, pioid, sdat%io_type, trim(rest_filem), pio_nowrite)
        call shr_stream_restIO(pioid, sdat%stream, 'read')
        if (present(fld) .and. present(fldname)) then
@@ -1005,7 +1005,7 @@ contains
           call pio_freedecomp(sdat%pio_subsystem, pio_iodesc)
        endif
     else
-       if (my_task == master_task) write(logunit, F00) ' file not found, skipping ',trim(rest_filem)
+       if (my_task == main_task) write(logunit, F00) ' file not found, skipping ',trim(rest_filem)
     endif
   end subroutine dshr_restart_read
 
@@ -1049,7 +1049,7 @@ contains
     write(rest_file_model ,"(7a)") trim(case_name),'.', trim(model_name),trim(inst_suffix),'.r.', trim(date_str),'.nc'
 
     ! write restart info to rpointer file
-    if (my_task == master_task) then
+    if (my_task == main_task) then
        open(newunit=nu, file=trim(rpfile)//trim(inst_suffix), form='formatted')
        write(nu,'(a)') rest_file_model
        close(nu)
@@ -1139,7 +1139,7 @@ contains
     call ESMF_StateGet(State, itemName=trim(flds_scalar_name), field=field, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
 
-    if (mytask == master_task) then
+    if (mytask == main_task) then
       call ESMF_FieldGet(field, farrayPtr = farrayptr, rc=rc)
       if (chkerr(rc,__LINE__,u_FILE_u)) return
       if (scalar_id < 0 .or. scalar_id > flds_scalar_num) then
@@ -1189,7 +1189,7 @@ contains
     call ESMF_StateGet(State, itemName=trim(flds_scalar_name), field=lfield, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
 
-    if (mytask == master_task) then
+    if (mytask == main_task) then
        call ESMF_FieldGet(lfield, farrayPtr = farrayptr, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
        if (scalar_id < 0 .or. scalar_id > flds_scalar_num) then
@@ -1203,7 +1203,7 @@ contains
   end subroutine dshr_state_setscalar
 
   !===============================================================================
-  subroutine dshr_orbital_init(gcomp, logunit, mastertask, rc)
+  subroutine dshr_orbital_init(gcomp, logunit, maintask, rc)
 
     !----------------------------------------------------------
     ! Initialize orbital related values
@@ -1212,7 +1212,7 @@ contains
     ! input/output variables
     type(ESMF_GridComp)                 :: gcomp
     integer             , intent(in)    :: logunit
-    logical             , intent(in)    :: mastertask
+    logical             , intent(in)    :: maintask
     integer             , intent(out)   :: rc              ! output error
 
     ! local variables
@@ -1246,7 +1246,7 @@ contains
     ! Error checks
     if (trim(orb_mode) == trim(orb_fixed_year)) then
        if (orb_iyear == SHR_ORB_UNDEF_INT) then
-          if (mastertask) then
+          if (maintask) then
              write(logunit,*) trim(subname),' ERROR: invalid settings orb_mode =',trim(orb_mode)
              write(logunit,*) trim(subname),' ERROR: fixed_year settings = ',orb_iyear
              write (msgstr, *) ' ERROR: invalid settings for orb_mode '//trim(orb_mode)
@@ -1260,7 +1260,7 @@ contains
        endif
     elseif (trim(orb_mode) == trim(orb_variable_year)) then
        if (orb_iyear == SHR_ORB_UNDEF_INT .or. orb_iyear_align == SHR_ORB_UNDEF_INT) then
-          if (mastertask) then
+          if (maintask) then
              write(logunit,*) trim(subname),' ERROR: invalid settings orb_mode =',trim(orb_mode)
              write(logunit,*) trim(subname),' ERROR: variable_year settings = ',orb_iyear, orb_iyear_align
              write (msgstr, *) subname//' ERROR: invalid settings for orb_mode '//trim(orb_mode)
@@ -1275,7 +1275,7 @@ contains
     elseif (trim(orb_mode) == trim(orb_fixed_parameters)) then
        !-- force orb_iyear to undef to make sure shr_orb_params works properly
        if (orb_eccen == SHR_ORB_UNDEF_REAL .or. orb_obliq == SHR_ORB_UNDEF_REAL .or. orb_mvelp == SHR_ORB_UNDEF_REAL) then
-          if (mastertask) then
+          if (maintask) then
              write(logunit,*) trim(subname),' ERROR: invalid settings orb_mode =',trim(orb_mode)
              write(logunit,*) trim(subname),' ERROR: orb_eccen = ',orb_eccen
              write(logunit,*) trim(subname),' ERROR: orb_obliq = ',orb_obliq
@@ -1298,7 +1298,7 @@ contains
   end subroutine dshr_orbital_init
 
   !===============================================================================
-  subroutine dshr_orbital_update(clock, logunit,  mastertask, eccen, obliqr, lambm0, mvelpp, rc)
+  subroutine dshr_orbital_update(clock, logunit,  maintask, eccen, obliqr, lambm0, mvelpp, rc)
 
     !----------------------------------------------------------
     ! Update orbital settings
@@ -1307,7 +1307,7 @@ contains
     ! input/output variables
     type(ESMF_Clock) , intent(in)    :: clock
     integer          , intent(in)    :: logunit
-    logical          , intent(in)    :: mastertask
+    logical          , intent(in)    :: maintask
     real(R8)         , intent(inout) :: eccen  ! orbital eccentricity
     real(R8)         , intent(inout) :: obliqr ! Earths obliquity in rad
     real(R8)         , intent(inout) :: lambm0 ! Mean long of perihelion at vernal equinox (radians)
@@ -1330,11 +1330,11 @@ contains
        call ESMF_TimeGet(CurrTime, yy=year, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
        orb_year = orb_iyear + (year - orb_iyear_align)
-       lprint = mastertask
+       lprint = maintask
     else
        orb_year = orb_iyear
        if (first_time) then
-          lprint = mastertask
+          lprint = maintask
           first_time = .false.
        else
           lprint = .false.
@@ -1550,7 +1550,7 @@ contains
        cvalue = '64BIT_OFFSET'
        sdat%io_format = PIO_64BIT_OFFSET
     end if
-    if (my_task == master_task) write(logunit,*) trim(subname)//' : pio_netcdf_format = ', &
+    if (my_task == main_task) write(logunit,*) trim(subname)//' : pio_netcdf_format = ', &
        trim(cvalue), sdat%io_format
 
     ! pio_typename
@@ -1579,7 +1579,7 @@ contains
        cvalue = 'NETCDF'
        sdat%io_type = PIO_IOTYPE_NETCDF
     end if
-    if (my_task == master_task) write(logunit,*) trim(subname)//' : pio_typename = ', &
+    if (my_task == main_task) write(logunit,*) trim(subname)//' : pio_typename = ', &
        trim(cvalue), sdat%io_type
 
     ! pio_root
@@ -1596,7 +1596,7 @@ contains
     else
        pio_root = 1
     end if
-    if (my_task == master_task) write(logunit,*) trim(subname)//' : pio_root = ', &
+    if (my_task == main_task) write(logunit,*) trim(subname)//' : pio_root = ', &
        pio_root
 
     ! pio_stride
@@ -1609,7 +1609,7 @@ contains
     else
        pio_stride = -99
     end if
-    if (my_task == master_task) write(logunit,*) trim(subname)//' : pio_stride = ', &
+    if (my_task == main_task) write(logunit,*) trim(subname)//' : pio_stride = ', &
        pio_stride
 
     ! pio_numiotasks
@@ -1622,7 +1622,7 @@ contains
     else
        pio_numiotasks = -99
     end if
-    if (my_task == master_task) write(logunit,*) trim(subname)//' : pio_numiotasks = ', &
+    if (my_task == main_task) write(logunit,*) trim(subname)//' : pio_numiotasks = ', &
        pio_numiotasks
 
     ! check for parallel IO, it requires at least two io pes
@@ -1631,7 +1631,7 @@ contains
         sdat%io_type .eq. PIO_IOTYPE_NETCDF4P)) then
        pio_numiotasks = 2
        pio_stride = min(pio_stride, petCount/2)
-       if (my_task == master_task) then
+       if (my_task == main_task) then
           write(logunit,*) ' parallel io requires at least two io pes - following parameters are updated:'
           write(logunit,*) trim(subname)//' : pio_stride = ', pio_stride
           write(logunit,*) trim(subname)//' : pio_numiotasks = ', pio_numiotasks
@@ -1641,15 +1641,15 @@ contains
     ! check/set/correct io pio parameters
     if (pio_stride > 0 .and. pio_numiotasks < 0) then
        pio_numiotasks = max(1, petCount/pio_stride)
-       if (my_task == master_task) write(logunit,*) trim(subname)//' : update pio_numiotasks = ', pio_numiotasks
+       if (my_task == main_task) write(logunit,*) trim(subname)//' : update pio_numiotasks = ', pio_numiotasks
     else if(pio_numiotasks > 0 .and. pio_stride < 0) then
        pio_stride = max(1, petCount/pio_numiotasks)
-       if (my_task == master_task) write(logunit,*) trim(subname)//' : update pio_stride = ', pio_stride
+       if (my_task == main_task) write(logunit,*) trim(subname)//' : update pio_stride = ', pio_stride
     else if(pio_numiotasks < 0 .and. pio_stride < 0) then
        pio_stride = max(1,petCount/4)
        pio_numiotasks = max(1,petCount/pio_stride)
-       if (my_task == master_task) write(logunit,*) trim(subname)//' : update pio_numiotasks = ', pio_numiotasks
-       if (my_task == master_task) write(logunit,*) trim(subname)//' : update pio_stride = ', pio_stride
+       if (my_task == main_task) write(logunit,*) trim(subname)//' : update pio_numiotasks = ', pio_numiotasks
+       if (my_task == main_task) write(logunit,*) trim(subname)//' : update pio_stride = ', pio_stride
     end if
     if (pio_stride == 1) then
        pio_root = 0
@@ -1672,7 +1672,7 @@ contains
           pio_numiotasks = petCount
           pio_root = 0
        end if
-       if (my_task == master_task) then
+       if (my_task == main_task) then
           write(logunit,*) 'pio_stride, iotasks or root out of bounds - resetting to defaults:'
           write(logunit,*) trim(subname)//' : pio_root = ', pio_root
           write(logunit,*) trim(subname)//' : pio_stride = ', pio_stride
@@ -1682,7 +1682,7 @@ contains
 
     ! init PIO
     allocate(sdat%pio_subsystem)
-    if (my_task == master_task) write(logunit,*) trim(subname)//' : calling pio init'
+    if (my_task == main_task) write(logunit,*) trim(subname)//' : calling pio init'
     call pio_init(my_task, mpicom, pio_numiotasks, 0, pio_stride, &
                   pio_rearranger, sdat%pio_subsystem, base=pio_root)
 
@@ -1703,7 +1703,7 @@ contains
     else
        pio_debug_level = 0
     end if
-    if (my_task == master_task) write(logunit,*) trim(subname), &
+    if (my_task == main_task) write(logunit,*) trim(subname), &
        ' : pio_debug_level = ',pio_debug_level
 
     ! set PIO debug level
@@ -1730,12 +1730,12 @@ contains
        cvalue = 'BOX'
        pio_rearranger = PIO_REARR_BOX
     end if
-    if (my_task == master_task) write(logunit,*) trim(subname)//' : pio_rearranger = ', &
+    if (my_task == main_task) write(logunit,*) trim(subname)//' : pio_rearranger = ', &
        trim(cvalue), pio_rearranger
 
     ! init PIO
     allocate(sdat%pio_subsystem)
-    if (my_task == master_task) write(logunit,*) trim(subname)//' : calling pio init'
+    if (my_task == main_task) write(logunit,*) trim(subname)//' : calling pio init'
     call pio_init(my_task, mpicom, pio_numiotasks, 0, pio_stride, &
                   pio_rearranger, sdat%pio_subsystem, base=pio_root)
 
@@ -1761,7 +1761,7 @@ contains
        cvalue = 'P2P'
        pio_rearr_comm_type = PIO_REARR_COMM_P2P
     end if
-    if (my_task == master_task) write(logunit,*) trim(subname)// &
+    if (my_task == main_task) write(logunit,*) trim(subname)// &
        ' : pio_rearr_comm_type = ', trim(cvalue), pio_rearr_comm_type
 
     ! pio_rearr_comm_fcd
@@ -1789,7 +1789,7 @@ contains
        cvalue = '2DENABLE'
        pio_rearr_comm_fcd = PIO_REARR_COMM_FC_2D_ENABLE
     end if
-    if (my_task == master_task) write(logunit,*) trim(subname)// &
+    if (my_task == main_task) write(logunit,*) trim(subname)// &
        ' : pio_rearr_comm_fcd = ', trim(cvalue), pio_rearr_comm_fcd
 
     ! pio_rearr_comm_enable_hs_comp2io
@@ -1859,7 +1859,7 @@ contains
     end if
 
     ! print out PIO rearranger parameters
-    if (my_task == master_task) then
+    if (my_task == main_task) then
        write(logunit,*) trim(subname)//' : pio_rearr_comm_enable_hs_comp2io = ', &
             pio_rearr_comm_enable_hs_comp2io
        write(logunit,*) trim(subname)//' : pio_rearr_comm_enable_isend_comp2io = ', &
@@ -1875,7 +1875,7 @@ contains
     end if
 
     ! set PIO rearranger options
-    if (my_task == master_task) write(logunit,*) trim(subname)// &
+    if (my_task == main_task) write(logunit,*) trim(subname)// &
        ' calling pio_set_rearr_opts'
     ret = pio_set_rearr_opts(sdat%pio_subsystem, pio_rearr_comm_type, &
                              pio_rearr_comm_fcd, &

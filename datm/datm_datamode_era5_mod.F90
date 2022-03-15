@@ -194,11 +194,11 @@ contains
   end subroutine datm_datamode_era5_init_pointers
 
   !===============================================================================
-  subroutine datm_datamode_era5_advance(exportstate, masterproc, logunit, mpicom, target_ymd, target_tod, model_calendar, rc)
+  subroutine datm_datamode_era5_advance(exportstate, mainproc, logunit, mpicom, target_ymd, target_tod, model_calendar, rc)
 
     ! input/output variables
     type(ESMF_State)       , intent(inout) :: exportState
-    logical                , intent(in)    :: masterproc
+    logical                , intent(in)    :: mainproc
     integer                , intent(in)    :: logunit
     integer                , intent(in)    :: mpicom
     integer                , intent(in)    :: target_ymd
@@ -226,13 +226,13 @@ contains
        if (associated(Sa_t2m)) then
          rtmp = maxval(Sa_t2m(:))
          call shr_mpi_max(rtmp, t2max, mpicom, 'datm_t2m', all=.true.)
-         if (masterproc) write(logunit,*) trim(subname),' t2max = ',t2max
+         if (mainproc) write(logunit,*) trim(subname),' t2max = ',t2max
        end if
 
        ! determine tdewmax (see below for use)
        rtmp = maxval(strm_tdew(:))
        call shr_mpi_max(rtmp, td2max, mpicom, 'datm_td2m', all=.true.)
-       if (masterproc) write(logunit,*) trim(subname),' td2max = ',td2max
+       if (mainproc) write(logunit,*) trim(subname),' td2max = ',td2max
 
        ! reset first_time
        first_time = .false.
