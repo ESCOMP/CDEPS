@@ -64,7 +64,7 @@ contains
 !===============================================================================
 
   subroutine datm_datamode_jra_advertise(exportState, fldsexport, flds_scalar_name, &
-       flds_co2, flds_wiso, flds_presaero, rc)
+       flds_co2, flds_wiso, flds_presaero, flds_presndep, rc)
 
     ! input/output variables
     type(esmf_State)   , intent(inout) :: exportState
@@ -73,6 +73,7 @@ contains
     logical            , intent(in)    :: flds_co2
     logical            , intent(in)    :: flds_wiso
     logical            , intent(in)    :: flds_presaero
+    logical            , intent(in)    :: flds_presndep
     integer            , intent(out)   :: rc
 
     ! local variables
@@ -112,6 +113,9 @@ contains
        call dshr_fldList_add(fldsExport, 'Faxa_ocph'   , ungridded_lbound=1, ungridded_ubound=3)
        call dshr_fldList_add(fldsExport, 'Faxa_dstwet' , ungridded_lbound=1, ungridded_ubound=4)
        call dshr_fldList_add(fldsExport, 'Faxa_dstdry' , ungridded_lbound=1, ungridded_ubound=4)
+    end if
+    if (flds_presndep) then
+       call dshr_fldList_add(fldsExport, 'Faxa_ndep', ungridded_lbound=1, ungridded_ubound=2)
     end if
     if (flds_wiso) then
        call dshr_fldList_add(fldsExport, 'Faxa_rainc_wiso', ungridded_lbound=1, ungridded_ubound=3)
