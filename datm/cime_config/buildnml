@@ -82,7 +82,7 @@ def _get_neon_data_availability(case, neonsite):
                 return datavaliddate
 
     expect(newestdate, "No tower data found on server for NEON site {}".format(neonsite))
-    return NONE
+    return None
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
 ####################################################################################
