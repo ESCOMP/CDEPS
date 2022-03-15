@@ -52,14 +52,15 @@ contains
 !===============================================================================
 
   subroutine datm_datamode_cplhist_advertise(exportState, fldsexport, flds_scalar_name, &
-       flds_co2, flds_wiso, presaero, rc)
+       flds_co2, flds_wiso, flds_presaero, flds_presndep, rc)
 
     ! input/output variables
     type(esmf_State)   , intent(inout) :: exportState
     type(fldlist_type) , pointer       :: fldsexport
     logical            , intent(in)    :: flds_co2
     logical            , intent(in)    :: flds_wiso
-    logical            , intent(in)    :: presaero
+    logical            , intent(in)    :: flds_presaero
+    logical            , intent(in)    :: flds_presndep
     character(len=*)   , intent(in)    :: flds_scalar_name
     integer            , intent(out)   :: rc
 
@@ -95,11 +96,14 @@ contains
        call dshr_fldList_add(fldsExport, 'Sa_co2prog')
        call dshr_fldList_add(fldsExport, 'Sa_co2diag')
     end if
-    if (presaero) then
+    if (flds_presaero) then
        call dshr_fldList_add(fldsExport, 'Faxa_bcph'   , ungridded_lbound=1, ungridded_ubound=3)
        call dshr_fldList_add(fldsExport, 'Faxa_ocph'   , ungridded_lbound=1, ungridded_ubound=3)
        call dshr_fldList_add(fldsExport, 'Faxa_dstwet' , ungridded_lbound=1, ungridded_ubound=4)
        call dshr_fldList_add(fldsExport, 'Faxa_dstdry' , ungridded_lbound=1, ungridded_ubound=4)
+    end if
+    if (flds_presndep) then
+       call dshr_fldList_add(fldsExport, 'Faxa_ndep', ungridded_lbound=1, ungridded_ubound=2)
     end if
     if (flds_wiso) then
        call dshr_fldList_add(fldsExport, 'Faxa_rainc_wiso', ungridded_lbound=1, ungridded_ubound=3)
