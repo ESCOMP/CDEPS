@@ -783,7 +783,9 @@ contains
     character(*),parameter :: F04   = "('(shr_stream_findBounds) ',2a,i4)"
     !-------------------------------------------------------------------------------
 
-    if (debug>0) write(strm%logunit,F02) "DEBUG: ---------- enter ------------------"
+    if (debug>0 .and. isroot_task) then
+       write(strm%logunit,F02) "DEBUG: ---------- enter ------------------"
+    end if
 
     if ( .not. strm%init ) then
        call shr_sys_abort(trim(subName)//" ERROR: trying to find bounds of uninitialized stream")
@@ -828,9 +830,9 @@ contains
 
     dDateIn = dYear*10000 + modulo(mDateIn,10000) ! mDateIn mapped to range of data years
     rDateIn = dDateIn + secIn/spd                 ! dDateIn + fraction of a day
-    if(debug>0) then
-       write(strm%logunit,*) 'fbd1 ',mYear,dYear,dDateIn,rDateIn
-       write(strm%logunit,*) 'fbd2 ',yrFirst,yrLast,yrAlign,nYears
+    if (debug>0 .and. isroot_task) then
+       write(strm%logunit,'(a,2(i8,2x),2(f20.4,2x))') 'mYear,dYear,dDateIn,rDateIn  = ',mYear,dYear,dDateIn,rDateIn
+       write(strm%logunit,'(a,2(i8,2x),2(f20.4,2x))') 'yrFirst,yrLast,yrAlign,nYears= ',yrFirst,yrLast,yrAlign,nYears
     endif
 
     !----------------------------------------------------------------------------
@@ -865,8 +867,8 @@ contains
              call shr_sys_abort(trim(subName)//" ERROR: LVD not found, all data is after yearLast")
           end if
        end if
-       if (debug>1 ) then
-          if (strm%found_lvd) write(strm%logunit,F01) "DEBUG: found LVD = ",strm%file(k)%date(n)
+       if (debug>1 .and. isroot_task ) then
+          if (strm%found_lvd) write(strm%logunit,F01) " found LVD = ",strm%file(k)%date(n)
        end if
     end if
 
@@ -886,8 +888,8 @@ contains
     else
        rDategvd = 99991231.0
     endif
-    if(debug>0) then
-       write(strm%logunit,*) 'fbd3 ',rDateIn,rDatelvd,rDategvd
+    if (debug>0 .and. isroot_task) then
+       write(strm%logunit,'(a,3(f20.4,2x))') 'rDateIn,rDatelvd,rDategvd = ',rDateIn,rDatelvd,rDategvd
     endif
 
     !-----------------------------------------------------------
@@ -941,8 +943,8 @@ contains
                       strm%n_gvd = n
                       strm%found_gvd = .true.
                       rDategvd = strm%file(k)%date(n) + strm%file(k)%secs(n)/spd ! GVD date + frac day
-                      if (debug>1) then
-                         write(strm%logunit,F01) "DEBUG: found GVD ",strm%file(k)%date(n)
+                      if (debug>1 .and. isroot_task) then
+                         write(strm%logunit,F01) " found GVD ",strm%file(k)%date(n)
                       end if
                       exit B
                    end if
@@ -1210,7 +1212,7 @@ contains
 
     ! open file if needed
     if (.not. pio_file_is_open(strm%file(k)%fileid)) then
-       if (debug > 0 .and. isroot_task) then
+       if (debug>1 .and. isroot_task) then
           write(strm%logunit, '(a)') trim(subname)//' opening stream filename = '//trim(filename)
        end if
        rcode = pio_openfile(strm%pio_subsystem, strm%file(k)%fileid, strm%pio_iotype, filename, pio_nowrite)
@@ -1271,7 +1273,7 @@ contains
     deallocate(tvar)
 
     ! close file
-    if (debug > 0 .and. isroot_task) then
+    if (debug>1 .and. isroot_task) then
        write(strm%logunit, '(a)') trim(subname)//' closing stream filename = '//trim(filename)
     end if
     call pio_closefile(strm%file(k)%fileid)
@@ -1334,7 +1336,9 @@ contains
       !-------------------------------------------------------------------------------
 
       rc = 0
-      if (debug>1 ) write(strm%logunit,F01) "checking t-coordinate data   for file k =",k
+      if (debug>1 .and. isroot_task) then
+         write(strm%logunit,F01) "checking t-coordinate data   for file k =",k
+      end if
 
       if ( .not. strm%file(k)%haveData) then
          rc = 1
@@ -1356,7 +1360,7 @@ contains
                   date2 = strm%file(k  )%date(n)
                   secs2 = strm%file(k  )%secs(n)
                   checkIt = .true.
-                  if (debug>1 ) write(strm%logunit,F01) "comparing with previous file for file k =",k
+                  if (debug>1 .and. isroot_task) write(strm%logunit,F01) "comparing with previous file for file k =",k
                end if
             end if
          else if (n==strm%file(k)%nt+1) then
@@ -1369,7 +1373,7 @@ contains
                   date2 = strm%file(k+1)%date(1)
                   secs2 = strm%file(k+1)%secs(1)
                   checkIt = .true.
-                  if (debug>1 ) write(strm%logunit,F01) "comparing with next     file for file k =",k
+                  if (debug>1 .and. isroot_task) write(strm%logunit,F01) "comparing with next     file for file k =",k
                end if
             end if
          else
@@ -1405,7 +1409,8 @@ contains
          end if
       end do
 
-      if (debug>0) write(strm%logunit,F01) "data is OK (non-decreasing)  for file k =",k
+      if (debug>0 .and. isroot_task) write(strm%logunit,F01) "data is OK (non-decreasing)  for file k =",k
+
     end subroutine verifyTCoord
 
   end subroutine shr_stream_readTCoord
