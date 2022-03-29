@@ -1329,7 +1329,7 @@ contains
     endif
 
     if (newdata) then
-       ! read uppber bound of data
+       ! read upper bound of data
        call shr_strdata_readstrm(sdat, sdat%pstrm(ns), stream, &
             sdat%pstrm(ns)%fldbun_data(sdat%pstrm(ns)%stream_ub), &
             filename_ub, n_ub, istr=trim(istr)//'_UB', boundstr='ub', rc=rc)
