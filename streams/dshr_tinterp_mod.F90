@@ -20,14 +20,14 @@ module dshr_tInterp_mod
   public :: shr_tInterp_getAvgCosz  ! get cosz, time avg of
   public :: shr_tInterp_getCosz     ! get cosz
 
+  integer :: debug = 0
+
   real(R8)     ,parameter :: deg2rad = SHR_CONST_PI/180.0_R8
   real(r8)     ,parameter :: c0 = 0.0_r8
   real(r8)     ,parameter :: c1 = 1.0_r8
   real(r8)     ,parameter :: eps = 1.0E-12_r8
   character(*) ,parameter :: u_FILE_u = &
        __FILE__
-
-  integer :: debug = 0
 
 !===============================================================================
 contains
@@ -158,7 +158,8 @@ contains
 
   !===============================================================================
   subroutine shr_tInterp_getAvgCosz(tavCosz, lon, lat, &
-       ymd1, tod1, ymd2, tod2, eccen, mvelpp, lambm0, obliqr, modeldt, calendar, rc)
+       ymd1, tod1, ymd2, tod2, eccen, mvelpp, lambm0, obliqr, modeldt, calendar, &
+       isroot, logunit, rc)
 
     !---------------------------------------------------------------
     ! Returns a time-average of cos(z) over the time interval [LB,UB].
@@ -180,6 +181,8 @@ contains
     real(r8)     ,intent(in)    :: obliqr     ! orb param
     integer      ,intent(in)    :: modeldt    ! model time step in secs
     character(*) ,intent(in)    :: calendar   ! calendar type
+    logical      , intent(in)   :: isroot
+    integer      , intent(in)   :: logunit
     integer      ,intent(out)   :: rc         ! error status
 
     ! local variables
@@ -236,7 +239,17 @@ contains
     lsize = size(tavCosz)
     allocate(cosz(lsize))
 
+    if (debug>0 .and. isroot) then
+       write(logunit,'(a,4(i8,2x))') trim(subname)//' calculating time average over interval ymd1,tod1,ymd2,tod2 = ', &
+            ymd1,tod1,ymd2,tod2
+    end if
+
     do while( reday < reday2) ! mid-interval t-steps thru interval [LB,UB]
+
+       !--- get next cosz value for t-avg ---
+       call shr_tInterp_getCosz(cosz,lon,lat,ymd,tod,eccen,mvelpp,lambm0,obliqr,calendar,isroot,logunit)
+       n = n + ldt
+       tavCosz = tavCosz + cosz*real(ldt,r8)  ! add to partial sum
 
        !--- advance to next time in [LB,UB] ---
        ymd0 = ymd
@@ -244,20 +257,6 @@ contains
        reday0 = reday
        call shr_cal_advDateInt(ldt,'seconds',ymd0,tod0,ymd,tod,calendar)
        call shr_cal_timeSet(reday,ymd,tod,calendar)
-
-       if (reday > reday2) then
-          ymd = ymd2
-          tod = tod2
-          timeint = reday2-reday0
-          call ESMF_TimeIntervalGet(timeint, s_i8=dtsec, rc=rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          ldt = int(dtsec, shr_kind_in)
-       endif
-
-       !--- get next cosz value for t-avg ---
-       call shr_tInterp_getCosz(cosz,lon,lat,ymd,tod,eccen,mvelpp,lambm0,obliqr,calendar)
-       n = n + ldt
-       tavCosz = tavCosz + cosz*real(ldt,r8)  ! add to partial sum
 
     end do
     tavCosz = tavCosz/real(n,r8) ! form t-avg
@@ -267,7 +266,8 @@ contains
   end subroutine shr_tInterp_getAvgCosz
 
   !===============================================================================
-  subroutine shr_tInterp_getCosz(cosz, lon, lat, ymd, tod, eccen, mvelpp, lambm0, obliqr, calendar)
+  subroutine shr_tInterp_getCosz(cosz, lon, lat, ymd, tod, &
+       eccen, mvelpp, lambm0, obliqr, calendar, isroot, logunit)
 
     !---------------------------------------------------------------
     ! Calculate and return the cos(solar-zenith angle).
@@ -283,6 +283,8 @@ contains
     real(r8)     , intent(in)    :: lambm0     ! orb param
     real(r8)     , intent(in)    :: obliqr     ! orb param
     character(*) , intent(in)    :: calendar   ! calendar type
+    logical      , intent(in)    :: isroot
+    integer      , intent(in)    :: logunit
 
     ! local variables
     integer                 :: n
@@ -302,6 +304,11 @@ contains
 
     call shr_cal_date2julian(ymd, tod, calday, calendar)
     call shr_orb_decl( calday, eccen, mvelpp, lambm0, obliqr, declin, eccf )
+    if (debug > 0 .and. isroot) then
+       write(logunit,'(a,2(i8,2x),d20.10,2x,a)') trim(subname)//' ymd, tod, calday, calendar = ',ymd,tod,calday,calendar  
+       write(logunit,'(a,4(d20.10,2x))') trim(subname)//' eccen, mvelpp, lambm0, obliqr = ',eccen, mvelpp, lambm0, obliqr
+       write(logunit,'(a,2(d20.10,2x))') trim(subname)//' declin,eccf= ',declin,eccf
+    end if
     do n = 1,lsize
        lonr = lon(n) * deg2rad
        latr = lat(n) * deg2rad
