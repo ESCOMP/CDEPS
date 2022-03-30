@@ -138,7 +138,6 @@ module dshr_strdata_mod
      real(r8)                       :: lambm0 = SHR_ORB_UNDEF_REAL     ! cosz t-interp info
      real(r8)                       :: obliqr = SHR_ORB_UNDEF_REAL     ! cosz t-interp info
      real(r8), allocatable          :: tavCoszen(:)                    ! cosz t-interp data
-     logical                        :: is_restart = .false.
   end type shr_strdata_type
 
   real(r8)         ,parameter :: deg2rad = SHR_CONST_PI/180.0_r8
@@ -1277,11 +1276,7 @@ contains
     call ESMF_TraceRegionExit(trim(istr)//'_setup')
 
     ! if model current date is outside of model lower or upper bound - find the stream bounds
-    if (sdat%is_restart) then
-       find_bounds = .true.
-    else
-       find_bounds = (rDateM < rDateLB .or. rDateM >= rDateUB)
-    end if
+    find_bounds = (rDateM < rDateLB .or. rDateM >= rDateUB)
     if (debug > 0 .and. sdat%mainproc) then
        write(sdat%logunit,'(a,i4,2x,6(i18,2x),l7)')' stream,lbymd,lbsec,mdate,msec,ubymd,ubsec,newdata= ',ns,&
             sdat%pstrm(ns)%ymdLB,sdat%pstrm(ns)%todLB, &
@@ -1307,12 +1302,7 @@ contains
     endif
 
     ! determine if need to read in new stream data
-    if (sdat%is_restart) then
-       newdata = .true.
-    else
-       newdata = (sdat%pstrm(ns)%ymdLB /= oDateLB .or. sdat%pstrm(ns)%todLB /= oSecLB)
-    end if
-
+    newdata = (sdat%pstrm(ns)%ymdLB /= oDateLB .or. sdat%pstrm(ns)%todLB /= oSecLB)
     if (newdata) then
        if (sdat%pstrm(ns)%ymdLB == oDateUB .and. sdat%pstrm(ns)%todLB == oSecUB) then
           ! copy fldbun_stream_ub to fldbun_stream_lb
@@ -1347,11 +1337,6 @@ contains
        end if
     endif
     call ESMF_TraceRegionExit(trim(istr)//'_filemgt')
-
-    ! reset is_restart flag
-    if (sdat%is_restart) then
-       sdat%is_restart = .false.
-    end if
 
   end subroutine shr_strdata_readLBUB
 
