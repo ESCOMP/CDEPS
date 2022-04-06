@@ -17,7 +17,7 @@ module cdeps_docn_comp
   use ESMF             , only : ESMF_StateGet, operator(+), ESMF_AlarmRingerOff, ESMF_LogWrite
   use ESMF             , only : ESMF_Field, ESMF_FieldGet, ESMF_VmLogMemInfo
   use NUOPC            , only : NUOPC_CompDerive, NUOPC_CompSetEntryPoint, NUOPC_CompSpecialize
-  use NUOPC            , only : NUOPC_Advertise, NUOPC_CompAttributeGet
+  use NUOPC            , only : NUOPC_Advertise, NUOPC_CompAttributeGet, NUOPC_CompAttributeSet
   use NUOPC_Model      , only : model_routine_SS        => SetServices
   use NUOPC_Model      , only : model_label_Advance     => label_Advance
   use NUOPC_Model      , only : model_label_SetRunClock => label_SetRunClock
@@ -302,6 +302,9 @@ contains
     integer                :: fieldcount
     real(r8), pointer      :: fldptr(:)
     integer                :: n
+    integer                :: imask
+    real(r8)               :: rmask
+    character(CL)          :: cvalue
     character(len=*), parameter :: subname=trim(module_name)//':(InitializeRealize) '
     !-------------------------------------------------------------------------------
 
@@ -309,6 +312,19 @@ contains
     call ESMF_VMLogMemInfo("Entering "//trim(subname))
     ! Initialize model mesh, restart flag, logunit, model_mask and model_frac
     call ESMF_TraceRegionEnter('docn_strdata_init')
+
+    ! If aquaplanet overwrite  model mask and model frac to 1
+    if (aquaplanet) then
+       imask = 1
+       write(cvalue,*) imask
+       call NUOPC_CompAttributeSet(gcomp, name='scol_ocnmask', value=cvalue, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       rmask = 1._r8
+       write(cvalue,*) rmask
+       call NUOPC_CompAttributeSet(gcomp, name='scol_ocnfrac', value=cvalue, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    end if
+
     call dshr_mesh_init(gcomp, sdat, nullstr, logunit, 'OCN', nx_global, ny_global, &
          model_meshfile, model_maskfile, model_mesh, model_mask, model_frac, restart_read, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
