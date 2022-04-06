@@ -144,9 +144,6 @@ contains
     call ESMF_VMGet(vm, mpiCommunicator=mpicom, localPet=my_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    ! Initialize IO system
-    call shr_pio_init_component(gcomp)
-
     ! get scalar attributes
     call NUOPC_CompAttributeGet(gcomp, name="ScalarFieldName", value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
