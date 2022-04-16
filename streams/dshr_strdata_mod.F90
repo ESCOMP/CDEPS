@@ -17,7 +17,7 @@ module dshr_strdata_mod
   use ESMF             , only : ESMF_REGRIDMETHOD_CONSERVE, ESMF_NORMTYPE_FRACAREA, ESMF_NORMTYPE_DSTAREA
   use ESMF             , only : ESMF_ClockGet, operator(-), operator(==), ESMF_CALKIND_NOLEAP
   use ESMF             , only : ESMF_FieldReGridStore, ESMF_FieldRedistStore, ESMF_UNMAPPEDACTION_IGNORE
-  use ESMF             , only : ESMF_TERMORDER_SRCSEQ, ESMF_FieldRegrid, ESMF_FieldFill
+  use ESMF             , only : ESMF_TERMORDER_SRCSEQ, ESMF_FieldRegrid, ESMF_FieldFill, ESMF_FieldIsCreated
   use ESMF             , only : ESMF_REGION_TOTAL, ESMF_FieldGet, ESMF_TraceRegionExit, ESMF_TraceRegionEnter
   use ESMF             , only : ESMF_LOGMSG_INFO, ESMF_LogWrite, ESMF_RC_ARG_VALUE
   use shr_kind_mod     , only : r8=>shr_kind_r8, r4=>shr_kind_r4, i2=>shr_kind_I2
@@ -97,11 +97,9 @@ module dshr_strdata_mod
      integer                             :: stream_lb                       ! index of the Lowerbound (LB) in fldlist_stream
      integer                             :: stream_ub                       ! index of the Upperbound (UB) in fldlist_stream
      type(ESMF_Field)                    :: field_stream                    ! a field on the stream data domain
-     type(ESMF_Field)                    :: stream_vector                   ! a vector field on the stream data domain
+     type(ESMF_Field)                    :: field_stream_vector             ! a vector field on the stream data domain
      type(ESMF_FieldBundle), allocatable :: fldbun_data(:)                  ! stream field bundle interpolated to model grid spatially
      type(ESMF_FieldBundle)              :: fldbun_model                    ! stream n field bundle interpolated to model grid and time
-     integer                             :: ucomp = -1                      ! index of vector u in stream
-     integer                             :: vcomp = -1                      ! index of vector v in stream
      integer                             :: ymdLB = -1                      ! stream ymd lower bound
      integer                             :: todLB = -1                      ! stream tod lower bound
      integer                             :: ymdUB = -1                      ! stream ymd upper bound
@@ -114,7 +112,6 @@ module dshr_strdata_mod
   type shr_strdata_type
      type(shr_strdata_perstream), allocatable :: pstrm(:)              ! stream info
      type(shr_stream_streamType), pointer :: stream(:)=> null()        ! stream datatype
-     integer                        :: nvectors                        ! number of vectors
      logical                        :: mainproc
      integer                        :: logunit                         ! stdout unit
      integer                        :: io_type                         ! pio info
@@ -398,7 +395,7 @@ contains
     integer                      :: nvars
     integer                      :: i, stream_nlev, index
     integer,  allocatable        :: mask(:)
-    character(CL)                :: stream_vectors
+    character(CL)                :: stream_vector_names
     character(len=*), parameter  :: subname='(shr_sdat_init)'
     ! ----------------------------------------------
 
@@ -450,15 +447,19 @@ contains
        call shr_stream_getStreamFieldList(sdat%stream(ns), sdat%pstrm(ns)%fldlist_stream)
 
        ! Create field bundles on model mesh
-       if(sdat%stream(ns)%readmode=='single') then
+       if (sdat%stream(ns)%readmode=='single') then
           sdat%pstrm(ns)%stream_lb = 1
           sdat%pstrm(ns)%stream_ub = 2
           allocate(sdat%pstrm(ns)%fldbun_data(2))
+          if (mainproc) then
+             write(sdat%logunit,'(a,i8)') trim(subname)//" Creating field bundle array fldbun_data of size 2 for stream ",&
+                  ns
+          end if
        else if(sdat%stream(ns)%readmode=='full_file') then
           ! TODO: add this in
        endif
 
-       ! create spatially interpolated (but not time interpolated) field bundle - fldbun_data array
+       ! Create spatially interpolated (but not time interpolated) field bundle - fldbun_data array
        do i=1,size(sdat%pstrm(ns)%fldbun_data)
           sdat%pstrm(ns)%fldbun_data(i) = ESMF_FieldBundleCreate(rc=rc) ! stream mesh
        enddo
@@ -476,6 +477,12 @@ contains
              end if
              call ESMF_FieldBundleAdd(sdat%pstrm(ns)%fldbun_data(i), (/lfield/), rc=rc)
              if (chkerr(rc,__LINE__,u_FILE_u)) return
+             if (mainproc) then
+                if (i == 1) then
+                   write(sdat%logunit,'(a,i8)') "    adding field "//trim(sdat%pstrm(ns)%fldlist_model(nfld))//&
+                        " to fldbun_data for stream ",ns
+                end if
+             end if
           enddo
        end do
 
@@ -596,30 +603,34 @@ contains
     do ns = 1,shr_strdata_get_stream_count(sdat)
        stream_mesh => sdat%pstrm(ns)%stream_mesh
        stream_nlev = sdat%pstrm(ns)%stream_nlev
-       stream_vectors = trim(sdat%stream(ns)%stream_vectors)
+       stream_vector_names = trim(sdat%stream(ns)%stream_vectors)
 
        ! check that vector field list is a valid colon delimited string
-       if (trim(stream_vectors) /= 'null') then
-          ! check that for now u and v are only for single leve fields
+       if (trim(stream_vector_names) /= 'null') then
+          ! check that for now u and v are only for single level fields
           if (stream_nlev > 1) then
              ! TODO: add support for u and v for multi level fields
              call shr_sys_abort(subname//': vector fields are not currently supported for multi-level fields')
           end if
           ! check that stream vector names are valid
-          if (.not. shr_string_listIsValid(stream_vectors)) then
-             write(sdat%logunit,*) trim(subname),' vec fldlist invalid m=',m,trim(stream_vectors)
-             call shr_sys_abort(subname//': vec fldlist invalid:'//trim(stream_vectors))
+          if (.not. shr_string_listIsValid(stream_vector_names)) then
+             write(sdat%logunit,*) trim(subname),' vec fldlist invalid m=',m,trim(stream_vector_names)
+             call shr_sys_abort(subname//': vec fldlist invalid:'//trim(stream_vector_names))
           endif
           ! check that only 2 fields are contained for any vector pairing
-          if (shr_string_listGetNum(stream_vectors) /= 2) then
-             write(sdat%logunit,*) trim(subname),' vec fldlist ne 2 m=',m,trim(stream_vectors)
-             call shr_sys_abort(subname//': vec fldlist ne 2:'//trim(stream_vectors))
+          if (shr_string_listGetNum(stream_vector_names) /= 2) then
+             write(sdat%logunit,*) trim(subname),' vec fldlist ne 2 m=',m,trim(stream_vector_names)
+             call shr_sys_abort(subname//': vec fldlist ne 2:'//trim(stream_vector_names))
           endif
           ! create stream vector field
-          sdat%pstrm(ns)%stream_vector = ESMF_FieldCreate(stream_mesh, &
+          sdat%pstrm(ns)%field_stream_vector = ESMF_FieldCreate(stream_mesh, &
                ESMF_TYPEKIND_r8, name='stream_vector', meshloc=ESMF_MESHLOC_ELEMENT, &
                ungriddedLbound=(/1/), ungriddedUbound=(/2/), gridToFieldMap=(/2/), rc=rc)
           if (chkerr(rc,__LINE__,u_FILE_u)) return
+          if (mainproc) then
+             write(sdat%logunit,'(a,i8)') "creating ESMF stream vector field with names" //&
+                  trim(stream_vector_names)//" for stream ",ns   
+          end if
        end if
     enddo
 
@@ -1168,6 +1179,7 @@ contains
     character(*),parameter ::   F01 = "('(shr_strdata_print) ',a,i6,a)"
     character(*),parameter ::   F02 = "('(shr_strdata_print) ',a,es13.6)"
     character(*),parameter ::   F04 = "('(shr_strdata_print) ',a,i2,a,a)"
+    character(*),parameter ::   F05 = "('(shr_strdata_print) ',a)"
     character(*),parameter ::   F07 = "('(shr_strdata_print) ',a,i2,a,es13.6)"
     character(*),parameter ::   F90 = "('(shr_strdata_print) ',58('-'))"
     !-------------------------------------------------------------------------------
@@ -1181,9 +1193,8 @@ contains
     write(sdat%logunit,F02) "lambm0      = ",sdat%lambm0
     write(sdat%logunit,F02) "obliqr      = ",sdat%obliqr
     write(sdat%logunit,F01) "pio_iotype  = ",sdat%io_type
-
     write(sdat%logunit,F01) "nstreams    = ",shr_strdata_get_stream_count(sdat)
-    write(sdat%logunit,F01) "nvectors    = ",sdat%nvectors
+    write(sdat%logunit,F05) "Per stream information "
     do ns = 1, shr_strdata_get_stream_count(sdat)
        write(sdat%logunit,F04) "  taxMode (",ns,") = ",trim(sdat%stream(ns)%taxmode)
        write(sdat%logunit,F07) "  dtlimit (",ns,") = ",sdat%stream(ns)%dtlimit
@@ -1331,7 +1342,7 @@ contains
 
     ! local variables
     integer                  :: stream_nlev
-    type(ESMF_Field)         :: field_dst, vector_dst
+    type(ESMF_Field)         :: field_dst, field_vector_dst
     character(CL)            :: currfile
     logical                  :: fileexists
     logical                  :: fileopen
@@ -1343,17 +1354,17 @@ contains
     real(r8)                 :: fillvalue_r8
     logical                  :: handlefill = .false.
     integer                  :: old_error_handle
-    real(r8), pointer        :: dataptr(:)         => null()
-    real(r8), pointer        :: dataptr1d(:)       => null() ! field bundle data
-    real(r8), pointer        :: dataptr2d(:,:)     => null() ! field bundle data
-    real(r8), pointer        :: dataptr2d_src(:,:) => null() ! field bundle data
-    real(r8), pointer        :: dataptr2d_dst(:,:) => null() ! field bundle data
-    real(r4), allocatable    :: data_real1d(:)               ! stream input data
-    real(r4), allocatable    :: data_real2d(:,:)             ! stream input data
-    real(r8), allocatable    :: data_dbl1d(:)                ! stream input data
-    real(r8), allocatable    :: data_dbl2d(:,:)              ! stream input data
-    integer(i2), allocatable :: data_short1d(:)              ! stream input data
-    integer(i2), allocatable :: data_short2d(:,:)            ! stream input data
+    real(r8), pointer        :: dataptr(:)         
+    real(r8), pointer        :: dataptr1d(:)        ! field bundle data
+    real(r8), pointer        :: dataptr2d(:,:)      ! field bundle data
+    real(r8), pointer        :: dataptr2d_src(:,:)  ! field bundle data
+    real(r8), pointer        :: dataptr2d_dst(:,:)  ! field bundle data
+    real(r4), allocatable    :: data_real1d(:)      ! stream input data
+    real(r4), allocatable    :: data_real2d(:,:)    ! stream input data
+    real(r8), allocatable    :: data_dbl1d(:)       ! stream input data
+    real(r8), allocatable    :: data_dbl2d(:,:)     ! stream input data
+    integer(i2), allocatable :: data_short1d(:)     ! stream input data
+    integer(i2), allocatable :: data_short2d(:,:)   ! stream input data
     integer                  :: lsize, n
     integer                  :: spatialDim, numOwnedElements
     integer                  :: pio_iovartype
@@ -1441,10 +1452,10 @@ contains
        write(sdat%logunit,F02) 'reading file ' // trim(boundstr) //': ',trim(filename), nt
     endif
 
-    if(per_stream%ucomp > 0 .and. per_stream%vcomp > 0) then
+    if (ESMF_FieldIsCreated(per_stream%field_stream_vector)) then
        call shr_string_listGetName(stream%stream_vectors,1,uname)
        call shr_string_listGetName(stream%stream_vectors,2,vname)
-       call dshr_field_getfldptr(per_stream%stream_vector, fldptr2=dataptr2d_src, rc=rc)
+       call dshr_field_getfldptr(per_stream%field_stream_vector, fldptr2=dataptr2d_src, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
     endif
 
@@ -1744,15 +1755,19 @@ contains
           dataptr2d_src(1,i) = (coslon * dataptr(i) - sinlon * dataptr2d_src(2,i))
           dataptr2d_src(2,i) = (sinlon * dataptr(i) + coslon * dataptr2d_src(2,i))
        enddo
-       vector_dst = ESMF_FieldCreate(sdat%model_mesh, ESMF_TYPEKIND_r8, name='vector_dst', &
+       field_vector_dst = ESMF_FieldCreate(sdat%model_mesh, ESMF_TYPEKIND_r8, name='field_vector_dst', &
             ungriddedLbound=(/1/), ungriddedUbound=(/2/), gridToFieldMap=(/2/), meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
 
-       call ESMF_FieldRegrid(per_stream%stream_vector, vector_dst, per_stream%routehandle, &
+       if (.not. ESMF_FieldIsCreated(per_stream%field_stream_vector)) then
+          call shr_sys_abort('ERROR: per_stream%field_stream_vector has not been created')
+       end if
+
+       call ESMF_FieldRegrid(per_stream%field_stream_vector, field_vector_dst, per_stream%routehandle, &
             termorderflag=ESMF_TERMORDER_SRCSEQ, checkflag=checkflag, zeroregion=ESMF_REGION_TOTAL, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
 
-       call ESMF_FieldGet(vector_dst, farrayPtr=dataptr2d_dst, rc=rc)
+       call ESMF_FieldGet(field_vector_dst, farrayPtr=dataptr2d_dst, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
        call dshr_fldbun_getFldPtr(fldbun_data, trim(uname), data_u_dst, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
