@@ -292,6 +292,17 @@
     <desc>ending year to loop data over</desc>
   </entry>
 
+  <entry id="DATM_SKIP_RESTART_READ">
+    <type>logical</type>
+    <valid_values>TRUE,FALSE</valid_values>
+    <default_value>FALSE</default_value>
+    <group>run_component_datm</group>
+    <file>env_run.xml</file>
+    <desc> If set to true, than datm restarts will not be read on a continuation run.
+      This capability is used, for example, in CTSM spinup runs.
+    </desc>
+  </entry>
+
   <help>
     =========================================
     DATM naming conventions in compset name
