@@ -23,8 +23,8 @@
   any <file></file> entry that has %y, %ym or %ymd MUST have first_year and last_year syntax
   ******
 
-  Each mode below, except for presaero, has a set of streams associated with it
-  The presaero stream, is associated with all modes
+  Each mode below, except for presaero and presndep, has a set of streams associated with it
+  The presaero and presndep streams are associated with all modes
 
   Currently the following data modes are supported:
   CLM_QIAN              = Run with the CLM Qian dataset valid from 1948 to 2004 (force CLM)
