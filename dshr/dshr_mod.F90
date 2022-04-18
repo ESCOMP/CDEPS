@@ -107,7 +107,9 @@ contains
   !===============================================================================
   subroutine dshr_init(gcomp, compname, sdat, mpicom, my_task, inst_index, inst_suffix, &
        flds_scalar_name, flds_scalar_num, flds_scalar_index_nx, flds_scalar_index_ny, logunit, rc)
-
+#ifdef CESMCOUPLED
+    use nuopc_shr_methods, only : set_component_logging
+#endif
     ! input/output variables
     type(ESMF_GridComp)                   :: gcomp
     character(len=*)      , intent(in)    :: compname  !e.g. ATM, OCN, ...
@@ -126,6 +128,7 @@ contains
     ! local variables
     type(ESMF_VM)     :: vm
     logical           :: isPresent, isSet
+    integer           :: slogunit
     character(len=CX) :: cvalue
     character(len=CX) :: logmsg
     character(len=CX) :: diro
@@ -191,15 +194,18 @@ contains
     else
        logfile = "d"//shr_string_toLower(compname)//".log"
     endif
-
+#ifdef CESMCOUPLED
+    call set_component_logging(gcomp, my_task == main_task, logunit, slogunit, rc=rc)
+#else
     if (my_task == main_task) then 
        call ESMF_LogWrite(trim(subname)//' : output logging is written to '//trim(diro)//"/"//trim(logfile), ESMF_LOGMSG_INFO)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        open(newunit=logunit, file=trim(diro)//"/"//trim(logfile))
+       
     else
        logUnit = 6
     endif
-
+#endif
     ! set component instance and suffix
     call NUOPC_CompAttributeGet(gcomp, name="inst_suffix", isPresent=isPresent, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -1298,14 +1304,14 @@ contains
   end subroutine dshr_orbital_init
 
   !===============================================================================
-  subroutine dshr_orbital_update(clock, logunit,  maintask, eccen, obliqr, lambm0, mvelpp, rc)
+  subroutine dshr_orbital_update(Time, logunit,  maintask, eccen, obliqr, lambm0, mvelpp, rc)
 
     !----------------------------------------------------------
     ! Update orbital settings
     !----------------------------------------------------------
 
     ! input/output variables
-    type(ESMF_Clock) , intent(in)    :: clock
+    type(ESMF_Time)  , intent(in)    :: Time
     integer          , intent(in)    :: logunit
     logical          , intent(in)    :: maintask
     real(R8)         , intent(inout) :: eccen  ! orbital eccentricity
@@ -1315,7 +1321,6 @@ contains
     integer          , intent(out)   :: rc     ! output error
 
     ! local variables
-    type(ESMF_Time)   :: CurrTime ! current time
     integer           :: year     ! model year at current time
     integer           :: orb_year ! orbital year for current orbital computation
     character(len=CL) :: msgstr   ! temporary
@@ -1325,9 +1330,7 @@ contains
     !-------------------------------------------
 
     if (trim(orb_mode) == trim(orb_variable_year)) then
-       call ESMF_ClockGet(clock, CurrTime=CurrTime, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       call ESMF_TimeGet(CurrTime, yy=year, rc=rc)
+       call ESMF_TimeGet(Time, yy=year, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
        orb_year = orb_iyear + (year - orb_iyear_align)
        lprint = maintask

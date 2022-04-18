@@ -222,8 +222,8 @@ contains
           p => item(getElementsByTagname(streamnode, "taxmode"), 0)
           if (associated(p)) then
              call extractDataContent(p, streamdat(i)%taxmode)
-             if (streamdat(i)%taxmode /= shr_stream_taxis_cycle   .and. &  
-                 streamdat(i)%taxmode /= shr_stream_taxis_extend  .and. & 
+             if (streamdat(i)%taxmode /= shr_stream_taxis_cycle   .and. &
+                 streamdat(i)%taxmode /= shr_stream_taxis_extend  .and. &
                  streamdat(i)%taxmode /= shr_stream_taxis_limit) then
                 call shr_sys_abort("tintalgo must have a value of either cycle, extend or limit")
              end if
@@ -232,8 +232,8 @@ contains
           p => item(getElementsByTagname(streamnode, "mapalgo"), 0)
           if (associated(p)) then
              call extractDataContent(p, streamdat(i)%mapalgo)
-             if (streamdat(i)%mapalgo /= shr_stream_mapalgo_bilinear .and. &  
-                 streamdat(i)%mapalgo /= shr_stream_mapalgo_redist   .and. & 
+             if (streamdat(i)%mapalgo /= shr_stream_mapalgo_bilinear .and. &
+                 streamdat(i)%mapalgo /= shr_stream_mapalgo_redist   .and. &
                  streamdat(i)%mapalgo /= shr_stream_mapalgo_nn       .and. &
                  streamdat(i)%mapalgo /= shr_stream_mapalgo_consf    .and. &
                  streamdat(i)%mapalgo /= shr_stream_mapalgo_consd    .and. &
@@ -245,8 +245,8 @@ contains
           p => item(getElementsByTagname(streamnode, "tintalgo"), 0)
           if (associated(p)) then
              call extractDataContent(p, streamdat(i)%tInterpAlgo)
-             if (streamdat(i)%tInterpAlgo /= shr_stream_tinterp_lower   .and. &  
-                 streamdat(i)%tInterpAlgo /= shr_stream_tinterp_upper   .and. & 
+             if (streamdat(i)%tInterpAlgo /= shr_stream_tinterp_lower   .and. &
+                 streamdat(i)%tInterpAlgo /= shr_stream_tinterp_upper   .and. &
                  streamdat(i)%tInterpAlgo /= shr_stream_tinterp_nearest .and. &
                  streamdat(i)%tInterpAlgo /= shr_stream_tinterp_linear  .and. &
                  streamdat(i)%tInterpAlgo /= shr_stream_tinterp_coszen) then
@@ -783,7 +783,9 @@ contains
     character(*),parameter :: F04   = "('(shr_stream_findBounds) ',2a,i4)"
     !-------------------------------------------------------------------------------
 
-    if (debug>0) write(strm%logunit,F02) "DEBUG: ---------- enter ------------------"
+    if (debug>0 .and. isroot_task) then
+       write(strm%logunit,F02) "DEBUG: ---------- enter ------------------"
+    end if
 
     if ( .not. strm%init ) then
        call shr_sys_abort(trim(subName)//" ERROR: trying to find bounds of uninitialized stream")
@@ -828,9 +830,9 @@ contains
 
     dDateIn = dYear*10000 + modulo(mDateIn,10000) ! mDateIn mapped to range of data years
     rDateIn = dDateIn + secIn/spd                 ! dDateIn + fraction of a day
-    if(debug>0) then
-       write(strm%logunit,*) 'fbd1 ',mYear,dYear,dDateIn,rDateIn
-       write(strm%logunit,*) 'fbd2 ',yrFirst,yrLast,yrAlign,nYears
+    if (debug>0 .and. isroot_task) then
+       write(strm%logunit,'(a,2(i8,2x),2(f20.4,2x))') 'mYear,dYear,dDateIn,rDateIn  = ',mYear,dYear,dDateIn,rDateIn
+       write(strm%logunit,'(a,2(i8,2x),2(f20.4,2x))') 'yrFirst,yrLast,yrAlign,nYears= ',yrFirst,yrLast,yrAlign,nYears
     endif
 
     !----------------------------------------------------------------------------
@@ -865,8 +867,8 @@ contains
              call shr_sys_abort(trim(subName)//" ERROR: LVD not found, all data is after yearLast")
           end if
        end if
-       if (debug>1 ) then
-          if (strm%found_lvd) write(strm%logunit,F01) "DEBUG: found LVD = ",strm%file(k)%date(n)
+       if (debug>1 .and. isroot_task ) then
+          if (strm%found_lvd) write(strm%logunit,F01) " found LVD = ",strm%file(k)%date(n)
        end if
     end if
 
@@ -886,8 +888,8 @@ contains
     else
        rDategvd = 99991231.0
     endif
-    if(debug>0) then
-       write(strm%logunit,*) 'fbd3 ',rDateIn,rDatelvd,rDategvd
+    if (debug>0 .and. isroot_task) then
+       write(strm%logunit,'(a,3(f20.4,2x))') 'rDateIn,rDatelvd,rDategvd = ',rDateIn,rDatelvd,rDategvd
     endif
 
     !-----------------------------------------------------------
@@ -941,8 +943,8 @@ contains
                       strm%n_gvd = n
                       strm%found_gvd = .true.
                       rDategvd = strm%file(k)%date(n) + strm%file(k)%secs(n)/spd ! GVD date + frac day
-                      if (debug>1) then
-                         write(strm%logunit,F01) "DEBUG: found GVD ",strm%file(k)%date(n)
+                      if (debug>1 .and. isroot_task) then
+                         write(strm%logunit,F01) " found GVD ",strm%file(k)%date(n)
                       end if
                       exit B
                    end if
@@ -1210,7 +1212,7 @@ contains
 
     ! open file if needed
     if (.not. pio_file_is_open(strm%file(k)%fileid)) then
-       if (debug > 0 .and. isroot_task) then
+       if (debug>1 .and. isroot_task) then
           write(strm%logunit, '(a)') trim(subname)//' opening stream filename = '//trim(filename)
        end if
        rcode = pio_openfile(strm%pio_subsystem, strm%file(k)%fileid, strm%pio_iotype, filename, pio_nowrite)
@@ -1271,7 +1273,7 @@ contains
     deallocate(tvar)
 
     ! close file
-    if (debug > 0 .and. isroot_task) then
+    if (debug>1 .and. isroot_task) then
        write(strm%logunit, '(a)') trim(subname)//' closing stream filename = '//trim(filename)
     end if
     call pio_closefile(strm%file(k)%fileid)
@@ -1334,7 +1336,9 @@ contains
       !-------------------------------------------------------------------------------
 
       rc = 0
-      if (debug>1 ) write(strm%logunit,F01) "checking t-coordinate data   for file k =",k
+      if (debug>1 .and. isroot_task) then
+         write(strm%logunit,F01) "checking t-coordinate data   for file k =",k
+      end if
 
       if ( .not. strm%file(k)%haveData) then
          rc = 1
@@ -1356,7 +1360,7 @@ contains
                   date2 = strm%file(k  )%date(n)
                   secs2 = strm%file(k  )%secs(n)
                   checkIt = .true.
-                  if (debug>1 ) write(strm%logunit,F01) "comparing with previous file for file k =",k
+                  if (debug>1 .and. isroot_task) write(strm%logunit,F01) "comparing with previous file for file k =",k
                end if
             end if
          else if (n==strm%file(k)%nt+1) then
@@ -1369,7 +1373,7 @@ contains
                   date2 = strm%file(k+1)%date(1)
                   secs2 = strm%file(k+1)%secs(1)
                   checkIt = .true.
-                  if (debug>1 ) write(strm%logunit,F01) "comparing with next     file for file k =",k
+                  if (debug>1 .and. isroot_task) write(strm%logunit,F01) "comparing with next     file for file k =",k
                end if
             end if
          else
@@ -1405,7 +1409,8 @@ contains
          end if
       end do
 
-      if (debug>0) write(strm%logunit,F01) "data is OK (non-decreasing)  for file k =",k
+      if (debug>0 .and. isroot_task) write(strm%logunit,F01) "data is OK (non-decreasing)  for file k =",k
+
     end subroutine verifyTCoord
 
   end subroutine shr_stream_readTCoord
@@ -1681,10 +1686,13 @@ contains
     type(var_desc_t)     :: varid, tvarid, dvarid, ntvarid, hdvarid
     integer              :: rcode
     integer              :: dimid_stream, dimid_files,dimid_nt, dimid_str
-    integer              :: n, k, maxnfiles=0
+    integer              :: n,i, k, maxnfiles=0
     integer              :: maxnt = 0
     integer, allocatable :: tmp(:)
     character(len=CL)    :: fname
+    integer, allocatable :: itemp2d(:,:)
+    integer, allocatable :: itemp3d(:,:,:)
+    character(len=CL), allocatable :: ctemp2d(:,:)
     !-------------------------------------------------------------------------------
 
     if (mode .eq. 'define') then
@@ -1699,21 +1707,29 @@ contains
              endif
           enddo
        enddo
-       rcode = pio_def_dim(pioid, 'nt',   maxnt, dimid_nt)
-       rcode = pio_def_dim(pioid, 'nfiles',   maxnfiles, dimid_files)
+       rcode = pio_def_dim(pioid, 'nt'      , maxnt, dimid_nt)
+       rcode = pio_def_dim(pioid, 'nfiles'  , maxnfiles, dimid_files)
        rcode = pio_def_dim(pioid, 'nstreams', size(streams), dimid_stream)
-       rcode = pio_def_var(pioid, 'nt'    , PIO_INT, (/dimid_files, dimid_stream/), varid)
-       rcode = pio_def_var(pioid, 'nfiles',   PIO_INT, (/dimid_stream/), varid)
+
+       rcode = pio_def_var(pioid, 'ymdLB' ,   PIO_INT , (/dimid_stream/), varid)
+       rcode = pio_def_var(pioid, 'ymdUB' ,   PIO_INT , (/dimid_stream/), varid)
+       rcode = pio_def_var(pioid, 'todLB' ,   PIO_INT , (/dimid_stream/), varid)
+       rcode = pio_def_var(pioid, 'todUB' ,   PIO_INT , (/dimid_stream/), varid)
+       rcode = pio_def_var(pioid, 'nfiles',   PIO_INT , (/dimid_stream/), varid)
+       rcode = pio_def_var(pioid, 'offset',   PIO_INT , (/dimid_stream/), varid)
+       rcode = pio_def_var(pioid, 'k_lvd',    PIO_INT , (/dimid_stream/), varid)
+       rcode = pio_def_var(pioid, 'n_lvd',    PIO_INT , (/dimid_stream/), varid)
+       rcode = pio_def_var(pioid, 'k_gvd',    PIO_INT , (/dimid_stream/), varid)
+       rcode = pio_def_var(pioid, 'n_gvd',    PIO_INT , (/dimid_stream/), varid)
+       rcode = pio_def_var(pioid, 'nt'    ,   PIO_INT , (/dimid_files, dimid_stream/), varid)
+       rcode = pio_def_var(pioid, 'haveData', PIO_INT , (/dimid_files, dimid_stream/), varid)
        rcode = pio_def_var(pioid, 'filename', PIO_CHAR, (/dimid_str, dimid_files, dimid_stream/), varid)
-       rcode = pio_def_var(pioid, 'date',     PIO_INT, (/dimid_nt, dimid_files, dimid_stream/), varid)
-       rcode = pio_def_var(pioid, 'timeofday',PIO_INT, (/dimid_nt, dimid_files, dimid_stream/), varid)
-       rcode = pio_def_var(pioid, 'offset',   PIO_INT, (/dimid_stream/), varid)
-       rcode = pio_def_var(pioid, 'k_lvd',    PIO_INT, (/dimid_stream/), varid)
-       rcode = pio_def_var(pioid, 'n_lvd',    PIO_INT, (/dimid_stream/), varid)
-       rcode = pio_def_var(pioid, 'k_gvd',    PIO_INT, (/dimid_stream/), varid)
-       rcode = pio_def_var(pioid, 'n_gvd',    PIO_INT, (/dimid_stream/), varid)
-       rcode = pio_def_var(pioid, 'haveData', PIO_INT, (/dimid_files, dimid_stream/), varid)
+       rcode = pio_def_var(pioid, 'date',     PIO_INT , (/dimid_nt , dimid_files, dimid_stream/), varid)
+       rcode = pio_def_var(pioid, 'timeofday',PIO_INT , (/dimid_nt , dimid_files, dimid_stream/), varid)
+
     else if (mode .eq. 'write') then
+
+       ! write out nfiles
        rcode = pio_inq_varid(pioid, 'nfiles', varid)
        allocate(tmp(size(streams)))
        do k=1,size(streams)
@@ -1721,30 +1737,35 @@ contains
        enddo
        rcode = pio_put_var(pioid, varid, tmp)
 
+       ! write out offset
        rcode = pio_inq_varid(pioid, 'offset', varid)
        do k=1,size(streams)
           tmp(k) = streams(k)%offset
        enddo
        rcode = pio_put_var(pioid, varid, tmp)
 
+       ! write out k_lvd
        rcode = pio_inq_varid(pioid, 'k_lvd', varid)
        do k=1,size(streams)
           tmp(k) = streams(k)%k_lvd
        enddo
        rcode = pio_put_var(pioid, varid, tmp)
 
+       ! write out n_lvd
        rcode = pio_inq_varid(pioid, 'n_lvd', varid)
        do k=1,size(streams)
           tmp(k) = streams(k)%n_lvd
        enddo
        rcode = pio_put_var(pioid, varid, tmp)
 
+       ! write out k_gvd
        rcode = pio_inq_varid(pioid, 'k_gvd', varid)
        do k=1,size(streams)
           tmp(k) = streams(k)%k_gvd
        enddo
        rcode = pio_put_var(pioid, varid, tmp)
 
+       ! write out n_gvd
        rcode = pio_inq_varid(pioid, 'n_gvd', varid)
        do k=1,size(streams)
           tmp(k) = streams(k)%n_gvd
@@ -1752,43 +1773,100 @@ contains
        rcode = pio_put_var(pioid, varid, tmp)
        deallocate(tmp)
 
-       rcode = pio_inq_varid(pioid, 'filename', varid)
-       rcode = pio_inq_varid(pioid, 'date', dvarid)
-       rcode = pio_inq_varid(pioid, 'timeofday', tvarid)
-       rcode = pio_inq_varid(pioid, 'nt', ntvarid)
-       rcode = pio_inq_varid(pioid, 'haveData', hdvarid)
+       ! write out nt
+       allocate(itemp2d(maxnfiles, size(streams)))
+       itemp2d(:,:) = -999
        do k=1,size(streams)
           do n=1,streams(k)%nfiles
-             rcode = pio_put_var(pioid, varid, (/1,n,k/), streams(k)%file(n)%name)
-             rcode = pio_put_var(pioid, ntvarid, (/n,k/), streams(k)%file(n)%nt)
-             if (allocated(streams(k)%file(n)%date)) then
-                rcode = pio_put_var(pioid, dvarid, (/1,n,k/), (/streams(k)%file(n)%nt,1,1/),streams(k)%file(n)%date)
-             endif
-             if (allocated(streams(k)%file(n)%secs)) then
-                rcode = pio_put_var(pioid, tvarid, (/1,n,k/), (/streams(k)%file(n)%nt,1,1/),streams(k)%file(n)%secs)
-             endif
+             itemp2d(n,k) = streams(k)%file(n)%nt
+          end do
+       end do
+       rcode = pio_inq_varid(pioid, 'nt', varid)
+       rcode = pio_put_var(pioid, varid, itemp2d)
+       deallocate(itemp2d)
+
+       ! write out haveData
+       allocate(itemp2d(maxnfiles, size(streams)))
+       itemp2d(:,:) = -999
+       do k=1,size(streams)
+          do n=1,streams(k)%nfiles
              if(streams(k)%file(n)%haveData) then
-                rcode = pio_put_var(pioid, hdvarid, (/n,k/), 1)
+                itemp2d(n,k) = 1
              else
-                rcode = pio_put_var(pioid, hdvarid, (/n,k/), 0)
+                itemp2d(n,k) = 0
              endif
-          enddo
-       enddo
+          end do
+       end do
+       rcode = pio_inq_varid(pioid, 'haveData', varid)
+       rcode = pio_put_var(pioid, varid, itemp2d)
+       deallocate(itemp2d)
+
+       ! write out date
+       allocate(itemp3d(maxnt, maxnfiles, size(streams)))
+       itemp3d(:,:,:) = -999
+       do k=1,size(streams)
+          do n=1,streams(k)%nfiles
+             if (allocated(streams(k)%file(n)%date)) then
+                do i = 1,size(streams(k)%file(n)%date)
+                   itemp3d(i,n,k) = streams(k)%file(n)%date(i)
+                end do
+             end if
+          end do
+       end do
+       rcode = pio_inq_varid(pioid, 'date', varid)
+       rcode = pio_put_var(pioid, varid, itemp3d)
+       deallocate(itemp3d)
+
+       ! write out timeofday
+       allocate(itemp3d(maxnt, maxnfiles, size(streams)))
+       itemp3d(:,:,:) = -999
+       do k=1,size(streams)
+          do n=1,streams(k)%nfiles
+             if (allocated(streams(k)%file(n)%secs)) then
+                do i = 1,size(streams(k)%file(n)%secs)
+                   itemp3d(i,n,k) = streams(k)%file(n)%secs(i)
+                end do
+             end if
+          end do
+       end do
+       rcode = pio_inq_varid(pioid, 'timeofday', dvarid)
+       rcode = pio_put_var(pioid, dvarid, itemp3d)
+       deallocate(itemp3d)
+
+       ! write out filename
+       allocate(ctemp2d(maxnfiles, size(streams)))
+       ctemp2d(:,:) = 'unset'
+       do k = 1,size(streams)
+          do n = 1,streams(k)%nfiles
+             ctemp2d(n,k) = streams(k)%file(n)%name
+          end do
+       end do
+       rcode = pio_inq_varid(pioid, 'filename', varid)
+       do k = 1,size(streams)
+          do n = 1,maxnfiles 
+             rcode = pio_put_var(pioid, varid, (/1,n,k/), ctemp2d(n,k))
+          end do
+       end do
+       deallocate(ctemp2d)
+
     else if (mode .eq. 'read') then
+
+       ! Read in nfiles
        rcode = pio_inq_varid(pioid, 'nfiles', varid)
        allocate(tmp(size(streams)))
        rcode = pio_get_var(pioid, varid, tmp)
        do k=1,size(streams)
           if (streams(k)%nFiles /= tmp(k)) then
-             call shr_sys_abort('something is wrong')
+             call shr_sys_abort('ERROR reading in nfiles')
           endif
        enddo
 
+       ! read in offset
        rcode = pio_inq_varid(pioid, 'offset', varid)
        rcode = pio_get_var(pioid, varid, tmp)
        do k=1,size(streams)
           if (streams(k)%offset /= tmp(k)) then
-             call shr_sys_abort('something is wrong')
+             call shr_sys_abort('ERROR reading in offset')
           endif
        enddo
 
@@ -1797,7 +1875,7 @@ contains
        do k=1,size(streams)
           streams(k)%k_lvd = tmp(k)
           if (streams(k)%k_lvd /= tmp(k)) then
-             call shr_sys_abort('something is wrong')
+             call shr_sys_abort('ERROR reading in k_lvd')
           endif
        enddo
 
@@ -1806,7 +1884,7 @@ contains
        do k=1,size(streams)
           streams(k)%n_lvd = tmp(k)
           if (streams(k)%n_lvd /= tmp(k)) then
-             call shr_sys_abort('something is wrong')
+             call shr_sys_abort('ERROR reading in n_lvd')
           endif
        enddo
 
@@ -1815,7 +1893,7 @@ contains
        do k=1,size(streams)
           streams(k)%k_gvd = tmp(k)
           if (streams(k)%k_gvd /= tmp(k)) then
-             call shr_sys_abort('something is wrong')
+             call shr_sys_abort('ERROR reading in k_gvd')
           endif
        enddo
 
@@ -1824,50 +1902,66 @@ contains
        do k=1,size(streams)
           streams(k)%n_gvd = tmp(k)
           if (streams(k)%n_gvd /= tmp(k)) then
-             call shr_sys_abort('something is wrong')
+             call shr_sys_abort('ERROR reading in n_gvd')
           endif
        enddo
        deallocate(tmp)
 
-       rcode = pio_inq_varid(pioid, 'filename', varid)
-       rcode = pio_inq_varid(pioid, 'date', dvarid)
+       rcode = pio_inq_varid(pioid, 'filename' , varid)
+       rcode = pio_inq_varid(pioid, 'nt'       , ntvarid)
+       rcode = pio_inq_varid(pioid, 'date'     , dvarid)
        rcode = pio_inq_varid(pioid, 'timeofday', tvarid)
-       rcode = pio_inq_varid(pioid, 'nt', ntvarid)
-       rcode = pio_inq_varid(pioid, 'haveData', hdvarid)
+       rcode = pio_inq_varid(pioid, 'haveData' , hdvarid)
        do k=1,size(streams)
           do n=1,streams(k)%nfiles
+
+             ! read in filename
              rcode = pio_get_var(pioid, varid, (/1,n,k/), fname)
-             if(fname .ne. streams(k)%file(n)%name) Then
-                call shr_sys_abort('something is wrong')
+             if (trim(fname) /= trim(streams(k)%file(n)%name)) then
+                write(6,'(a)')' fname = '//trim(fname)
+                write(6,'(a,i8,2x,i8,2x,a)')' k,n,streams(k)%file(n)%name = ',k,n,trim(streams(k)%file(n)%name)
+                call shr_sys_abort('ERROR reading in filename')
              endif
+
+             ! read in nt
              allocate(tmp(1))
              rcode = pio_get_var(pioid, ntvarid, (/n,k/), tmp(1))
              streams(k)%file(n)%nt = tmp(1)
              if(tmp(1) /= streams(k)%file(n)%nt) then
-                call shr_sys_abort('something is wrong')
+                call shr_sys_abort('ERROR read in nt')
              endif
              deallocate(tmp)
+
              if (streams(k)%file(n)%nt > 0) then
+
+                ! Allocate memory
                 allocate(tmp(streams(k)%file(n)%nt))
+
+                ! Read in date
                 rcode = pio_get_var(pioid, dvarid, (/1,n,k/), (/streams(k)%file(n)%nt,1,1/),tmp)
                 streams(k)%file(n)%date = tmp
-                if (.not. allocated(streams(k)%file(n)%date) .or. &
-                     any(tmp .ne. streams(k)%file(n)%date) ) then
-                   call shr_sys_abort('something is wrong')
+                if (.not. allocated(streams(k)%file(n)%date) .or. any(tmp .ne. streams(k)%file(n)%date) ) then
+                   call shr_sys_abort('ERROR reading in date')
                 endif
+
+                ! Read in timeofday
                 rcode = pio_get_var(pioid, tvarid, (/1,n,k/), (/streams(k)%file(n)%nt,1,1/),tmp)
                 streams(k)%file(n)%secs = tmp
-                if (.not. allocated(streams(k)%file(n)%secs) .or. &
-                     any(tmp .ne. streams(k)%file(n)%secs) ) then
-                   call shr_sys_abort('something is wrong')
+                if (.not. allocated(streams(k)%file(n)%secs) .or. any(tmp .ne. streams(k)%file(n)%secs) ) then
+                   call shr_sys_abort('ERROR reaing in timeofday')
                 endif
+
+                ! Read in havedata
                 rcode = pio_get_var(pioid, hdvarid, (/n,k/), tmp(1))
                 if(tmp(1)==1) then
                    streams(k)%file(n)%havedata = .true.
                 else
                    streams(k)%file(n)%havedata = .false.
                 endif
+
+                ! Free memory
                 deallocate(tmp)
+
              endif
           enddo
        enddo
