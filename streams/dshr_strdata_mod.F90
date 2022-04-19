@@ -1386,6 +1386,17 @@ contains
 
     rc = ESMF_SUCCESS
 
+    ! nullify local pointers
+    nullify(dataptr)
+    nullify(dataptr1d)
+    nullify(dataptr2d)
+    nullify(dataptr2d_src)
+    nullify(dataptr2d_dst)
+    nullify(nv_coords)
+    nullify(nu_coords)
+    nullify(data_u_dst)
+    nullify(data_v_dst)
+
     ! Set up file to read from
     if (sdat%mainproc) then
        inquire(file=trim(fileName),exist=fileExists)
@@ -1815,7 +1826,6 @@ contains
     integer                     , intent(out)   :: rc
 
     ! local variables
-
     integer                 :: stream_nlev
     integer                 :: gsize2d
     integer                 :: pio_iovartype
@@ -1827,8 +1837,8 @@ contains
     integer, allocatable    :: dimlens(:)
     type(ESMF_DistGrid)     :: distGrid
     integer                 :: lsize
-    integer, pointer        :: compdof(:) => null()
-    integer, pointer        :: compdof3d(:) => null()
+    integer, pointer        :: compdof(:)
+    integer, pointer        :: compdof3d(:)
     integer                 :: rCode ! pio return code (only used when pio error handling is PIO_BCAST_ERROR)
     character(*), parameter :: subname = '(shr_strdata_set_stream_iodesc) '
     character(*), parameter :: F00  = "('(shr_strdata_set_stream_iodesc) ',a,i8,2x,i8,2x,a)"
@@ -1837,6 +1847,10 @@ contains
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
+
+    ! nullify local pointers
+    nullify(compdof)
+    nullify(compdof3d)
 
     ! set the number of vertical levels to a local variable
     stream_nlev = per_stream%stream_nlev
