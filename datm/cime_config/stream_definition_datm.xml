@@ -136,7 +136,8 @@
   ========================
   co2tseries.20tr
   co2tseries.20tr.latbnd
-  co2tseries.omip
+  co2tseries.omip.iaf
+  co2tseries.omip.jra
   co2tseries.SSP1-1.9
   co2tseries.SSP1-2.6
   co2tseries.SSP2-4.5

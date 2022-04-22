@@ -49,6 +49,7 @@ module datm_datamode_era5_mod
   real(r8), pointer :: Faxa_lat(:)          => null()
   real(r8), pointer :: Faxa_taux(:)         => null()
   real(r8), pointer :: Faxa_tauy(:)         => null()
+  real(r8), pointer :: Faxa_ndep(:,:)       => null()
 
   ! stream data
   real(r8), pointer :: strm_tdew(:)         => null()
