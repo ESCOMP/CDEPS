@@ -100,7 +100,7 @@ class StreamCDEPS(GenericXML):
 
         for line in lines_input_new:
             # read in a single line in user_nl_xxx_streams and parse it if it is not a comment
-            stream_mods = [x.strip() for x in line.strip().split(":") if x]
+            stream_mods = [x.strip() for x in line.strip().split(":",maxsplit=1) if x]
             expect(len(stream_mods) == 2,
                    "input stream mod can only be of the form streamname:var=value(s)")
             stream,varmod = stream_mods
