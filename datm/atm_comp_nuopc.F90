@@ -407,7 +407,7 @@ contains
     ! Initialize and update orbital values
     call dshr_orbital_init(gcomp, logunit, my_task == main_task, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call dshr_orbital_update(clock, logunit, my_task == main_task, &
+    call dshr_orbital_update(currTime, logunit, my_task == main_task, &
          orbEccen, orbObliqr, orbLambm0, orbMvelpp, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
@@ -485,7 +485,7 @@ contains
     call shr_cal_ymd2date(yr, mon, day, next_ymd)
 
     ! Update the orbital values
-    call dshr_orbital_update(clock, logunit, my_task == main_task, &
+    call dshr_orbital_update(nextTime, logunit, my_task == main_task, &
          orbEccen, orbObliqr, orbLambm0, orbMvelpp, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 

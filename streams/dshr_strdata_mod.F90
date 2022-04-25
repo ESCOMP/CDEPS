@@ -425,7 +425,7 @@ contains
           end if
        endif
        !
-       ! We do not yet have mask information, but we are required to set it here and change it 
+       ! We do not yet have mask information, but we are required to set it here and change it
        ! later.
        !
        if(filename /= 'none') then
@@ -827,10 +827,9 @@ contains
     integer                ,intent(out)         :: rc
 
     ! local variables
-
     integer                             :: ns               ! stream index
     integer                             :: nf               ! field index
-    integer                             :: i,lev            ! generic indices
+    integer                             :: i,lev,n          ! generic indices
     logical , allocatable               :: newData(:)
     integer , allocatable               :: ymdmod(:)        ! modified model dates to handle Feb 29
     real(r8), allocatable               :: coszen(:)        ! cosine of zenith angle
@@ -1009,8 +1008,15 @@ contains
              ! get coszen
              call ESMF_TraceRegionEnter(trim(lstr)//trim(timname)//'_coszenC')
              call shr_tInterp_getCosz(coszen, sdat%model_lon, sdat%model_lat, ymdmod(ns), todmod, &
-                  sdat%eccen, sdat%mvelpp, sdat%lambm0, sdat%obliqr, sdat%stream(ns)%calendar)
+                  sdat%eccen, sdat%mvelpp, sdat%lambm0, sdat%obliqr, sdat%stream(ns)%calendar, &
+                  sdat%mainproc, sdat%logunit)
              call ESMF_TraceRegionExit(trim(lstr)//trim(timname)//'_coszenC')
+             if (debug > 0 .and. sdat%mainproc) then
+                do n = 1,size(coszen)
+                   write(sdat%logunit,'(a,i4,2x,2(i18,2x),i8,d20.10)')' stream,ymdmod,todmod,n,coszen= ',&
+                        ns, ymd, tod, n, coszen(n)
+                end do
+             end if
 
              ! get avg cosz factor
              if (newdata(ns)) then
@@ -1022,8 +1028,15 @@ contains
                 call shr_tInterp_getAvgCosz(sdat%tavCoszen, sdat%model_lon, sdat%model_lat,  &
                      sdat%pstrm(ns)%ymdLB, sdat%pstrm(ns)%todLB,  sdat%pstrm(ns)%ymdUB, sdat%pstrm(ns)%todUB,  &
                      sdat%eccen, sdat%mvelpp, sdat%lambm0, sdat%obliqr, sdat%modeldt, &
-                     sdat%stream(ns)%calendar, rc=rc)
+                     sdat%stream(ns)%calendar, sdat%mainproc, sdat%logunit, rc=rc)
                 call ESMF_TraceRegionExit(trim(lstr)//trim(timname)//'_coszenN')
+                if (debug > 0 .and. sdat%mainproc) then
+                   do n = 1,size(coszen)
+                      write(sdat%logunit,'(a,i4,2x,4(i18,2x),i8,d20.10)')' stream,lbymd,lbsec,ubymd,ubsec,newdata,n,tavgCoszen= ',&
+                           ns, sdat%pstrm(ns)%ymdLB, sdat%pstrm(ns)%todLB, sdat%pstrm(ns)%ymdUB, sdat%pstrm(ns)%todUB, &
+                           n, sdat%tavCoszen(n)
+                   end do
+                end if
              endif
 
              ! compute time interperpolate value - LB data normalized with this factor: cosz/tavCosz
@@ -1075,7 +1088,8 @@ contains
                   algo=trim(sdat%stream(ns)%tinterpalgo), rc=rc)
              if (chkerr(rc,__LINE__,u_FILE_u)) return
              if (debug > 0 .and. sdat%mainproc) then
-                write(sdat%logunit,F01) trim(subname),' interp = ',ns,flb,fub
+                write(sdat%logunit,'(a,i4,2(f10.5,2x))') &
+                     trim(subname)//' non-cosz-interp stream, flb, fub= ',ns,flb,fub
              endif
              do nf = 1,size(sdat%pstrm(ns)%fldlist_model)
                 if (sdat%pstrm(ns)%stream_nlev > 1) then
@@ -1238,6 +1252,7 @@ contains
     character(CL)                        :: filename_ub
     character(CL)                        :: filename_next
     character(CL)                        :: filename_prev
+    logical                              :: find_bounds
     character(*), parameter              :: subname = '(shr_strdata_readLBUB) '
     character(*), parameter              :: F00   = "('(shr_strdata_readLBUB) ',8a)"
     character(*), parameter              :: F01   = "('(shr_strdata_readLBUB) ',a,5i8)"
@@ -1272,17 +1287,34 @@ contains
     call ESMF_TraceRegionExit(trim(istr)//'_setup')
 
     ! if model current date is outside of model lower or upper bound - find the stream bounds
-    if (rDateM < rDateLB .or. rDateM > rDateUB) then
+    find_bounds = (rDateM < rDateLB .or. rDateM >= rDateUB)
+    if (debug > 0 .and. sdat%mainproc) then
+       write(sdat%logunit,'(a,i4,2x,6(i18,2x),l7)')' stream,lbymd,lbsec,mdate,msec,ubymd,ubsec,newdata= ',ns,&
+            sdat%pstrm(ns)%ymdLB,sdat%pstrm(ns)%todLB, &
+            mdate,msec, &
+            sdat%pstrm(ns)%ymdUB,sdat%pstrm(ns)%todUB,find_bounds
+       write(sdat%logunit,'(a,i4,2x,3(f20.3,2x),l7)')' stream,rdateLB,rdateM,rdateUB,newdata= ',&
+            ns,rdateLB,rdateM,rdateUB,find_bounds
+    end if
+    if (find_bounds) then
        call ESMF_TraceRegionEnter(trim(istr)//'_fbound')
        call shr_stream_findBounds(stream, mDate, mSec,  sdat%mainproc, &
             sdat%pstrm(ns)%ymdLB, dDateLB, sdat%pstrm(ns)%todLB, n_lb, filename_lb, &
             sdat%pstrm(ns)%ymdUB, dDateUB, sdat%pstrm(ns)%todUB, n_ub, filename_ub)
        call ESMF_TraceRegionExit(trim(istr)//'_fbound')
+       if (debug > 0 .and. sdat%mainproc) then
+          write(sdat%logunit,'(a,i4,2x,6(i18,2x),l7)')' stream,lbymd,lbsec,mdate,msec,ubymd,ubsec,newdata= ',ns,&
+               sdat%pstrm(ns)%ymdLB,sdat%pstrm(ns)%todLB,&
+               mdate,msec, &
+               sdat%pstrm(ns)%ymdUB,sdat%pstrm(ns)%todUB
+          write(sdat%logunit,'(a,i4,2x,3(f20.3,2x),l7)')' stream,rdateLB,rdateM,rdateUB,newdata= ',&
+               ns,rdateLB,rdateM,rdateUB,find_bounds
+       end if
     endif
 
     ! determine if need to read in new stream data
-    if (sdat%pstrm(ns)%ymdLB /= oDateLB .or. sdat%pstrm(ns)%todLB /= oSecLB) then
-       newdata = .true.
+    newdata = (sdat%pstrm(ns)%ymdLB /= oDateLB .or. sdat%pstrm(ns)%todLB /= oSecLB)
+    if (newdata) then
        if (sdat%pstrm(ns)%ymdLB == oDateUB .and. sdat%pstrm(ns)%todLB == oSecUB) then
           ! copy fldbun_stream_ub to fldbun_stream_lb
           i = sdat%pstrm(ns)%stream_ub
@@ -1297,8 +1329,8 @@ contains
        end if
     endif
 
-    if (sdat%pstrm(ns)%ymdUB /= oDateUB .or. sdat%pstrm(ns)%todUB /= oSecUB) then
-       newdata = .true.
+    if (newdata) then
+       ! read upper bound of data
        call shr_strdata_readstrm(sdat, sdat%pstrm(ns), stream, &
             sdat%pstrm(ns)%fldbun_data(sdat%pstrm(ns)%stream_ub), &
             filename_ub, n_ub, istr=trim(istr)//'_UB', boundstr='ub', rc=rc)
