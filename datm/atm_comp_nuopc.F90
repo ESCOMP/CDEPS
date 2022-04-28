@@ -774,7 +774,7 @@ contains
                if (ChkErr(rc,__LINE__,u_FILE_u)) return
             case('Faxa_ndep')
                strm_flds2 = (/'Faxa_ndep_nhx', 'Faxa_ndep_noy'/)
-               call dshr_dfield_add(dfields, sdat, trim(lfieldnames(n)), strm_flds2, exportState, logunit, masterproc, rc)
+               call dshr_dfield_add(dfields, sdat, trim(lfieldnames(n)), strm_flds2, exportState, logunit, mainproc, rc)
                if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
             end select
