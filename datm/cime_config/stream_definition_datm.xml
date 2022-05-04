@@ -181,12 +181,17 @@
   presndep.clim_2000
   presndep.clim_2010
   presndep.hist
-  presozone.hist
   presndep.SSP1-2.6
   presndep.SSP2-4.5
   presndep.SSP3-7.0
   presndep.SSP5-8.5
   presndep.cplhist
+
+  ========================
+  optional stream ozone
+  - DATM_NDEP is set by the 4 character time prefix in config_component.xml
+  ========================
+  presozone.hist
 
   ========================
   optional stream topo (turned on and stream specified by xml variable DATM_TOPO)
@@ -4001,15 +4006,15 @@
   </stream_entry>
 
   <!-- ===================-->
-  <!--  presozone forcing streams -->
+  <!--  preso3 forcing streams -->
   <!-- ===================-->
 
-  <stream_entry name="presozone.2000">
+  <stream_entry name="preso3.clim_2000">
     <stream_meshfile>
       <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file>/glade/work/dll/O3ForcingFiles/full_transient_surface_ozone_rcp85_1.9x2.5.nc</file>
+      <file>/glade/work/mvertens/ozone_damage_files/O3_surface.f09_g17.CMIP6-historical-WACCM.001.monthly.185001-201412.cdf5.no_lev.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>O3  Sa_o3</var>

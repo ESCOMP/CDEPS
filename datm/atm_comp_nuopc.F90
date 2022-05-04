@@ -124,6 +124,7 @@ module cdeps_datm_comp
   character(CL)                :: factorFn_data = 'null'              ! file containing correction factors data
   logical                      :: flds_presaero = .false.             ! true => send valid prescribed aero fields to mediator
   logical                      :: flds_presndep = .false.             ! true => send valid prescribed ndep fields to mediator
+  logical                      :: flds_preso3 = .false.               ! true => send valid prescribed ozone fields to mediator
   logical                      :: flds_co2 = .false.                  ! true => send prescribed co2 to mediator
   logical                      :: flds_wiso = .false.                 ! true => send water isotopes to mediator
   character(CL)                :: bias_correct = nullstr              ! send bias correction fields to coupler
@@ -230,7 +231,7 @@ contains
          model_meshfile, model_maskfile, &
          nx_global, ny_global, restfilm, iradsw, factorFn_data, factorFn_mesh, &
          flds_presaero, flds_co2, flds_wiso, bias_correct, anomaly_forcing, &
-         skip_restart_read, flds_presndep
+         skip_restart_read, flds_presndep, flds_preso3
 
     rc = ESMF_SUCCESS
 
@@ -270,6 +271,7 @@ contains
     call shr_mpi_bcast(restfilm                  , mpicom, 'restfilm')
     call shr_mpi_bcast(flds_presaero             , mpicom, 'flds_presaero')
     call shr_mpi_bcast(flds_presndep             , mpicom, 'flds_presndep')
+    call shr_mpi_bcast(flds_preso3               , mpicom, 'flds_preso3')
     call shr_mpi_bcast(flds_co2                  , mpicom, 'flds_co2')
     call shr_mpi_bcast(flds_wiso                 , mpicom, 'flds_wiso')
     call shr_mpi_bcast(skip_restart_read         , mpicom, 'skip_restart_read')
@@ -288,6 +290,7 @@ contains
        write(logunit,F00)' factorFn_mesh  = ',trim(factorFn_mesh)
        write(logunit,F02)' flds_presaero  = ',flds_presaero
        write(logunit,F02)' flds_presndep  = ',flds_presndep
+       write(logunit,F02)' flds_preso3    = ',flds_preso3
        write(logunit,F02)' flds_co2       = ',flds_co2
        write(logunit,F02)' flds_wiso      = ',flds_wiso
        write(logunit,F02)' skip_restart_read = ',skip_restart_read
@@ -319,11 +322,11 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('CLMNCEP')
        call datm_datamode_clmncep_advertise(exportState, fldsExport, flds_scalar_name, &
-            flds_co2, flds_wiso, flds_presaero, flds_presndep, rc)
+            flds_co2, flds_wiso, flds_presaero, flds_presndep, flds_preso3, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('CPLHIST')
        call datm_datamode_cplhist_advertise(exportState, fldsExport, flds_scalar_name, &
-            flds_co2, flds_wiso, flds_presaero, flds_presndep, rc)
+            flds_co2, flds_wiso, flds_presaero, flds_presndep, flds_preso3, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('ERA5')
        call datm_datamode_era5_advertise(exportState, fldsExport, flds_scalar_name, rc)

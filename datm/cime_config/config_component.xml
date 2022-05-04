@@ -112,7 +112,7 @@
     <desc>DATM prescribed nitrogen deposition forcing</desc>
   </entry>
 
-  <entry id="DATM_PRESOZONE">
+  <entry id="DATM_PRESO3">
     <type>char</type>
     <valid_values>none,clim_2000</valid_values>
     <default_value>clim_2000</default_value>
