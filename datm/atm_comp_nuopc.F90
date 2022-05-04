@@ -326,7 +326,7 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('CPLHIST')
        call datm_datamode_cplhist_advertise(exportState, fldsExport, flds_scalar_name, &
-            flds_co2, flds_wiso, flds_presaero, flds_presndep, flds_preso3, rc)
+            flds_co2, flds_wiso, flds_presaero, flds_presndep, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('ERA5')
        call datm_datamode_era5_advertise(exportState, fldsExport, flds_scalar_name, rc)
@@ -777,7 +777,7 @@ contains
                if (ChkErr(rc,__LINE__,u_FILE_u)) return
             case('Faxa_ndep')
                strm_flds2 = (/'Faxa_ndep_nhx', 'Faxa_ndep_noy'/)
-               call dshr_dfield_add(dfields, sdat, trim(lfieldnames(n)), strm_flds2, exportState, logunit, masterproc, rc)
+               call dshr_dfield_add(dfields, sdat, trim(lfieldnames(n)), strm_flds2, exportState, logunit, mainproc, rc)
                if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
             end select
