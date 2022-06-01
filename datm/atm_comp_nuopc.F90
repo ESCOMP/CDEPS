@@ -131,6 +131,7 @@ module cdeps_datm_comp
   character(CL)                :: restfilm = nullstr                  ! model restart file namelist
   integer                      :: nx_global                           ! global nx
   integer                      :: ny_global                           ! global ny
+  logical                      :: skip_restart_read = .false.         ! true => skip restart read in continuation run
 
   ! linked lists
   type(fldList_type) , pointer :: fldsImport => null()
@@ -227,7 +228,8 @@ contains
     namelist / datm_nml / datamode, &
          model_meshfile, model_maskfile, &
          nx_global, ny_global, restfilm, iradsw, factorFn_data, factorFn_mesh, &
-         flds_presaero, flds_co2, flds_wiso, bias_correct, anomaly_forcing
+         flds_presaero, flds_co2, flds_wiso, bias_correct, anomaly_forcing, &
+         skip_restart_read
 
     rc = ESMF_SUCCESS
 
@@ -268,6 +270,7 @@ contains
     call shr_mpi_bcast(flds_presaero             , mpicom, 'flds_presaero')
     call shr_mpi_bcast(flds_co2                  , mpicom, 'flds_co2')
     call shr_mpi_bcast(flds_wiso                 , mpicom, 'flds_wiso')
+    call shr_mpi_bcast(skip_restart_read         , mpicom, 'skip_restart_read')
 
     ! write namelist input to standard out
     if (my_task == main_task) then
@@ -284,6 +287,7 @@ contains
        write(logunit,F02)' flds_presaero  = ',flds_presaero
        write(logunit,F02)' flds_co2       = ',flds_co2
        write(logunit,F02)' flds_wiso      = ',flds_wiso
+       write(logunit,F02)' skip_restart_read = ',skip_restart_read
     end if
 
     ! Validate sdat datamode
@@ -403,7 +407,7 @@ contains
     ! Initialize and update orbital values
     call dshr_orbital_init(gcomp, logunit, my_task == main_task, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call dshr_orbital_update(clock, logunit, my_task == main_task, &
+    call dshr_orbital_update(currTime, logunit, my_task == main_task, &
          orbEccen, orbObliqr, orbLambm0, orbMvelpp, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
@@ -481,7 +485,7 @@ contains
     call shr_cal_ymd2date(yr, mon, day, next_ymd)
 
     ! Update the orbital values
-    call dshr_orbital_update(clock, logunit, my_task == main_task, &
+    call dshr_orbital_update(nextTime, logunit, my_task == main_task, &
          orbEccen, orbObliqr, orbLambm0, orbMvelpp, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
@@ -573,7 +577,7 @@ contains
        end select
 
        ! Read restart if needed
-       if (restart_read) then
+       if (restart_read .and. .not. skip_restart_read) then
           select case (trim(datamode))
           case('CORE2_NYF','CORE2_IAF')
              call datm_datamode_core2_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)

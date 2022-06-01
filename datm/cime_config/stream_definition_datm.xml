@@ -37,6 +37,9 @@
   CORE2_IAF             = CORE2 intra-annual year forcing (for forcing POP and CICE)
   CORE_IAF_JRA          = JRA55 intra-annual year forcing (for forcing POP and CICE)
   CORE_IAF_JRA_1p4_2018 = JRA55 intra-annual year forcing, v1.4, through 2018 (for forcing POP and CICE)
+  CORE_RYF8485_JRA      = JRA55 repeat year forcing, v1.3, 1984-1985 (for forcing POP and CICE)
+  CORE_RYF9091_JRA      = JRA55 repeat year forcing, v1.3, 1990-1991 (for forcing POP and CICE)
+  CORE_RYF0304_JRA      = JRA55 repeat year forcing, v1.3, 2003-2004 (for forcing POP and CICE)
   ERA5                  = ERA5 intra-annual year forcing
   CPLHIST               = Streams for lnd or ocn/ice forcing used for spinup
 
@@ -1291,7 +1294,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>1</stream_year_first>
     <stream_year_last>1</stream_year_last>
@@ -1322,7 +1325,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>1</stream_year_first>
     <stream_year_last>1</stream_year_last>
@@ -1358,7 +1361,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>Sa_u:Sa_v</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>1</stream_year_first>
     <stream_year_last>1</stream_year_last>
@@ -1393,7 +1396,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>2010</stream_year_first>
     <stream_year_last>2011</stream_year_last>
@@ -1424,7 +1427,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>2010</stream_year_first>
     <stream_year_last>2011</stream_year_last>
@@ -1455,7 +1458,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>2010</stream_year_first>
     <stream_year_last>2011</stream_year_last>
@@ -1486,7 +1489,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>2010</stream_year_first>
     <stream_year_last>2011</stream_year_last>
@@ -1517,7 +1520,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>2010</stream_year_first>
     <stream_year_last>2011</stream_year_last>
@@ -1548,7 +1551,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>2010</stream_year_first>
     <stream_year_last>2011</stream_year_last>
@@ -1579,7 +1582,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>2010</stream_year_first>
     <stream_year_last>2011</stream_year_last>
@@ -1610,7 +1613,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>2010</stream_year_first>
     <stream_year_last>2011</stream_year_last>
@@ -1641,7 +1644,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>2010</stream_year_first>
     <stream_year_last>2011</stream_year_last>
@@ -1672,7 +1675,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>2010</stream_year_first>
     <stream_year_last>2011</stream_year_last>
@@ -1704,7 +1707,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>1948</stream_year_first>
     <stream_year_last>2009</stream_year_last>
@@ -1736,7 +1739,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>1948</stream_year_first>
     <stream_year_last>2009</stream_year_last>
@@ -1768,7 +1771,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>1948</stream_year_first>
     <stream_year_last>2009</stream_year_last>
@@ -1800,7 +1803,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>1948</stream_year_first>
     <stream_year_last>2009</stream_year_last>
@@ -1834,7 +1837,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>1948</stream_year_first>
     <stream_year_last>2009</stream_year_last>
@@ -1868,7 +1871,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>1948</stream_year_first>
     <stream_year_last>2009</stream_year_last>
@@ -1902,7 +1905,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>1948</stream_year_first>
     <stream_year_last>2009</stream_year_last>
@@ -1936,7 +1939,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>1948</stream_year_first>
     <stream_year_last>2009</stream_year_last>
@@ -1970,7 +1973,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>1948</stream_year_first>
     <stream_year_last>2009</stream_year_last>
@@ -2004,7 +2007,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>1948</stream_year_first>
     <stream_year_last>2009</stream_year_last>
@@ -2035,7 +2038,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>1948</stream_year_first>
     <stream_year_last>2009</stream_year_last>
@@ -2078,7 +2081,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>1958</stream_year_first>
     <stream_year_last>2018</stream_year_last>
@@ -2109,7 +2112,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>1958</stream_year_first>
     <stream_year_last>2018</stream_year_last>
@@ -2140,7 +2143,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>1958</stream_year_first>
     <stream_year_last>2018</stream_year_last>
@@ -2171,7 +2174,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>1958</stream_year_first>
     <stream_year_last>2018</stream_year_last>
@@ -2202,7 +2205,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>1958</stream_year_first>
     <stream_year_last>2018</stream_year_last>
@@ -2233,7 +2236,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>1958</stream_year_first>
     <stream_year_last>2018</stream_year_last>
@@ -2264,7 +2267,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>1958</stream_year_first>
     <stream_year_last>2018</stream_year_last>
@@ -2295,10 +2298,406 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>1958</stream_year_first>
     <stream_year_last>2018</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <!-- ================================ -->
+  <!-- datm_mode CORE_RYF8485_JRA -->
+  <!-- ================================ -->
+
+  <stream_entry name="CORE_RYF8485_JRA.GISS.LWDN">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/ocn/jra55/v1.3_ryf/RAF_8485.JRA.v1.3.radiation.lwdn.TL319.180404.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>lwdn  Faxa_lwdn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1984</stream_year_first>
+    <stream_year_last>1984</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE_RYF8485_JRA.GISS.SWDN">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/ocn/jra55/v1.3_ryf/RAF_8485.JRA.v1.3.radiation.swdn.TL319.180404.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>swdn  Faxa_swdn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1984</stream_year_first>
+    <stream_year_last>1984</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE_RYF8485_JRA.GCGCS">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/ocn/jra55/v1.3_ryf/RAF_8485.JRA.v1.3.prec.TL319.180404.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>prec  Faxa_prec</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1984</stream_year_first>
+    <stream_year_last>1984</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE_RYF8485_JRA.NCEP">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/ocn/jra55/v1.3_ryf/RAF_8485.JRA.v1.3.states.TL319.180404.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>u_10  Sa_u</var>
+      <var>v_10  Sa_v</var>
+      <var>t_10  Sa_tbot</var>
+      <var>q_10  Sa_shum</var>
+      <var>slp   Sa_pslv</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>Sa_u:Sa_v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1984</stream_year_first>
+    <stream_year_last>1984</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <!-- ================================ -->
+  <!-- datm_mode CORE_RYF9091_JRA -->
+  <!-- ================================ -->
+
+  <stream_entry name="CORE_RYF9091_JRA.GISS.LWDN">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/ocn/jra55/v1.3_ryf/RAF_9091.JRA.v1.3.radiation.lwdn.TL319.180404.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>lwdn  Faxa_lwdn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1990</stream_year_first>
+    <stream_year_last>1990</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE_RYF9091_JRA.GISS.SWDN">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/ocn/jra55/v1.3_ryf/RAF_9091.JRA.v1.3.radiation.swdn.TL319.180404.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>swdn  Faxa_swdn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1990</stream_year_first>
+    <stream_year_last>1990</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE_RYF9091_JRA.GCGCS">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/ocn/jra55/v1.3_ryf/RAF_9091.JRA.v1.3.prec.TL319.180404.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>prec  Faxa_prec</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1990</stream_year_first>
+    <stream_year_last>1990</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE_RYF9091_JRA.NCEP">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/ocn/jra55/v1.3_ryf/RAF_9091.JRA.v1.3.states.TL319.180404.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>u_10  Sa_u</var>
+      <var>v_10  Sa_v</var>
+      <var>t_10  Sa_tbot</var>
+      <var>q_10  Sa_shum</var>
+      <var>slp   Sa_pslv</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>Sa_u:Sa_v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1990</stream_year_first>
+    <stream_year_last>1990</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <!-- ================================ -->
+  <!-- datm_mode CORE_RYF0304_JRA -->
+  <!-- ================================ -->
+
+  <stream_entry name="CORE_RYF0304_JRA.GISS.LWDN">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/ocn/jra55/v1.3_ryf/RAF_0304.JRA.v1.3.radiation.lwdn.TL319.180404.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>lwdn  Faxa_lwdn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>2003</stream_year_first>
+    <stream_year_last>2003</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE_RYF0304_JRA.GISS.SWDN">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/ocn/jra55/v1.3_ryf/RAF_0304.JRA.v1.3.radiation.swdn.TL319.180404.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>swdn  Faxa_swdn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>2003</stream_year_first>
+    <stream_year_last>2003</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE_RYF0304_JRA.GCGCS">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/ocn/jra55/v1.3_ryf/RAF_0304.JRA.v1.3.prec.TL319.180404.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>prec  Faxa_prec</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>2003</stream_year_first>
+    <stream_year_last>2003</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE_RYF0304_JRA.NCEP">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/ocn/jra55/v1.3_ryf/RAF_0304.JRA.v1.3.states.TL319.180404.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>u_10  Sa_u</var>
+      <var>v_10  Sa_v</var>
+      <var>t_10  Sa_tbot</var>
+      <var>q_10  Sa_shum</var>
+      <var>slp   Sa_pslv</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>Sa_u:Sa_v</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>2003</stream_year_first>
+    <stream_year_last>2003</stream_year_last>
     <stream_offset>0</stream_offset>
     <stream_tintalgo>
       <tintalgo>linear</tintalgo>
@@ -2330,7 +2729,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>1958</stream_year_first>
     <stream_year_last>2016</stream_year_last>
@@ -2361,7 +2760,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>1958</stream_year_first>
     <stream_year_last>2016</stream_year_last>
@@ -2392,7 +2791,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>1958</stream_year_first>
     <stream_year_last>2016</stream_year_last>
@@ -2423,7 +2822,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>1958</stream_year_first>
     <stream_year_last>2016</stream_year_last>
@@ -2454,7 +2853,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>1958</stream_year_first>
     <stream_year_last>2016</stream_year_last>
@@ -2485,7 +2884,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>1958</stream_year_first>
     <stream_year_last>2016</stream_year_last>
@@ -2516,7 +2915,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>1958</stream_year_first>
     <stream_year_last>2016</stream_year_last>
@@ -2547,7 +2946,7 @@
     <stream_mapalgo>
       <mapalgo>bilinear</mapalgo>
     </stream_mapalgo>
-    <stream_vectors>u:v</stream_vectors>
+    <stream_vectors>null</stream_vectors>
     <stream_year_align>1</stream_year_align>
     <stream_year_first>1958</stream_year_first>
     <stream_year_last>2016</stream_year_last>

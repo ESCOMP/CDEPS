@@ -15,7 +15,7 @@ _CDEPS_CONFIG = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pard
 _CIMEROOT = os.environ.get("CIMEROOT")
 if _CIMEROOT is None:
     raise SystemExit("ERROR: must set CIMEROOT environment variable")
-_LIBDIR = os.path.join(_CIMEROOT, "scripts", "Tools")
+_LIBDIR = os.path.join(_CIMEROOT, "CIME", "Tools")
 sys.path.append(_LIBDIR)
 sys.path.append(_CDEPS_CONFIG)
 

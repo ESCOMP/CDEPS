@@ -384,7 +384,13 @@ contains
        Sa_ptem(n) = Sa_tbot(n)
 
        !--- pressure ---
-       if (.not. associated(strm_pbot)) Sa_pbot(n) = pstd
+       if (.not. associated(strm_pbot)) then
+          Sa_pbot(n) = pstd
+       else if (Sa_pbot(n) == 0._r8) then
+          ! This happens if you are using points over ocean where the mask is 0
+          Sa_pbot(n) = pstd
+       end if
+
        Sa_pslv(n) = Sa_pbot(n)
 
        !--- u, v wind velocity ---
