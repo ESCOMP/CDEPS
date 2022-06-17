@@ -21,6 +21,9 @@
       <value drof_mode="DIATREN_IAF_AIS55_RX1">rof.diatren_iaf_ais55_rx1</value>
       <value drof_mode="IAF_JRA_1p4_2018"     >rof.iaf_jra_1p4_2018</value>
       <value drof_mode="IAF_JRA"              >rof.iaf_jra</value>
+      <value drof_mode="RYF8485_JRA"          >rof.ryf8485_jra</value>
+      <value drof_mode="RYF9091_JRA"          >rof.ryf9091_jra</value>
+      <value drof_mode="RYF0304_JRA"          >rof.ryf0304_jra</value>
     </values>
   </entry>
 
