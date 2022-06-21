@@ -204,6 +204,14 @@ contains
     call dshr_state_getfldptr(exportState, 'Faxa_swnet' , fldptr1=Faxa_swnet , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
+    call ESMF_StateGet(importstate, 'Faxa_ndep', itemFlag, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (itemflag /= ESMF_STATEITEM_NOTFOUND) then
+       call dshr_state_getfldptr(exportState, 'Faxa_ndep', fldptr2=Faxa_ndep, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    end if
+
+    ! erro check
     if (.not. associated(strm_prec) .or. .not. associated(strm_swdn)) then
        call shr_sys_abort(trim(subname)//'ERROR: prec and swdn must be in streams for CORE_IAF_JRA')
     endif
@@ -266,6 +274,11 @@ contains
        avg_alb = ( 0.069 - 0.011*cos(2.0_R8*yc(n)*degtorad ) )
        Faxa_swnet(n) = strm_swdn(n)*(1.0_R8 - avg_alb)
     enddo   ! lsize
+
+    if (associated(Faxa_ndep)) then
+       ! convert ndep flux to units of kgN/m2/s (input is in gN/m2/s)
+       Faxa_ndep(:,:) = Faxa_ndep(:,:) / 1000._r8
+    end if
 
   end subroutine datm_datamode_jra_advance
 

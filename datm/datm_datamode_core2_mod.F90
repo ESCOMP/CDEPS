@@ -247,6 +247,13 @@ contains
     call dshr_state_getfldptr(exportState, 'Faxa_lwdn'  , fldptr1=Faxa_lwdn  , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
+    call ESMF_StateGet(importstate, 'Faxa_ndep', itemFlag, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (itemflag /= ESMF_STATEITEM_NOTFOUND) then
+       call dshr_state_getfldptr(exportState, 'Faxa_ndep', fldptr2=Faxa_ndep, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    end if
+
     if (.not. associated(strm_prec) .or. .not. associated(strm_swdn)) then
        call shr_sys_abort(trim(subname)//'ERROR: prec and swdn must be in streams for CORE2')
     endif
@@ -379,6 +386,11 @@ contains
        endif
 
     enddo   ! lsize
+
+    if (associated(Faxa_ndep)) then
+       ! convert ndep flux to units of kgN/m2/s (input is in gN/m2/s)
+       Faxa_ndep(:,:) = Faxa_ndep(:,:) / 1000._r8
+    end if
 
   end subroutine datm_datamode_core2_advance
 

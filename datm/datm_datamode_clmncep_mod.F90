@@ -301,6 +301,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Faxa_lwdn'  , fldptr1=Faxa_lwdn  , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
     call ESMF_StateGet(importstate, 'Faxa_ndep', itemFlag, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (itemflag /= ESMF_STATEITEM_NOTFOUND) then
@@ -561,7 +562,7 @@ contains
     ! bias correction / anomaly forcing ( end block )
 
     if (associated(Faxa_ndep)) then
-       ! Convert send ndep flux to units if kgN/m2/s (input is in gN/m2/s)
+       ! convert ndep flux to units of kgN/m2/s (input is in gN/m2/s)
        Faxa_ndep(:,:) = Faxa_ndep(:,:) / 1000._r8
     end if
 
