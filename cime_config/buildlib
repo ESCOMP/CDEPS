@@ -82,9 +82,12 @@ def buildlib(bldroot, libroot, case):
     cmake_flags += " -DLIBROOT={} ".format(libroot)
     cmake_flags += " -DMPILIB={} ".format(mpilib)
     cmake_flags += " -DSRCROOT={} ".format(case.get_value("SRCROOT"))
-    if os.environ["PIO_LIBDIR"]:
-        cmake_flags += " -DPIO_C_LIBRARY={libdir} -DPIO_C_INCLUDE_DIR={incdir} ".format(libdir=os.environ["PIO_LIBDIR"], incdir=os.environ["PIO_INCDIR"])
-        cmake_flags += " -DPIO_Fortran_LIBRARY={libdir} -DPIO_Fortran_INCLUDE_DIR={incdir} ".format(libdir=os.environ["PIO_LIBDIR"], incdir=os.environ["PIO_INCDIR"])
+    piolibdir = os.getenv("PIO_LIBDIR")
+    if piolibdir:
+        pioincdir = os.getenv("PIO_INCDIR")
+        logger.info(f"Using installed pio {piolibdir} {pioincdir}")
+        cmake_flags += " -DPIO_C_LIBRARY={libdir} -DPIO_C_INCLUDE_DIR={incdir} ".format(libdir=piolibdir, incdir=pioincdir)
+        cmake_flags += " -DPIO_Fortran_LIBRARY={libdir} -DPIO_Fortran_INCLUDE_DIR={incdir} ".format(libdir=piolibdir, incdir=pioincdir)
     else:
         cmake_flags += " -DPIO_C_LIBRARY={path}/lib -DPIO_C_INCLUDE_DIR={path}/include ".format(path=os.path.join(case.get_value("EXEROOT"),sharedpath))
         cmake_flags += " -DPIO_Fortran_LIBRARY={path}/lib -DPIO_Fortran_INCLUDE_DIR={path}/include ".format(path=os.path.join(case.get_value("EXEROOT"),sharedpath))
