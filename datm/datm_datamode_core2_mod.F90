@@ -1,9 +1,10 @@
 module datm_datamode_core2_mod
 
-  use ESMF             , only : ESMF_State, ESMF_Field, ESMF_FieldBundle
+  use ESMF             , only : ESMF_State, ESMF_StateGet, ESMF_Field, ESMF_FieldBundle
   use ESMF             , only : ESMF_DistGrid, ESMF_RouteHandle, ESMF_MeshCreate
   use ESMF             , only : ESMF_Mesh, ESMF_MeshGet, ESMF_MeshCreate
   use ESMF             , only : ESMF_SUCCESS, ESMF_LogWrite, ESMF_FILEFORMAT_ESMFMESH
+  use ESMF             , only : ESMF_StateItem_Flag, ESMF_STATEITEM_NOTFOUND, operator(/=)
   use ESMF             , only : ESMF_FieldBundleCreate, ESMF_FieldCreate, ESMF_MESHLOC_ELEMENT
   use ESMF             , only : ESMF_FieldBundleAdd, ESMF_LOGMSG_INFO, ESMF_TYPEKIND_R8
   use ESMF             , only : ESMF_RouteHandleDestroy, ESMF_EXTRAPMETHOD_NEAREST_STOD
@@ -55,6 +56,7 @@ module datm_datamode_core2_mod
   real(r8), pointer :: Faxa_swvdr(:) => null()
   real(r8), pointer :: Faxa_swvdf(:) => null()
   real(r8), pointer :: Faxa_swnet(:) => null()
+  real(r8), pointer :: Faxa_ndep(:,:) => null()
 
   ! stream data
   real(r8), pointer :: strm_prec(:)      => null()
@@ -179,6 +181,7 @@ contains
     integer           :: spatialDim         ! number of dimension in mesh
     integer           :: numOwnedElements   ! size of mesh
     real(r8), pointer :: ownedElemCoords(:) ! mesh lat and lons
+    type(ESMF_StateItem_Flag) :: itemFlag
     character(len=*), parameter :: subname='(datm_init_pointers): '
     !-------------------------------------------------------------------------------
 
@@ -247,7 +250,7 @@ contains
     call dshr_state_getfldptr(exportState, 'Faxa_lwdn'  , fldptr1=Faxa_lwdn  , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    call ESMF_StateGet(importstate, 'Faxa_ndep', itemFlag, rc=rc)
+    call ESMF_StateGet(exportstate, 'Faxa_ndep', itemFlag, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (itemflag /= ESMF_STATEITEM_NOTFOUND) then
        call dshr_state_getfldptr(exportState, 'Faxa_ndep', fldptr2=Faxa_ndep, rc=rc)
