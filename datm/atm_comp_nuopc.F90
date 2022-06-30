@@ -136,6 +136,7 @@ module cdeps_datm_comp
   integer                      :: nx_global                           ! global nx
   integer                      :: ny_global                           ! global ny
   logical                      :: skip_restart_read = .false.         ! true => skip restart read in continuation run
+  logical                      :: export_all = .false.                ! true => export all fields, do not check connected or not
 
   ! linked lists
   type(fldList_type) , pointer :: fldsImport => null()
@@ -222,7 +223,7 @@ contains
     ! local variables
     integer           :: nu         ! unit number
     integer           :: ierr       ! error code
-    integer           :: bcasttmp(9)
+    integer           :: bcasttmp(10)
     type(ESMF_VM)     :: vm
     character(len=*),parameter :: subname=trim(modName) // ':(InitializeAdvertise) '
     character(*)    ,parameter :: F00 = "('(" // trim(modName) // ") ',8a)"
@@ -247,7 +248,8 @@ contains
          anomaly_forcing, &
          skip_restart_read, &
          flds_presndep, &
-         flds_preso3
+         flds_preso3, &
+         export_all
 
     rc = ESMF_SUCCESS
 
@@ -284,7 +286,7 @@ contains
        if(flds_co2)          bcasttmp(7) = 1
        if(flds_wiso)         bcasttmp(8) = 1
        if(skip_restart_read) bcasttmp(9) = 1
-
+       if(export_all)        bcasttmp(10) = 1
     end if
     call ESMF_GridCompGet(gcomp, vm=vm, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -305,7 +307,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_VMBroadcast(vm, restfilm, CL, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_VMBroadcast(vm, bcasttmp, 9, main_task, rc=rc)
+    call ESMF_VMBroadcast(vm, bcasttmp, 10, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     nx_global         = bcasttmp(1)
     ny_global         = bcasttmp(2)
@@ -316,6 +318,7 @@ contains
     flds_co2          = (bcasttmp(7) == 1)
     flds_wiso         = (bcasttmp(8) == 1)
     skip_restart_read = (bcasttmp(9) == 1)
+    export_all        = (bcasttmp(10) == 1)
 
     ! write namelist input to standard out
     if (my_task == main_task) then
@@ -335,6 +338,7 @@ contains
        write(logunit,F02)' flds_co2       = ',flds_co2
        write(logunit,F02)' flds_wiso      = ',flds_wiso
        write(logunit,F02)' skip_restart_read = ',skip_restart_read
+       write(logunit,F02)' export_all     = ',export_all
     end if
 
     ! Validate sdat datamode
@@ -433,10 +437,10 @@ contains
     ! NUOPC_Realize "realizes" a previously advertised field in the importState and exportState
     ! by replacing the advertised fields with the newly created fields of the same name.
     call dshr_fldlist_realize( exportState, fldsExport, flds_scalar_name, flds_scalar_num, model_mesh, &
-         subname//':datmExport', rc=rc)
+         subname//':datmExport', export_all, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_fldlist_realize( importState, fldsImport, flds_scalar_name, flds_scalar_num, model_mesh, &
-         subname//':datmImport', rc=rc)
+         subname//':datmImport', .false., rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Get the time to interpolate the stream data to
@@ -770,6 +774,7 @@ contains
       call ESMF_StateGet(exportState, itemNameList=lfieldnames, rc=rc)
       if (chkerr(rc,__LINE__,u_FILE_u)) return
       do n = 1, fieldCount
+         call ESMF_LogWrite(trim(subname)//': field name = '//trim(lfieldnames(n)), ESMF_LOGMSG_INFO)
          call ESMF_StateGet(exportState, itemName=trim(lfieldnames(n)), field=lfield, rc=rc)
          if (chkerr(rc,__LINE__,u_FILE_u)) return
          call ESMF_FieldGet(lfield, rank=rank, rc=rc)

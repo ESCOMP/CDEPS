@@ -103,6 +103,7 @@ module cdeps_docn_comp
   integer                      :: nx_global
   integer                      :: ny_global
   logical                      :: skip_restart_read = .false.         ! true => skip restart read in continuation run
+  logical                      :: export_all = .false.                ! true => export all fields, do not check connected or not
 
   ! linked lists
   type(fldList_type) , pointer :: fldsImport => null()
@@ -189,7 +190,7 @@ contains
     integer           :: nu                 ! unit number
     integer           :: ierr               ! error code
     character(len=CL) :: import_data_fields ! colon deliminted strings of input data fields
-    integer           :: bcasttmp(3)
+    integer           :: bcasttmp(4)
     real(r8)          :: rtmp(1)
     type(ESMF_VM)     :: vm
     character(len=*),parameter :: subname=trim(module_name)//':(InitializeAdvertise) '
@@ -202,7 +203,7 @@ contains
     namelist / docn_nml / datamode, &
          model_meshfile, model_maskfile, &
          restfilm,  nx_global, ny_global, sst_constant_value, skip_restart_read, &
-         import_data_fields
+         import_data_fields, export_all
 
     rc = ESMF_SUCCESS
 
@@ -241,11 +242,13 @@ contains
        write(logunit,F02)' skip_restart_read = ',skip_restart_read
        write(logunit,F00)' import_data_fields = ',trim(import_data_fields)
        write(logunit,*)  ' sst_constant_value = ',sst_constant_value
+       write(logunit,F02)' export_all        = ', export_all
 
        bcasttmp = 0
        bcasttmp(1) = nx_global
        bcasttmp(2) = ny_global
        if(skip_restart_read) bcasttmp(3) = 1
+       if(export_all) bcasttmp(4) = 1
        rtmp(1) = sst_constant_value
     endif
 
@@ -273,6 +276,7 @@ contains
     nx_global = bcasttmp(1)
     ny_global = bcasttmp(2)
     skip_restart_read = (bcasttmp(3) == 1)
+    export_all = (bcasttmp(4) == 1)
     sst_constant_value = rtmp(1)
 
     ! Special logic for prescribed aquaplanet
@@ -390,10 +394,10 @@ contains
     ! NUOPC_Realize "realizes" a previously advertised field in the importState and exportState
     ! by replacing the advertised fields with the newly created fields of the same name.
     call dshr_fldlist_realize( exportState, fldsExport, flds_scalar_name, flds_scalar_num, model_mesh, &
-         subname//trim(modelname)//':Export', rc=rc)
+         subname//trim(modelname)//':Export', export_all, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_fldlist_realize( importState, fldsImport, flds_scalar_name, flds_scalar_num, model_mesh, &
-         subname//trim(modelname)//':Import', rc=rc)
+         subname//trim(modelname)//':Import', .false., rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! for single column, the target point might not be a valid ocn point
