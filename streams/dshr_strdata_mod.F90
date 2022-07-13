@@ -274,7 +274,7 @@ contains
     ! Initialize sdat%logunit and sdat%mainproc
     sdat%logunit = logunit
     sdat%mainproc = (my_task == main_task)
-
+    if(sdat%mainproc) print *,__FILE__,__LINE__,'strm logunit is: ',logunit,trim(stream_filenames(1))
 #ifdef CESMCOUPLED
     ! Initialize sdat pio
     sdat%pio_subsystem => shr_pio_getiosys(trim(compname))
