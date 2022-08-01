@@ -82,7 +82,7 @@ def buildlib(bldroot, libroot, case):
     cmake_flags += " -DLIBROOT={} ".format(libroot)
     cmake_flags += " -DMPILIB={} ".format(mpilib)
     cmake_flags += " -DSRCROOT={} ".format(case.get_value("SRCROOT"))
-    if os.environ["PIO_LIBDIR"]:
+    if os.getenv("PIO_LIBDIR"):
         cmake_flags += " -DPIO_C_LIBRARY={libdir} -DPIO_C_INCLUDE_DIR={incdir} ".format(libdir=os.environ["PIO_LIBDIR"], incdir=os.environ["PIO_INCDIR"])
         cmake_flags += " -DPIO_Fortran_LIBRARY={libdir} -DPIO_Fortran_INCLUDE_DIR={incdir} ".format(libdir=os.environ["PIO_LIBDIR"], incdir=os.environ["PIO_INCDIR"])
     else:
