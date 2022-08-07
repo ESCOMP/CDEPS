@@ -1044,6 +1044,7 @@ contains
     integer           :: dimid(1)
     type(var_desc_t)  :: varid
     type(io_desc_t)   :: pio_iodesc
+    integer           :: oldmode 
     integer           :: rcode
     character(*), parameter :: F00   = "('(dshr_restart_write) ',2a,2(i0,2x))"
     !-------------------------------------------------------------------------------
@@ -1064,10 +1065,12 @@ contains
 
     ! write data model restart data
     rcode = pio_createfile(sdat%pio_subsystem, pioid, sdat%io_type, trim(rest_file_model), pio_clobber)
+    rcode = pio_set_fill(pioid, PIO_FILL, oldmode)
     rcode = pio_put_att(pioid, pio_global, "version", "nuopc_data_models_v0")
     if (present(fld) .and. present(fldname)) then
        rcode = pio_def_dim(pioid, 'gsize', sdat%model_gsize, dimid(1))
        rcode = pio_def_var(pioid, trim(fldname), PIO_DOUBLE, dimid, varid)
+       rcode = pio_put_att(pioid, varid, "_FillValue", shr_const_spval)
     endif
     call shr_stream_restIO(pioid, sdat%stream, 'define')
     rcode = pio_enddef(pioid)

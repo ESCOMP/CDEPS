@@ -208,6 +208,8 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'Sa_rh'          , strm_rh    , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_z'           , strm_z  , rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'Faxa_swdndf'    , strm_swdndf, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'Faxa_swdndr'    , strm_swdndr, rc)
