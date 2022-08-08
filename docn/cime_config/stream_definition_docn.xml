@@ -6,13 +6,7 @@
 
   <stream_entry name="prescribed">  
     <stream_meshfile >
-      <meshfile model_grid="_oi%T31">$DIN_LOC_ROOT/share/meshes/T31_040122_ESMFmesh.nc</meshfile>
-      <meshfile model_grid="_oi%1.9x2.5">$DIN_LOC_ROOT/share/meshes/fv1.9x2.5_141008_ESMFmesh.nc</meshfile>
-      <meshfile model_grid="_oi%0.9x1.25">$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
-      <meshfile model_grid="_oi%0.47x0.63">$DIN_LOC_ROOT/share/meshes/fv0.47x0.63_141008_ESMFmesh.nc</meshfile>
-      <meshfile model_grid="_oi%0.23x0.31"><!-- fill this in --></meshfile>
-      <meshfile model_grid="_oi%4x5">$DIN_LOC_ROOT/share/meshes/fv4x5_050615_polemod_ESMFmesh.nc</meshfile>
-      <meshfile>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_1x1_clim_c101029_ESMFmesh_120520.nc</meshfile>
+      <meshfile>$SSTICE_MESH_FILENAME</meshfile>
     </stream_meshfile>
     <stream_datafiles>
       <file>$SSTICE_DATA_FILENAME</file>
