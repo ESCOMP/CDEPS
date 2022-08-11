@@ -206,6 +206,7 @@ contains
        write(logunit,F01)' nx_global = ',nx_global
        write(logunit,F01)' ny_global = ',ny_global
        write(logunit,F00)' restfilm = ',trim(restfilm)
+       write(logunit,F02)' skip_restart_read = ',skip_restart_read
     end if
 
     ! broadcast namelist input
@@ -215,6 +216,7 @@ contains
     call shr_mpi_bcast(nx_global                 , mpicom, 'nx_global')
     call shr_mpi_bcast(ny_global                 , mpicom, 'ny_global')
     call shr_mpi_bcast(restfilm                  , mpicom, 'restfilm')
+    call shr_mpi_bcast(skip_restart_read         , mpicom, 'skip_restart_read')
 
     ! Validate datamode
     if (trim(datamode) == 'copyall') then

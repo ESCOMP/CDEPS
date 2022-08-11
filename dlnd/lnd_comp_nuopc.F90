@@ -216,7 +216,7 @@ contains
        write(logunit,F00)' datamode          = ',datamode
        write(logunit,F01)' nx_global         = ',nx_global
        write(logunit,F01)' ny_global         = ',ny_global
-       write(logunit,F02)' restfilm          = ',trim(restfilm)
+       write(logunit,F00)' restfilm          = ',trim(restfilm)
        write(logunit,F02)' skip_restart_read = ',skip_restart_read
     endif
 

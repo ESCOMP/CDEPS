@@ -54,16 +54,6 @@
       same observational data sets and are consistent with each other.</desc>
   </entry>
 
-  <entry id="DICE_SKIP_RESTART_READ">
-    <type>logical</type>
-    <valid_values>TRUE,FALSE</valid_values>
-    <default_value>FALSE</default_value>
-    <group>run_component_dice</group>
-    <file>env_run.xml</file>
-    <desc> If set to true, than dice restarts will not be read on a continuation run.
-    </desc>
-  </entry>
-
   <help>
     =========================================
     DICE naming conventions
