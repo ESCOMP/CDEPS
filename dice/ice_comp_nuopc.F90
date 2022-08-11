@@ -84,6 +84,7 @@ module cdeps_dice_comp
   character(CL)                :: restfilm = nullstr                  ! model restart file namelist
   integer                      :: nx_global
   integer                      :: ny_global
+  logical                      :: skip_restart_read = .false.         ! true => skip restart read in continuation run
 
   ! linked lists
   type(fldList_type) , pointer :: fldsImport => null()
@@ -180,7 +181,8 @@ contains
 
     namelist / dice_nml / case_name, datamode, &
          model_meshfile, model_maskfile, &
-         restfilm, nx_global, ny_global, flux_swpf, flux_Qmin, flux_Qacc, flux_Qacc0
+         restfilm, nx_global, ny_global, flux_swpf, flux_Qmin, flux_Qacc, flux_Qacc0, &
+         skip_restart_read
 
     rc = ESMF_SUCCESS
 
@@ -219,6 +221,7 @@ contains
        write(logunit,F02)' flux_Qacc  = ',flux_Qacc
        write(logunit,F03)' flux_Qacc0 = ',flux_Qacc0
        write(logunit,F00)' restfilm = ',trim(restfilm)
+       write(logunit,F02)' skip_restart_read = ',skip_restart_read
     endif
 
     ! broadcast namelist input
@@ -232,6 +235,7 @@ contains
     call shr_mpi_bcast(flux_Qmin      , mpicom, 'flux_Qmin')
     call shr_mpi_bcast(flux_Qacc      , mpicom, 'flux_Qacc')
     call shr_mpi_bcast(flux_Qacc0     , mpicom, 'flux_Qacc0')
+    call shr_mpi_bcast(skip_restart_read, mpicom, 'skip_restart_read')
 
     ! Validate datamode
     if ( trim(datamode) == 'ssmi' .or. trim(datamode) == 'ssmi_iaf') then
@@ -470,7 +474,7 @@ contains
        end select
 
        ! read restart if needed
-       if (restart_read) then
+       if (restart_read .and. .not. skip_restart_read) then
           select case (trim(datamode))
           case('ssmi', 'ssmi_iaf')
              call dice_datamode_ssmi_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)

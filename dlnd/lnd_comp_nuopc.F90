@@ -79,7 +79,7 @@ module cdeps_dlnd_comp
   character(CL)            :: restfilm = nullstr                  ! model restart file namelist
   integer                  :: nx_global                           ! global nx dimension of model mesh
   integer                  :: ny_global                           ! global ny dimension of model mesh
-
+  logical                  :: skip_restart_read = .false.         ! true => skip restart read in continuation
   ! linked lists
   type(fldList_type) , pointer :: fldsExport => null()
   type(dfield_type)  , pointer :: dfields    => null()
@@ -173,7 +173,7 @@ contains
     !-------------------------------------------------------------------------------
 
     namelist / dlnd_nml / datamode, model_meshfile, model_maskfile, &
-         nx_global, ny_global, restfilm, force_prognostic_true
+         nx_global, ny_global, restfilm, skip_restart_read
 
     rc = ESMF_SUCCESS
 
@@ -207,17 +207,17 @@ contains
     call shr_mpi_bcast(nx_global                 , mpicom, 'nx_global')
     call shr_mpi_bcast(ny_global                 , mpicom, 'ny_global')
     call shr_mpi_bcast(restfilm                  , mpicom, 'restfilm')
-    call shr_mpi_bcast(force_prognostic_true     , mpicom, 'force_prognostic_true')
+    call shr_mpi_bcast(skip_restart_read         , mpicom, 'skip_restart_read')
 
     ! write namelist input to standard out
     if (my_task == main_task) then
-       write(logunit,F00)' model_meshfile = ',trim(model_meshfile)
-       write(logunit,F00)' model_maskfile = ',trim(model_maskfile)
-       write(logunit ,*)' datamode              = ',datamode
-       write(logunit ,*)' nx_global             = ',nx_global
-       write(logunit ,*)' ny_global             = ',ny_global
-       write(logunit ,*)' restfilm              = ',trim(restfilm)
-       write(logunit ,*)' force_prognostic_true = ',force_prognostic_true
+       write(logunit,F00)' model_meshfile    = ',trim(model_meshfile)
+       write(logunit,F00)' model_maskfile    = ',trim(model_maskfile)
+       write(logunit,F00)' datamode          = ',datamode
+       write(logunit,F01)' nx_global         = ',nx_global
+       write(logunit,F01)' ny_global         = ',ny_global
+       write(logunit,F02)' restfilm          = ',trim(restfilm)
+       write(logunit,F02)' skip_restart_read = ',skip_restart_read
     endif
 
     ! Validate sdat datamode
@@ -278,7 +278,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Read restart if necessary
-    if (restart_read) then
+    if (restart_read .and. .not. skip_restart_read) then
        call dshr_restart_read(restfilm, rpfile, inst_suffix, nullstr, logunit, my_task, mpicom, sdat)
     end if
 

@@ -75,7 +75,7 @@ module cdeps_drof_comp
   character(CL)                :: restfilm = nullstr                  ! model restart file namelist
   integer                      :: nx_global
   integer                      :: ny_global
-
+  logical                      :: skip_restart_read = .false.         ! true => skip restart read 
   logical                      :: diagnose_data = .true.
   integer      , parameter     :: main_task=0                       ! task number of main task
   character(*) , parameter     :: rpfile = 'rpointer.rof'
@@ -171,7 +171,7 @@ contains
     !-------------------------------------------------------------------------------
 
     namelist / drof_nml / datamode, model_meshfile, model_maskfile, &
-         restfilm, nx_global, ny_global
+         restfilm, nx_global, ny_global, skip_restart_read
 
     rc = ESMF_SUCCESS
 
@@ -389,7 +389,7 @@ contains
        if (chkerr(rc,__LINE__,u_FILE_u)) return
 
        ! Read restart if needed
-       if (restart_read) then
+       if (restart_read .and. .not. skip_restart_read) then
           call dshr_restart_read(restfilm, rpfile, inst_suffix, nullstr, logunit, my_task, mpicom, sdat)
        end if
 

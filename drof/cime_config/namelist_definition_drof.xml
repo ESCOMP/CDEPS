@@ -104,4 +104,17 @@
     </values>
   </entry>
 
+  <entry id="skip_restart_read" modify_via_xml="DROF_SKIP_RESTART_READ">
+    <type>logical</type>
+    <category>drof</category>
+    <group>drof_nml</group>
+    <desc>
+      If set to true, than drof restarts will not be read on a continuation run.
+      This capability is used, for example, in CTSM spinup runs.
+    </desc>
+    <values>
+      <value>$DROF_SKIP_RESTART_READ</value>
+    </values>
+  </entry>
+
 </entry_id>
