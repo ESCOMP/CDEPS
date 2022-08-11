@@ -1070,6 +1070,7 @@ contains
     if (present(fld) .and. present(fldname)) then
        rcode = pio_def_dim(pioid, 'gsize', sdat%model_gsize, dimid(1))
        rcode = pio_def_var(pioid, trim(fldname), PIO_DOUBLE, dimid, varid)
+       rcode = pio_put_att(pioid, varid, "_FillValue", shr_const_spval)
     endif
     call shr_stream_restIO(pioid, sdat%stream, 'define')
     rcode = pio_enddef(pioid)
