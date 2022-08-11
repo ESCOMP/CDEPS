@@ -266,6 +266,19 @@
     </values>
   </entry>
 
+  <entry id="flds_presndep">
+    <type>logical</type>
+    <category>datm</category>
+    <group>datm_nml</group>
+    <desc>
+      If true, prescribed nitrogen deposition fluxes are sent from datm (must be true for running with CLM).
+    </desc>
+    <values>
+      <value>.true.</value>
+      <value datm_presndep="none">.false.</value>
+    </values>
+  </entry>
+
   <entry id="flds_co2">
     <type>logical</type>
     <category>datm</category>
