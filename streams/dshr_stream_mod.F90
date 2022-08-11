@@ -1482,6 +1482,7 @@ contains
     integer(PIO_OFFSET_KIND) :: attlen
     integer                :: old_handle
     integer                :: rCode
+    integer :: ierr
     character(*),parameter :: subName = '(shr_stream_getCalendar) '
     !-------------------------------------------------------------------------------
 
@@ -1491,7 +1492,6 @@ contains
 
     fileName  = strm%file(k)%name
     ! TODO strm logunit is not set 
-    print *,'strm logunit is ',strm%logunit,trim(fileName)
     if (.not. pio_file_is_open(strm%file(k)%fileid)) then
        if(strm%logunit /= 6) write(strm%logunit, '(a)') trim(subname)//' opening stream filename = '//trim(filename)
        rcode = pio_openfile(strm%pio_subsystem, strm%file(k)%fileid, strm%pio_iotype, trim(filename))
@@ -1500,13 +1500,14 @@ contains
     endif
 
     rCode = pio_inq_varid(strm%file(k)%fileid, 'time', vid)
+    if(vid .lt. 0) then
+       call shr_sys_abort(subName//"ERROR: time variable id incorrect")
+    endif
     call pio_seterrorhandling(strm%file(k)%fileid, PIO_BCAST_ERROR, old_handle)
     rCode = pio_inq_att(strm%file(k)%fileid, vid, 'calendar', len=attlen)
     call pio_seterrorhandling(strm%file(k)%fileid, old_handle)
     if(rcode == PIO_NOERR) then
-!       n = PIO_set_log_level(3)
        rCode = pio_get_att(strm%file(k)%fileid, vid, 'calendar', lcal)
-       print *,__FILE__,__LINE__,attlen, trim(lcal)
     else
        lcal = trim(shr_cal_noleap)
     endif
