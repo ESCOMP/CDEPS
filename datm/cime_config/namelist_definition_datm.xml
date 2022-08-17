@@ -279,6 +279,19 @@
     </values>
   </entry>
 
+  <entry id="flds_preso3">
+    <type>logical</type>
+    <category>datm</category>
+    <group>datm_nml</group>
+    <desc>
+      If true, prescribed o3 is sent from datm (must be true for running with CLM).
+    </desc>
+    <values>
+      <value>.true.</value>
+      <value datm_preso3="none">.false.</value>
+    </values>
+  </entry>
+
   <entry id="flds_co2">
     <type>logical</type>
     <category>datm</category>
