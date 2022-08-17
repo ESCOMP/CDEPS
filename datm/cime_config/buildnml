@@ -178,7 +178,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
         streamlist.append("presaero.{}".format(datm_presaero))
     if datm_presndep != "none":
         streamlist.append("presndep.{}".format(datm_presndep))
-    if datm_presndep != "none":
+    if datm_preso3 != "none":
         streamlist.append("preso3.{}".format(datm_preso3))
     if datm_topo != "none":
         streamlist.append("topo.{}".format(datm_topo))

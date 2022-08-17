@@ -36,7 +36,7 @@ module datm_datamode_clmncep_mod
   real(r8), pointer :: Sa_dens(:)           => null()
   real(r8), pointer :: Sa_pbot(:)           => null()
   real(r8), pointer :: Sa_pslv(:)           => null()
-  real(r8), pointer :: Sa_o3(:,:)           => null()
+  real(r8), pointer :: Sa_o3(:)             => null()
   real(r8), pointer :: Faxa_lwdn(:)         => null()
   real(r8), pointer :: Faxa_rainc(:)        => null()
   real(r8), pointer :: Faxa_rainl(:)        => null()
@@ -311,11 +311,10 @@ contains
        call dshr_state_getfldptr(exportState, 'Faxa_ndep', fldptr2=Faxa_ndep, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
-
-    call ESMF_StateGet(exportstate, 'Faxa_ndep', itemFlag, rc=rc)
+    call ESMF_StateGet(exportstate, 'Sa_o3', itemFlag, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (itemflag /= ESMF_STATEITEM_NOTFOUND) then
-       call dshr_state_getfldptr(exportState, 'Faxa_ndep', fldptr2=Faxa_ndep, rc=rc)
+       call dshr_state_getfldptr(exportState, 'Sa_o3', fldptr1=Sa_o3, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
