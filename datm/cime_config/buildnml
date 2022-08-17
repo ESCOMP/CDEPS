@@ -15,7 +15,7 @@ _CDEPS_CONFIG = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pard
 _CIMEROOT = os.environ.get("CIMEROOT")
 if _CIMEROOT is None:
     raise SystemExit("ERROR: must set CIMEROOT environment variable")
-_LIBDIR = os.path.join(_CIMEROOT, "scripts", "Tools")
+_LIBDIR = os.path.join(_CIMEROOT, "CIME", "Tools")
 sys.path.append(_LIBDIR)
 sys.path.append(_CDEPS_CONFIG)
 
@@ -76,7 +76,7 @@ def _get_neon_data_availability(case, neonsite):
                                 oldestdate = datetime.strptime(neonatm[-10:],"%Y-%m.nc")
                             neonatm = f'cdeps/{version}/{neonsite}/'+neonatm
                             datavaliddate.append(neonatm)
-            if newestdate:                                        
+            if newestdate:
                 logger.info("Found tower data version {} for {} through {}".format(version, oldestdate, newestdate))
                 datavaliddate.sort()
                 return datavaliddate
@@ -197,7 +197,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     schema_file = os.path.join(_CDEPS_CONFIG,"stream_definition_v2.0.xsd")
     stream_file = os.path.join(_CDEPS_CONFIG,os.pardir, "datm","cime_config","stream_definition_datm.xml")
     streams = StreamCDEPS(stream_file, schema_file)
-    streams.create_stream_xml(streamlist, case, outfile, data_list_path, 
+    streams.create_stream_xml(streamlist, case, outfile, data_list_path,
                               os.path.join(caseroot,'user_nl_datm_streams'+inst_string),
                               available_neon_data=available_neon_data)
 

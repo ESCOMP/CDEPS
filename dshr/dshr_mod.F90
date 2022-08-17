@@ -112,8 +112,8 @@ contains
 #endif
     ! input/output variables
     type(ESMF_GridComp)                   :: gcomp
+    type(shr_strdata_type), intent(in) :: sdat   ! No longer used
     character(len=*)      , intent(in)    :: compname  !e.g. ATM, OCN, ...
-    type(shr_strdata_type), intent(inout) :: sdat
     integer               , intent(inout) :: mpicom
     integer               , intent(out)   :: my_task
     integer               , intent(out)   :: inst_index
@@ -226,14 +226,6 @@ contains
        if (trim(cvalue) .eq. '.true.') write_restart_at_endofrun = .true.
     end if
 
-#ifdef CESMCOUPLED
-    sdat%pio_subsystem => shr_pio_getiosys(trim(compname))
-    sdat%io_type       =  shr_pio_getiotype(trim(compname))
-    sdat%io_format     =  shr_pio_getioformat(trim(compname))
-#else
-    call dshr_pio_init(gcomp, sdat, logunit, rc)
-#endif
-
   end subroutine dshr_init
 
   !===============================================================================
@@ -246,7 +238,7 @@ contains
 
     ! input/output variables
     type(ESMF_GridComp)        , intent(inout) :: gcomp
-    type(shr_strdata_type)     , intent(in)    :: sdat
+    type(shr_strdata_type)     , intent(inout)    :: sdat
     integer                    , intent(in)    :: logunit
     character(len=*)           , intent(in)    :: compname  !e.g. ATM, OCN, ...
     character(len=*)           , intent(in)    :: nullstr
@@ -285,6 +277,15 @@ contains
     call ESMF_VMGet(vm, localPet=my_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     mainproc = (my_task == main_task)
+
+    ! Initialize pio subsystem
+#ifdef CESMCOUPLED
+    sdat%pio_subsystem => shr_pio_getiosys(trim(compname))
+    sdat%io_type       =  shr_pio_getiotype(trim(compname))
+    sdat%io_format     =  shr_pio_getioformat(trim(compname))
+#else
+    call dshr_pio_init(gcomp, sdat, logunit, rc)
+#endif
 
     ! Set restart flag
     call NUOPC_CompAttributeGet(gcomp, name='read_restart', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
@@ -1044,6 +1045,7 @@ contains
     integer           :: dimid(1)
     type(var_desc_t)  :: varid
     type(io_desc_t)   :: pio_iodesc
+    integer           :: oldmode 
     integer           :: rcode
     character(*), parameter :: F00   = "('(dshr_restart_write) ',2a,2(i0,2x))"
     !-------------------------------------------------------------------------------
@@ -1064,10 +1066,12 @@ contains
 
     ! write data model restart data
     rcode = pio_createfile(sdat%pio_subsystem, pioid, sdat%io_type, trim(rest_file_model), pio_clobber)
+    rcode = pio_set_fill(pioid, PIO_FILL, oldmode)
     rcode = pio_put_att(pioid, pio_global, "version", "nuopc_data_models_v0")
     if (present(fld) .and. present(fldname)) then
        rcode = pio_def_dim(pioid, 'gsize', sdat%model_gsize, dimid(1))
        rcode = pio_def_var(pioid, trim(fldname), PIO_DOUBLE, dimid, varid)
+       rcode = pio_put_att(pioid, varid, "_FillValue", shr_const_spval)
     endif
     call shr_stream_restIO(pioid, sdat%stream, 'define')
     rcode = pio_enddef(pioid)

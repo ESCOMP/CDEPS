@@ -218,6 +218,8 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'Sa_rh'          , strm_rh    , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_z'           , strm_z  , rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'Faxa_swdndf'    , strm_swdndf, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'Faxa_swdndr'    , strm_swdndr, rc)
@@ -303,6 +305,13 @@ contains
     call dshr_state_getfldptr(exportState, 'Faxa_swnet' , fldptr1=Faxa_swnet , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Faxa_lwdn'  , fldptr1=Faxa_lwdn  , rc=rc)
+    call ESMF_StateGet(exportstate, 'Faxa_ndep', itemFlag, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (itemflag /= ESMF_STATEITEM_NOTFOUND) then
+       call dshr_state_getfldptr(exportState, 'Faxa_ndep', fldptr2=Faxa_ndep, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    end if
+
     call ESMF_StateGet(exportstate, 'Faxa_ndep', itemFlag, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (itemflag /= ESMF_STATEITEM_NOTFOUND) then
@@ -401,7 +410,13 @@ contains
        Sa_ptem(n) = Sa_tbot(n)
 
        !--- pressure ---
-       if (.not. associated(strm_pbot)) Sa_pbot(n) = pstd
+       if (.not. associated(strm_pbot)) then
+          Sa_pbot(n) = pstd
+       else if (Sa_pbot(n) == 0._r8) then
+          ! This happens if you are using points over ocean where the mask is 0
+          Sa_pbot(n) = pstd
+       end if
+
        Sa_pslv(n) = Sa_pbot(n)
 
        !--- u, v wind velocity ---

@@ -1467,7 +1467,7 @@ contains
 
   !===============================================================================
   subroutine shr_stream_getCalendar(strm, k, calendar)
-
+    use pio, only : PIO_set_log_level, PIO_OFFSET_KIND
     ! Returns calendar name
 
     ! input/output parameters:
@@ -1477,9 +1477,12 @@ contains
 
     ! local
     integer                :: vid, n
-    character(CL)          :: fileName,lcal
+    character(CL)          :: fileName
+    character(CL)          :: lcal
+    integer(PIO_OFFSET_KIND) :: attlen
     integer                :: old_handle
     integer                :: rCode
+    integer :: ierr
     character(*),parameter :: subName = '(shr_stream_getCalendar) '
     !-------------------------------------------------------------------------------
 
@@ -1488,16 +1491,20 @@ contains
     if (k > strm%nfiles) call shr_sys_abort(subname//' ERROR: k gt nfiles')
 
     fileName  = strm%file(k)%name
-
+    ! TODO strm logunit is not set 
     if (.not. pio_file_is_open(strm%file(k)%fileid)) then
-       ! TODO: add isroot_task
-       !write(strm%logunit, '(a)') trim(subname)//' opening stream filename = '//trim(filename)
+       if(strm%logunit /= 6) write(strm%logunit, '(a)') trim(subname)//' opening stream filename = '//trim(filename)
        rcode = pio_openfile(strm%pio_subsystem, strm%file(k)%fileid, strm%pio_iotype, trim(filename))
+    else if(strm%logunit /= 6) then
+       write(strm%logunit, '(a)') trim(subname)//' reading stream filename = '//trim(filename)
     endif
 
     rCode = pio_inq_varid(strm%file(k)%fileid, 'time', vid)
+    if(vid .lt. 0) then
+       call shr_sys_abort(subName//"ERROR: time variable id incorrect")
+    endif
     call pio_seterrorhandling(strm%file(k)%fileid, PIO_BCAST_ERROR, old_handle)
-    rCode = pio_inq_att(strm%file(k)%fileid, vid, 'calendar')
+    rCode = pio_inq_att(strm%file(k)%fileid, vid, 'calendar', len=attlen)
     call pio_seterrorhandling(strm%file(k)%fileid, old_handle)
     if(rcode == PIO_NOERR) then
        rCode = pio_get_att(strm%file(k)%fileid, vid, 'calendar', lcal)
@@ -1506,7 +1513,13 @@ contains
     endif
 
     n = len_trim(lcal)
-    if (ichar(lcal(n:n)) == 0 ) lcal(n:n) = ' '
+    if(n>0) then
+       if (ichar(lcal(n:n)) == 0 ) lcal(n:n) = ' '
+    else
+       write(strm%logunit,*) 'calendar attribute to time variable not found in file, using default noleap'
+       call shr_sys_abort(subName//"ERROR: calendar attribute not found in file "//trim(filename))
+       lcal = trim(shr_cal_noleap)
+    endif
     call shr_string_leftalign_and_convert_tabs(lcal)
     calendar = trim(shr_cal_calendarName(trim(lcal)))
 
@@ -1690,12 +1703,10 @@ contains
     integer              :: maxnt = 0
     integer, allocatable :: tmp(:)
     character(len=CL)    :: fname
-    integer, allocatable :: itemp2d(:,:)
-    integer, allocatable :: itemp3d(:,:,:)
-    character(len=CL), allocatable :: ctemp2d(:,:)
     !-------------------------------------------------------------------------------
 
     if (mode .eq. 'define') then
+
        rcode = pio_def_dim(pioid, 'strlen',   CL, dimid_str)
        do k=1,size(streams)
           ! maxnfiles is the maximum number of files across all streams
@@ -1776,80 +1787,52 @@ contains
        deallocate(tmp)
 
        ! write out nt
-       allocate(itemp2d(maxnfiles, size(streams)))
-       itemp2d(:,:) = -999
+       rcode = pio_inq_varid(pioid, 'nt', varid)
        do k=1,size(streams)
           do n=1,streams(k)%nfiles
-             itemp2d(n,k) = streams(k)%file(n)%nt
-          end do
-       end do
-       rcode = pio_inq_varid(pioid, 'nt', varid)
-       rcode = pio_put_var(pioid, varid, itemp2d)
-       deallocate(itemp2d)
+             rcode = pio_put_var(pioid, varid, (/n,k/), streams(k)%file(n)%nt)
+          enddo
+       enddo
 
        ! write out haveData
-       allocate(itemp2d(maxnfiles, size(streams)))
-       itemp2d(:,:) = -999
+       rcode = pio_inq_varid(pioid, 'haveData', dvarid)
        do k=1,size(streams)
           do n=1,streams(k)%nfiles
              if(streams(k)%file(n)%haveData) then
-                itemp2d(n,k) = 1
+                rcode = pio_put_var(pioid, dvarid, (/n,k/), 1)
              else
-                itemp2d(n,k) = 0
+                rcode = pio_put_var(pioid, dvarid, (/n,k/), 0)
              endif
-          end do
-       end do
-       rcode = pio_inq_varid(pioid, 'haveData', varid)
-       rcode = pio_put_var(pioid, varid, itemp2d)
-       deallocate(itemp2d)
+          enddo
+       enddo
 
        ! write out date
-       allocate(itemp3d(maxnt, maxnfiles, size(streams)))
-       itemp3d(:,:,:) = -999
+       rcode = pio_inq_varid(pioid, 'date', varid)
        do k=1,size(streams)
           do n=1,streams(k)%nfiles
              if (allocated(streams(k)%file(n)%date)) then
-                do i = 1,size(streams(k)%file(n)%date)
-                   itemp3d(i,n,k) = streams(k)%file(n)%date(i)
-                end do
-             end if
-          end do
-       end do
-       rcode = pio_inq_varid(pioid, 'date', varid)
-       rcode = pio_put_var(pioid, varid, itemp3d)
-       deallocate(itemp3d)
+                rcode = pio_put_var(pioid, varid, (/1,n,k/), (/streams(k)%file(n)%nt,1,1/), streams(k)%file(n)%date)
+             endif
+          enddo
+       enddo
 
        ! write out timeofday
-       allocate(itemp3d(maxnt, maxnfiles, size(streams)))
-       itemp3d(:,:,:) = -999
+       rcode = pio_inq_varid(pioid, 'timeofday', varid)
        do k=1,size(streams)
           do n=1,streams(k)%nfiles
              if (allocated(streams(k)%file(n)%secs)) then
-                do i = 1,size(streams(k)%file(n)%secs)
-                   itemp3d(i,n,k) = streams(k)%file(n)%secs(i)
-                end do
-             end if
-          end do
-       end do
-       rcode = pio_inq_varid(pioid, 'timeofday', dvarid)
-       rcode = pio_put_var(pioid, dvarid, itemp3d)
-       deallocate(itemp3d)
+                rcode = pio_put_var(pioid, varid, (/1,n,k/), (/streams(k)%file(n)%nt,1,1/), streams(k)%file(n)%secs)
+             endif
+          enddo
+       enddo
 
        ! write out filename
-       allocate(ctemp2d(maxnfiles, size(streams)))
-       ctemp2d(:,:) = 'unset'
-       do k = 1,size(streams)
-          do n = 1,streams(k)%nfiles
-             ctemp2d(n,k) = streams(k)%file(n)%name
-          end do
-       end do
        rcode = pio_inq_varid(pioid, 'filename', varid)
-       do k = 1,size(streams)
-          do n = 1,maxnfiles 
-             rcode = pio_put_var(pioid, varid, (/1,n,k/), ctemp2d(n,k))
-          end do
-       end do
-       deallocate(ctemp2d)
+       do k=1,size(streams)
+          do n=1,streams(k)%nfiles
+             rcode = pio_put_var(pioid, varid, (/1,n,k/), streams(k)%file(n)%name)
+          enddo
+       enddo
 
     else if (mode .eq. 'read') then
 

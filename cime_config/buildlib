@@ -9,7 +9,7 @@ import sys, os, time
 _CIMEROOT = os.environ.get("CIMEROOT")
 if _CIMEROOT is None:
     raise SystemExit("ERROR: must set CIMEROOT environment variable")
-sys.path.append(os.path.join(_CIMEROOT, "scripts", "Tools"))
+sys.path.append(os.path.join(_CIMEROOT, "CIME", "Tools"))
 
 _LIBDIR = os.path.join(_CIMEROOT, "scripts", "lib")
 sys.path.append(_LIBDIR)
@@ -82,8 +82,15 @@ def buildlib(bldroot, libroot, case):
     cmake_flags += " -DLIBROOT={} ".format(libroot)
     cmake_flags += " -DMPILIB={} ".format(mpilib)
     cmake_flags += " -DSRCROOT={} ".format(case.get_value("SRCROOT"))
-    cmake_flags += " -DPIO_C_LIBRARY={path}/lib -DPIO_C_INCLUDE_DIR={path}/include ".format(path=os.path.join(case.get_value("EXEROOT"),sharedpath))
-    cmake_flags += " -DPIO_Fortran_LIBRARY={path}/lib -DPIO_Fortran_INCLUDE_DIR={path}/include ".format(path=os.path.join(case.get_value("EXEROOT"),sharedpath))
+    piolibdir = os.getenv("PIO_LIBDIR")
+    if piolibdir:
+        pioincdir = os.getenv("PIO_INCDIR")
+        logger.info(f"Using installed pio {piolibdir} {pioincdir}")
+        cmake_flags += " -DPIO_C_LIBRARY={libdir} -DPIO_C_INCLUDE_DIR={incdir} ".format(libdir=piolibdir, incdir=pioincdir)
+        cmake_flags += " -DPIO_Fortran_LIBRARY={libdir} -DPIO_Fortran_INCLUDE_DIR={incdir} ".format(libdir=piolibdir, incdir=pioincdir)
+    else:
+        cmake_flags += " -DPIO_C_LIBRARY={path}/lib -DPIO_C_INCLUDE_DIR={path}/include ".format(path=os.path.join(case.get_value("EXEROOT"),sharedpath))
+        cmake_flags += " -DPIO_Fortran_LIBRARY={path}/lib -DPIO_Fortran_INCLUDE_DIR={path}/include ".format(path=os.path.join(case.get_value("EXEROOT"),sharedpath))
     cmake_flags += srcpath
     all_src_files = list(all_files_under(srcpath, ignoredirs=[".git","cmake","test",".github","cime_config","fox"]))
     # Search SourceMods path for CDEPS files. We only look in the data component directories for these, files in cdeps share
