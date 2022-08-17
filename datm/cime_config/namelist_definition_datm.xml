@@ -287,7 +287,7 @@
       If true, prescribed o3 is sent from datm (must be true for running with CLM).
     </desc>
     <values>
-      <value>.true.</value>
+      <value>.false.</value>
       <value datm_preso3="none">.false.</value>
     </values>
   </entry>
