@@ -4014,7 +4014,7 @@
       <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file>/glade/work/mvertens/ozone_damage_files/O3_surface.f09_g17.CMIP6-historical-WACCM.001.monthly.185001-201412.cdf5.no_lev.nc</file>
+      <file>/glade/work/afoster/ozone_damage_files/O3_surface.f09_g17.CMIP6-historical-WACCM.001.monthly.185001-201412_cdf5.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>O3  Sa_o3</var>
