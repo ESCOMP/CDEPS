@@ -124,6 +124,7 @@
       <value compset="^SSP370_" >SSP3-7.0</value>
       <value compset="^SSP585_" >SSP5-8.5</value>
       <value compset="^HIST_"   >hist</value>
+      <value compset="^20TR_"   >hist</value>
       <value compset="_DATM.*_DICE.*_DOCN.*_DROF">none</value>
     </values>
     <group>run_component_datm</group>
