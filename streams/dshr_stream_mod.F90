@@ -102,7 +102,7 @@ module dshr_stream_mod
      type(iosystem_desc_t), pointer :: pio_subsystem
      integer           :: pio_iotype
      integer           :: pio_ioformat
-     integer           :: logunit                               ! stdout log unit
+     integer           :: logunit      = 6                      ! stdout log unit
      logical           :: init         = .false.                ! has stream been initialized
      integer           :: nFiles       = 0                      ! number of data files
      integer           :: yearFirst    = -1                     ! first year to use in t-axis (yyyymmdd)
