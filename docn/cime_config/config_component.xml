@@ -111,7 +111,7 @@
     <valid_values></valid_values>
     <default_value>-1</default_value>
     <values match="last">
-      <value compset="_DOCN%AQPCONST">300</value>
+      <value compset="_DOCN%AQPCONST">300.</value>
     </values>
     <group>run_component_docn</group>
     <file>env_run.xml</file>
