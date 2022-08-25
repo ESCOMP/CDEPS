@@ -125,6 +125,16 @@
     <desc>ending year to loop data over (only used when DROF_MODE is CPLHIST)</desc>
   </entry>
 
+  <entry id="DROF_SKIP_RESTART_READ">
+    <type>logical</type>
+    <valid_values>TRUE,FALSE</valid_values>
+    <default_value>FALSE</default_value>
+    <group>run_component_drof</group>
+    <file>env_run.xml</file>
+    <desc> If set to true, than drof restarts will not be read on a continuation run.
+    </desc>
+  </entry>
+
   <help>
     =========================================
     DROF naming conventions

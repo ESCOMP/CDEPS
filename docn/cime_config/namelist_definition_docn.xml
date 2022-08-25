@@ -190,4 +190,17 @@
     </values>
   </entry>
 
+  <entry id="skip_restart_read" modify_via_xml="DOCN_SKIP_RESTART_READ">
+    <type>logical</type>
+    <category>docn</category>
+    <group>docn_nml</group>
+    <desc>
+      If set to true, than docn restarts will not be read on a continuation run.
+      This capability is used, for example, in CTSM spinup runs.
+    </desc>
+    <values>
+      <value>$DOCN_SKIP_RESTART_READ</value>
+    </values>
+  </entry>
+
 </entry_id>

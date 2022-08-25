@@ -99,4 +99,17 @@
     </values>
   </entry>
 
+  <entry id="skip_restart_read" modify_via_xml="DLND_SKIP_RESTART_READ">
+    <type>logical</type>
+    <category>dlnd</category>
+    <group>dlnd_nml</group>
+    <desc>
+      If set to true, than dlnd restarts will not be read on a continuation run.
+      This capability is used, for example, in CTSM spinup runs.
+    </desc>
+    <values>
+      <value>$DLND_SKIP_RESTART_READ</value>
+    </values>
+  </entry>
+
 </entry_id>

@@ -36,6 +36,16 @@
     <desc>DWAV mode</desc>
   </entry>
 
+  <entry id="DWAV_SKIP_RESTART_READ">
+    <type>logical</type>
+    <valid_values>TRUE,FALSE</valid_values>
+    <default_value>FALSE</default_value>
+    <group>run_component_dwav</group>
+    <file>env_run.xml</file>
+    <desc> If set to true, than dwav restarts will not be read on a continuation run.
+    </desc>
+  </entry>
+
   <help>
     =========================================
     DWAV naming conventions
