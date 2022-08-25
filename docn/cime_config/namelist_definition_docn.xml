@@ -186,7 +186,7 @@
     </desc>
     <values>
       <value>-1.0</value>
-      <value docn_mode='docn_aquap_constant'>$DOCN_AQPCONST_VALUE</value>
+      <value docn_mode='aquap_constant'>$DOCN_AQPCONST_VALUE</value>
     </values>
   </entry>
 
