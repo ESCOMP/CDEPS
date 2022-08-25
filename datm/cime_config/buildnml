@@ -201,6 +201,26 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
                               os.path.join(caseroot,'user_nl_datm_streams'+inst_string),
                               available_neon_data=available_neon_data)
 
+
+####################################################################################
+def _create_drv_flds_in(case, confdir):
+####################################################################################
+    datm_preso3 = case.get_value("DATM_PRESO3")
+
+    # for now we are hard-coding this file name and values because we only need it for ozone
+    if datm_preso3 != "none":
+        # Generate drv_flds_in file
+        outfile = os.path.join(confdir, "drv_flds_in")
+        ozone_nl_name = "&ozone_coupling_nl"
+        ozone_freq_val = "'multiday_average'"
+        nl_fin = "\\"
+
+        with open(outfile, "w") as drv_fl:
+            drv_fl.write("{}\n".format(ozone_nl_name))
+            drv_fl.write("{}\n".format(ozone_freq_val))
+            drv_fl.write("{}\n".format(nl_fin))
+
+
 ###############################################################################
 def buildnml(case, caseroot, compname):
 ###############################################################################
@@ -274,6 +294,8 @@ def buildnml(case, caseroot, compname):
 
         # create namelist and stream file(s) data component
         _create_namelists(case, confdir, inst_string, namelist_infile, nmlgen, data_list_path)
+
+        _create_drv_flds_in(case, confdir)
 
         # copy namelist files and stream text files, to rundir
         copy_inputs_to_rundir(caseroot, compname, confdir, rundir, inst_string)
