@@ -76,7 +76,7 @@ module cdeps_dwav_comp
   character(CL)                :: restfilm = nullstr                  ! model restart file namelist
   integer                      :: nx_global
   integer                      :: ny_global
-
+  logical                      :: skip_restart_read = .false.         ! true => skip restart read 
   ! constants
   logical                      :: diagnose_data = .true.
   integer      , parameter     :: main_task=0                       ! task number of main task
@@ -168,7 +168,7 @@ contains
     !-------------------------------------------------------------------------------
 
     namelist / dwav_nml / datamode, model_meshfile, model_maskfile, &
-         restfilm, nx_global, ny_global
+         restfilm, nx_global, ny_global, skip_restart_read
 
     rc = ESMF_SUCCESS
 
@@ -203,6 +203,7 @@ contains
        write(logunit,F01)' nx_global = ',nx_global
        write(logunit,F01)' ny_global = ',ny_global
        write(logunit,F00)' restfilm = ',trim(restfilm)
+       write(logunit,F02)' skip_restart_read = ',skip_restart_read
     endif
 
     ! broadcast namelist input
@@ -212,6 +213,7 @@ contains
     call shr_mpi_bcast(nx_global                 , mpicom, 'nx_global')
     call shr_mpi_bcast(ny_global                 , mpicom, 'ny_global')
     call shr_mpi_bcast(restfilm                  , mpicom, 'restfilm')
+    call shr_mpi_bcast(skip_restart_read         , mpicom, 'skip_restart_read')
 
     ! Call advertise phase
     if (trim(datamode) == 'copyall') then
@@ -266,7 +268,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Read restart if necessary
-    if (restart_read) then
+    if (restart_read .and. .not. skip_restart_read) then
        call dshr_restart_read(restfilm, rpfile, inst_suffix, nullstr, logunit, my_task, mpicom, sdat)
     end if
 

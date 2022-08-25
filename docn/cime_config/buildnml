@@ -94,6 +94,12 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     if type(streamlist) == type(str()):
         streamlist = []
 
+    # Determine if skip restart is asked for and if it is a valid request
+    skip_restart_read = case.get_value('DOCN_SKIP_RESTART_READ')
+    if skip_restart_read:
+        if docn_mode == 'som' or docn_mode == 'som_aquap':
+            expect (False, f"xml variable DOCN_SKIP_RESTART_READ cannot be TRUE for docn_mode {docn_mode}")
+
     # Generate docn.streams.xml if needed
     print("docn_mode is {}".format(docn_mode))
     if (re.search(r'sst_aquap[0-9]+',docn_mode) is not None) or (docn_mode == 'sst_aquap_constant'):

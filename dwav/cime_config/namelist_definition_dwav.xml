@@ -97,4 +97,17 @@
     </values>
   </entry>
 
+  <entry id="skip_restart_read" modify_via_xml="DWAV_SKIP_RESTART_READ">
+    <type>logical</type>
+    <category>dwav</category>
+    <group>dwav_nml</group>
+    <desc>
+      If set to true, than dwav restarts will not be read on a continuation run.
+      This capability is used, for example, in CTSM spinup runs.
+    </desc>
+    <values>
+      <value>$DWAV_SKIP_RESTART_READ</value>
+    </values>
+  </entry>
+
 </entry_id>

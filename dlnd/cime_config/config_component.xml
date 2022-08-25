@@ -112,6 +112,16 @@
     <desc>ending year to loop data over (only used when DLND_MODE is CPLHIST or GLC_CPLHIST)</desc>
   </entry>
 
+  <entry id="DLND_SKIP_RESTART_READ">
+    <type>logical</type>
+    <valid_values>TRUE,FALSE</valid_values>
+    <default_value>FALSE</default_value>
+    <group>run_component_dlnd</group>
+    <file>env_run.xml</file>
+    <desc> If set to true, than dlnd restarts will not be read on a continuation run.
+    </desc>
+  </entry>
+
   <help>
     =========================================
     DLND naming conventions
