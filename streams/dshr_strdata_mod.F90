@@ -113,7 +113,6 @@ module dshr_strdata_mod
      type(shr_strdata_perstream), allocatable :: pstrm(:)              ! stream info
      type(shr_stream_streamType), pointer :: stream(:)=> null()        ! stream datatype
      logical                        :: mainproc
-!     integer                        :: logunit                         ! stdout unit
      integer                        :: io_type                         ! pio info
      integer                        :: io_format                       ! pio info
      integer                        :: modeldt = 0                     ! model dt in seconds
@@ -197,9 +196,6 @@ contains
     ! ----------------------------------------------
     rc = ESMF_SUCCESS
     call ESMF_LogWrite(subname//' called', ESMF_LOGMSG_INFO)
-
-    ! Initialize log unit
-!    sdat%logunit = logunit
 
 #ifdef CESMCOUPLED
     ! Initialize sdat  pio
