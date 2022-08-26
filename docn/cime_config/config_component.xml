@@ -111,7 +111,7 @@
     <valid_values></valid_values>
     <default_value>-1</default_value>
     <values match="last">
-      <value compset="_DOCN%AQPCONST">300</value>
+      <value compset="_DOCN%AQPCONST">300.</value>
     </values>
     <group>run_component_docn</group>
     <file>env_run.xml</file>
@@ -246,6 +246,16 @@
     example, if a data file has data for years 0-99, and value is 49,
     years 50-99 in the file will not be used.
     This is only used when DOCN_MODE=prescribed.</desc>
+  </entry>
+
+  <entry id="DOCN_SKIP_RESTART_READ">
+    <type>logical</type>
+    <valid_values>TRUE,FALSE</valid_values>
+    <default_value>FALSE</default_value>
+    <group>run_component_docn</group>
+    <file>env_run.xml</file>
+    <desc> If set to true, than docn restarts will not be read on a continuation run.
+    </desc>
   </entry>
 
   <help>
