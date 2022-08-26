@@ -4009,6 +4009,50 @@
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
+  
+   <stream_entry name="presaero.SSP5-8.5">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/aero/aerodep_clm_SSP585_b.e21.BSSP585cmip6.f09_g17.CMIP6-SSP5-8.5.001_2014-2101_monthly_0.9x1.25_c190419.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>BCDEPWET   Faxa_bcphiwet</var>
+      <var>BCPHODRY   Faxa_bcphodry</var>
+      <var>BCPHIDRY   Faxa_bcphidry</var>
+      <var>OCDEPWET   Faxa_ocphiwet</var>
+      <var>OCPHIDRY   Faxa_ocphidry</var>
+      <var>OCPHODRY   Faxa_ocphodry</var>
+      <var>DSTX01WD   Faxa_dstwet1</var>
+      <var>DSTX01DD   Faxa_dstdry1</var>
+      <var>DSTX02WD   Faxa_dstwet2</var>
+      <var>DSTX02DD   Faxa_dstdry2</var>
+      <var>DSTX03WD   Faxa_dstwet3</var>
+      <var>DSTX03DD   Faxa_dstdry3</var>
+      <var>DSTX04WD   Faxa_dstwet4</var>
+      <var>DSTX04DD   Faxa_dstdry4</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>2015</stream_year_align>
+    <stream_year_first>2015</stream_year_first>
+    <stream_year_last>2101</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
 
   <!-- ===================-->
   <!--  preso3 forcing streams -->
@@ -4402,7 +4446,7 @@
       <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file>$DIN_LOC_ROOT/lnd/clm2/ndepdata/lnd/clm2/fndepdata/fndep_clm_f09_g17.CMIP6-SSP2-4.5-WACCM_1849-2101_monthly_c191007.nc</file>
+      <file>$DIN_LOC_ROOT/lnd/clm2/ndepdata/fndep_clm_f09_g17.CMIP6-SSP2-4.5-WACCM_1849-2101_monthly_c191007.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>NDEP_NHx_month  Faxa_ndep_nhx</var>
