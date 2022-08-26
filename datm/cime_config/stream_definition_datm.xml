@@ -4009,7 +4009,7 @@
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
-  
+
    <stream_entry name="presaero.SSP5-8.5">
     <stream_meshfile>
       <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
@@ -4063,7 +4063,7 @@
       <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file>/glade/work/afoster/ozone_damage_files/converted/O3_surface.f09_g17.CMIP6-historical-WACCM.001.monthly.185001-201412.nc</file>
+      <file>$DIN_LOC_ROOT/cdeps/datm/ozone/O3_surface.f09_g17.CMIP6-historical-WACCM.001.monthly.185001-201412.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>O3  Sa_o3</var>
@@ -4094,7 +4094,7 @@
       <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file>/glade/work/afoster/ozone_damage_files/converted/O3_surface.f09_g17.CMIP6-historical-WACCM.001.monthly.185001-201412.nc</file>
+      <file>$DIN_LOC_ROOT/cdeps/datm/ozone/O3_surface.f09_g17.CMIP6-historical-WACCM.001.monthly.185001-201412.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>O3  Sa_o3</var>
@@ -4125,7 +4125,7 @@
       <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file>/glade/work/afoster/ozone_damage_files/converted/O3_surface.f09_g17.CMIP6-historical-WACCM.001.monthly.185001-201412.nc</file>
+      <file>$DIN_LOC_ROOT/cdeps/datm/ozone/O3_surface.f09_g17.CMIP6-historical-WACCM.001.monthly.185001-201412.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>O3  Sa_o3</var>
@@ -4156,7 +4156,7 @@
       <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file>/glade/work/afoster/ozone_damage_files/converted/O3_surface.f09_g17.CMIP6-historical-WACCM.001.monthly.185001-201412.nc</file>
+      <file>$DIN_LOC_ROOT/cdeps/datm/ozone/O3_surface.f09_g17.CMIP6-historical-WACCM.001.monthly.185001-201412.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>O3  Sa_o3</var>
@@ -4187,7 +4187,7 @@
       <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file>/glade/work/afoster/ozone_damage_files/converted/O3_surface.f09_g17.CMIP6-SSP2-4.5-WACCM.001.monthly.201501-210012.nc</file>
+      <file>$DIN_LOC_ROOT/cdeps/datm/ozone/O3_surface.f09_g17.CMIP6-SSP2-4.5-WACCM.001.monthly.201501-210012.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>O3  Sa_o3</var>
@@ -4218,7 +4218,7 @@
       <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file>/glade/work/afoster/ozone_damage_files/converted/O3_surface.f09_g17.CMIP6-SSP3-7.0-WACCM.001.monthly.201501-210012.nc</file>
+      <file>$DIN_LOC_ROOT/cdeps/datm/ozone/O3_surface.f09_g17.CMIP6-SSP3-7.0-WACCM.001.monthly.201501-210012.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>O3  Sa_o3</var>
@@ -4249,7 +4249,7 @@
       <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file>/glade/work/afoster/ozone_damage_files/converted/O3_surface.f09_g17.CMIP6-SSP5-8.5-WACCM.001.monthly.201501-210012.nc</file>
+      <file>$DIN_LOC_ROOT/cdeps/datm/ozone/O3_surface.f09_g17.CMIP6-SSP5-8.5-WACCM.001.monthly.201501-210012.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>O3  Sa_o3</var>
