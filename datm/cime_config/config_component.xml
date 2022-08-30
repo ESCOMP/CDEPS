@@ -125,6 +125,7 @@
       <value compset="^SSP585_" >SSP5-8.5</value>
       <value compset="^HIST_"   >hist</value>
       <value compset="^20TR_"   >hist</value>
+      <!-- Only needed for compsets with active land; only in DATM CLMNCEP mode -->
       <value compset="_SLND">none</value>
       <value compset="_DLND">none</value>
     </values>
