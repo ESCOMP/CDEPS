@@ -125,7 +125,8 @@
       <value compset="^SSP585_" >SSP5-8.5</value>
       <value compset="^HIST_"   >hist</value>
       <value compset="^20TR_"   >hist</value>
-      <value compset="_DATM.*_DICE.*_DOCN.*_DROF">none</value>
+      <value compset="_SLND">none</value>
+      <value compset="_DLND">none</value>
     </values>
     <group>run_component_datm</group>
     <file>env_run.xml</file>
