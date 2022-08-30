@@ -125,6 +125,7 @@
     <values match="last">
       <value compset="_DOCN%SOMAQP" grid="_oi%1.9x2.5">$DIN_LOC_ROOT/ocn/docn7/SOM/default.som.forcing.aquaplanet.Qflux0_h30_sstQOBS.2degFV_c20170421.nc</value>
       <value compset="_DOCN%SOMAQP" grid="_oi%0.9x1.25">$DIN_LOC_ROOT/ocn/docn7/SOM/default.som.forcing.aquaplanet.Qflux0_h30_sstQOBS.1degFV_c20170421.nc</value>
+      <value compset="_DOCN%SOMAQP">$DIN_LOC_ROOT/ocn/docn7/SOM/default.som.forcing.aquaplanet.Qflux0_h30_sstQOBS.1degFV_c20170421.nc</value>
     </values>
     <group>run_component_docn</group>
     <file>env_run.xml</file>
