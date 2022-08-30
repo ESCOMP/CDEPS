@@ -108,6 +108,7 @@
     <stream_meshfile>
       <meshfile model_grid="_oi%1.9x2.5">$DIN_LOC_ROOT/share/meshes/fv1.9x2.5_141008_ESMFmesh.nc</meshfile>
       <meshfile model_grid="_oi%0.9x1.25">$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
       <file>$DOCN_SOMAQP_DATAFILE</file>
