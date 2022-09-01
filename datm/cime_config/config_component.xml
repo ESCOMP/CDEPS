@@ -92,7 +92,7 @@
 
   <entry id="DATM_PRESNDEP">
     <type>char</type>
-    <valid_values>none,clim_1850,clim_2000,clim_2010,hist,SSP1-2.6,SSP2-4.5,SSP3-7.0,SSP5-3.4,SSP5-8.5</valid_values>
+    <valid_values>none,clim_1850,clim_2000,clim_2010,hist,SSP1-2.6,SSP2-4.5,SSP3-7.0,SSP5-3.4,SSP5-8.5,cplhist</valid_values>
     <default_value>clim_2000</default_value>
     <values match="last">
       <value compset="^1850_"   >clim_1850</value>
