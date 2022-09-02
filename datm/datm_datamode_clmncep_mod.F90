@@ -36,6 +36,7 @@ module datm_datamode_clmncep_mod
   real(r8), pointer :: Sa_dens(:)           => null()
   real(r8), pointer :: Sa_pbot(:)           => null()
   real(r8), pointer :: Sa_pslv(:)           => null()
+  real(r8), pointer :: Sa_o3(:)             => null()
   real(r8), pointer :: Faxa_lwdn(:)         => null()
   real(r8), pointer :: Faxa_rainc(:)        => null()
   real(r8), pointer :: Faxa_rainl(:)        => null()
@@ -113,7 +114,7 @@ contains
 !===============================================================================
 
   subroutine datm_datamode_clmncep_advertise(exportState, fldsexport, flds_scalar_name, &
-       flds_co2, flds_wiso, flds_presaero, flds_presndep, rc)
+       flds_co2, flds_wiso, flds_presaero, flds_presndep, flds_preso3, rc)
 
     ! input/output variables
     type(esmf_State)   , intent(inout) :: exportState
@@ -122,6 +123,7 @@ contains
     logical            , intent(in)    :: flds_wiso
     logical            , intent(in)    :: flds_presaero
     logical            , intent(in)    :: flds_presndep
+    logical            , intent(in)    :: flds_preso3
     character(len=*)   , intent(in)    :: flds_scalar_name
     integer            , intent(out)   :: rc
 
@@ -156,6 +158,9 @@ contains
     if (flds_co2) then
        call dshr_fldList_add(fldsExport, 'Sa_co2prog')
        call dshr_fldList_add(fldsExport, 'Sa_co2diag')
+    end if
+    if (flds_preso3) then
+       call dshr_fldList_add(fldsExport, 'Sa_o3')
     end if
     if (flds_presaero) then
        call dshr_fldList_add(fldsExport, 'Faxa_bcph'   , ungridded_lbound=1, ungridded_ubound=3)
@@ -306,6 +311,13 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (itemflag /= ESMF_STATEITEM_NOTFOUND) then
        call dshr_state_getfldptr(exportState, 'Faxa_ndep', fldptr2=Faxa_ndep, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    end if
+
+    call ESMF_StateGet(exportstate, 'Sa_o3', itemFlag, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (itemflag /= ESMF_STATEITEM_NOTFOUND) then
+       call dshr_state_getfldptr(exportState, 'Sa_o3', fldptr1=Sa_o3, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 

@@ -1718,9 +1718,11 @@ contains
 
        rcode = pio_def_dim(pioid, 'strlen',   CL, dimid_str)
        do k=1,size(streams)
+          ! maxnfiles is the maximum number of files across all streams
           if (streams(k)%nfiles > maxnfiles) then
              maxnfiles = streams(k)%nfiles
           endif
+          ! maxnt is the maximum number of time samples across all possible stream files
           do n=1,streams(k)%nFiles
              if( streams(k)%file(n)%nt > maxnt) then
                 maxnt = streams(k)%file(n)%nt

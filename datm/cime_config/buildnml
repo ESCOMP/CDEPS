@@ -76,7 +76,7 @@ def _get_neon_data_availability(case, neonsite):
                                 oldestdate = datetime.strptime(neonatm[-10:],"%Y-%m.nc")
                             neonatm = f'cdeps/{version}/{neonsite}/'+neonatm
                             datavaliddate.append(neonatm)
-            if newestdate:                                        
+            if newestdate:
                 logger.info("Found tower data version {} for {} through {}".format(version, oldestdate, newestdate))
                 datavaliddate.sort()
                 return datavaliddate
@@ -105,6 +105,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     datm_topo = case.get_value("DATM_TOPO")
     datm_presaero = case.get_value("DATM_PRESAERO")
     datm_presndep = case.get_value("DATM_PRESNDEP")
+    datm_preso3 = case.get_value("DATM_PRESO3")
     datm_co2_tseries = case.get_value("DATM_CO2_TSERIES")
     atm_grid = case.get_value("ATM_GRID")
     model_grid = case.get_value("GRID")
@@ -116,6 +117,8 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
                "A DATM_MODE for CLM is incompatible with DATM_PRESAERO=none.")
         expect(datm_presndep != "none",
                "A DATM_MODE for CLM is incompatible with DATM_PRESNDEP=none.")
+        expect(datm_preso3 != "none",
+               "A DATM_MODE for CLM is incompatible with DATM_PRESO3=none.")
         expect(datm_topo != "none",
                "A DATM_MODE for CLM is incompatible with DATM_TOPO=none.")
 
@@ -124,6 +127,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     logger.debug("DATM grid is {}".format(atm_grid))
     logger.debug("DATM presaero mode is {}".format(datm_presaero))
     logger.debug("DATM presndep mode is {}".format(datm_presndep))
+    logger.debug("DATM preso3 mode is {}".format(datm_preso3))
     logger.debug("DATM topo mode is {}".format(datm_topo))
 
     # Initialize namelist defaults
@@ -143,6 +147,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     config['datm_co2_tseries'] = datm_co2_tseries
     config['datm_presaero'] = datm_presaero
     config['datm_presndep'] = datm_presndep
+    config['datm_preso3'] = datm_preso3
 
     if case.get_value('PTS_LON'):
         scol_lon = float(case.get_value('PTS_LON'))
@@ -173,10 +178,13 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
         streamlist.append("presaero.{}".format(datm_presaero))
     if datm_presndep != "none":
         streamlist.append("presndep.{}".format(datm_presndep))
+    if datm_preso3 != "none":
+        streamlist.append("preso3.{}".format(datm_preso3))
     if datm_topo != "none":
         streamlist.append("topo.{}".format(datm_topo))
     if datm_co2_tseries != "none":
         streamlist.append("co2tseries.{}".format(datm_co2_tseries))
+
     bias_correct = nmlgen.get_value("bias_correct")
     if bias_correct is not None:
         streamlist.append(bias_correct)
@@ -189,9 +197,32 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     schema_file = os.path.join(_CDEPS_CONFIG,"stream_definition_v2.0.xsd")
     stream_file = os.path.join(_CDEPS_CONFIG,os.pardir, "datm","cime_config","stream_definition_datm.xml")
     streams = StreamCDEPS(stream_file, schema_file)
-    streams.create_stream_xml(streamlist, case, outfile, data_list_path, 
+    streams.create_stream_xml(streamlist, case, outfile, data_list_path,
                               os.path.join(caseroot,'user_nl_datm_streams'+inst_string),
                               available_neon_data=available_neon_data)
+
+
+####################################################################################
+def _create_drv_flds_in(case, confdir):
+####################################################################################
+    datm_preso3 = case.get_value("DATM_PRESO3")
+
+    # for now we are hard-coding this file name and values because we only need it for ozone
+    if datm_preso3 != "none":
+        
+	# Generate drv_flds_in file
+        outfile = os.path.join(confdir, "drv_flds_in")
+        ozone_nl_name = "&ozone_coupling_nl"
+        ozone_freq_par = "atm_ozone_frequency"
+        ozone_freq_val = "'multiday_average'"
+        nl_fin = "/"
+
+        with open(outfile, "w") as drv_fl:
+            drv_fl.write("{}\n".format(ozone_nl_name))
+            drv_fl.write(" {} = {}\n".format(ozone_freq_par, ozone_freq_val))
+            drv_fl.write("{}\n".format(nl_fin))
+
+
 
 ###############################################################################
 def buildnml(case, caseroot, compname):
@@ -266,6 +297,8 @@ def buildnml(case, caseroot, compname):
 
         # create namelist and stream file(s) data component
         _create_namelists(case, confdir, inst_string, namelist_infile, nmlgen, data_list_path)
+
+        _create_drv_flds_in(case, confdir)
 
         # copy namelist files and stream text files, to rundir
         copy_inputs_to_rundir(caseroot, compname, confdir, rundir, inst_string)
