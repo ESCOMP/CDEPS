@@ -19,7 +19,7 @@ module dshr_strdata_mod
   use ESMF             , only : ESMF_FieldReGridStore, ESMF_FieldRedistStore, ESMF_UNMAPPEDACTION_IGNORE
   use ESMF             , only : ESMF_TERMORDER_SRCSEQ, ESMF_FieldRegrid, ESMF_FieldFill, ESMF_FieldIsCreated
   use ESMF             , only : ESMF_REGION_TOTAL, ESMF_FieldGet, ESMF_TraceRegionExit, ESMF_TraceRegionEnter
-  use ESMF             , only : ESMF_LOGMSG_INFO, ESMF_LogWrite, ESMF_RC_ARG_VALUE
+  use ESMF             , only : ESMF_LOGMSG_INFO, ESMF_LogWrite, ESMF_RC_ARG_OUTOFRANGE
   use shr_kind_mod     , only : r8=>shr_kind_r8, r4=>shr_kind_r4, i2=>shr_kind_I2
   use shr_kind_mod     , only : cs=>shr_kind_cs, cl=>shr_kind_cl, cxx=>shr_kind_cxx
   use shr_sys_mod      , only : shr_sys_abort
@@ -948,11 +948,25 @@ contains
 
           if (newData(ns)) then
              ! Reset time bounds if newdata read in
-             call shr_cal_date2ymd(sdat%pstrm(ns)%ymdLB,year,month,day)
+             call shr_cal_date2ymd(sdat%pstrm(ns)%ymdUB,year,month,day)
+             print *,__FILE__,__LINE__,'Upper bound:',sdat%pstrm(ns)%ymdUB,year,month,day
+
              call shr_cal_timeSet(timeLB,sdat%pstrm(ns)%ymdLB,0,sdat%stream(ns)%calendar,rc=rc)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+
              call shr_cal_timeSet(timeUB,sdat%pstrm(ns)%ymdUB,0,sdat%stream(ns)%calendar,rc=rc)
+             if(rc .ne. ESMF_SUCCESS) then
+                if(month .eq. 2 .and. day .eq. 29) then
+                   ! Change the date to 0301 (0229 + 72)
+                   write(sdat%stream(1)%logunit, *) trim(subname),': Leap year date conflict, adjusting time upper bound'
+                   sdat%pstrm(ns)%ymdUB = sdat%pstrm(ns)%ymdUB + 72
+                   call shr_cal_timeSet(timeUB,sdat%pstrm(ns)%ymdUB,0,sdat%stream(ns)%calendar,rc=rc)
+                endif
+             endif
+             print *,__FILE__,__LINE__,rc
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
              timeint = timeUB-timeLB
              call ESMF_TimeIntervalGet(timeint, StartTimeIn=timeLB, d=dday)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
