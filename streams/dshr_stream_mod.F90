@@ -25,6 +25,7 @@ module dshr_stream_mod
   use shr_cal_mod      , only : shr_cal_calendarName
   use shr_cal_mod      , only : shr_cal_advDate
   use shr_cal_mod      , only : shr_cal_advdateint
+  use shr_cal_mod      , only : shr_cal_leapyear
   use dshr_methods_mod , only : chkerr
   use pio              , only : pio_noerr, pio_seterrorhandling, pio_inq_att, pio_openfile, pio_closefile
   use pio              , only : file_desc_t, pio_inq_varid, iosystem_desc_t, pio_file_is_open
@@ -1159,6 +1160,11 @@ contains
                    dDateUB = strm%file(k_ub)%date(n_ub)
                    call shr_cal_date2ymd(dDateUB,yy,mm,dd)
                    yy = yy + (mYear-dYear)
+                   if(mm == 2 .and. dd==29 .and. .not. shr_cal_leapyear(yy)) then
+                      if(isroot_task) write(strm%logunit, *) 'Found leapyear mismatch', myear, dyear  
+                      mm = 3
+                      dd = 1
+                   endif
                    call shr_cal_ymd2date(yy,mm,dd,mDateUB)
                    secUB = strm%file(k_ub)%secs(n_ub)
                    fileUB = strm%file(k_ub)%name

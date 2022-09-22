@@ -948,23 +948,10 @@ contains
 
           if (newData(ns)) then
              ! Reset time bounds if newdata read in
-             call shr_cal_date2ymd(sdat%pstrm(ns)%ymdUB,year,month,day)
-             print *,__FILE__,__LINE__,'Upper bound:',sdat%pstrm(ns)%ymdUB,year,month,day
-
              call shr_cal_timeSet(timeLB,sdat%pstrm(ns)%ymdLB,0,sdat%stream(ns)%calendar,rc=rc)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-
              call shr_cal_timeSet(timeUB,sdat%pstrm(ns)%ymdUB,0,sdat%stream(ns)%calendar,rc=rc)
-             if(rc .ne. ESMF_SUCCESS) then
-                if(month .eq. 2 .and. day .eq. 29) then
-                   ! Change the date to 0301 (0229 + 72)
-                   write(sdat%stream(1)%logunit, *) trim(subname),': Leap year date conflict, adjusting time upper bound'
-                   sdat%pstrm(ns)%ymdUB = sdat%pstrm(ns)%ymdUB + 72
-                   call shr_cal_timeSet(timeUB,sdat%pstrm(ns)%ymdUB,0,sdat%stream(ns)%calendar,rc=rc)
-                endif
-             endif
-             print *,__FILE__,__LINE__,rc
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
              timeint = timeUB-timeLB
