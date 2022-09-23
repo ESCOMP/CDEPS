@@ -1411,18 +1411,21 @@ contains
     if(rc /= ESMF_SUCCESS) call ESMF_Finalize(rc=rc, endflag=ESMF_END_ABORT)
   end subroutine shr_cal_ymds2rday_offset
 
+  !===============================================================================
   logical function shr_cal_leapyear(yr)
     integer, intent(in) :: yr
     shr_cal_leapyear = .false.
-    if (real(yr)/4.0 == yr/4) then
-       if (real(yr)/100.0 == yr/100) then
-          if(real(yr)/400.0 == yr/400) then
+    if (modulo(yr, 4) == 0) then
+       if (modulo(yr, 100) == 0) then
+          if(modulo(yr, 400) == 0) then
              shr_cal_leapyear =  .true.
           endif
        else
           shr_cal_leapyear =  .true.
        endif
     endif
+
   end function shr_cal_leapyear
+
   !===============================================================================
 end module shr_cal_mod
