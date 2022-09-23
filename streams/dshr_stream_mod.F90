@@ -819,7 +819,7 @@ contains
 
     if (cycle) then
        dYear  = yrFirst + modulo(mYear-yrAlign+(2*nYears),nYears)   ! current data year
-       if(debug .and. isroot_task) then
+       if(debug>0 .and. isroot_task) then
           write(strm%logunit, *) trim(subname), ' dyear, yrfirst, myear, yralign, nyears =', dyear, yrfirst, myear, yralign, nyears
        endif
     else
