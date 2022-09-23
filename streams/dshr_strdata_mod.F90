@@ -26,7 +26,7 @@ module dshr_strdata_mod
   use shr_const_mod    , only : shr_const_pi, shr_const_cDay, shr_const_spval
   use shr_cal_mod      , only : shr_cal_calendarname, shr_cal_timeSet
   use shr_cal_mod      , only : shr_cal_noleap, shr_cal_gregorian
-  use shr_cal_mod      , only : shr_cal_date2ymd, shr_cal_ymd2date
+  use shr_cal_mod      , only : shr_cal_date2ymd, shr_cal_ymd2date, shr_cal_leapyear
   use shr_orb_mod      , only : shr_orb_decl, shr_orb_cosz, shr_orb_undef_real
 #ifdef CESMCOUPLED
   use shr_pio_mod      , only : shr_pio_getiosys, shr_pio_getiotype, shr_pio_getioformat
@@ -846,9 +846,11 @@ contains
     real(r8), pointer                   :: data_v_dst(:)    ! pointer into field bundle
     type(ESMF_Time)                     :: timeLB, timeUB   ! lb and ub times
     type(ESMF_TimeInterval)             :: timeint          ! delta time
+    character(CL)                       :: calendar
     integer                             :: dday             ! delta days
     real(r8)                            :: dtime            ! delta time
     integer                             :: year,month,day   ! date year month day
+    integer                             :: datayear,datamonth,dataday   ! data date year month day
     integer                             :: nstreams
     integer                             :: stream_index
     integer                             :: lsize
@@ -900,6 +902,7 @@ contains
           ymdmod(ns) = ymd
           todmod    = tod
           if (trim(sdat%model_calendar) /= trim(sdat%stream(ns)%calendar)) then
+             calendar = shr_cal_noleap
              if (( trim(sdat%model_calendar) == trim(shr_cal_gregorian)) .and. &
                   (trim(sdat%stream(ns)%calendar) == trim(shr_cal_noleap))) then
                 ! case (1), set feb 29 = feb 28
@@ -915,6 +918,31 @@ contains
                 write(logunit,*) trim(subname),' ERROR: mismatch calendar ', &
                      trim(sdat%model_calendar),':',trim(sdat%stream(ns)%calendar)
                 call shr_sys_abort(trim(subname)//' ERROR: mismatch calendar ')
+             endif
+          else ! calendars are the same
+             if(trim(sdat%model_calendar) == trim(shr_cal_gregorian)) then
+                ! Both are in gregorian - but it's possible that there is a mismatch
+                ! such that the model is in leapyear but the data is not
+                call shr_cal_date2ymd (ymd,year,month,day)
+                call shr_cal_date2ymd(sdat%pstrm(ns)%ymdUB, datayear, datamonth, dataday)
+
+                if(month == 2 .and. day==29) then
+                   if(.not. shr_cal_leapyear(datayear)) then
+                      ! model is in leap year but data is not
+                      calendar = shr_cal_noleap
+                   endif
+                else if(datamonth == 2) then
+                   if(.not. shr_cal_leapyear(year)) then
+                      if(debug .and. sdat%mainproc) then
+                         write(logunit, *) subname,' dataday = ', dataday
+                      endif
+                      calendar = shr_cal_noleap
+                   endif
+                else
+                   calendar = sdat%model_calendar
+                endif
+             else
+                calendar = sdat%model_calendar
              endif
           endif
 
@@ -948,10 +976,10 @@ contains
 
           if (newData(ns)) then
              ! Reset time bounds if newdata read in
-             call shr_cal_timeSet(timeLB,sdat%pstrm(ns)%ymdLB,0,sdat%stream(ns)%calendar,rc=rc)
+             call shr_cal_timeSet(timeLB,sdat%pstrm(ns)%ymdLB,0,calendar,rc=rc)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-             call shr_cal_timeSet(timeUB,sdat%pstrm(ns)%ymdUB,0,sdat%stream(ns)%calendar,rc=rc)
+             call shr_cal_timeSet(timeUB,sdat%pstrm(ns)%ymdUB,0,calendar,rc=rc)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
              timeint = timeUB-timeLB
@@ -965,6 +993,7 @@ contains
              if ((sdat%pstrm(ns)%dtmax/sdat%pstrm(ns)%dtmin) > sdat%stream(ns)%dtlimit) then
                 if (sdat%mainproc) then
                    write(sdat%stream(1)%logunit,*) trim(subname),' ERROR: for stream ',ns
+                   write(sdat%stream(1)%logunit,*) trim(subname),' ERROR: dday = ',dday
                    write(sdat%stream(1)%logunit,*) trim(subName),' ERROR: dtime, dtmax, dtmin, dtlimit = ',&
                         dtime, sdat%pstrm(ns)%dtmax, sdat%pstrm(ns)%dtmin, sdat%stream(ns)%dtlimit
                    write(sdat%stream(1)%logunit,*) trim(subName),' ERROR: ymdLB, todLB, ymdUB, todUB = ', &

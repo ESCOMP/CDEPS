@@ -819,6 +819,9 @@ contains
 
     if (cycle) then
        dYear  = yrFirst + modulo(mYear-yrAlign+(2*nYears),nYears)   ! current data year
+       if(debug .and. isroot_task) then
+          write(strm%logunit, *) trim(subname), ' dyear, yrfirst, myear, yralign, nyears =', dyear, yrfirst, myear, yralign, nyears
+       endif
     else
        dYear  = yrFirst + mYear - yrAlign
     endif
@@ -1161,7 +1164,7 @@ contains
                    call shr_cal_date2ymd(dDateUB,yy,mm,dd)
                    yy = yy + (mYear-dYear)
                    if(mm == 2 .and. dd==29 .and. .not. shr_cal_leapyear(yy)) then
-                      if(isroot_task) write(strm%logunit, *) 'Found leapyear mismatch', myear, dyear  
+                      if(isroot_task) write(strm%logunit, *) 'Found leapyear mismatch', myear, dyear, yy
                       mm = 3
                       dd = 1
                    endif

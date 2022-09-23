@@ -445,7 +445,7 @@ contains
 
   !===============================================================================
   subroutine ModelAdvance(gcomp, rc)
-
+    use shr_file_mod, only : shr_file_setlogunit
     ! input/output variables
     type(ESMF_GridComp)  :: gcomp
     integer, intent(out) :: rc
@@ -472,6 +472,7 @@ contains
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
+    call shr_file_setlogunit(logunit)
 
     call ESMF_TraceRegionEnter(subname)
     call memcheck(subname, 5, my_task==main_task)
