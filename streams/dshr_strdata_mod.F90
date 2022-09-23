@@ -933,7 +933,7 @@ contains
                    endif
                 else if(datamonth == 2) then
                    if(.not. shr_cal_leapyear(year)) then
-                      if(debug .and. sdat%mainproc) then
+                      if(debug>0 .and. sdat%mainproc) then
                          write(logunit, *) subname,' dataday = ', dataday
                       endif
                       calendar = shr_cal_noleap
