@@ -122,9 +122,7 @@ module cdeps_datm_comp
   integer                      :: iradsw = 0                          ! radiation interval (input namelist)
   character(CL)                :: factorFn_mesh = 'null'              ! file containing correction factors mesh
   character(CL)                :: factorFn_data = 'null'              ! file containing correction factors data
-  logical                      :: flds_presaero = .false.             ! true => send valid prescribed aero fields to mediator
-  logical                      :: flds_presndep = .false.             ! true => send valid prescribed ndep fields to mediator
-  logical                      :: flds_preso3 = .false.               ! true => send valid prescribed ozone fields to mediator
+  logical                      :: flds_presaero = .false.             ! true => send valid prescribe aero fields to mediator
   logical                      :: flds_co2 = .false.                  ! true => send prescribed co2 to mediator
   logical                      :: flds_wiso = .false.                 ! true => send water isotopes to mediator
   character(CL)                :: bias_correct = nullstr              ! send bias correction fields to coupler
@@ -133,7 +131,6 @@ module cdeps_datm_comp
   character(CL)                :: restfilm = nullstr                  ! model restart file namelist
   integer                      :: nx_global                           ! global nx
   integer                      :: ny_global                           ! global ny
-  logical                      :: skip_restart_read = .false.         ! true => skip restart read in continuation run
 
   ! linked lists
   type(fldList_type) , pointer :: fldsImport => null()
@@ -230,8 +227,7 @@ contains
     namelist / datm_nml / datamode, &
          model_meshfile, model_maskfile, &
          nx_global, ny_global, restfilm, iradsw, factorFn_data, factorFn_mesh, &
-         flds_presaero, flds_co2, flds_wiso, bias_correct, anomaly_forcing, &
-         skip_restart_read, flds_presndep, flds_preso3
+         flds_presaero, flds_co2, flds_wiso, bias_correct, anomaly_forcing
 
     rc = ESMF_SUCCESS
 
@@ -270,11 +266,8 @@ contains
     call shr_mpi_bcast(factorFn_mesh             , mpicom, 'factorFn_mesh')
     call shr_mpi_bcast(restfilm                  , mpicom, 'restfilm')
     call shr_mpi_bcast(flds_presaero             , mpicom, 'flds_presaero')
-    call shr_mpi_bcast(flds_presndep             , mpicom, 'flds_presndep')
-    call shr_mpi_bcast(flds_preso3               , mpicom, 'flds_preso3')
     call shr_mpi_bcast(flds_co2                  , mpicom, 'flds_co2')
     call shr_mpi_bcast(flds_wiso                 , mpicom, 'flds_wiso')
-    call shr_mpi_bcast(skip_restart_read         , mpicom, 'skip_restart_read')
 
     ! write namelist input to standard out
     if (my_task == main_task) then
@@ -289,11 +282,8 @@ contains
        write(logunit,F00)' factorFn_data  = ',trim(factorFn_data)
        write(logunit,F00)' factorFn_mesh  = ',trim(factorFn_mesh)
        write(logunit,F02)' flds_presaero  = ',flds_presaero
-       write(logunit,F02)' flds_presndep  = ',flds_presndep
-       write(logunit,F02)' flds_preso3    = ',flds_preso3
        write(logunit,F02)' flds_co2       = ',flds_co2
        write(logunit,F02)' flds_wiso      = ',flds_wiso
-       write(logunit,F02)' skip_restart_read = ',skip_restart_read
     end if
 
     ! Validate sdat datamode
@@ -314,19 +304,19 @@ contains
     select case (trim(datamode))
     case ('CORE2_NYF', 'CORE2_IAF')
        call datm_datamode_core2_advertise(exportState, fldsExport, flds_scalar_name, &
-            flds_co2, flds_wiso, flds_presaero, flds_presndep, rc)
+            flds_co2, flds_wiso, flds_presaero, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('CORE_IAF_JRA')
        call datm_datamode_jra_advertise(exportState, fldsExport, flds_scalar_name, &
-            flds_co2, flds_wiso, flds_presaero, flds_presndep, rc)
+            flds_co2, flds_wiso, flds_presaero, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('CLMNCEP')
        call datm_datamode_clmncep_advertise(exportState, fldsExport, flds_scalar_name, &
-            flds_co2, flds_wiso, flds_presaero, flds_presndep, flds_preso3, rc)
+            flds_co2, flds_wiso, flds_presaero, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('CPLHIST')
        call datm_datamode_cplhist_advertise(exportState, fldsExport, flds_scalar_name, &
-            flds_co2, flds_wiso, flds_presaero, flds_presndep, rc)
+            flds_co2, flds_wiso, flds_presaero, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('ERA5')
        call datm_datamode_era5_advertise(exportState, fldsExport, flds_scalar_name, rc)
@@ -413,7 +403,7 @@ contains
     ! Initialize and update orbital values
     call dshr_orbital_init(gcomp, logunit, my_task == main_task, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call dshr_orbital_update(currTime, logunit, my_task == main_task, &
+    call dshr_orbital_update(clock, logunit, my_task == main_task, &
          orbEccen, orbObliqr, orbLambm0, orbMvelpp, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
@@ -445,7 +435,7 @@ contains
 
   !===============================================================================
   subroutine ModelAdvance(gcomp, rc)
-    use shr_file_mod, only : shr_file_setlogunit
+
     ! input/output variables
     type(ESMF_GridComp)  :: gcomp
     integer, intent(out) :: rc
@@ -472,7 +462,6 @@ contains
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
-    call shr_file_setlogunit(logunit)
 
     call ESMF_TraceRegionEnter(subname)
     call memcheck(subname, 5, my_task==main_task)
@@ -492,13 +481,13 @@ contains
     call shr_cal_ymd2date(yr, mon, day, next_ymd)
 
     ! Update the orbital values
-    call dshr_orbital_update(nextTime, logunit, my_task == main_task, &
+    call dshr_orbital_update(clock, logunit, my_task == main_task, &
          orbEccen, orbObliqr, orbLambm0, orbMvelpp, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     restart_write = dshr_check_restart_alarm(clock, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
+    
     ! Run datm
     call ESMF_TraceRegionEnter('datm_run')
     call datm_comp_run(importstate, exportstate, next_ymd, next_tod, mon, &
@@ -584,7 +573,7 @@ contains
        end select
 
        ! Read restart if needed
-       if (restart_read .and. .not. skip_restart_read) then
+       if (restart_read) then
           select case (trim(datamode))
           case('CORE2_NYF','CORE2_IAF')
              call datm_datamode_core2_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
@@ -712,7 +701,6 @@ contains
 
       ! local variables
       integer                         :: n
-      character(CS)                   :: strm_flds2(2)
       character(CS)                   :: strm_flds3(3)
       character(CS)                   :: strm_flds4(4)
       integer                         :: rank
@@ -739,10 +727,6 @@ contains
                  exportState, logunit, mainproc, rc=rc)
             if (ChkErr(rc,__LINE__,u_FILE_u)) return
          else if (rank == 2) then
-            ! The following maps stream input fields to export fields that have an ungridded dimension
-            ! TODO: in the future it might be better to change the format of the streams file to have two more entries
-            ! that could denote how the stream variables are mapped to export fields that have an ungridded dimension
-
             select case (trim(lfieldnames(n)))
             case('Faxa_bcph')
                strm_flds3 = (/'Faxa_bcphidry', 'Faxa_bcphodry', 'Faxa_bcphiwet'/)
@@ -776,11 +760,6 @@ contains
                strm_flds3 = (/'Faxa_snowl_16O', 'Faxa_snowl_18O', 'Faxa_snowl_HDO'/)
                call dshr_dfield_add(dfields, sdat, trim(lfieldnames(n)), strm_flds3, exportState, logunit, mainproc, rc)
                if (ChkErr(rc,__LINE__,u_FILE_u)) return
-            case('Faxa_ndep')
-               strm_flds2 = (/'Faxa_ndep_nhx', 'Faxa_ndep_noy'/)
-               call dshr_dfield_add(dfields, sdat, trim(lfieldnames(n)), strm_flds2, exportState, logunit, mainproc, rc)
-               if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
             end select
          end if
       end do
