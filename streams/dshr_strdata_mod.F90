@@ -786,7 +786,14 @@ contains
     ! on the time series input data.
     !
     ! (0) The stream calendar and model calendar are identical:
-    ! Proceed in the standard way.
+    !     In this case it is still possible to have a mismatch if both are gregorian.
+    !     These cases are:
+    !     -   Model is no_leap, data is Gregorian and leapyear date 2/29 is encountered in data - skip date
+    !     -   Model is Gregorian, data is no_leap and leapyear date 2/29 is encountered in model - repeat 2/28 data
+    !     -   Model is Gregorian, data is gregorian but leapyears do not align.
+    !     -       if in model leap year repeat data from 2/28 
+    !     -       if in data leap year skip date 2/29
+    !     
     !
     ! (1) The stream is a no leap calendar and the model is gregorian:
     ! Time interpolate on the noleap calendar.  If the model date is Feb 29,
