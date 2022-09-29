@@ -908,8 +908,8 @@ contains
           ! case(0)
           ymdmod(ns) = ymd
           todmod    = tod
+          calendar = trim(sdat%stream(ns)%calendar)
           if (trim(sdat%model_calendar) /= trim(sdat%stream(ns)%calendar)) then
-             calendar = shr_cal_noleap
              if (( trim(sdat%model_calendar) == trim(shr_cal_gregorian)) .and. &
                   (trim(sdat%stream(ns)%calendar) == trim(shr_cal_noleap))) then
                 ! case (1), set feb 29 = feb 28
@@ -917,6 +917,7 @@ contains
                 if (month == 2 .and. day == 29) then
                    call shr_cal_ymd2date(year,2,28,ymdmod(ns))
                 endif
+                calendar = shr_cal_noleap
              else if ((trim(sdat%model_calendar) == trim(shr_cal_noleap)) .and. &
                       (trim(sdat%stream(ns)%calendar) == trim(shr_cal_gregorian))) then
                 ! case (2), feb 29 input data will be skipped automatically
@@ -985,7 +986,6 @@ contains
              ! Reset time bounds if newdata read in
              call shr_cal_timeSet(timeLB,sdat%pstrm(ns)%ymdLB,0,calendar,rc=rc)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
              call shr_cal_timeSet(timeUB,sdat%pstrm(ns)%ymdUB,0,calendar,rc=rc)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
