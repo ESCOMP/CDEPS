@@ -89,6 +89,7 @@ module shr_cal_mod
   public :: shr_cal_ymdtod2string ! translate ymdtod to string for filenames
   public :: shr_cal_datetod2string ! translate date to string for filenames
   public :: shr_cal_ymds2rday_offset ! translate yr,month,day,sec offset to a fractional day offset
+  public :: shr_cal_leapyear ! logical function: is this a leap year?
 
   ! !PUBLIC DATA MEMBERS:
 
@@ -1409,6 +1410,22 @@ contains
     call ESMF_TimeIntervalGet(timeinterval = timeinterval, d_r8 = rdays_offset, rc = rc)
     if(rc /= ESMF_SUCCESS) call ESMF_Finalize(rc=rc, endflag=ESMF_END_ABORT)
   end subroutine shr_cal_ymds2rday_offset
+
+  !===============================================================================
+  logical function shr_cal_leapyear(yr)
+    integer, intent(in) :: yr
+    shr_cal_leapyear = .false.
+    if (modulo(yr, 4) == 0) then
+       if (modulo(yr, 100) == 0) then
+          if(modulo(yr, 400) == 0) then
+             shr_cal_leapyear =  .true.
+          endif
+       else
+          shr_cal_leapyear =  .true.
+       endif
+    endif
+
+  end function shr_cal_leapyear
 
   !===============================================================================
 end module shr_cal_mod

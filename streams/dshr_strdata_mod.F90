@@ -19,14 +19,14 @@ module dshr_strdata_mod
   use ESMF             , only : ESMF_FieldReGridStore, ESMF_FieldRedistStore, ESMF_UNMAPPEDACTION_IGNORE
   use ESMF             , only : ESMF_TERMORDER_SRCSEQ, ESMF_FieldRegrid, ESMF_FieldFill, ESMF_FieldIsCreated
   use ESMF             , only : ESMF_REGION_TOTAL, ESMF_FieldGet, ESMF_TraceRegionExit, ESMF_TraceRegionEnter
-  use ESMF             , only : ESMF_LOGMSG_INFO, ESMF_LogWrite, ESMF_RC_ARG_VALUE
+  use ESMF             , only : ESMF_LOGMSG_INFO, ESMF_LogWrite
   use shr_kind_mod     , only : r8=>shr_kind_r8, r4=>shr_kind_r4, i2=>shr_kind_I2
   use shr_kind_mod     , only : cs=>shr_kind_cs, cl=>shr_kind_cl, cxx=>shr_kind_cxx
   use shr_sys_mod      , only : shr_sys_abort
   use shr_const_mod    , only : shr_const_pi, shr_const_cDay, shr_const_spval
   use shr_cal_mod      , only : shr_cal_calendarname, shr_cal_timeSet
   use shr_cal_mod      , only : shr_cal_noleap, shr_cal_gregorian
-  use shr_cal_mod      , only : shr_cal_date2ymd, shr_cal_ymd2date
+  use shr_cal_mod      , only : shr_cal_date2ymd, shr_cal_ymd2date, shr_cal_leapyear
   use shr_orb_mod      , only : shr_orb_decl, shr_orb_cosz, shr_orb_undef_real
 #ifdef CESMCOUPLED
   use shr_pio_mod      , only : shr_pio_getiosys, shr_pio_getiotype, shr_pio_getioformat
@@ -786,7 +786,14 @@ contains
     ! on the time series input data.
     !
     ! (0) The stream calendar and model calendar are identical:
-    ! Proceed in the standard way.
+    !     In this case it is still possible to have a mismatch if both are gregorian.
+    !     These cases are:
+    !     -   Model is no_leap, data is Gregorian and leapyear date 2/29 is encountered in data - skip date
+    !     -   Model is Gregorian, data is no_leap and leapyear date 2/29 is encountered in model - repeat 2/28 data
+    !     -   Model is Gregorian, data is gregorian but leapyears do not align.
+    !     -       if in model leap year repeat data from 2/28 
+    !     -       if in data leap year skip date 2/29
+    !     
     !
     ! (1) The stream is a no leap calendar and the model is gregorian:
     ! Time interpolate on the noleap calendar.  If the model date is Feb 29,
@@ -846,9 +853,11 @@ contains
     real(r8), pointer                   :: data_v_dst(:)    ! pointer into field bundle
     type(ESMF_Time)                     :: timeLB, timeUB   ! lb and ub times
     type(ESMF_TimeInterval)             :: timeint          ! delta time
+    character(CL)                       :: calendar
     integer                             :: dday             ! delta days
     real(r8)                            :: dtime            ! delta time
     integer                             :: year,month,day   ! date year month day
+    integer                             :: datayear,datamonth,dataday   ! data date year month day
     integer                             :: nstreams
     integer                             :: stream_index
     integer                             :: lsize
@@ -899,6 +908,7 @@ contains
           ! case(0)
           ymdmod(ns) = ymd
           todmod    = tod
+          calendar = trim(sdat%stream(ns)%calendar)
           if (trim(sdat%model_calendar) /= trim(sdat%stream(ns)%calendar)) then
              if (( trim(sdat%model_calendar) == trim(shr_cal_gregorian)) .and. &
                   (trim(sdat%stream(ns)%calendar) == trim(shr_cal_noleap))) then
@@ -907,6 +917,7 @@ contains
                 if (month == 2 .and. day == 29) then
                    call shr_cal_ymd2date(year,2,28,ymdmod(ns))
                 endif
+                calendar = shr_cal_noleap
              else if ((trim(sdat%model_calendar) == trim(shr_cal_noleap)) .and. &
                       (trim(sdat%stream(ns)%calendar) == trim(shr_cal_gregorian))) then
                 ! case (2), feb 29 input data will be skipped automatically
@@ -915,6 +926,31 @@ contains
                 write(logunit,*) trim(subname),' ERROR: mismatch calendar ', &
                      trim(sdat%model_calendar),':',trim(sdat%stream(ns)%calendar)
                 call shr_sys_abort(trim(subname)//' ERROR: mismatch calendar ')
+             endif
+          else ! calendars are the same
+             if(trim(sdat%model_calendar) == trim(shr_cal_gregorian)) then
+                ! Both are in gregorian - but it's possible that there is a mismatch
+                ! such that the model is in leapyear but the data is not
+                call shr_cal_date2ymd (ymd,year,month,day)
+                call shr_cal_date2ymd(sdat%pstrm(ns)%ymdUB, datayear, datamonth, dataday)
+
+                if(month == 2 .and. day==29) then
+                   if(.not. shr_cal_leapyear(datayear)) then
+                      ! model is in leap year but data is not
+                      calendar = shr_cal_noleap
+                   endif
+                else if(datamonth == 2) then
+                   if(.not. shr_cal_leapyear(year)) then
+                      if(debug>0 .and. sdat%mainproc) then
+                         write(logunit, *) subname,' dataday = ', dataday
+                      endif
+                      calendar = shr_cal_noleap
+                   endif
+                else
+                   calendar = sdat%model_calendar
+                endif
+             else
+                calendar = sdat%model_calendar
              endif
           endif
 
@@ -948,11 +984,11 @@ contains
 
           if (newData(ns)) then
              ! Reset time bounds if newdata read in
-             call shr_cal_date2ymd(sdat%pstrm(ns)%ymdLB,year,month,day)
-             call shr_cal_timeSet(timeLB,sdat%pstrm(ns)%ymdLB,0,sdat%stream(ns)%calendar,rc=rc)
+             call shr_cal_timeSet(timeLB,sdat%pstrm(ns)%ymdLB,0,calendar,rc=rc)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
-             call shr_cal_timeSet(timeUB,sdat%pstrm(ns)%ymdUB,0,sdat%stream(ns)%calendar,rc=rc)
+             call shr_cal_timeSet(timeUB,sdat%pstrm(ns)%ymdUB,0,calendar,rc=rc)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
              timeint = timeUB-timeLB
              call ESMF_TimeIntervalGet(timeint, StartTimeIn=timeLB, d=dday)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -964,6 +1000,7 @@ contains
              if ((sdat%pstrm(ns)%dtmax/sdat%pstrm(ns)%dtmin) > sdat%stream(ns)%dtlimit) then
                 if (sdat%mainproc) then
                    write(sdat%stream(1)%logunit,*) trim(subname),' ERROR: for stream ',ns
+                   write(sdat%stream(1)%logunit,*) trim(subname),' ERROR: dday = ',dday
                    write(sdat%stream(1)%logunit,*) trim(subName),' ERROR: dtime, dtmax, dtmin, dtlimit = ',&
                         dtime, sdat%pstrm(ns)%dtmax, sdat%pstrm(ns)%dtmin, sdat%stream(ns)%dtlimit
                    write(sdat%stream(1)%logunit,*) trim(subName),' ERROR: ymdLB, todLB, ymdUB, todUB = ', &
