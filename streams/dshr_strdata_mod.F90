@@ -920,6 +920,7 @@ contains
                 calendar = shr_cal_noleap
              else if ((trim(sdat%model_calendar) == trim(shr_cal_noleap)) .and. &
                       (trim(sdat%stream(ns)%calendar) == trim(shr_cal_gregorian))) then
+                calendar = shr_cal_noleap
                 ! case (2), feb 29 input data will be skipped automatically
              else
                 ! case (3), abort
