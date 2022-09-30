@@ -918,46 +918,8 @@ contains
                    call shr_cal_ymd2date(year,2,28,ymdmod(ns))
                 endif
                 calendar = shr_cal_noleap
-             else if ((trim(sdat%model_calendar) == trim(shr_cal_noleap)) .and. &
-                      (trim(sdat%stream(ns)%calendar) == trim(shr_cal_gregorian))) then
-                call shr_cal_date2ymd(sdat%pstrm(ns)%ymdUB, datayear, datamonth, dataday)
-                if(.not. shr_cal_leapyear(datayear)) then
-                   calendar = shr_cal_noleap
-                endif
-                ! case (2), feb 29 input data will be skipped automatically
-             else
-                ! case (3), abort
-                write(logunit,*) trim(subname),' ERROR: mismatch calendar ', &
-                     trim(sdat%model_calendar),':',trim(sdat%stream(ns)%calendar)
-                call shr_sys_abort(trim(subname)//' ERROR: mismatch calendar ')
-             endif
-          else ! calendars are the same
-             if(trim(sdat%model_calendar) == trim(shr_cal_gregorian)) then
-                ! Both are in gregorian - but it's possible that there is a mismatch
-                ! such that the model is in leapyear but the data is not
-                call shr_cal_date2ymd (ymd,year,month,day)
-                call shr_cal_date2ymd(sdat%pstrm(ns)%ymdUB, datayear, datamonth, dataday)
-
-                if(month == 2 .and. day==29) then
-                   if(.not. shr_cal_leapyear(datayear)) then
-                      ! model is in leap year but data is not
-                      calendar = shr_cal_noleap
-                   endif
-                else if(datamonth == 2) then
-                   if(.not. shr_cal_leapyear(year)) then
-                      if(debug>0 .and. sdat%mainproc) then
-                         write(logunit, *) subname,' dataday = ', dataday
-                      endif
-                      calendar = shr_cal_noleap
-                   endif
-                else
-                   calendar = sdat%model_calendar
-                endif
-             else
-                calendar = sdat%model_calendar
              endif
           endif
-
           ! ---------------------------------------------------------
           ! Determine if new data is read in - if so then copy
           ! fldbun_stream_ub to fldbun_stream_lb and read in new fldbun_stream_ub data
@@ -987,6 +949,40 @@ contains
           ! ---------------------------------------------------------
 
           if (newData(ns)) then
+             if (trim(sdat%model_calendar) /= trim(sdat%stream(ns)%calendar)) then
+                if ((trim(sdat%model_calendar) == trim(shr_cal_noleap)) .and. &
+                     (trim(sdat%stream(ns)%calendar) == trim(shr_cal_gregorian))) then
+                   call shr_cal_date2ymd(sdat%pstrm(ns)%ymdUB, datayear, datamonth, dataday)
+                   if(.not. shr_cal_leapyear(datayear)) then
+                      calendar = shr_cal_noleap
+                   endif
+                   ! case (2), feb 29 input data will be skipped automatically
+                else if (.not. ( trim(sdat%model_calendar) == trim(shr_cal_gregorian)) .and. &
+                  (trim(sdat%stream(ns)%calendar) == trim(shr_cal_noleap))) then
+                   ! case (3), abort
+                   write(logunit,*) trim(subname),' ERROR: mismatch calendar ', &
+                        trim(sdat%model_calendar),':',trim(sdat%stream(ns)%calendar)
+                   call shr_sys_abort(trim(subname)//' ERROR: mismatch calendar ')
+                endif
+             else ! calendars are the same
+                if(trim(sdat%model_calendar) == trim(shr_cal_gregorian)) then
+                   ! Both are in gregorian - but it's possible that there is a mismatch
+                   ! such that the model is in leapyear but the data is not
+                   call shr_cal_date2ymd (ymd,year,month,day)
+                   call shr_cal_date2ymd(sdat%pstrm(ns)%ymdUB, datayear, datamonth, dataday)
+                   if(month == 2 .and. day >= 28) then
+                      if(shr_cal_leapyear(year) .and. .not. shr_cal_leapyear(datayear)) then
+                         ! model is in leap year but data is not
+                         calendar = shr_cal_noleap
+                      endif
+                   else
+                      calendar = sdat%model_calendar
+                   endif
+                else
+                   calendar = sdat%model_calendar
+                endif
+             endif
+
              ! Reset time bounds if newdata read in
              call shr_cal_timeSet(timeLB,sdat%pstrm(ns)%ymdLB,0,calendar,rc=rc)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -1010,7 +1006,7 @@ contains
                    write(sdat%stream(1)%logunit,*) trim(subName),' ERROR: ymdLB, todLB, ymdUB, todUB = ', &
                         sdat%pstrm(ns)%ymdLB, sdat%pstrm(ns)%todLB, sdat%pstrm(ns)%ymdUB, sdat%pstrm(ns)%todUB
                 end if
-                write(6,*) trim(subname),' ERROR: for stream ',ns
+                write(6,*) trim(subname),' ERROR: for stream ',ns, ' and calendar ',trim(calendar)
                 write(6,*) trim(subName),' ERROR: dtime, dtmax, dtmin, dtlimit = ',&
                      dtime, sdat%pstrm(ns)%dtmax, sdat%pstrm(ns)%dtmin, sdat%stream(ns)%dtlimit
                 write(6,*) trim(subName),' ERROR: ymdLB, todLB, ymdUB, todUB = ', &
