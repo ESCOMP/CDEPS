@@ -895,7 +895,6 @@ contains
 
     sdat%ymd = ymd
     sdat%tod = tod
-
     if (nstreams > 0) then
        allocate(newData(nstreams))
        allocate(ymdmod(nstreams))
@@ -909,6 +908,7 @@ contains
           ymdmod(ns) = ymd
           todmod    = tod
           calendar = trim(sdat%stream(ns)%calendar)
+          call shr_cal_date2ymd (ymd,year,month,day)
           if (trim(sdat%model_calendar) /= trim(sdat%stream(ns)%calendar)) then
              if (( trim(sdat%model_calendar) == trim(shr_cal_gregorian)) .and. &
                   (trim(sdat%stream(ns)%calendar) == trim(shr_cal_noleap))) then
@@ -953,7 +953,7 @@ contains
                 if ((trim(sdat%model_calendar) == trim(shr_cal_noleap)) .and. &
                      (trim(sdat%stream(ns)%calendar) == trim(shr_cal_gregorian))) then
                    call shr_cal_date2ymd(sdat%pstrm(ns)%ymdUB, datayear, datamonth, dataday)
-                   if(.not. shr_cal_leapyear(datayear)) then
+                   if(datamonth==3 .and. dataday==1 .and. month==2 .and. day==28) then
                       calendar = shr_cal_noleap
                    endif
                    ! case (2), feb 29 input data will be skipped automatically
