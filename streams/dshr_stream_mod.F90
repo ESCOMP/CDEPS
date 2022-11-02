@@ -782,7 +782,6 @@ contains
     character(*),parameter :: F03   = "('(shr_stream_findBounds) ',a,i4)"
     character(*),parameter :: F04   = "('(shr_stream_findBounds) ',2a,i4)"
     !-------------------------------------------------------------------------------
-
     if (debug>0 .and. isroot_task) then
        write(strm%logunit,F02) "DEBUG: ---------- enter ------------------"
     end if
@@ -901,7 +900,6 @@ contains
     !   extend -> use lvd value, set LB to 00000101
     !   cycle -> lvd is UB, gvd is LB, shift mDateLB by -nYears
     !-----------------------------------------------------------
-
     if (rDateIn < rDatelvd) then
        if (limit) then
           write(strm%logunit,*)  trim(subName)," ERROR: limit on and rDateIn lt rDatelvd",rDateIn,rDatelvd
@@ -1155,7 +1153,7 @@ contains
 
                    dDateLB = strm%file(k_lb)%date(n_lb)
                    call shr_cal_date2ymd(dDateLB,yy,mm,dd)
-                   yy = yy + (mYear-dYear)
+                   yy = yy + (mYear-dYear-nyears)
                    call shr_cal_ymd2date(yy,mm,dd,mDateLB)
                    secLB = strm%file(k_lb)%secs(n_lb)
                    fileLB = strm%file(k_lb)%name
