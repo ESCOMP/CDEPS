@@ -997,7 +997,7 @@ contains
              if (.not. sdat%pstrm(ns)%override_annual_cycle) then
                 if(sdat%stream(ns)%dtlimit == -1) then
                    sdat%pstrm(ns)%override_annual_cycle = .true.
-                   if(main_task) then
+                   if(sdat%mainproc) then
                       write(logunit,*) trim(subname),' WARNING: Stream ',ns,' is not cycling on annual boundaries, and dtlimit check has been overridden'
                    endif
                 else
