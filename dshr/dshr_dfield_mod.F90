@@ -258,7 +258,6 @@ contains
 
     ! determine stream fldnames array
     nflds = size(strm_flds)
-
     allocate(dfield_new%stream_indices(nflds), stat=status)
     if (status /= 0) then
        write(msgstr,*)'allocation error ',__LINE__,':',__FILE__
@@ -269,6 +268,8 @@ contains
        write(msgstr,*)'allocation error ',__LINE__,':',__FILE__
        call shr_sys_abort(msgstr)
     endif
+    dfield_new%stream_indices(:) = 0
+    dfield_new%fldbun_indices(:) = 0
 
     ! loop through the field names in strm_flds
     do nf = 1, nflds
@@ -447,7 +448,6 @@ contains
     ! Loop over all dfield entries and fill in stream_data and state_data1d or state_data2d arrays
     dfield => dfields ! note that dfields is the head of the linked list
     do while (associated(dfield))
-
        ! Map the stream data to the state data
        if (associated(dfield%state_data1d)) then
           stream_index = dfield%stream_index
@@ -464,12 +464,14 @@ contains
           do nf = 1,size(dfield%stream_indices)
              stream_index = dfield%stream_indices(nf)
              fldbun_index = dfield%fldbun_indices(nf)
-             fldbun_model = shr_strdata_get_stream_fieldbundle(sdat, stream_index, 'model')
-             call dshr_fldbun_getfieldn(fldbun_model, fldbun_index, lfield, rc=rc)
-             if (chkerr(rc,__LINE__,u_FILE_u)) return
-             call dshr_field_getfldptr(lfield, fldptr1=data1d, rc=rc)
-             if (chkerr(rc,__LINE__,u_FILE_u)) return
-             dfield%state_data2d(nf,:) = data1d(:)
+             if(stream_index > 0) then
+                fldbun_model = shr_strdata_get_stream_fieldbundle(sdat, stream_index, 'model')
+                call dshr_fldbun_getfieldn(fldbun_model, fldbun_index, lfield, rc=rc)
+                if (chkerr(rc,__LINE__,u_FILE_u)) return
+                call dshr_field_getfldptr(lfield, fldptr1=data1d, rc=rc)
+                if (chkerr(rc,__LINE__,u_FILE_u)) return
+                dfield%state_data2d(nf,:) = data1d(:)
+             endif
           end do
        end if
        dfield => dfield%next
