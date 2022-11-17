@@ -1367,7 +1367,7 @@ contains
     use ESMF, only : ESMF_FieldRegridStore, ESMF_FieldRegrid, ESMF_FIELDCREATE
     use ESMF, only : ESMF_REGRIDMETHOD_CONSERVE, ESMF_NORMTYPE_DSTAREA, ESMF_UNMAPPEDACTION_IGNORE
     use ESMF, only : ESMF_TYPEKIND_R8, ESMF_MESHLOC_ELEMENT
-    use ESMF, only : ESMF_RouteHandleDestroy, ESMF_FieldDestroy
+    use ESMF, only : ESMF_RouteHandleDestroy, ESMF_FieldDestroy, ESMF_FieldFill
 
     ! input/out variables
     type(ESMF_Mesh)     , intent(in)  :: mesh_dst
@@ -1398,18 +1398,20 @@ contains
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
-
     mesh_mask = ESMF_MeshCreate(trim(meshfile_mask), fileformat=ESMF_FILEFORMAT_ESMFMESH, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     call ESMF_MeshGet(mesh_dst, spatialDim=spatialDim, numOwnedElements=lsize_dst, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    allocate(mask_dst(lsize_dst))
-    allocate(frac_dst(lsize_dst))
 
     ! create fields on source and destination meshes
     field_mask = ESMF_FieldCreate(mesh_mask, ESMF_TYPEKIND_R8, meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    ! Initialize the field_mask, otherwise we sometimes get an error in the FieldRegridStore
+    call ESMF_FieldFill(field_mask, dataFillScheme="const", rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
     field_dst = ESMF_FieldCreate(mesh_dst, ESMF_TYPEKIND_R8, meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
@@ -1442,6 +1444,8 @@ contains
     if (chkerr(rc,__LINE__,u_FILE_u)) return
 
     ! now determine mask_dst and frac_dst
+    allocate(mask_dst(lsize_dst))
+    allocate(frac_dst(lsize_dst))
     call ESMF_MeshGet(mesh_dst, spatialDim=spatialDim, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_FieldGet(field_dst, farrayptr=dataptr1d, rc=rc)
