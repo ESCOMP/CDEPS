@@ -34,6 +34,7 @@ module dshr_mod
   use shr_kind_mod     , only : r8=>shr_kind_r8, cs=>shr_kind_cs, cl=>shr_kind_cl, cx=>shr_kind_cx, cxx=>shr_kind_cxx, i8=>shr_kind_i8
   use shr_sys_mod      , only : shr_sys_abort
   use shr_mpi_mod      , only : shr_mpi_bcast
+  use shr_file_mod     , only : shr_file_setLogUnit
   use shr_cal_mod      , only : shr_cal_noleap, shr_cal_gregorian, shr_cal_calendarname
   use shr_cal_mod      , only : shr_cal_datetod2string, shr_cal_date2julian
   use shr_const_mod    , only : shr_const_spval, shr_const_cday
@@ -110,7 +111,6 @@ contains
 #ifdef CESMCOUPLED
     use nuopc_shr_methods, only : set_component_logging
 #endif
-    use shr_file_mod, only : shr_file_setLogUnit
     ! input/output variables
     type(ESMF_GridComp)                   :: gcomp
     type(shr_strdata_type), intent(in) :: sdat   ! No longer used
