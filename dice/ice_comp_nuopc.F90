@@ -25,6 +25,7 @@ module cdeps_dice_comp
   use NUOPC_Model          , only : NUOPC_ModelGet, SetVM
   use shr_kind_mod         , only : r8=>shr_kind_r8, cxx=>shr_kind_cxx, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_const_mod        , only : shr_const_pi
+  use shr_file_mod         , only : shr_file_setLogUnit
   use shr_sys_mod          , only : shr_sys_abort
   use shr_cal_mod          , only : shr_cal_ymd2date, shr_cal_ymd2julian
   use shr_mpi_mod          , only : shr_mpi_bcast
@@ -389,6 +390,7 @@ contains
     if (.not. valid_ice) then
        RETURN
     end if
+    call shr_file_setLogUnit(logunit)
 
     rc = ESMF_SUCCESS
 

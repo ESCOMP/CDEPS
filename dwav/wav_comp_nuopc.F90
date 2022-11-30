@@ -26,6 +26,7 @@ module cdeps_dwav_comp
   use shr_sys_mod      , only : shr_sys_abort
   use shr_cal_mod      , only : shr_cal_ymd2date
   use shr_mpi_mod      , only : shr_mpi_bcast
+  use shr_file_mod     , only : shr_file_setLogUnit
   use dshr_methods_mod , only : dshr_state_getfldptr, chkerr, memcheck, dshr_state_diagnose
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_advance
   use dshr_strdata_mod , only : shr_strdata_init_from_config
@@ -76,7 +77,7 @@ module cdeps_dwav_comp
   character(CL)                :: restfilm = nullstr                  ! model restart file namelist
   integer                      :: nx_global
   integer                      :: ny_global
-  logical                      :: skip_restart_read = .false.         ! true => skip restart read 
+  logical                      :: skip_restart_read = .false.         ! true => skip restart read
   ! constants
   logical                      :: diagnose_data = .true.
   integer      , parameter     :: main_task=0                       ! task number of main task
@@ -314,6 +315,7 @@ contains
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
+    call shr_file_setLogUnit(logunit)
 
     call ESMF_TraceRegionEnter(subname)
     call memcheck(subname, 5, my_task == main_task)
