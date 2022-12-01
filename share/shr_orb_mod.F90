@@ -509,7 +509,7 @@ CONTAINS
 
     ELSE  ! Otherwise calculate based on years before present
 
-       if ( log_print .and. s_loglev > 0) then
+       if ( log_print ) then
           write(s_logunit,F01) 'Calculate orbit for year: ' , iyear_AD
        end if
        yb4_1950AD = 1950.0_SHR_KIND_R8 - real(iyear_AD,SHR_KIND_R8)
