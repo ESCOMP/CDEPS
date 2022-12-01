@@ -1,10 +1,9 @@
 MODULE shr_orb_mod
 
   use shr_kind_mod, only: SHR_KIND_R8, SHR_KIND_IN
-  use shr_sys_mod
-  use shr_const_mod
-  use shr_log_mod, only: s_loglev  => shr_log_Level
-  use shr_log_mod, only: s_logunit => shr_log_Unit
+  use shr_sys_mod, only: shr_sys_abort
+  use shr_const_mod, only: shr_const_pi
+  use shr_log_mod, only: shr_log_getLogUnit
 
   IMPLICIT none
 
@@ -69,7 +68,7 @@ CONTAINS
     real   (SHR_KIND_R8),intent(in) :: lon    ! Centered longitude (radians)
     real   (SHR_KIND_R8),intent(in) :: declin ! Solar declination (radians)
     real   (SHR_KIND_R8),intent(in), optional   :: dt_avg ! if present and set non-zero, then use in the
-    real   (SHR_KIND_R8),intent(in), optional   :: uniform_angle ! if present and true, apply uniform insolation 
+    real   (SHR_KIND_R8),intent(in), optional   :: uniform_angle ! if present and true, apply uniform insolation
     ! average cosz calculation
     logical :: use_dt_avg
 
@@ -460,7 +459,7 @@ CONTAINS
     real   (SHR_KIND_R8) :: years   ! Years to time of interest ( pos <=> future)
     real   (SHR_KIND_R8) :: eccen2  ! eccentricity squared
     real   (SHR_KIND_R8) :: eccen3  ! eccentricity cubed
-
+    integer              :: s_logunit
     !-------------------------- Formats -----------------------------------------
     character(len=*),parameter :: F00 = "('(shr_orb_params) ',4a)"
     character(len=*),parameter :: F01 = "('(shr_orb_params) ',a,i9)"
@@ -469,8 +468,8 @@ CONTAINS
 
     !----------------------------------------------------------------------------
     ! radinp and algorithms below will need a degree to radian conversion factor
-
-    if ( log_print .and. s_loglev > 0 ) then
+    call shr_log_getLogUnit(s_logunit)
+    if ( log_print ) then
        write(s_logunit,F00) 'Calculate characteristics of the orbit:'
     end if
 
@@ -710,7 +709,6 @@ CONTAINS
     real   (SHR_KIND_R8) ::   lamb   ! Lambda, the earths long of perihelion
     real   (SHR_KIND_R8) ::   invrho ! Inverse normalized sun/earth distance
     real   (SHR_KIND_R8) ::   sinl   ! Sine of lmm
-
     ! Compute eccentricity factor and solar declination using
     ! day value where a round day (such as 213.0) refers to 0z at
     ! Greenwich longitude.
@@ -778,14 +776,19 @@ CONTAINS
     ! typically 22-26
     real   (SHR_KIND_R8),intent(in) :: mvelp    ! moving vernal equinox at perhel
     ! (0 to 360 degrees)
+    integer                         :: s_logunit
+    logical                         :: debug = .false.
     !-------------------------- Formats -----------------------------------------
     character(len=*),parameter :: F00 = "('(shr_orb_print) ',4a)"
     character(len=*),parameter :: F01 = "('(shr_orb_print) ',a,i9.4)"
     character(len=*),parameter :: F02 = "('(shr_orb_print) ',a,f6.3)"
     character(len=*),parameter :: F03 = "('(shr_orb_print) ',a,es14.6)"
     !----------------------------------------------------------------------------
-
-    if (s_loglev > 0) then
+#ifdef DEBUG
+    debug = .true.
+#endif
+    call shr_log_getLogUnit(s_logunit)
+    if(s_logunit .ne. 6 .or. debug) then
        if ( iyear_AD .ne. SHR_ORB_UNDEF_INT ) then
           if ( iyear_AD > 0 ) then
              write(s_logunit,F01) 'Orbital parameters calculated for year: AD ',iyear_AD

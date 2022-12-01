@@ -30,6 +30,7 @@ module shr_log_mod
   public :: shr_log_errMsg
   public :: shr_log_OOBMsg
   public :: shr_log_setLogUnit
+  public :: shr_log_getLogUnit
 
 ! !PUBLIC DATA MEMBERS:
 
@@ -108,5 +109,12 @@ contains
     shr_log_unit = unit
 
   end subroutine shr_log_setLogUnit
+
+  subroutine shr_log_getLogUnit(unit)
+    integer, intent(out) :: unit
+
+     unit = shr_log_unit
+
+  end subroutine shr_log_getLogUnit
 
 end module shr_log_mod
