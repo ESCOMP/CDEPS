@@ -34,7 +34,7 @@ module dshr_mod
   use shr_kind_mod     , only : r8=>shr_kind_r8, cs=>shr_kind_cs, cl=>shr_kind_cl, cx=>shr_kind_cx, cxx=>shr_kind_cxx, i8=>shr_kind_i8
   use shr_sys_mod      , only : shr_sys_abort
   use shr_mpi_mod      , only : shr_mpi_bcast
-  use shr_file_mod     , only : shr_file_setLogUnit
+  use shr_log_mod     , only : shr_log_setLogUnit
   use shr_cal_mod      , only : shr_cal_noleap, shr_cal_gregorian, shr_cal_calendarname
   use shr_cal_mod      , only : shr_cal_datetod2string, shr_cal_date2julian
   use shr_const_mod    , only : shr_const_spval, shr_const_cday
@@ -206,7 +206,7 @@ contains
        logUnit = 6
     endif
 #endif
-    call shr_file_setLogUnit(logunit)
+    call shr_log_setLogUnit(logunit)
     ! set component instance and suffix
     call NUOPC_CompAttributeGet(gcomp, name="inst_suffix", isPresent=isPresent, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -278,7 +278,7 @@ contains
     call ESMF_VMGet(vm, localPet=my_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     mainproc = (my_task == main_task)
-    call shr_file_setLogUnit(logunit)
+    call shr_log_setLogUnit(logunit)
     ! Initialize pio subsystem
 #ifdef CESMCOUPLED
     sdat%pio_subsystem => shr_pio_getiosys(trim(compname))

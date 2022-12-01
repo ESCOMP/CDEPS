@@ -28,7 +28,7 @@ module cdeps_drof_comp
   use shr_sys_mod      , only : shr_sys_abort
   use shr_cal_mod      , only : shr_cal_ymd2date
   use shr_mpi_mod      , only : shr_mpi_bcast
-  use shr_file_mod     , only : shr_file_setLogUnit
+  use shr_log_mod     , only : shr_log_setLogUnit
   use dshr_methods_mod , only : dshr_state_getfldptr, dshr_state_diagnose, chkerr, memcheck
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_advance, shr_strdata_get_stream_domain
   use dshr_strdata_mod , only : shr_strdata_init_from_config
@@ -327,7 +327,7 @@ contains
     rc = ESMF_SUCCESS
 
     call memcheck(subname, 5, mainproc)
-    call shr_file_setLogUnit(logunit)
+    call shr_log_setLogUnit(logunit)
     ! query the Component for its clock, importState and exportState
     call NUOPC_ModelGet(gcomp, modelClock=clock, importState=importState, exportState=exportState, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
