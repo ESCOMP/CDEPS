@@ -13,7 +13,7 @@ module shr_log_mod
 
 ! !USES:
 
-  use shr_kind_mod
+  use shr_kind_mod, only: shr_kind_in, shr_kind_cx
   use shr_strconvert_mod, only: toString
 
   use, intrinsic :: iso_fortran_env, only: output_unit
@@ -29,6 +29,8 @@ module shr_log_mod
 
   public :: shr_log_errMsg
   public :: shr_log_OOBMsg
+  public :: shr_log_setLogUnit
+  public :: shr_log_getLogUnit
 
 ! !PUBLIC DATA MEMBERS:
 
@@ -65,40 +67,54 @@ contains
 !
 ! !INTERFACE: ------------------------------------------------------------------
 
-pure function shr_log_errMsg(file, line)
+  pure function shr_log_errMsg(file, line)
 
-! !INPUT/OUTPUT PARAMETERS:
+    ! !INPUT/OUTPUT PARAMETERS:
 
-  character(len=SHR_KIND_CX)   :: shr_log_errMsg
-  character(len=*), intent(in) :: file
-  integer         , intent(in) :: line
+    character(len=SHR_KIND_CX)   :: shr_log_errMsg
+    character(len=*), intent(in) :: file
+    integer         , intent(in) :: line
 
-!EOP
+    !EOP
 
-  shr_log_errMsg = 'ERROR in '//trim(file)//' at line '//toString(line)
+    shr_log_errMsg = 'ERROR in '//trim(file)//' at line '//toString(line)
 
-end function shr_log_errMsg
+  end function shr_log_errMsg
 
-! Create a message for an out of bounds error.
-pure function shr_log_OOBMsg(operation, bounds, idx) result(OOBMsg)
+  ! Create a message for an out of bounds error.
+  pure function shr_log_OOBMsg(operation, bounds, idx) result(OOBMsg)
 
-  ! A name for the operation being attempted when the bounds error
-  ! occurred. A string containing the subroutine name is ideal, but more
-  ! generic descriptions such as "read", "modify", or "insert" could be used.
-  character(len=*), intent(in) :: operation
+    ! A name for the operation being attempted when the bounds error
+    ! occurred. A string containing the subroutine name is ideal, but more
+    ! generic descriptions such as "read", "modify", or "insert" could be used.
+    character(len=*), intent(in) :: operation
 
-  ! Upper and lower bounds allowed for the operation.
-  integer, intent(in) :: bounds(2)
+    ! Upper and lower bounds allowed for the operation.
+    integer, intent(in) :: bounds(2)
 
-  ! Index at which access was attempted.
-  integer, intent(in) :: idx
+    ! Index at which access was attempted.
+    integer, intent(in) :: idx
 
-  ! Output message
-  character(len=:), allocatable :: OOBMsg
+    ! Output message
+    character(len=:), allocatable :: OOBMsg
 
-  allocate(OOBMsg, source=(operation//": "//toString(idx)//" not in range ["//&
-       toString(bounds(1))//", "//toString(bounds(2))//"]."))
+    allocate(OOBMsg, source=(operation//": "//toString(idx)//" not in range ["//&
+         toString(bounds(1))//", "//toString(bounds(2))//"]."))
 
-end function shr_log_OOBMsg
+  end function shr_log_OOBMsg
+
+  subroutine shr_log_setLogUnit(unit)
+    integer, intent(in) :: unit
+
+    shr_log_unit = unit
+
+  end subroutine shr_log_setLogUnit
+
+  subroutine shr_log_getLogUnit(unit)
+    integer, intent(out) :: unit
+
+     unit = shr_log_unit
+
+  end subroutine shr_log_getLogUnit
 
 end module shr_log_mod
