@@ -781,7 +781,10 @@ contains
                strm_flds2 = (/'Faxa_ndep_nhx', 'Faxa_ndep_noy'/)
                call dshr_dfield_add(dfields, sdat, trim(lfieldnames(n)), strm_flds2, exportState, logunit, mainproc, rc)
                if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
+            case('cpl_scalars')
+               continue
+            case default
+               call shr_sys_abort(subName//'field '//trim(lfieldnames(n))//' not recognized')
             end select
          end if
       end do

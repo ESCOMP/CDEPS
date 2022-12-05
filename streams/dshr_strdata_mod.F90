@@ -106,6 +106,7 @@ module dshr_strdata_mod
      integer                             :: todUB = -1                      ! stream tod upper bound
      real(r8)                            :: dtmin = 1.0e30_r8
      real(r8)                            :: dtmax = 0.0_r8
+     logical                             :: override_annual_cycle = .false.
      type(ESMF_Field)                    :: field_coszen                    ! needed for coszen time interp
   end type shr_strdata_perstream
 
@@ -992,26 +993,36 @@ contains
              timeint = timeUB-timeLB
              call ESMF_TimeIntervalGet(timeint, StartTimeIn=timeLB, d=dday)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
-             dtime = abs(real(dday,r8) + real(sdat%pstrm(ns)%todUB-sdat%pstrm(ns)%todLB,r8)/shr_const_cDay)
-
-             sdat%pstrm(ns)%dtmin = min(sdat%pstrm(ns)%dtmin,dtime)
-             sdat%pstrm(ns)%dtmax = max(sdat%pstrm(ns)%dtmax,dtime)
-
-             if ((sdat%pstrm(ns)%dtmax/sdat%pstrm(ns)%dtmin) > sdat%stream(ns)%dtlimit) then
-                if (sdat%mainproc) then
-                   write(sdat%stream(1)%logunit,*) trim(subname),' ERROR: for stream ',ns
-                   write(sdat%stream(1)%logunit,*) trim(subname),' ERROR: dday = ',dday
-                   write(sdat%stream(1)%logunit,*) trim(subName),' ERROR: dtime, dtmax, dtmin, dtlimit = ',&
-                        dtime, sdat%pstrm(ns)%dtmax, sdat%pstrm(ns)%dtmin, sdat%stream(ns)%dtlimit
-                   write(sdat%stream(1)%logunit,*) trim(subName),' ERROR: ymdLB, todLB, ymdUB, todUB = ', &
-                        sdat%pstrm(ns)%ymdLB, sdat%pstrm(ns)%todLB, sdat%pstrm(ns)%ymdUB, sdat%pstrm(ns)%todUB
-                end if
-                write(6,*) trim(subname),' ERROR: for stream ',ns, ' and calendar ',trim(calendar)
-                write(6,*) trim(subName),' ERROR: dtime, dtmax, dtmin, dtlimit = ',&
-                     dtime, sdat%pstrm(ns)%dtmax, sdat%pstrm(ns)%dtmin, sdat%stream(ns)%dtlimit
-                write(6,*) trim(subName),' ERROR: ymdLB, todLB, ymdUB, todUB = ', &
-                     sdat%pstrm(ns)%ymdLB, sdat%pstrm(ns)%todLB, sdat%pstrm(ns)%ymdUB, sdat%pstrm(ns)%todUB
-                call shr_sys_abort(trim(subName)//' ERROR dt limit for stream, see atm.log output')
+             
+             if (.not. sdat%pstrm(ns)%override_annual_cycle) then
+                if(sdat%stream(ns)%dtlimit == -1) then
+                   sdat%pstrm(ns)%override_annual_cycle = .true.
+                   if(sdat%mainproc) then
+                      write(logunit,*) trim(subname),' WARNING: Stream ',ns,' is not cycling on annual boundaries, and dtlimit check has been overridden'
+                   endif
+                else
+                   dtime = abs(real(dday,r8) + real(sdat%pstrm(ns)%todUB-sdat%pstrm(ns)%todLB,r8)/shr_const_cDay)
+                   
+                   sdat%pstrm(ns)%dtmin = min(sdat%pstrm(ns)%dtmin,dtime)
+                   sdat%pstrm(ns)%dtmax = max(sdat%pstrm(ns)%dtmax,dtime)
+                   
+                   if ((sdat%pstrm(ns)%dtmax/sdat%pstrm(ns)%dtmin) > sdat%stream(ns)%dtlimit) then
+                      if (sdat%mainproc) then
+                         write(sdat%stream(1)%logunit,*) trim(subname),' ERROR: for stream ',ns
+                         write(sdat%stream(1)%logunit,*) trim(subname),' ERROR: dday = ',dday
+                         write(sdat%stream(1)%logunit,*) trim(subName),' ERROR: dtime, dtmax, dtmin, dtlimit = ',&
+                              dtime, sdat%pstrm(ns)%dtmax, sdat%pstrm(ns)%dtmin, sdat%stream(ns)%dtlimit
+                         write(sdat%stream(1)%logunit,*) trim(subName),' ERROR: ymdLB, todLB, ymdUB, todUB = ', &
+                              sdat%pstrm(ns)%ymdLB, sdat%pstrm(ns)%todLB, sdat%pstrm(ns)%ymdUB, sdat%pstrm(ns)%todUB
+                      end if
+                      write(6,*) trim(subname),' ERROR: for stream ',ns, ' and calendar ',trim(calendar)
+                      write(6,*) trim(subName),' ERROR: dtime, dtmax, dtmin, dtlimit = ',&
+                           dtime, sdat%pstrm(ns)%dtmax, sdat%pstrm(ns)%dtmin, sdat%stream(ns)%dtlimit
+                      write(6,*) trim(subName),' ERROR: ymdLB, todLB, ymdUB, todUB = ', &
+                           sdat%pstrm(ns)%ymdLB, sdat%pstrm(ns)%todLB, sdat%pstrm(ns)%ymdUB, sdat%pstrm(ns)%todUB
+                      call shr_sys_abort(trim(subName)//' ERROR dt limit for stream, see atm.log output')
+                   endif
+                endif
              endif
           endif
 
