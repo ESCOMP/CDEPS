@@ -70,6 +70,9 @@
       <value datm_mode="ERA5">
         ERA5_HOURLY
       </value>
+      <value datm_mode="SIMPLE" >
+        CORE2_NYF.GISS,CORE2_NYF.NCEP
+      </value>
       <value datm_mode="CPLHIST">
         CPLHISTForcing.Solar,CPLHISTForcing.nonSolarFlux,CPLHISTForcing.State3hr,CPLHISTForcing.State1hr
       </value>
@@ -80,7 +83,7 @@
     <type>char</type>
     <category>datm</category>
     <group>datm_nml</group>
-    <valid_values>CLMNCEP,CORE2_NYF,CORE2_IAF,CORE_IAF_JRA,ERA5,CPLHIST,1PT</valid_values>
+    <valid_values>CLMNCEP,CORE2_NYF,CORE2_IAF,CORE_IAF_JRA,ERA5,SIMPLE,CPLHIST,1PT</valid_values>
     <desc>
       general method that operates on the data.
       ----datamode = "CPLHIST"----
@@ -114,6 +117,8 @@
       active-land-only simulations.
       ----datamode = "ERA5"----
       Fifth generation ECMWF atmospheric reanalysis of the global climate
+      ----datamode = "SIMPLE"----
+      Namelist-configurable, constant datm forcing for simple experiments
       ----datamode = "CPLHIST" ----
     </desc>
     <values>
@@ -131,6 +136,9 @@
       </value>
       <value datm_mode="ERA5">
         ERA5
+      </value>
+      <value datm_mode="SIMPLE">
+        SIMPLE
       </value>
       <value datm_mode="CPLHIST">
         CPLHIST
