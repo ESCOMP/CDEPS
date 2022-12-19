@@ -19,6 +19,7 @@ module datm_datamode_simple_mod
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_sys_mod      , only : shr_sys_abort
   use shr_cal_mod      , only : shr_cal_date2julian
+  use shr_mpi_mod      , only : shr_mpi_bcast
   use shr_const_mod    , only : shr_const_tkfrz, shr_const_pi
   use dshr_strdata_mod , only : shr_strdata_get_stream_pointer, shr_strdata_type
   use dshr_methods_mod , only : dshr_state_getfldptr, dshr_fldbun_getfldptr, dshr_fldbun_regrid, chkerr
@@ -43,6 +44,7 @@ module datm_datamode_simple_mod
   real(r8), pointer :: Sa_ptem(:)    => null()
   real(r8), pointer :: Sa_shum(:)    => null()
   real(r8), pointer :: Sa_pbot(:)    => null()
+  real(r8), pointer :: Sa_dens(:)    => null()
   real(r8), pointer :: Sa_pslv(:)    => null()
   real(r8), pointer :: Faxa_lwdn(:)  => null()
   real(r8), pointer :: Faxa_rainc(:) => null()
@@ -58,10 +60,17 @@ module datm_datamode_simple_mod
 
   ! stream data
   real(r8), pointer :: strm_swdn(:)      => null()
-  real(r8), pointer :: strm_tarcf(:)     => null()
 
   ! othe module arrays
   real(R8), pointer :: yc(:)                 ! array of model latitudes
+
+  ! constant forcing values
+  real(R8) :: dn10 = 1.204_R8
+  real(R8) :: slp = 101325.0_R8
+  real(R8) :: q = 0.0_R8
+  real(R8) :: t = 273.15_R8
+  real(R8) :: u = 0.0_R8
+  real(R8) :: v = 0.0_R8
 
   ! constants
   real(R8) , parameter :: tKFrz    = SHR_CONST_TKFRZ
@@ -78,19 +87,47 @@ module datm_datamode_simple_mod
 contains
 !===============================================================================
 
-  subroutine datm_datamode_simple_advertise(exportState, fldsexport, flds_scalar_name, rc)
+  subroutine datm_datamode_simple_advertise(exportState, fldsexport, flds_scalar_name, &
+    nlfilename, my_task, mpicom, rc)
 
     ! input/output variables
     type(esmf_State)   , intent(inout) :: exportState
     type(fldlist_type) , pointer       :: fldsexport
     character(len=*)   , intent(in)    :: flds_scalar_name
+    character(len=*)   , intent(in)    :: nlfilename
+    integer            , intent(in)    :: my_task
+    integer            , intent(in)    :: mpicom
     integer            , intent(out)   :: rc
 
     ! local variables
-    type(fldlist_type), pointer :: fldList
+    type(fldlist_type), pointer   :: fldList
+    integer           , parameter :: main_task   = 0 ! task number of main task
+    integer                       :: ierr       ! error code
+    integer                       :: nu         ! unit number
+    character(len=*)  , parameter :: subname='(datm_datamode_simple_advertise): '
+
     !-------------------------------------------------------------------------------
 
+    namelist / const_forcing_nml / dn10, slp, q, t, u, v
+
     rc = ESMF_SUCCESS
+
+    ! Read const_forcing_nml from nlfilename
+    if (my_task == main_task) then
+       open (newunit=nu,file=trim(nlfilename),status="old",action="read")
+       read (nu,nml=const_forcing_nml,iostat=ierr)
+       close(nu)
+       if (ierr > 0) then
+          call shr_sys_abort(subName//': namelist read error '//trim(nlfilename))
+       end if
+    end if
+
+    call shr_mpi_bcast(dn10         , mpicom, 'dn10')
+    call shr_mpi_bcast(slp          , mpicom, 'slp')
+    call shr_mpi_bcast(q            , mpicom, 'q')
+    call shr_mpi_bcast(t            , mpicom, 't')
+    call shr_mpi_bcast(u            , mpicom, 'u')
+    call shr_mpi_bcast(v            , mpicom, 'v')
 
     call dshr_fldList_add(fldsExport, trim(flds_scalar_name))
     call dshr_fldList_add(fldsExport, 'Sa_z'       )
@@ -158,10 +195,8 @@ contains
 
     ! get stream pointers
     !todo call shr_strdata_get_stream_pointer( sdat, 'Faxa_prec'  , strm_prec  , rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    !if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'Faxa_swdn'  , strm_swdn  , rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'tarcf'      , strm_tarcf , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! get export state pointers
@@ -174,6 +209,8 @@ contains
     call dshr_state_getfldptr(exportState, 'Sa_tbot'    , fldptr1=Sa_tbot    , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Sa_pbot'    , fldptr1=Sa_pbot    , rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call dshr_state_getfldptr(exportState, 'Sa_dens'    , fldptr1=Sa_dens    , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Sa_pslv'    , fldptr1=Sa_pslv    , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -247,55 +284,59 @@ contains
     cosfactor = cos((2.0_R8*SHR_CONST_PI*rday)/365 - phs_c0)
 
     do n = 1,lsize
-       Sa_z(n) = 10.0_R8
+      Sa_z(n) = 10.0_R8
 
-       !--- density and pslv taken directly from input stream, set pbot ---
-       Sa_pbot(n) = Sa_pslv(n)
+      !--- (i) Set forcing fields to constant values read from the namelist file ---
+      Sa_dens(n) = dn10
+      Sa_pslv(n) = slp
+      Sa_pbot(n) = Sa_pslv(n)
+      Sa_shum(n) = q
+      Sa_tbot(n) = t
+      Sa_ptem(n) = Sa_tbot(n)
+      Sa_u(n) = u
+      Sa_v(n) = v
 
-       Sa_ptem(n) = Sa_tbot(n)
+      !--- (ii) Set precipitation (currently all zeros) ---
 
-       !--- Dupont correction to NCEP Arctic air T  ---
-       !--- don't correct during summer months (July-September)
-       !--- ONLY correct when forcing year is 1997->2004
+      Faxa_rainc(n) = 0.0_R8               ! default zero
+      Faxa_snowc(n) = 0.0_R8
+      if (Sa_tbot(n) < tKFrz ) then        ! assign precip to rain/snow components
+         Faxa_rainl(n) = 0.0_R8
+         Faxa_snowl(n) = 0.0_R8 ! todo
+      else
+         Faxa_rainl(n) = 0.0_R8 ! todo
+         Faxa_snowl(n) = 0.0_R8
+      endif
 
-       Faxa_rainc(n) = 0.0_R8               ! default zero
-       Faxa_snowc(n) = 0.0_R8
-       if (Sa_tbot(n) < tKFrz ) then        ! assign precip to rain/snow components
-          Faxa_rainl(n) = 0.0_R8
-          Faxa_snowl(n) = 0.0_R8 ! todo
-       else
-          Faxa_rainl(n) = 0.0_R8 ! todo
-          Faxa_snowl(n) = 0.0_R8
-       endif
+      !--- (iii) RADIATION DATA ---
 
-       ! RADIATION DATA
-       !--- fabricate required swdn components from net swdn ---
-       Faxa_swvdr(n) = strm_swdn(n)*(0.28_R8)
-       Faxa_swndr(n) = strm_swdn(n)*(0.31_R8)
-       Faxa_swvdf(n) = strm_swdn(n)*(0.24_R8)
-       Faxa_swndf(n) = strm_swdn(n)*(0.17_R8)
-       !--- compute net short-wave based on LY08 latitudinally-varying albedo ---
-       avg_alb = ( 0.069 - 0.011*cos(2.0_R8*yc(n)*degtorad ) )
-       Faxa_swnet(n) = strm_swdn(n)*(1.0_R8 - avg_alb)
-       !--- corrections to GISS sswdn for heat budget balancing ---
-       factor = 1.0_R8
-       if      ( -60.0_R8 < yc(n) .and. yc(n) < -50.0_R8 ) then
-          factor = 1.0_R8 - (yc(n) + 60.0_R8)*(0.05_R8/10.0_R8)
-       else if ( -50.0_R8 < yc(n) .and. yc(n) <  30.0_R8 ) then
-          factor = 0.95_R8
-       else if (  30.0_R8 < yc(n) .and. yc(n) <  40._R8 ) then
-          factor = 1.0_R8 - (40.0_R8 - yc(n))*(0.05_R8/10.0_R8)
-       endif
-       Faxa_swnet(n) = Faxa_swnet(n)*factor
-       Faxa_swvdr(n) = Faxa_swvdr(n)*factor
-       Faxa_swndr(n) = Faxa_swndr(n)*factor
-       Faxa_swvdf(n) = Faxa_swvdf(n)*factor
-       Faxa_swndf(n) = Faxa_swndf(n)*factor
-       !--- correction to GISS lwdn in Arctic ---
-       if ( yc(n) > 60._R8 ) then
-          factor = MIN(1.0_R8, 0.1_R8*(yc(n)-60.0_R8) )
-          Faxa_lwdn(n) = Faxa_lwdn(n) + factor * dLWarc
-       endif
+      !--- fabricate required swdn components from net swdn ---
+      Faxa_swvdr(n) = strm_swdn(n)*(0.28_R8)
+      Faxa_swndr(n) = strm_swdn(n)*(0.31_R8)
+      Faxa_swvdf(n) = strm_swdn(n)*(0.24_R8)
+      Faxa_swndf(n) = strm_swdn(n)*(0.17_R8)
+      !--- compute net short-wave based on LY08 latitudinally-varying albedo ---
+      avg_alb = ( 0.069 - 0.011*cos(2.0_R8*yc(n)*degtorad ) )
+      Faxa_swnet(n) = strm_swdn(n)*(1.0_R8 - avg_alb)
+      !--- corrections to GISS sswdn for heat budget balancing ---
+      factor = 1.0_R8
+      if      ( -60.0_R8 < yc(n) .and. yc(n) < -50.0_R8 ) then
+         factor = 1.0_R8 - (yc(n) + 60.0_R8)*(0.05_R8/10.0_R8)
+      else if ( -50.0_R8 < yc(n) .and. yc(n) <  30.0_R8 ) then
+         factor = 0.95_R8
+      else if (  30.0_R8 < yc(n) .and. yc(n) <  40._R8 ) then
+         factor = 1.0_R8 - (40.0_R8 - yc(n))*(0.05_R8/10.0_R8)
+      endif
+      Faxa_swnet(n) = Faxa_swnet(n)*factor
+      Faxa_swvdr(n) = Faxa_swvdr(n)*factor
+      Faxa_swndr(n) = Faxa_swndr(n)*factor
+      Faxa_swvdf(n) = Faxa_swvdf(n)*factor
+      Faxa_swndf(n) = Faxa_swndf(n)*factor
+      !--- correction to GISS lwdn in Arctic ---
+      if ( yc(n) > 60._R8 ) then
+         factor = MIN(1.0_R8, 0.1_R8*(yc(n)-60.0_R8) )
+         Faxa_lwdn(n) = Faxa_lwdn(n) + factor * dLWarc
+      endif
 
     enddo   ! lsize
 
