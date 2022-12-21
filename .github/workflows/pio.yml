@@ -5,28 +5,30 @@ on:
 env:
   PARALLELIO_VERSION: pio2_5_10
 jobs:
-  name: Cache PIO
-  id: cache-PIO
-  uses: actions/cache@v3
-  with:
-    path: ~/pio
-    key: ${{ runner.os }}-${{ env.PARALLELIO_VERSION }}.pio
-    restore-keys: |
-      ${{ runner.os }}-${{ env.NETCDF_FORTRAN_VERSION }}-netcdf-fortran
-      ${{ runner.os }}-${{ env.PNETCDF_VERSION }}-pnetcdf
-  name: Checkout Parallelio
-  uses: actions/checkout@v3
-  with:
-    repository: NCAR/ParallelIO
-    path: parallelio-src
-    ref: ${{ env.PARALLELIO_VERSION }}
-
-  name: Build PIO
-  if: steps.cache-PIO.outputs.cache-hit != 'true'
-  run: |
-    mkdir build-pio
-    pushd build-pio
-    cmake -Wno-dev -DNetCDF_C_LIBRARY=/usr/lib/x86_64-linux-gnu/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=/usr/include -DCMAKE_PREFIX_PATH=/usr -DCMAKE_INSTALL_PREFIX=$HOME/pio -DPIO_HDF5_LOGGING=Off -DPIO_ENABLE_EXAMPLES=Off -DPIO_ENABLE_LOGGING=Off -DPIO_ENABLE_TIMING=Off -DNetCDF_Fortran_PATH=$HOME/netcdf-fortran -DPnetCDF_PATH=$HOME/pnetcdf ../parallelio-src
-    make VERBOSE=1
-    make install
-    popd
+  job1:
+    name: Cache PIO
+    id: cache-PIO
+    uses: actions/cache@v3
+    with:
+      path: ~/pio
+      key: ${{ runner.os }}-${{ env.PARALLELIO_VERSION }}.pio
+      restore-keys: |
+        ${{ runner.os }}-${{ env.NETCDF_FORTRAN_VERSION }}-netcdf-fortran
+        ${{ runner.os }}-${{ env.PNETCDF_VERSION }}-pnetcdf
+  job2:
+    name: Checkout Parallelio
+    uses: actions/checkout@v3
+    with:
+      repository: NCAR/ParallelIO
+      path: parallelio-src
+      ref: ${{ env.PARALLELIO_VERSION }}
+  job3:
+    name: Build PIO
+    if: steps.cache-PIO.outputs.cache-hit != 'true'
+    run: |
+      mkdir build-pio
+      pushd build-pio
+      cmake -Wno-dev -DNetCDF_C_LIBRARY=/usr/lib/x86_64-linux-gnu/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=/usr/include -DCMAKE_PREFIX_PATH=/usr -DCMAKE_INSTALL_PREFIX=$HOME/pio -DPIO_HDF5_LOGGING=Off -DPIO_ENABLE_EXAMPLES=Off -DPIO_ENABLE_LOGGING=Off -DPIO_ENABLE_TIMING=Off -DNetCDF_Fortran_PATH=$HOME/netcdf-fortran -DPnetCDF_PATH=$HOME/pnetcdf ../parallelio-src
+      make VERBOSE=1
+      make install
+      popd
