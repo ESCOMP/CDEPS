@@ -18,18 +18,18 @@ jobs:
       CXX: mpicxx
       CPPFLAGS: "-I/usr/include -I/usr/local/include"
       # Versions of all dependencies can be updated here
-      ESMF_VERSION: ESMF_8_1_1
+      ESMF_VERSION: v8.4.0
       PNETCDF_VERSION: pnetcdf-1.12.2
-      NETCDF_FORTRAN_VERSION: v4.5.2
+      NETCDF_FORTRAN_VERSION: v4.6.0
       # These should match in number
-      PIO_VERSION: pio-2.5.4
-      PIO_VERSION_DUMB: pio2_5_4
+      PIO_VERSION: pio-2.5.10
+      PIO_VERSION_DUMB: pio2_5_10
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         # Build the ESMF library, if the cache contains a previous build
         # it will be used instead
       - id: cache-esmf
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/ESMF
           key: ${{ runner.os }}-${{ env.ESMF_VERSION }}-ESMF
@@ -69,7 +69,7 @@ jobs:
           popd
       - name: Cache netcdf-fortran
         id: cache-netcdf-fortran
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/netcdf-fortran
           key: ${{ runner.os }}-${{ env.NETCDF_FORTRAN_VERSION }}-netcdf-fortran
@@ -87,7 +87,7 @@ jobs:
 
       - name: Cache PIO
         id: cache-PIO
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/pio
           key: ${{ runner.os }}-${{ env.PIO_VERSION }}.pio
