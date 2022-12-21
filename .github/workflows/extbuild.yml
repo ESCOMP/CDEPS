@@ -22,8 +22,8 @@ jobs:
       PNETCDF_VERSION: checkpoint.1.12.3
       NETCDF_FORTRAN_VERSION: v4.6.0
       # These should match in number
-      PIO_VERSION: pio-2.5.10
-      PIO_VERSION_DUMB: pio2_5_10
+      #PIO_VERSION: pio-2.5.10
+      #PIO_VERSION_DUMB: pio2_5_10
     steps:
       - uses: actions/checkout@v3
         # Build the ESMF library, if the cache contains a previous build
@@ -32,6 +32,30 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install gfortran wget openmpi-bin netcdf-bin libopenmpi-dev libnetcdf-dev autotools-dev autoconf
+      - id: cache-pnetcdf
+        uses: actions/cache@v3
+        with:
+          path: ~/pnetcdf
+          key: ${{ runner.os }}-${{ env.PNETCDF_VERSION}}-pnetcdf
+
+      - id: checkout-pnetcdf
+        uses: actions/checkout@v3
+        with:
+          repository: Parallel-NetCDF/PnetCDF
+          path: pnetcdf-src
+          ref: ${{ env.PNETCDF_VERSION }}
+      - name: pnetcdf build
+        if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
+        run: |
+          pushd pnetcdf-src
+          autoreconf -i
+          ./configure --prefix=$HOME/pnetcdf --enable-shared --disable-cxx
+          make
+          make install
+          popd
+      call-parallelio-bld:
+        uses: ESCOMP/CDEPS/.github/workflows/pio.yml
+
       - id: cache-esmf
         uses: actions/cache@v3
         with:
@@ -52,27 +76,6 @@ jobs:
           export ESMF_YAMLCPP="internal"
           export ESMF_INSTALL_PREFIX=$HOME/ESMF
           export ESMF_BOPT=g
-          make
-          make install
-          popd
-      - id: cache-pnetcdf
-        uses: actions/cache@v3
-        with:
-          path: ~/pnetcdf
-          key: ${{ runner.os }}-${{ env.PNETCDF_VERSION}}-pnetcdf
-
-      - id: checkout-pnetcdf
-        uses: actions/checkout@v3
-        with:
-          repository: Parallel-NetCDF/PnetCDF
-          path: pnetcdf-src
-          ref: ${{ env.PNETCDF_VERSION }}
-      - name: pnetcdf build
-        if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
-        run: |
-          pushd pnetcdf-src
-          autoreconf -i
-          ./configure --prefix=$HOME/pnetcdf --enable-shared --disable-cxx
           make
           make install
           popd
@@ -103,17 +106,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-${{ env.NETCDF_FORTRAN_VERSION }}-netcdf-fortran
             ${{ runner.os }}-${{ env.PNETCDF_VERSION }}-pnetcdf
-      - name: Build PIO
-        if: steps.cache-PIO.outputs.cache-hit != 'true'
-        run: |
-          wget https://github.com/NCAR/ParallelIO/releases/download/${{ env.PIO_VERSION_DUMB }}/${{ env.PIO_VERSION }}.tar.gz
-          tar -xzvf ${{ env.PIO_VERSION }}.tar.gz
-          mkdir build-pio
-          pushd build-pio
-          cmake -Wno-dev -DNetCDF_C_LIBRARY=/usr/lib/x86_64-linux-gnu/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=/usr/include -DCMAKE_PREFIX_PATH=/usr -DCMAKE_INSTALL_PREFIX=$HOME/pio -DPIO_HDF5_LOGGING=Off -DPIO_ENABLE_EXAMPLES=Off -DPIO_ENABLE_LOGGING=Off -DPIO_ENABLE_TIMING=Off -DNetCDF_Fortran_PATH=$HOME/netcdf-fortran -DPnetCDF_PATH=$HOME/pnetcdf ../${{ env.PIO_VERSION }}
-          make VERBOSE=1
-          make install
-          popd
 
       - name: Build CDEPS
         run: |
