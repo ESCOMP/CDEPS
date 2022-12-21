@@ -2,9 +2,9 @@ name: Parallelio build and cache
 
 on:
   workflow_call:
+env:
+  PARALLELIO_VERSION: pio2_5_10
 jobs:
-  env:
-    PARALLELIO_VERSION: pio2_5_10
   - name: Cache PIO
     id: cache-PIO
     uses: actions/cache@v3
