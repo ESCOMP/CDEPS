@@ -34,6 +34,7 @@ module dshr_mod
   use shr_kind_mod     , only : r8=>shr_kind_r8, cs=>shr_kind_cs, cl=>shr_kind_cl, cx=>shr_kind_cx, cxx=>shr_kind_cxx, i8=>shr_kind_i8
   use shr_sys_mod      , only : shr_sys_abort
   use shr_mpi_mod      , only : shr_mpi_bcast
+  use shr_log_mod     , only : shr_log_setLogUnit
   use shr_cal_mod      , only : shr_cal_noleap, shr_cal_gregorian, shr_cal_calendarname
   use shr_cal_mod      , only : shr_cal_datetod2string, shr_cal_date2julian
   use shr_const_mod    , only : shr_const_spval, shr_const_cday
@@ -137,7 +138,6 @@ contains
     ! ----------------------------------------------
 
     rc = ESMF_SUCCESS
-
     ! generate local mpi comm
     call ESMF_GridCompGet(gcomp, vm=vm, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -197,15 +197,16 @@ contains
 #ifdef CESMCOUPLED
     call set_component_logging(gcomp, my_task == main_task, logunit, slogunit, rc=rc)
 #else
-    if (my_task == main_task) then 
+    if (my_task == main_task) then
        call ESMF_LogWrite(trim(subname)//' : output logging is written to '//trim(diro)//"/"//trim(logfile), ESMF_LOGMSG_INFO)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        open(newunit=logunit, file=trim(diro)//"/"//trim(logfile))
-       
+
     else
        logUnit = 6
     endif
 #endif
+    call shr_log_setLogUnit(logunit)
     ! set component instance and suffix
     call NUOPC_CompAttributeGet(gcomp, name="inst_suffix", isPresent=isPresent, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -277,7 +278,7 @@ contains
     call ESMF_VMGet(vm, localPet=my_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     mainproc = (my_task == main_task)
-
+    call shr_log_setLogUnit(logunit)
     ! Initialize pio subsystem
 #ifdef CESMCOUPLED
     sdat%pio_subsystem => shr_pio_getiosys(trim(compname))
@@ -1045,7 +1046,7 @@ contains
     integer           :: dimid(1)
     type(var_desc_t)  :: varid
     type(io_desc_t)   :: pio_iodesc
-    integer           :: oldmode 
+    integer           :: oldmode
     integer           :: rcode
     character(*), parameter :: F00   = "('(dshr_restart_write) ',2a,2(i0,2x))"
     !-------------------------------------------------------------------------------
@@ -1367,7 +1368,7 @@ contains
     use ESMF, only : ESMF_FieldRegridStore, ESMF_FieldRegrid, ESMF_FIELDCREATE
     use ESMF, only : ESMF_REGRIDMETHOD_CONSERVE, ESMF_NORMTYPE_DSTAREA, ESMF_UNMAPPEDACTION_IGNORE
     use ESMF, only : ESMF_TYPEKIND_R8, ESMF_MESHLOC_ELEMENT
-    use ESMF, only : ESMF_RouteHandleDestroy, ESMF_FieldDestroy
+    use ESMF, only : ESMF_RouteHandleDestroy, ESMF_FieldDestroy, ESMF_FieldFill
 
     ! input/out variables
     type(ESMF_Mesh)     , intent(in)  :: mesh_dst
@@ -1398,18 +1399,20 @@ contains
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
-
     mesh_mask = ESMF_MeshCreate(trim(meshfile_mask), fileformat=ESMF_FILEFORMAT_ESMFMESH, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     call ESMF_MeshGet(mesh_dst, spatialDim=spatialDim, numOwnedElements=lsize_dst, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    allocate(mask_dst(lsize_dst))
-    allocate(frac_dst(lsize_dst))
 
     ! create fields on source and destination meshes
     field_mask = ESMF_FieldCreate(mesh_mask, ESMF_TYPEKIND_R8, meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    ! Initialize the field_mask, otherwise we sometimes get an error in the FieldRegridStore
+    call ESMF_FieldFill(field_mask, dataFillScheme="const", rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
     field_dst = ESMF_FieldCreate(mesh_dst, ESMF_TYPEKIND_R8, meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
@@ -1442,6 +1445,8 @@ contains
     if (chkerr(rc,__LINE__,u_FILE_u)) return
 
     ! now determine mask_dst and frac_dst
+    allocate(mask_dst(lsize_dst))
+    allocate(frac_dst(lsize_dst))
     call ESMF_MeshGet(mesh_dst, spatialDim=spatialDim, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_FieldGet(field_dst, farrayptr=dataptr1d, rc=rc)
@@ -1895,7 +1900,7 @@ contains
 
   end subroutine dshr_pio_init
 !
-! Returns trun if the restart alarm is ringing or its the end of the run and 
+! Returns trun if the restart alarm is ringing or its the end of the run and
 ! REST_OPTION is not none or never
 !
   logical function dshr_check_restart_alarm(clock, rc)
@@ -1910,10 +1915,10 @@ contains
     !--------------------------------
 
     rc = ESMF_SUCCESS
-    
+
     call ESMF_ClockGetAlarm(clock, alarmname='alarm_stop', alarm=alarm, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    
+
     if (ESMF_AlarmIsRinging(alarm, rc=rc)) then
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        nlend = .true.
@@ -1932,7 +1937,7 @@ contains
     else
        call ESMF_ClockGetAlarm(clock, alarmname='alarm_restart', alarm=alarm, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       
+
        if (ESMF_AlarmIsRinging(alarm, rc=rc)) then
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           rstwr = .true.
@@ -1945,5 +1950,5 @@ contains
     dshr_check_restart_alarm = rstwr
   end function dshr_check_restart_alarm
 
-  
+
 end module dshr_mod

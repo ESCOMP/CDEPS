@@ -29,6 +29,7 @@ module cdeps_datm_comp
   use shr_sys_mod      , only : shr_sys_abort
   use shr_cal_mod      , only : shr_cal_ymd2date
   use shr_mpi_mod      , only : shr_mpi_bcast
+  use shr_log_mod     , only : shr_log_setLogUnit
   use dshr_methods_mod , only : dshr_state_diagnose, chkerr, memcheck
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_init_from_config, shr_strdata_advance
   use dshr_strdata_mod , only : shr_strdata_get_stream_pointer, shr_strdata_setOrbs
@@ -485,6 +486,7 @@ contains
     rc = ESMF_SUCCESS
 
     call ESMF_TraceRegionEnter(subname)
+    call shr_log_setLogUnit(logunit)
     call memcheck(subname, 5, my_task==main_task)
 
     ! Query the Component for its clock, importState and exportState
@@ -802,7 +804,10 @@ contains
                strm_flds2 = (/'Faxa_ndep_nhx', 'Faxa_ndep_noy'/)
                call dshr_dfield_add(dfields, sdat, trim(lfieldnames(n)), strm_flds2, exportState, logunit, mainproc, rc)
                if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
+            case('cpl_scalars')
+               continue
+            case default
+               call shr_sys_abort(subName//'field '//trim(lfieldnames(n))//' not recognized')
             end select
          end if
       end do
