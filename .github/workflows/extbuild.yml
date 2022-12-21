@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CC: mpicc
-      FC: mpifort
+      FC: "mpifort  -fallow-argument-mismatch -fallow-invalid-boz "
       CXX: mpicxx
       CPPFLAGS: "-I/usr/include -I/usr/local/include"
       # Versions of all dependencies can be updated here
@@ -31,7 +31,7 @@ jobs:
       - id: load-env
         run: |
           sudo apt-get update
-          sudo apt-get install gfortran wget openmpi-bin netcdf-bin libopenmpi-dev libnetcdf-dev
+          sudo apt-get install gfortran wget openmpi-bin netcdf-bin libopenmpi-dev libnetcdf-dev autotools-dev autoconf
       - id: cache-esmf
         uses: actions/cache@v3
         with:
@@ -71,6 +71,7 @@ jobs:
         if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
         run: |
           pushd pnetcdf-src
+          autoreconf -i
           ./configure --prefix=$HOME/pnetcdf --enable-shared --disable-cxx
           make
           make install
