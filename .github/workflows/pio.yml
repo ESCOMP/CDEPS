@@ -49,7 +49,6 @@ on:
         type: boolean
 
 jobs:
-  runs-on: ubuntu-latest
   steps:
     - name: Checkout Parallelio
       uses: actions/checkout@v3
