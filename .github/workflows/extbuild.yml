@@ -114,6 +114,7 @@ jobs:
           export ESMF_YAMLCPP="internal"
           export ESMF_INSTALL_PREFIX=$HOME/ESMF
           export ESMF_BOPT=g
+          export ESMF_NETCDF=nc-config
           export ESMF_PIO=external
           export ESMF_PIO_LIBPATH=$HOME/pio/lib
           export ESMF_PIO_INCLUDE=$HOME/pio/include
