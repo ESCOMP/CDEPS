@@ -57,15 +57,16 @@ Directory        Function
 ===============  =========================================
 cime_config      CIME Case Control System
 cmake            Build (can be used with or without CIME)
-datm             data atmosphere component
-dice	         data sea-ice component
-dlnd	         data land component
-docn	         data ocean component
-drof	         data river component
-dwav	         data wave component
-dshr             shared NUOPC cap code
-share            shared utility code
-streams          code to handle streams
+datm             Data atmosphere component
+dice	         Data sea-ice component
+dlnd	         Data land component
+docn	         Data ocean component
+drof	         Data river component
+dwav	         Data wave component
+dshr             Shared NUOPC cap code
+share            Shared utility code
+streams          Code to handle streams
+doc              Sphinx documentation source
 ===============  =========================================
 
 ------
@@ -79,14 +80,21 @@ the same time coordinates. Data models input falls into two
 categories: stream-independent and stream-dependent data.
 
 **stream-dependent-data**
-  Stream-dependent input is contained in the input xml file
+  Stream-dependent input is contained in the input XML file
   ``d{model_name}.streams.xml``, where ``model_name`` can be ``atm``,
   ``ice``, ``lnd``, ``ocn``, ``rof`` or ``wav``.  Multiple streams can
-  be specified in the this xml file (see
-  :ref:`streams<input-streams>`). In turn, each stream in the xml file
-  can be associated with multiple stream input files.  The data across
-  all the stream input files must all be on the same stream mesh and
-  share the same time coordinates.
+  be specified in the this XML file (see :ref:`streams<input-streams>`).
+  In turn, each stream in the xml file can be associated with multiple
+  stream input files.  The data across all the stream input files must 
+  all be on the same stream mesh and share the same time coordinates.
+
+  In this case, the input XML file is parsed by CDEPS using the 
+  third-party `FoX library <https://github.com/andreww/fox>`_.  
+  In addition to the XML format, it is also possible to use 
+  `ESMF config format <http://earthsystemmodeling.org/docs/nightly/develop/ESMF_refdoc/node6.html#SECTION06090000000000000000>`_
+  to define stream dependent namelist options (see :ref:`streams<input-streams>`).
+  This option is mainly used by the NOAA's `UFS Weather Model <https://ufs-weather-model.readthedocs.io/en/latest/>`_ while
+  XML format used by NCAR's `CESM <https://www.cesm.ucar.edu>`_. 
 
 **stream-independent-data**
   Stream-independent input is contained in the input namelist file
@@ -106,12 +114,12 @@ follows:
 * The two timestamps of input data that bracket the present model time are read first.
   These are called the lower and upper bounds of data and will change as the model advances.
 * The lower and upper bound data are then spatially mapped to the
-  model grid based upon the in the ``d{model_name}.streams.xml`` node
+  model grid based upon the in the ``d{model_name}.streams[.xml]`` node
   ``mapalgo``.  Spatial interpolation only occurs if the input data
   grid and model grid are not identical, and this is determined in the
   strdata module automatically.
 * Time interpolation is the final step and is done using a time
-  interpolation method specified in the ``d{model_name}.streams.xml``
+  interpolation method specified in the ``d{model_name}.streams[.xml]``
   node ``tintalgo``.
 * A final set of fields is then available to the data model on the
   model grid and for the current model time.

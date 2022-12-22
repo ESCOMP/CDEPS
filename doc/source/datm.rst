@@ -1,4 +1,4 @@
-.. _datm-datamodes:
+.. _datm:
 
 Data Atmosphere (DATM)
 ======================

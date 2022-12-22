@@ -24,3 +24,8 @@ Table of contents
    streams.rst
    design_details.rst
    datm.rst
+   docn.rst
+   dice.rst
+   dlnd.rst
+   drof.rst
+   dwav.rst
