@@ -2,33 +2,64 @@ name: Parallelio build and cache
 
 on:
   workflow_call:
+    inputs:
+      netcdf_c_path:
+        description: 'Path to the installed netcdf c code root'
+        required: True
+        type: string
+      netcdf_fortan_path:
+        description: 'Path to the installed netcdf fortran code root'
+        default: ${{ inputs.netcdf_c_path }}
+        required: False
+        type: string
+      pnetcdf_path:
+        description: 'Path to the installed pnetcdf code root'
+        default:
+        required: False
+        type: string
+      enable_hdf5_logging:
+        description: 'Enable hdf5 logging'
+        default: False
+        required: False
+        type: boolean
+      install_prefix:
+        description: 'Install path of parallelio'
+        default: $HOME/parallelio
+        required: False
+        type: string
+      enable_examples:
+        description: 'Enable build of ParallelIO examples'
+        default: False
+        required: False
+        type: boolean
+      enable_logging:
+        description: 'Enable ParallelIO verbose logging'
+        default: False
+        required: False
+        type: boolean
+      enable_timing:
+        description: 'Enable ParallelIO gptl timing library'
+        default: False
+        required: False
+        type: boolean
+
 env:
   PARALLELIO_VERSION: pio2_5_10
 jobs:
   job1:
-    name: Cache PIO
-    id: cache-PIO
-    uses: actions/cache@v3
-    with:
-      path: ~/pio
-      key: ${{ runner.os }}-${{ env.PARALLELIO_VERSION }}.pio
-      restore-keys: |
-        ${{ runner.os }}-${{ env.NETCDF_FORTRAN_VERSION }}-netcdf-fortran
-        ${{ runner.os }}-${{ env.PNETCDF_VERSION }}-pnetcdf
-  job2:
     name: Checkout Parallelio
     uses: actions/checkout@v3
     with:
       repository: NCAR/ParallelIO
       path: parallelio-src
       ref: ${{ env.PARALLELIO_VERSION }}
-  job3:
+  job2:
     name: Build PIO
     if: steps.cache-PIO.outputs.cache-hit != 'true'
     run: |
       mkdir build-pio
       pushd build-pio
-      cmake -Wno-dev -DNetCDF_C_LIBRARY=/usr/lib/x86_64-linux-gnu/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=/usr/include -DCMAKE_PREFIX_PATH=/usr -DCMAKE_INSTALL_PREFIX=$HOME/pio -DPIO_HDF5_LOGGING=Off -DPIO_ENABLE_EXAMPLES=Off -DPIO_ENABLE_LOGGING=Off -DPIO_ENABLE_TIMING=Off -DNetCDF_Fortran_PATH=$HOME/netcdf-fortran -DPnetCDF_PATH=$HOME/pnetcdf ../parallelio-src
+      cmake -Wno-dev -DNetCDF_C_LIBRARY=${{ inputs.netcdf_c_path }}/lib/x86_64-linux-gnu/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=${{ inputs.netcdf_c_path }}/include -DCMAKE_PREFIX_PATH=/usr -DCMAKE_INSTALL_PREFIX=${{ inputs.install_prefix }} -DPIO_HDF5_LOGGING=${{ inputs.enable_hdf5_logging }} -DPIO_ENABLE_EXAMPLES=Off -DPIO_ENABLE_LOGGING=${{ inputs.enable_logging }} -DPIO_ENABLE_TIMING=${{ inputs.enable_timing }} -DNetCDF_Fortran_PATH=${{ inputs.netcdf_fortran_path }} -DPnetCDF_PATH=${{ inputs.pnetcdf_path }} ../parallelio-src
       make VERBOSE=1
       make install
       popd
