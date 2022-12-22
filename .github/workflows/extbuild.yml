@@ -20,7 +20,7 @@ jobs:
       # Versions of all dependencies can be updated here
       ESMF_VERSION: v8.4.0
       PNETCDF_VERSION: checkpoint.1.12.3
-      NETCDF_FORTRAN_VERSION: v4.6.0
+      NETCDF_FORTRAN_VERSION: v4.5.4
       # These should match in number
       PIO_VERSION: pio2_5_10
     steps:
@@ -49,6 +49,27 @@ jobs:
           make
           make install
           popd
+      - name: Cache netcdf-fortran
+        id: cache-netcdf-fortran
+        uses: actions/cache@v3
+        with:
+          path: ~/netcdf-fortran
+          key: ${{ runner.os }}-${{ env.NETCDF_FORTRAN_VERSION }}-netcdf-fortran
+      - id: checkout-netcdf-fortran
+        uses: actions/checkout@v3
+        with:
+          repository: Unidata/netcdf-fortran
+          path: netcdf-fortran-src
+          ref: ${{ env.NETCDF_FORTRAN_VERSION }}
+      - name: netcdf fortran build
+        if: steps.cache-netcdf-fortran.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get install libnetcdf-dev
+          pushd netcdf-fortran-src
+          ./configure --prefix=$HOME/netcdf-fortran
+          make
+          make install
+
       - name: Cache PIO
         id: cache-PIO
         uses: actions/cache@v2
