@@ -58,14 +58,18 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-${{ env.NETCDF_FORTRAN_VERSION }}-netcdf-fortran
             ${{ runner.os }}-${{ env.PNETCDF_VERSION }}-pnetcdf
+      - id: checkout-pio
+        uses: actions/checkout@v3
+        with:
+          repository: NCAR/ParallelIO
+          path: parallelio-src
+          ref: ${{ env.PIO_VERSION }}
       - name: Build PIO
         if: steps.cache-PIO.outputs.cache-hit != 'true'
         run: |
-          wget https://github.com/NCAR/ParallelIO/releases/download/${{ env.PIO_VERSION_DUMB }}/${{ env.PIO_VERSION }}.tar.gz
-          tar -xzvf ${{ env.PIO_VERSION }}.tar.gz
           mkdir build-pio
           pushd build-pio
-          cmake -Wno-dev -DNetCDF_C_LIBRARY=/usr/lib/x86_64-linux-gnu/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=/usr/include -DCMAKE_PREFIX_PATH=/usr -DCMAKE_INSTALL_PREFIX=$HOME/pio -DPIO_HDF5_LOGGING=Off -DPIO_ENABLE_EXAMPLES=Off -DPIO_ENABLE_LOGGING=Off -DPIO_ENABLE_TIMING=Off -DNetCDF_Fortran_PATH=$HOME/netcdf-fortran -DPnetCDF_PATH=$HOME/pnetcdf ../${{ env.PIO_VERSION }}
+          cmake -Wno-dev -DNetCDF_C_LIBRARY=/usr/lib/x86_64-linux-gnu/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=/usr/include -DCMAKE_PREFIX_PATH=/usr -DCMAKE_INSTALL_PREFIX=$HOME/pio -DPIO_HDF5_LOGGING=Off -DPIO_ENABLE_EXAMPLES=Off -DPIO_ENABLE_LOGGING=Off -DPIO_ENABLE_TIMING=Off -DPnetCDF_PATH=$HOME/pnetcdf ../${{ env.PIO_VERSION }}
           make VERBOSE=1
           make install
           popd
