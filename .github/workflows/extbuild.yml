@@ -16,7 +16,7 @@ jobs:
       CC: mpicc
       FC: mpifort
       CXX: mpicxx
-      CPPFLAGS: "-I/usr/include -I/usr/local/include"
+      CPPFLAGS: "-I/usr/include -I/usr/local/include -DCPRGNU"
       # Versions of all dependencies can be updated here
       ESMF_VERSION: v8.4.0
       PNETCDF_VERSION: checkpoint.1.12.3
