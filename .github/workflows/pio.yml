@@ -3,6 +3,11 @@ name: Parallelio build and cache
 on:
   workflow_call:
     inputs:
+      parallelio_version:
+        description: 'Tag in the parallelio repository to use'
+        default: pio2_5_10
+        required: False
+        type: string
       netcdf_c_path:
         description: 'Path to the installed netcdf c code root'
         required: True
@@ -43,23 +48,20 @@ on:
         required: False
         type: boolean
 
-env:
-  PARALLELIO_VERSION: pio2_5_10
 jobs:
-  job1:
-    name: Checkout Parallelio
-    uses: actions/checkout@v3
-    with:
-      repository: NCAR/ParallelIO
-      path: parallelio-src
-      ref: ${{ env.PARALLELIO_VERSION }}
-  job2:
-    name: Build PIO
-    if: steps.cache-PIO.outputs.cache-hit != 'true'
-    run: |
-      mkdir build-pio
-      pushd build-pio
-      cmake -Wno-dev -DNetCDF_C_LIBRARY=${{ inputs.netcdf_c_path }}/lib/x86_64-linux-gnu/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=${{ inputs.netcdf_c_path }}/include -DCMAKE_PREFIX_PATH=/usr -DCMAKE_INSTALL_PREFIX=${{ inputs.install_prefix }} -DPIO_HDF5_LOGGING=${{ inputs.enable_hdf5_logging }} -DPIO_ENABLE_EXAMPLES=Off -DPIO_ENABLE_LOGGING=${{ inputs.enable_logging }} -DPIO_ENABLE_TIMING=${{ inputs.enable_timing }} -DNetCDF_Fortran_PATH=${{ inputs.netcdf_fortran_path }} -DPnetCDF_PATH=${{ inputs.pnetcdf_path }} ../parallelio-src
-      make VERBOSE=1
-      make install
-      popd
+  runs-on: ubuntu-latest
+  steps:
+    - name: Checkout Parallelio
+      uses: actions/checkout@v3
+      with:
+        repository: NCAR/ParallelIO
+        path: parallelio-src
+        ref: ${{ input.parallelio_version }}
+    - name: Build PIO
+      run: |
+        mkdir build-pio
+        pushd build-pio
+        cmake -Wno-dev -DNetCDF_C_LIBRARY=${{ inputs.netcdf_c_path }}/lib/x86_64-linux-gnu/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=${{ inputs.netcdf_c_path }}/include -DCMAKE_PREFIX_PATH=/usr -DCMAKE_INSTALL_PREFIX=${{ inputs.install_prefix }} -DPIO_HDF5_LOGGING=${{ inputs.enable_hdf5_logging }} -DPIO_ENABLE_EXAMPLES=Off -DPIO_ENABLE_LOGGING=${{ inputs.enable_logging }} -DPIO_ENABLE_TIMING=${{ inputs.enable_timing }} -DNetCDF_Fortran_PATH=${{ inputs.netcdf_fortran_path }} -DPnetCDF_PATH=${{ inputs.pnetcdf_path }} ../parallelio-src
+        make VERBOSE=1
+        make install
+        popd

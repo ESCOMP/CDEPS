@@ -125,6 +125,8 @@ jobs:
           make install
           popd
 
+      - id: checkout-CDEPS
+        uses: actions/checkout@v3
       - name: Build CDEPS
         run: |
           export ESMFMKFILE=$HOME/ESMF/lib/libg/Linux.gfortran.64.openmpi.default/esmf.mk
