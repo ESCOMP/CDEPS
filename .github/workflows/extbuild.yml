@@ -115,7 +115,7 @@ jobs:
           export ESMF_INSTALL_PREFIX=$HOME/ESMF
           export ESMF_BOPT=g
           export ESMF_PIO=external
-          export ESMF_PIO_LIBDIR=$HOME/pio/lib
+          export ESMF_PIO_LIBPATH=$HOME/pio/lib
           export ESMF_PIO_INCLUDE=$HOME/pio/include
           make
           make install
@@ -130,6 +130,6 @@ jobs:
           git submodule update
           mkdir build-cdeps
           pushd build-cdeps
-          cmake -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_Fortran_FLAGS="-g -Wall -ffree-form -ffree-line-length-none" ../
+          cmake -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_Fortran_FLAGS="-g -Wall -ffree-form -ffree-line-length-none  -fallow-argument-mismatch " ../
           make VERBOSE=1
           popd
