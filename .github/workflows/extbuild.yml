@@ -16,7 +16,7 @@ jobs:
       CC: mpicc
       FC: mpifort
       CXX: mpicxx
-      CPPFLAGS: "-I/usr/include -I/usr/local/include -DCPRGNU"
+      CPPFLAGS: "-I/usr/include -I/usr/local/include "
       # Versions of all dependencies can be updated here
       ESMF_VERSION: v8.4.0
       PNETCDF_VERSION: checkpoint.1.12.3
@@ -146,6 +146,6 @@ jobs:
           git submodule update
           mkdir build-cdeps
           pushd build-cdeps
-          cmake -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_Fortran_FLAGS="-g -Wall -ffree-form -ffree-line-length-none  -fallow-argument-mismatch " ../
+          cmake -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_Fortran_FLAGS="-DCPRGNU -g -Wall -ffree-form -ffree-line-length-none -fallow-argument-mismatch " ../
           make VERBOSE=1
           popd

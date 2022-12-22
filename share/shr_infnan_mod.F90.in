@@ -192,11 +192,11 @@ elemental function shr_infnan_isposinf_{TYPE}(x) result(isposinf)
   use, intrinsic :: ieee_arithmetic, only: &
        ieee_class, &
        ieee_positive_inf, &
-       operator(.eq.)
+       operator(==)
   {VTYPE}, intent(in) :: x
   logical :: isposinf
 
-  isposinf = (ieee_positive_inf .eq. ieee_class(x))
+  isposinf = (ieee_positive_inf == ieee_class(x))
 
 end function shr_infnan_isposinf_{TYPE}
 
@@ -205,11 +205,11 @@ elemental function shr_infnan_isneginf_{TYPE}(x) result(isneginf)
   use, intrinsic :: ieee_arithmetic, only: &
        ieee_class, &
        ieee_negative_inf, &
-       operator(.eq.)
+       operator(==)
   {VTYPE}, intent(in) :: x
   logical :: isneginf
 
-  isneginf = (ieee_negative_inf .eq. ieee_class(x))
+  isneginf = (ieee_negative_inf == ieee_class(x))
 
 end function shr_infnan_isneginf_{TYPE}
 
@@ -244,7 +244,7 @@ elemental function shr_infnan_isposinf_{TYPE}(x) result(isposinf)
   integer(i8), parameter :: posinf_pat = dposinf_pat
 #endif
 
-  isposinf = (x .eq. transfer(posinf_pat,x))
+  isposinf = (x == transfer(posinf_pat,x))
 
 end function shr_infnan_isposinf_{TYPE}
 
@@ -258,7 +258,7 @@ elemental function shr_infnan_isneginf_{TYPE}(x) result(isneginf)
   integer(i8), parameter :: neginf_pat = dneginf_pat
 #endif
 
-  isneginf = (x .eq. transfer(neginf_pat,x))
+  isneginf = (x == transfer(neginf_pat,x))
 
 end function shr_infnan_isneginf_{TYPE}
 
