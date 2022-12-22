@@ -115,8 +115,8 @@ jobs:
           export ESMF_INSTALL_PREFIX=$HOME/ESMF
           export ESMF_BOPT=g
           export ESMF_PIO=external
-          export ESMF_PIO_LIBDIR=$HOME/parallelio/lib
-          export ESMF_PIO_INCLUDE=$HOME/parallelio/include
+          export ESMF_PIO_LIBDIR=$HOME/pio/lib
+          export ESMF_PIO_INCLUDE=$HOME/pio/include
           make
           make install
           popd
