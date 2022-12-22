@@ -90,7 +90,7 @@ jobs:
         run: |
           mkdir build-pio
           pushd build-pio
-          cmake -Wno-dev -DNetCDF_C_LIBRARY=/usr/lib/x86_64-linux-gnu/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=/usr/include -DCMAKE_PREFIX_PATH=/usr -DCMAKE_INSTALL_PREFIX=$HOME/pio -DPIO_HDF5_LOGGING=Off -DPIO_ENABLE_EXAMPLES=Off -DPIO_ENABLE_LOGGING=Off -DPIO_ENABLE_TIMING=Off -DPnetCDF_PATH=$HOME/pnetcdf ../parallelio-src
+          cmake -Wno-dev -DNetCDF_C_LIBRARY=/usr/lib/x86_64-linux-gnu/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=/usr/include -DCMAKE_PREFIX_PATH=/usr -DCMAKE_INSTALL_PREFIX=$HOME/pio -DPIO_HDF5_LOGGING=Off -DPIO_ENABLE_EXAMPLES=Off -DPIO_ENABLE_LOGGING=Off -DPIO_ENABLE_TIMING=Off -DPnetCDF_PATH=$HOME/pnetcdf -DNetCDF_Fortran_LIBRARY=$HOME/netcdf-fortran/lib -DNetCDF_Fortran_INCLUDE=$HOME/netcdf-fortran/include ../parallelio-src
           make VERBOSE=1
           make install
           popd
