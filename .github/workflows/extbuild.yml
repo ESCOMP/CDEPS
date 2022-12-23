@@ -17,15 +17,16 @@ jobs:
       FC: mpifort
       CXX: mpicxx
       CPPFLAGS: "-I/usr/include -I/usr/local/include "
-      # Versions of all dependencies can be updated here
+      # Versions of all dependencies can be updated here - these match tag names in the github repo
       ESMF_VERSION: v8.4.0
       PNETCDF_VERSION: checkpoint.1.12.2
       NETCDF_FORTRAN_VERSION: v4.6.0
-      # These should match in number
       PIO_VERSION: pio2_5_10
     steps:
       - id: checkout-CDEPS
         uses: actions/checkout@v3
+        with:
+          submodules: recursive
       - id: load-env
         run: |
           sudo apt-get update
@@ -59,72 +60,38 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/pio
-          key: ${{ runner.os }}-${{ env.PIO_VERSION }}.pio
-          restore-keys: |
-            ${{ runner.os }}-${{ env.NETCDF_FORTRAN_VERSION }}-netcdf-fortran
-            ${{ runner.os }}-${{ env.PNETCDF_VERSION }}-pnetcdf
+          key: ${{ runner.os }}-${{ env.PIO_VERSION }}-parallelio
       - name: Build ParallelIO
         if: steps.cache-PIO.outputs.cache-hit != 'true'
         uses: ./.github/actions/buildpio
         with:
-          parallelio_version: pio2_5_10
+          parallelio_version: ${{ env.PIO_VERSION }}
           netcdf_c_path: /usr
           netcdf_fortran_path: $HOME/netcdf-fortran
           pnetcdf_path: $HOME/pnetcdf
           install_prefix: $HOME/pio
-#      - id: checkout-pio
-#        uses: actions/checkout@v3
-#        with:
-#          repository: NCAR/ParallelIO
-#          path: parallelio-src
-#          ref: ${{ env.PIO_VERSION }}
-#      - name: Build PIO
-#        if: steps.cache-PIO.outputs.cache-hit != 'true'
-#        run: |
-#          mkdir build-pio
-#          pushd build-pio
-#          cmake -Wno-dev -DNetCDF_C_LIBRARY=/usr/lib/x86_64-linux-gnu/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=/usr/include -DCMAKE_PREFIX_PATH=/usr -DCMAKE_INSTALL_PREFIX=$HOME/pio -DPIO_HDF5_LOGGING=Off -DPIO_ENABLE_EXAMPLES=Off -DPIO_ENABLE_LOGGING=Off -DPIO_ENABLE_TIMING=Off -DPnetCDF_PATH=$HOME/pnetcdf -DNetCDF_Fortran_LIBRARY=$HOME/netcdf-fortran/lib -DNetCDF_Fortran_INCLUDE_DIR=$HOME/netcdf-fortran/include ../parallelio-src
-#          make VERBOSE=1
-#          make install
-#          popd
       - id: cache-esmf
         uses: actions/cache@v3
         with:
           path: ~/ESMF
           key: ${{ runner.os }}-${{ env.ESMF_VERSION }}-ESMF
-      - id: checkout-ESMF
-        uses: actions/checkout@v3
-        with:
-          repository: esmf-org/esmf
-          path: esmf-src
-          ref: ${{ env.ESMF_VERSION }}
       - id: build-ESMF
         if: steps.cache-esmf.outputs.cache-hit != 'true'
-        run: |
-          pushd esmf-src
-          export PATH=$PATH:$HOME/netcdf-fortran/bin:$HOME/pnetcdf/bin
-          export ESMF_DIR=`pwd`
-          export ESMF_COMM=openmpi
-          export ESMF_YAMLCPP="internal"
-          export ESMF_INSTALL_PREFIX=$HOME/ESMF
-          export ESMF_BOPT=g
-          export ESMF_NETCDF=nc-config
-          export ESMF_NFCONFIG=nf-config
-          export ESMF_PNETCDF=pnetcdf-config
-          export ESMF_PIO=external
-          export ESMF_PIO_LIBPATH=$HOME/pio/lib
-          export ESMF_PIO_INCLUDE=$HOME/pio/include
-          make
-          make install
-          popd
-
+        uses: ./.github/actions/buildesmf
+        with:
+          esmf_version: ${{ env.ESMF_VERSION }}
+          esmf_bopt: g
+          esmf_comm: openmpi
+          install_prefix: $HOME/ESMF
+          netcdf_c_path: /usr
+          netcdf_fortran_path: $HOME/netcdf-fortran
+          pnetcdf_path: $HOME/pnetcdf
+          parallelio_path: $HOME/pio
       - name: Build CDEPS
         run: |
           export ESMFMKFILE=$HOME/ESMF/lib/libg/Linux.gfortran.64.openmpi.default/esmf.mk
           export PIO=$HOME/pio
           export SRC_ROOT=
-          git submodule init
-          git submodule update
           mkdir build-cdeps
           pushd build-cdeps
           cmake -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_Fortran_FLAGS="-DCPRGNU -g -Wall -ffree-form -ffree-line-length-none -fallow-argument-mismatch " ../
