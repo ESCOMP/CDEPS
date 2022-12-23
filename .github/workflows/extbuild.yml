@@ -19,10 +19,10 @@ jobs:
       CPPFLAGS: "-I/usr/include -I/usr/local/include "
       # Versions of all dependencies can be updated here
       ESMF_VERSION: v8.4.0
-      PNETCDF_VERSION: checkpoint.1.12.3
-      NETCDF_FORTRAN_VERSION: v4.5.4
+      PNETCDF_VERSION: checkpoint.1.12.2
+      NETCDF_FORTRAN_VERSION: v4.6.0
       # These should match in number
-      PIO_VERSION: pio2_5_9
+      PIO_VERSION: pio2_5_10
     steps:
       - id: checkout-CDEPS
         uses: actions/checkout@v3
@@ -39,7 +39,7 @@ jobs:
         if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
         uses: ./.github/actions/buildpnetcdf
         with:
-          pnetcdf_version: checkpoint.1.12.2
+          pnetcdf_version: ${{ env.PNETCDF_VERSION }}
           install_prefix: $HOME/pnetcdf
       - name: Cache netcdf-fortran
         id: cache-netcdf-fortran
@@ -51,7 +51,7 @@ jobs:
         if: steps.cache-netcdf-fortran.outputs.cache-hit != 'true'
         uses: ./.github/actions/buildnetcdff
         with:
-          netcdf_fortran_version: v5.6.0
+          netcdf_fortran_version: ${{ env.NETCDF_FORTRAN_VERSION }}
           install_prefix: $HOME/netcdf-fortran
           netcdf_c_path: /usr
       - name: Cache PIO
