@@ -1,0 +1,71 @@
+name: ESMF build
+description: 'Build the ESMF library'
+inputs:
+  esmf_version:
+    description: 'Tag in the ESMF repository to use'
+    default: v8.4.0
+    required: False
+    type: string
+  netcdf_c_path:
+    description: 'Path to the installed netcdf c code root'
+    default: /usr
+    required: False
+    type: string
+  netcdf_fortran_path:
+    description: 'Path to the installed netcdf fortran code root'
+    default: $HOME/netcdf-fortran
+    required: False
+    type: string
+  pnetcdf_path:
+    description: 'Path to the installed pnetcdf code root'
+    default: $HOME/pnetcdf
+    required: False
+    type: string
+  parallelio_path:
+    description: 'Path to the installed ParallelIO code root'
+    default: $HOME/pio
+    required: False
+    type: string
+  install_prefix:
+    description: 'Install path of ESMF'
+    default: $HOME/esmf
+    required: False
+    type: string
+  esmf_comm:
+    description: 'ESMF target COMM library'
+    default: openmpi
+    required: False
+    type: string
+  esmf_bopt:
+    description: 'ESMF BOPT flag'
+    default: g
+    required: False
+    type: string
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v3
+      with:
+        repository: esmf-org/esmf
+        path: esmf-src
+        ref: ${{ inputs.esmf_version }}
+    - id : Build-ESMF
+      shell: bash
+      run: |
+        pushd esmf-src
+        export PATH=$PATH:${{ inputs.pnetcdf_path }}/bin:${{ inputs.netcdf_fortran_path }}/bin:${{ inputs.netcdf_c_path }}/bin
+        export ESMF_DIR=`pwd`
+        export ESMF_COMM=${{ inputs.esmf_comm }}
+        export ESMF_YAMLCPP="internal"
+        export ESMF_INSTALL_PREFIX=${{ inputs.install_prefix }}
+        export ESMF_BOPT=${{ inputs.esmf_bopt }}
+        export ESMF_NETCDF=nc-config
+        export ESMF_NFCONFIG=nf-config
+        export ESMF_PNETCDF=pnetcdf-config
+        export ESMF_PIO=external
+        export ESMF_PIO_LIBPATH=${{ inputs.parallelio_path }}/lib
+        export ESMF_PIO_INCLUDE=${{ inputs.parallelio_path }}/include
+        make
+        make install
+        popd
