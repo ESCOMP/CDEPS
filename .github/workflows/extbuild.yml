@@ -12,7 +12,6 @@ on:
 jobs:
   build-cdeps:
     runs-on: ubuntu-latest
-    uses: actions/checkout@v3
     env:
       CC: mpicc
       FC: mpifort
@@ -82,6 +81,7 @@ jobs:
             ${{ runner.os }}-${{ env.PNETCDF_VERSION }}-pnetcdf
       - name: Build ParallelIO
         if: steps.cache-PIO.outputs.cache-hit != 'true'
+        uses: actions/checkout@v3
         uses: ./.github/actions/buildpio
         with:
           parallelio_version: pio2_5_10
