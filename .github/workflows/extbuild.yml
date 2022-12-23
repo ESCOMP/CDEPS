@@ -24,6 +24,7 @@ jobs:
       # These should match in number
       PIO_VERSION: pio2_5_9
     steps:
+    - uses: actions/checkout@v3
       - id: load-env
         run: |
           sudo apt-get update
