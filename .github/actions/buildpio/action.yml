@@ -48,9 +48,9 @@ inputs:
     type: boolean
 
 runs:
-  parallelio_build:
-    name: Checkout Parallelio
-    steps:
+  using: composite
+  name: Checkout Parallelio
+  steps:
     - uses: actions/checkout@v3
       with:
         repository: NCAR/ParallelIO
