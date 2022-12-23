@@ -49,18 +49,18 @@ on:
         type: boolean
 
 jobs:
-  steps:
-    - name: Checkout Parallelio
-      uses: actions/checkout@v3
-      with:
-        repository: NCAR/ParallelIO
-        path: parallelio-src
-        ref: ${{ input.parallelio_version }}
-    - name: Build PIO
-      run: |
-        mkdir build-pio
-        pushd build-pio
-        cmake -Wno-dev -DNetCDF_C_LIBRARY=${{ inputs.netcdf_c_path }}/lib/x86_64-linux-gnu/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=${{ inputs.netcdf_c_path }}/include -DCMAKE_PREFIX_PATH=/usr -DCMAKE_INSTALL_PREFIX=${{ inputs.install_prefix }} -DPIO_HDF5_LOGGING=${{ inputs.enable_hdf5_logging }} -DPIO_ENABLE_EXAMPLES=Off -DPIO_ENABLE_LOGGING=${{ inputs.enable_logging }} -DPIO_ENABLE_TIMING=${{ inputs.enable_timing }} -DNetCDF_Fortran_PATH=${{ inputs.netcdf_fortran_path }} -DPnetCDF_PATH=${{ inputs.pnetcdf_path }} ../parallelio-src
-        make VERBOSE=1
-        make install
-        popd
+  parallelio_build:
+    name: Checkout Parallelio
+    uses: actions/checkout@v3
+    with:
+      repository: NCAR/ParallelIO
+      path: parallelio-src
+      ref: ${{ input.parallelio_version }}
+    name: Build PIO
+    run: |
+      mkdir build-pio
+      pushd build-pio
+      cmake -Wno-dev -DNetCDF_C_LIBRARY=${{ inputs.netcdf_c_path }}/lib/x86_64-linux-gnu/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=${{ inputs.netcdf_c_path }}/include -DCMAKE_PREFIX_PATH=/usr -DCMAKE_INSTALL_PREFIX=${{ inputs.install_prefix }} -DPIO_HDF5_LOGGING=${{ inputs.enable_hdf5_logging }} -DPIO_ENABLE_EXAMPLES=Off -DPIO_ENABLE_LOGGING=${{ inputs.enable_logging }} -DPIO_ENABLE_TIMING=${{ inputs.enable_timing }} -DNetCDF_Fortran_PATH=${{ inputs.netcdf_fortran_path }} -DPnetCDF_PATH=${{ inputs.pnetcdf_path }} ../parallelio-src
+      make VERBOSE=1
+      make install
+      popd
