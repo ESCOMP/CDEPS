@@ -81,14 +81,13 @@ jobs:
             ${{ runner.os }}-${{ env.PNETCDF_VERSION }}-pnetcdf
       - name: Build ParallelIO
         if: steps.cache-PIO.outputs.cache-hit != 'true'
-        call-parallelio-build:
-          uses: ./.github/workflows/pio.yml
-          with:
-            parallelio_version: pio2_5_10
-            netcdf_c_path: /usr
-            netcdf_fortran_path: $HOME/netcdf-fortran
-            pnetcdf_path: $HOME/pnetcdf
-            install_prefix: $HOME/pio
+        uses: ./.github/workflows/pio.yml
+        with:
+          parallelio_version: pio2_5_10
+          netcdf_c_path: /usr
+          netcdf_fortran_path: $HOME/netcdf-fortran
+          pnetcdf_path: $HOME/pnetcdf
+          install_prefix: $HOME/pio
 #      - id: checkout-pio
 #        uses: actions/checkout@v3
 #        with:
