@@ -19,9 +19,9 @@ jobs:
       CPPFLAGS: "-I/usr/include -I/usr/local/include "
       # Versions of all dependencies can be updated here - these match tag names in the github repo
       ESMF_VERSION: v8.4.0
-      PNETCDF_VERSION: checkpoint.1.12.2
+      PNETCDF_VERSION: checkpoint.1.12.3
       NETCDF_FORTRAN_VERSION: v4.6.0
-      PIO_VERSION: pio2_5_10
+      ParallelIO_VERSION: pio2_5_10
     steps:
       - id: checkout-CDEPS
         uses: actions/checkout@v3
@@ -35,7 +35,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/pnetcdf
-          key: ${{ runner.os }}-${{ env.PNETCDF_VERSION}}-pnetcdf
+          key: ${{ runner.os }}-${{ env.PNETCDF_VERSION}}-pnetcdf1
       - name: Build PNetCDF
         if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
         uses: ./.github/actions/buildpnetcdf
@@ -47,7 +47,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/netcdf-fortran
-          key: ${{ runner.os }}-${{ env.NETCDF_FORTRAN_VERSION }}-netcdf-fortran
+          key: ${{ runner.os }}-${{ env.NETCDF_FORTRAN_VERSION }}-netcdf-fortran1
       - name: Build NetCDF Fortran
         if: steps.cache-netcdf-fortran.outputs.cache-hit != 'true'
         uses: ./.github/actions/buildnetcdff
@@ -55,17 +55,17 @@ jobs:
           netcdf_fortran_version: ${{ env.NETCDF_FORTRAN_VERSION }}
           install_prefix: $HOME/netcdf-fortran
           netcdf_c_path: /usr
-      - name: Cache PIO
-        id: cache-PIO
+      - name: Cache PARALLELIO
+        id: cache-PARALLELIO
         uses: actions/cache@v3
         with:
           path: ~/pio
-          key: ${{ runner.os }}-${{ env.PIO_VERSION }}-parallelio
+          key: ${{ runner.os }}-${{ env.ParallelIO_VERSION }}-parallelio
       - name: Build ParallelIO
-        if: steps.cache-PIO.outputs.cache-hit != 'true'
+        if: steps.cache-PARALLELIO.outputs.cache-hit != 'true'
         uses: ./.github/actions/buildpio
         with:
-          parallelio_version: ${{ env.PIO_VERSION }}
+          parallelio_version: ${{ env.ParallelIO_VERSION }}
           netcdf_c_path: /usr
           netcdf_fortran_path: $HOME/netcdf-fortran
           pnetcdf_path: $HOME/pnetcdf
@@ -74,7 +74,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/ESMF
-          key: ${{ runner.os }}-${{ env.ESMF_VERSION }}-ESMF
+          key: ${{ runner.os }}-${{ env.ESMF_VERSION }}-ESMF1
       - id: build-ESMF
         if: steps.cache-esmf.outputs.cache-hit != 'true'
         uses: ./.github/actions/buildesmf
