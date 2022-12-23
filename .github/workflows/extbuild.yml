@@ -79,31 +79,31 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-${{ env.NETCDF_FORTRAN_VERSION }}-netcdf-fortran
             ${{ runner.os }}-${{ env.PNETCDF_VERSION }}-pnetcdf
-#      - name: Build ParallelIO
-#        if: steps.cache-PIO.outputs.cache-hit != 'true'
-#        call-parallelio-build:
-#          uses: ./.github/workflows/pio.yml
-#          with:
-#            parallelio_version: pio2_5_10
-#            netcdf_c_path: /usr
-#            netcdf_fortran_path: $HOME/netcdf-fortran
-#            pnetcdf_path: $HOME/pnetcdf
-#            install_prefix: $HOME/pio
-      - id: checkout-pio
-        uses: actions/checkout@v3
-        with:
-          repository: NCAR/ParallelIO
-          path: parallelio-src
-          ref: ${{ env.PIO_VERSION }}
-      - name: Build PIO
+      - name: Build ParallelIO
         if: steps.cache-PIO.outputs.cache-hit != 'true'
-        run: |
-          mkdir build-pio
-          pushd build-pio
-          cmake -Wno-dev -DNetCDF_C_LIBRARY=/usr/lib/x86_64-linux-gnu/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=/usr/include -DCMAKE_PREFIX_PATH=/usr -DCMAKE_INSTALL_PREFIX=$HOME/pio -DPIO_HDF5_LOGGING=Off -DPIO_ENABLE_EXAMPLES=Off -DPIO_ENABLE_LOGGING=Off -DPIO_ENABLE_TIMING=Off -DPnetCDF_PATH=$HOME/pnetcdf -DNetCDF_Fortran_LIBRARY=$HOME/netcdf-fortran/lib -DNetCDF_Fortran_INCLUDE_DIR=$HOME/netcdf-fortran/include ../parallelio-src
-          make VERBOSE=1
-          make install
-          popd
+        call-parallelio-build:
+          uses: ./.github/workflows/pio.yml
+          with:
+            parallelio_version: pio2_5_10
+            netcdf_c_path: /usr
+            netcdf_fortran_path: $HOME/netcdf-fortran
+            pnetcdf_path: $HOME/pnetcdf
+            install_prefix: $HOME/pio
+#      - id: checkout-pio
+#        uses: actions/checkout@v3
+#        with:
+#          repository: NCAR/ParallelIO
+#          path: parallelio-src
+#          ref: ${{ env.PIO_VERSION }}
+#      - name: Build PIO
+#        if: steps.cache-PIO.outputs.cache-hit != 'true'
+#        run: |
+#          mkdir build-pio
+#          pushd build-pio
+#          cmake -Wno-dev -DNetCDF_C_LIBRARY=/usr/lib/x86_64-linux-gnu/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=/usr/include -DCMAKE_PREFIX_PATH=/usr -DCMAKE_INSTALL_PREFIX=$HOME/pio -DPIO_HDF5_LOGGING=Off -DPIO_ENABLE_EXAMPLES=Off -DPIO_ENABLE_LOGGING=Off -DPIO_ENABLE_TIMING=Off -DPnetCDF_PATH=$HOME/pnetcdf -DNetCDF_Fortran_LIBRARY=$HOME/netcdf-fortran/lib -DNetCDF_Fortran_INCLUDE_DIR=$HOME/netcdf-fortran/include ../parallelio-src
+#          make VERBOSE=1
+#          make install
+#          popd
       - id: cache-esmf
         uses: actions/cache@v3
         with:

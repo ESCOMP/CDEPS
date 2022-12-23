@@ -10,11 +10,12 @@ on:
         type: string
       netcdf_c_path:
         description: 'Path to the installed netcdf c code root'
-        required: True
+        default: /usr
+        required: False
         type: string
       netcdf_fortan_path:
         description: 'Path to the installed netcdf fortran code root'
-        default: ${{ inputs.netcdf_c_path }}
+        default:
         required: False
         type: string
       pnetcdf_path:
@@ -62,7 +63,19 @@ jobs:
         run: |
           mkdir build-pio
           pushd build-pio
-          cmake -Wno-dev -DNetCDF_C_LIBRARY=${{ inputs.netcdf_c_path }}/lib/x86_64-linux-gnu/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=${{ inputs.netcdf_c_path }}/include -DCMAKE_PREFIX_PATH=/usr -DCMAKE_INSTALL_PREFIX=${{ inputs.install_prefix }} -DPIO_HDF5_LOGGING=${{ inputs.enable_hdf5_logging }} -DPIO_ENABLE_EXAMPLES=Off -DPIO_ENABLE_LOGGING=${{ inputs.enable_logging }} -DPIO_ENABLE_TIMING=${{ inputs.enable_timing }} -DNetCDF_Fortran_PATH=${{ inputs.netcdf_fortran_path }} -DPnetCDF_PATH=${{ inputs.pnetcdf_path }} ../parallelio-src
+          if [ -z "${{ inputs.pnetcdf_path }}" ]
+          then
+            pnetarg="-DPIO_ENABLE_PNETCDF=OFF"
+          else
+            pnetarg="-DPNetCDF_PATH=${{ inputs.pnetcdf_path }}"
+          fi
+          if [ -z "${{ inputs.netcdf_fortran_path }}" ]
+          then
+            nfarg="-DPIO_ENABLE_FORTRAN=OFF"
+          else
+            nfarg="-DNetCDF_Fortran_PATH=${{ inputs.netcdf_fortran_path }}"
+          fi
+          cmake -Wno-dev -DNetCDF_C_LIBRARY=${{ inputs.netcdf_c_path }}/lib/x86_64-linux-gnu/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=${{ inputs.netcdf_c_path }}/include -DCMAKE_PREFIX_PATH=/usr -DCMAKE_INSTALL_PREFIX=${{ inputs.install_prefix }} -DPIO_HDF5_LOGGING=${{ inputs.enable_hdf5_logging }} -DPIO_ENABLE_EXAMPLES=Off -DPIO_ENABLE_LOGGING=${{ inputs.enable_logging }} -DPIO_ENABLE_TIMING=${{ inputs.enable_timing }} $nfarg $pnetarg ../parallelio-src
           make VERBOSE=1
           make install
           popd
