@@ -11,7 +11,7 @@ inputs:
     default: /usr
     required: False
     type: string
-  netcdf_fortan_path:
+  netcdf_fortran_path:
     description: 'Path to the installed netcdf fortran code root'
     default:
     required: False

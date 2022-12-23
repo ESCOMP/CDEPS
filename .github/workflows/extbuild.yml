@@ -35,22 +35,12 @@ jobs:
         with:
           path: ~/pnetcdf
           key: ${{ runner.os }}-${{ env.PNETCDF_VERSION}}-pnetcdf
-
-      - id: checkout-pnetcdf
-        uses: actions/checkout@v3
-        with:
-          repository: Parallel-NetCDF/PnetCDF
-          path: pnetcdf-src
-          ref: ${{ env.PNETCDF_VERSION }}
-      - name: pnetcdf build
+      - name: Build PNetCDF
         if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
-        run: |
-          pushd pnetcdf-src
-          autoreconf -i
-          ./configure --prefix=$HOME/pnetcdf --enable-shared --disable-cxx
-          make
-          make install
-          popd
+        uses: ./.github/actions/buildpnetcdf
+        with:
+          pnetcdf_version: checkpoint.1.12.3
+          install_prefix: $HOME/pnetcdf
       - name: Cache netcdf-fortran
         id: cache-netcdf-fortran
         uses: actions/cache@v3
