@@ -75,7 +75,7 @@ jobs:
         with:
           path: ~/ESMF
           key: ${{ runner.os }}-${{ env.ESMF_VERSION }}-ESMF1
-      - id: build-ESMF
+      - name: Build ESMF
         if: steps.cache-esmf.outputs.cache-hit != 'true'
         uses: ./.github/actions/buildesmf
         with:
