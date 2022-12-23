@@ -39,7 +39,7 @@ jobs:
         if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
         uses: ./.github/actions/buildpnetcdf
         with:
-          pnetcdf_version: checkpoint.1.12.3
+          pnetcdf_version: checkpoint.1.12.2
           install_prefix: $HOME/pnetcdf
       - name: Cache netcdf-fortran
         id: cache-netcdf-fortran
@@ -47,21 +47,13 @@ jobs:
         with:
           path: ~/netcdf-fortran
           key: ${{ runner.os }}-${{ env.NETCDF_FORTRAN_VERSION }}-netcdf-fortran
-      - id: checkout-netcdf-fortran
-        uses: actions/checkout@v3
-        with:
-          repository: Unidata/netcdf-fortran
-          path: netcdf-fortran-src
-          ref: ${{ env.NETCDF_FORTRAN_VERSION }}
-      - name: netcdf fortran build
+      - name: Build NetCDF Fortran
         if: steps.cache-netcdf-fortran.outputs.cache-hit != 'true'
-        run: |
-          sudo apt-get install libnetcdf-dev
-          pushd netcdf-fortran-src
-          ./configure --prefix=$HOME/netcdf-fortran
-          make
-          make install
-
+        uses: ./.github/actions/buildnetcdff
+        with:
+          netcdf_fortran_version: v5.6.0
+          install_prefix: $HOME/netcdf-fortran
+          netcdf_c_path: /usr
       - name: Cache PIO
         id: cache-PIO
         uses: actions/cache@v3
