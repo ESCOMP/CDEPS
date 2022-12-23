@@ -54,7 +54,7 @@ runs:
       with:
         repository: NCAR/ParallelIO
         path: parallelio-src
-        ref: ${{ input.parallelio_version }}
+        ref: ${{ inputs.parallelio_version }}
     - id : Build-ParallelIO
       run: |
         mkdir build-pio
