@@ -22,7 +22,7 @@ jobs:
       PNETCDF_VERSION: checkpoint.1.12.3
       NETCDF_FORTRAN_VERSION: v4.5.4
       # These should match in number
-      PIO_VERSION: pio2_5_10
+      PIO_VERSION: pio2_5_9
     steps:
       - id: load-env
         run: |
