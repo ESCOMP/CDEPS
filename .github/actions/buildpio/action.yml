@@ -56,6 +56,7 @@ runs:
         path: parallelio-src
         ref: ${{ inputs.parallelio_version }}
     - id : Build-ParallelIO
+      shell: bash
       run: |
         mkdir build-pio
         pushd build-pio
