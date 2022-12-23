@@ -24,6 +24,8 @@ jobs:
       # These should match in number
       PIO_VERSION: pio2_5_9
     steps:
+      - id: checkout-CDEPS
+        uses: actions/checkout@v3
       - id: load-env
         run: |
           sudo apt-get update
@@ -81,7 +83,6 @@ jobs:
             ${{ runner.os }}-${{ env.PNETCDF_VERSION }}-pnetcdf
       - name: Build ParallelIO
         if: steps.cache-PIO.outputs.cache-hit != 'true'
-        uses: actions/checkout@v3
         uses: ./.github/actions/buildpio
         with:
           parallelio_version: pio2_5_10
@@ -135,8 +136,6 @@ jobs:
           make install
           popd
 
-      - id: checkout-CDEPS
-        uses: actions/checkout@v3
       - name: Build CDEPS
         run: |
           export ESMFMKFILE=$HOME/ESMF/lib/libg/Linux.gfortran.64.openmpi.default/esmf.mk
