@@ -282,7 +282,6 @@ target data model.
 
 .. code-block:: Fortran
 
-
   type shr_strdata_type
      type(shr_strdata_perstream), allocatable :: pstrm(:)              ! stream info
      type(shr_stream_streamType), pointer :: stream(:)=> null()        ! stream datatype
