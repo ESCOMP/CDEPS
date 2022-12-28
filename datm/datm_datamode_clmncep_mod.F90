@@ -344,7 +344,7 @@ contains
 
   !===============================================================================
   subroutine datm_datamode_clmncep_advance(mainproc, logunit, mpicom, rc)
-    use ESMF, only: ESMF_VMGetCurrent, ESMF_VMAllReduce, ESMF_REDUCE_MAX
+    use ESMF, only: ESMF_VMGetCurrent, ESMF_VMAllReduce, ESMF_REDUCE_MAX, ESMF_VM
 
     ! input/output variables
     logical                , intent(in)    :: mainproc

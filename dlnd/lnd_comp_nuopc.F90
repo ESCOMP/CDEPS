@@ -7,7 +7,7 @@ module cdeps_dlnd_comp
   !----------------------------------------------------------------------------
   ! This is the NUOPC cap for DLND
   !----------------------------------------------------------------------------
-
+  use ESMF              , only : ESMF_VM, ESMF_VMBroadcast
   use ESMF              , only : ESMF_Mesh, ESMF_GridComp, ESMF_SUCCESS, ESMF_LOGMSG_INFO
   use ESMF              , only : ESMF_LogWrite, ESMF_TraceRegionExit, ESMF_TraceRegionEnter
   use ESMF              , only : ESMF_Clock, ESMF_Alarm, ESMF_State, ESMF_ClockGet, ESMF_timeGet
@@ -162,6 +162,7 @@ contains
     integer, intent(out) :: rc
 
     ! local variables
+    type(ESMF_VM) :: vm
     character(CL) :: cvalue
     integer       :: nu         ! unit number
     integer       :: ierr       ! error code

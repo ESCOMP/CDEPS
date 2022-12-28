@@ -8,6 +8,7 @@ module cdeps_dice_comp
   ! This is the NUOPC cap for DICE
   !----------------------------------------------------------------------------
 
+  use ESMF                 , only : ESMF_VM, ESMF_VMBroadcast
   use ESMF                 , only : ESMF_Mesh, ESMF_GridComp, ESMF_State, ESMF_Clock
   use ESMF                 , only : ESMF_SUCCESS, ESMF_Time, ESMF_LogWrite, ESMF_LOGMSG_INFO
   use ESMF                 , only : ESMF_TraceRegionEnter, ESMF_TraceRegionExit
@@ -173,6 +174,7 @@ contains
     logical           :: exists             ! check for file existence
     integer           :: bcasttmp(4)
     real(r8)          :: rbcasttmp(3)
+    type(ESMF_VM)     :: vm
     character(len=*),parameter  :: subname=trim(modName)//':(InitializeAdvertise) '
     character(*)    ,parameter :: F00 = "('(" // trim(modName) // ") ',8a)"
     character(*)    ,parameter :: F01 = "('(" // trim(modName) // ") ',a,2x,i8)"

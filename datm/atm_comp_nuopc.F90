@@ -8,6 +8,7 @@ module cdeps_datm_comp
   ! This is the NUOPC cap for DATM
   !----------------------------------------------------------------------------
 
+  use ESMF             , only : ESMF_VM, ESMF_VMBroadcast
   use ESMF             , only : ESMF_Mesh, ESMF_GridComp, ESMF_SUCCESS, ESMF_LogWrite
   use ESMF             , only : ESMF_GridCompSetEntryPoint, ESMF_METHOD_INITIALIZE
   use ESMF             , only : ESMF_MethodRemove, ESMF_State, ESMF_Clock, ESMF_TimeInterval
@@ -222,7 +223,7 @@ contains
     integer           :: ierr       ! error code
     logical           :: exists     ! check for file existence
     integer           :: bcasttmp(9)
-    type(EMSF_VM)     :: vm
+    type(ESMF_VM)     :: vm
     character(len=*),parameter :: subname=trim(modName) // ':(InitializeAdvertise) '
     character(*)    ,parameter :: F00 = "('(" // trim(modName) // ") ',8a)"
     character(*)    ,parameter :: F01 = "('(" // trim(modName) // ") ',a,2x,i8)"

@@ -7,7 +7,7 @@ module cdeps_docn_comp
   !----------------------------------------------------------------------------
   ! This is the NUOPC cap for DOCN
   !----------------------------------------------------------------------------
-
+  use ESMF             , only : ESMF_VM, ESMF_VMBroadcast
   use ESMF             , only : ESMF_Mesh, ESMF_GridComp, ESMF_State, ESMF_Clock, ESMF_Time
   use ESMF             , only : ESMF_SUCCESS, ESMF_LogWrite, ESMF_LOGMSG_INFO, ESMF_METHOD_INITIALIZE
   use ESMF             , only : ESMF_TraceRegionEnter, ESMF_TraceRegionExit, ESMF_ClockGet
@@ -185,6 +185,7 @@ contains
     logical           :: exists             ! check for file existence
     integer           :: bcasttmp(3)
     real(r8)          :: rtmp(1)
+    type(ESMF_VM)     :: vm
     character(len=*),parameter :: subname=trim(module_name)//':(InitializeAdvertise) '
     character(*)    ,parameter :: F00 = "('(" // trim(module_name) // ") ',8a)"
     character(*)    ,parameter :: F01 = "('(" // trim(module_name) // ") ',a,2x,i8)"
