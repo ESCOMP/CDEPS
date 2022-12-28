@@ -949,7 +949,7 @@ contains
     ! Read restart file
 
     use dshr_stream_mod, only : shr_stream_restIO
-
+    use ESMF, only : ESMF_VMGetCurrent
     ! input/output arguments
     character(len=*)            , intent(inout) :: rest_filem
     character(len=*)            , intent(in)    :: rpfile
@@ -963,6 +963,7 @@ contains
     character(len=*) , optional , intent(in)    :: fldname
 
     ! local variables
+    type(ESMF_VM)     :: vm
     integer           :: nu
     logical           :: exists(1)  ! file existance
     type(file_desc_t) :: pioid
@@ -975,6 +976,8 @@ contains
 
     ! no streams means no restart file is read.
     if(shr_strdata_get_stream_count(sdat) <= 0) return
+    call ESMF_VMGetCurrent(vm, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     if (trim(rest_filem) == trim(nullstr)) then
        if (my_task == main_task) then
