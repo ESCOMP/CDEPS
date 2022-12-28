@@ -970,6 +970,7 @@ contains
     type(var_desc_t)  :: varid
     type(io_desc_t)   :: pio_iodesc
     integer           :: rcode
+    integer           :: rc
     character(*), parameter :: F00   = "('(dshr_restart_read) ',8a)"
     character(*), parameter :: subName = "(dshr_restart_read) "
     !-------------------------------------------------------------------------------
@@ -1174,7 +1175,6 @@ contains
 
   !================================================================================
   subroutine dshr_state_setscalar(scalar_value, scalar_id, State, flds_scalar_name, flds_scalar_num,  rc)
-
     ! ----------------------------------------------
     ! Set scalar data from State for a particular name
     ! ----------------------------------------------
