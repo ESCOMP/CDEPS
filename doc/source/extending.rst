@@ -219,16 +219,14 @@ be used for this purpose.
 
 In ``datm_datamode_clmncep_mod.F90``, there are five main routines:
 
-  **datm_datamode_clmncep_advertise()**
-
+**datm_datamode_clmncep_advertise()**
   This routine advertises a field in a state. In this case, an empty 
   field is created and added to the state through use of ESMF/NUOPC
   provided ``NUOPC_Advertise()`` call. The ``dshr_fldList_add()`` is a 
   generic routine defined under ``dshr/dshr_fldlist_mod.F90`` and 
   populates the internal data structure.
 
-  **datm_datamode_clmncep_init_pointers()**
-  
+**datm_datamode_clmncep_init_pointers()**
   This routine initializes pointers for module level stream arrays.
   It provides flexibility to access data pointer in actual stream 
   data file (`shr_strdata_get_stream_pointer() <https://github.com/
@@ -241,23 +239,20 @@ In ``datm_datamode_clmncep_mod.F90``, there are five main routines:
   data provided by other model components to support interaction
   with other components like prognostic mode defined in this mode.
 
-  **datm_datamode_clmncep_advance()**
-
+**datm_datamode_clmncep_advance()**
   This routine is called every time when the data component needs
   to provide the data to other components. It also includes custom
   calculations like limiting temperature field, calculating
   specific humidity or downward longwave and applying unit 
   conversions.
 
-  **datm_datamode_clmncep_restart_write()**
-
+**datm_datamode_clmncep_restart_write()**
   This routine is used to write restart information to data model
   specific restart file through the use of `dshr_restart_write() 
   <https://github.com/ESCOMP/CDEPS/blob/master/dshr/dshr_mod.F90>`_
   call.
 
-  **datm_datamode_clmncep_restart_read()**
-
+**datm_datamode_clmncep_restart_read()**
   This routine is used to read restart information from data model
   specific restart file through the use of `dshr_restart_read() 
   <https://github.com/ESCOMP/CDEPS/blob/master/dshr/dshr_mod.F90>`_
