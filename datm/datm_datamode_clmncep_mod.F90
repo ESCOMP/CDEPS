@@ -6,7 +6,6 @@ module datm_datamode_clmncep_mod
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_sys_mod      , only : shr_sys_abort
   use shr_precip_mod   , only : shr_precip_partition_rain_snow_ramp
-  use shr_mpi_mod      , only : shr_mpi_max
   use shr_const_mod    , only : shr_const_spval, shr_const_tkfrz, shr_const_pi
   use shr_const_mod    , only : shr_const_pstd, shr_const_stebol, shr_const_rdair
   use dshr_methods_mod , only : dshr_state_getfldptr, chkerr
@@ -345,6 +344,7 @@ contains
 
   !===============================================================================
   subroutine datm_datamode_clmncep_advance(mainproc, logunit, mpicom, rc)
+    use ESMF, only: ESMF_VMGetCurrent, ESMF_VMAllReduce, ESMF_MAX
 
     ! input/output variables
     logical                , intent(in)    :: mainproc
@@ -356,7 +356,7 @@ contains
     logical  :: first_time = .true.
     integer  :: n                   ! indices
     integer  :: lsize               ! size of attr vect
-    real(r8) :: rtmp
+    real(r8) :: rtmp(2)
     real(r8) :: swndr
     real(r8) :: swndf
     real(r8) :: swvdr
@@ -365,6 +365,7 @@ contains
     real(r8) :: tbot, pbot
     real(r8) :: vp
     real(r8) :: ea, e, qsat, frac
+    type(ESMF_VM) :: vm
     character(len=*), parameter :: subname='(datm_datamode_clmncep_advance): '
     !-------------------------------------------------------------------------------
 
@@ -373,9 +374,13 @@ contains
     lsize = size(Sa_u)
 
     if (first_time) then
+       call ESMF_VMGetCurrent(vm, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
        ! determine tbotmax (see below for use)
-       rtmp = maxval(Sa_tbot(:))
-       call shr_mpi_max(rtmp, tbotmax, mpicom, 'datm_tbot', all=.true.)
+       rtmp(1) = maxval(Sa_tbot(:))
+       call ESMF_VMAllReduce(vm, rtmp, rtmp(2:), 1, ESMF_MAX, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       tbotmax = rtmp(2)
        if (mainproc) write(logunit,*) trim(subname),' tbotmax = ',tbotmax
        if(tbotmax <= 0) then
           call shr_sys_abort(subname//'ERROR: bad value in tbotmax')
@@ -383,8 +388,10 @@ contains
 
        ! determine anidrmax (see below for use)
        if (atm_prognostic) then
-          rtmp = maxval(Sx_anidr(:))
-          call shr_mpi_max(rtmp, anidrmax, mpicom, 'datm_ani', all=.true.)
+          rtmp(1) = maxval(Sx_anidr(:))
+          call ESMF_VMAllReduce(vm, rtmp, rtmp(2:), 1, ESMF_MAX, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          anidrmax = rtmp(2)
        else
           anidrmax = SHR_CONST_SPVAL
        end if
@@ -392,8 +399,10 @@ contains
 
        ! determine tdewmax (see below for use)
        if (associated(strm_tdew)) then
-          rtmp = maxval(strm_tdew(:))
-          call shr_mpi_max(rtmp, tdewmax, mpicom, 'datm_tdew', all=.true.)
+          rtmp(1) = maxval(strm_tdew(:))
+          call ESMF_VMAllReduce(vm, rtmp, rtmp(2:), 1, ESMF_MAX, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          tdewmax = rtmp(2)
           if (mainproc) write(logunit,*) trim(subname),' tdewmax = ',tdewmax
        endif
 

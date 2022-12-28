@@ -8,7 +8,7 @@ module shr_abort_mod
   ! when these routines were defined in shr_sys_mod.)
 
   use, intrinsic :: iso_fortran_env, only: output_unit, error_unit
-  use ESMF,         only : ESMF_Finalize, ESMF_END_ABORT, ESMF_LOGMSG_ERROR
+  use ESMF,         only : ESMF_Finalize, ESMF_END_ABORT, ESMF_LOGMSG_ERROR, ESMF_LogWrite
   use shr_kind_mod, only : shr_kind_in, shr_kind_cx
   use shr_log_mod , only : s_logunit => shr_log_Unit
 

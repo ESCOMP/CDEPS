@@ -5,7 +5,6 @@ module datm_datamode_cfsr_mod
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_sys_mod      , only : shr_sys_abort
   use shr_precip_mod   , only : shr_precip_partition_rain_snow_ramp
-  use shr_mpi_mod      , only : shr_mpi_max
   use shr_const_mod    , only : shr_const_tkfrz, shr_const_rhofw, shr_const_rdair
   use dshr_methods_mod , only : dshr_state_getfldptr, chkerr
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_get_stream_pointer
@@ -51,7 +50,7 @@ module datm_datamode_cfsr_mod
   real(r8) , parameter :: tKFrz    = SHR_CONST_TKFRZ
   real(r8) , parameter :: rdair    = SHR_CONST_RDAIR ! dry air gas constant ~ J/K/kg
   real(r8) , parameter :: rhofw    = SHR_CONST_RHOFW ! density of fresh water ~ kg/m^3
-  
+
   character(*), parameter :: nullstr = 'undefined'
   character(*), parameter :: rpfile  = 'rpointer.atm'
   character(*), parameter :: u_FILE_u = &
@@ -166,6 +165,7 @@ contains
 
   !===============================================================================
   subroutine datm_datamode_cfsr_advance(exportstate, mainproc, logunit, mpicom, target_ymd, target_tod, model_calendar, rc)
+    use ESMF, only: ESMF_VMGetCurrent, ESMF_VMAllReduce, ESMF_MAX, ESMF_VM
 
     ! input/output variables
     type(ESMF_State)       , intent(inout) :: exportState
@@ -181,8 +181,9 @@ contains
     logical  :: first_time = .true.
     integer  :: n                   ! indices
     integer  :: lsize               ! size of attr vect
-    real(r8) :: rtmp
+    real(r8) :: rtmp(2)
     real(r8) :: tbot, pbot
+    type(ESMF_VM) :: vm
     character(len=*), parameter :: subname='(datm_datamode_cfsr_advance): '
     !-------------------------------------------------------------------------------
 
@@ -191,14 +192,18 @@ contains
     lsize = size(strm_mask)
 
     if (first_time) then
+       call ESMF_VMGetCurrent(vm, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
        ! determine tbotmax (see below for use)
-       rtmp = maxval(Sa_tbot(:))
-       call shr_mpi_max(rtmp, tbotmax, mpicom, 'datm_tbot', all=.true.)
+       rtmp(1) = maxval(Sa_tbot(:))
+       call ESMF_VMAllReduce(vm, rtmp, rtmp(2:), 1, ESMF_MAX, rc=rc)
+       tbotmax = rtmp(2)
        if (mainproc) write(logunit,*) trim(subname),' tbotmax = ',tbotmax
 
        ! determine maskmax (see below for use)
-       rtmp = maxval(strm_mask(:))
-       call shr_mpi_max(rtmp, maskmax, mpicom, 'datm_mask', all=.true.)
+       rtmp(1) = maxval(strm_mask(:))
+       call ESMF_VMAllReduce(vm, rtmp, rtmp(2:), 1, ESMF_MAX, rc=rc)
+       maskmax = rtmp(2)
        if (mainproc) write(logunit,*) trim(subname),' maskmax = ',maskmax
 
        ! reset first_time
@@ -217,7 +222,7 @@ contains
   !===============================================================================
   subroutine datm_datamode_cfsr_restart_write(case_name, inst_suffix, ymd, tod, &
        logunit, my_task, sdat)
-    
+
     ! input/output variables
     character(len=*)            , intent(in)    :: case_name
     character(len=*)            , intent(in)    :: inst_suffix
