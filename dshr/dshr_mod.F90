@@ -33,7 +33,6 @@ module dshr_mod
   use ESMF             , only : ESMF_UtilStringUpperCase
   use shr_kind_mod     , only : r8=>shr_kind_r8, cs=>shr_kind_cs, cl=>shr_kind_cl, cx=>shr_kind_cx, cxx=>shr_kind_cxx, i8=>shr_kind_i8
   use shr_sys_mod      , only : shr_sys_abort
-  use shr_mpi_mod      , only : shr_mpi_bcast
   use shr_log_mod     , only : shr_log_setLogUnit
   use shr_cal_mod      , only : shr_cal_noleap, shr_cal_gregorian, shr_cal_calendarname
   use shr_cal_mod      , only : shr_cal_datetod2string, shr_cal_date2julian
@@ -965,7 +964,7 @@ contains
 
     ! local variables
     integer           :: nu
-    logical           :: exists  ! file existance
+    logical           :: exists(1)  ! file existance
     type(file_desc_t) :: pioid
     type(var_desc_t)  :: varid
     type(io_desc_t)   :: pio_iodesc
@@ -980,26 +979,30 @@ contains
     if (trim(rest_filem) == trim(nullstr)) then
        if (my_task == main_task) then
           write(logunit,F00) ' restart filename from rpointer'
-          inquire(file=trim(rpfile)//trim(inst_suffix), exist=exists)
-          if (.not.exists) then
+          inquire(file=trim(rpfile)//trim(inst_suffix), exist=exists(1))
+          if (.not.exists(1)) then
              write(logunit, F00) ' ERROR: rpointer file does not exist'
              call shr_sys_abort(trim(subname)//' ERROR: rpointer file missing')
           endif
           open(newunit=nu, file=trim(rpfile)//trim(inst_suffix), form='formatted')
           read(nu, '(a)') rest_filem
           close(nu)
-          inquire(file=trim(rest_filem), exist=exists)
+          inquire(file=trim(rest_filem), exist=exists(1))
        endif
-       call shr_mpi_bcast(rest_filem, mpicom, 'rest_filem')
+       call ESMF_VMBroadCast(vm, rest_filem, CL, main_task, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
     else
        ! use namelist already read
        if (my_task == main_task) then
           write(logunit, F00) ' restart filenames from namelist '
-          inquire(file=trim(rest_filem), exist=exists)
+          inquire(file=trim(rest_filem), exist=exists(1))
        endif
     endif
-    call shr_mpi_bcast(exists, mpicom, 'exists')
-    if (exists) then
+
+    call ESMF_VMBroadCast(vm, exists, 1, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    if (exists(1)) then
        if (my_task == main_task) write(logunit, F00) ' reading data model restart ', trim(rest_filem)
        rcode = pio_openfile(sdat%pio_subsystem, pioid, sdat%io_type, trim(rest_filem), pio_nowrite)
        call shr_stream_restIO(pioid, sdat%stream, 'read')

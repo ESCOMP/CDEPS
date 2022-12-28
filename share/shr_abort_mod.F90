@@ -62,7 +62,7 @@ contains
     if(present(rc)) then
        write(local_string, *) trim(local_string), ' rc=',rc
     endif
-    call ESMF_LogWrite(local_string, ESMF_LOGMSG_ERROR, rc=rc)
+    call ESMF_LogWrite(local_string, ESMF_LOGMSG_ERROR)
     call ESMF_Finalize(endflag=ESMF_END_ABORT)
 
     ! A compiler's abort method may print a backtrace or do other nice
