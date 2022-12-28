@@ -195,7 +195,7 @@ contains
 
   !===============================================================================
   subroutine datm_datamode_era5_advance(exportstate, mainproc, logunit, mpicom, target_ymd, target_tod, model_calendar, rc)
-    use ESMF, only: ESMF_VMGetCurrent, ESMF_VMAllReduce, ESMF_MAX
+    use ESMF, only: ESMF_VMGetCurrent, ESMF_VMAllReduce, ESMF_REDUCE_MAX
 
     ! input/output variables
     type(ESMF_State)       , intent(inout) :: exportState
@@ -228,14 +228,14 @@ contains
        if (associated(Sa_t2m)) then
          rtmp(1) = maxval(Sa_t2m(:))
 
-         call ESMF_VMAllReduce(vm, rtmp, rtmp(2:), 1, ESMF_MAX, rc=rc)
+         call ESMF_VMAllReduce(vm, rtmp, rtmp(2:), 1, ESMF_REDUCE_MAX, rc=rc)
          t2max = rtmp(2)
          if (mainproc) write(logunit,*) trim(subname),' t2max = ',t2max
        end if
 
        ! determine tdewmax (see below for use)
        rtmp(1) = maxval(strm_tdew(:))
-       call ESMF_VMAllReduce(vm, rtmp, rtmp(2:), 1, ESMF_MAX, rc=rc)
+       call ESMF_VMAllReduce(vm, rtmp, rtmp(2:), 1, ESMF_REDUCE_MAX, rc=rc)
        td2max = rtmp(2)
 
        if (mainproc) write(logunit,*) trim(subname),' td2max = ',td2max

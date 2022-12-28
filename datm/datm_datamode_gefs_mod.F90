@@ -165,7 +165,7 @@ contains
 
   !===============================================================================
   subroutine datm_datamode_gefs_advance(exportstate, mainproc, logunit, mpicom, target_ymd, target_tod, model_calendar, rc)
-    use ESMF, only: ESMF_VMGetCurrent, ESMF_VMAllReduce, ESMF_MAX, ESMF_VM
+    use ESMF, only: ESMF_VMGetCurrent, ESMF_VMAllReduce, ESMF_REDUCE_MAX, ESMF_VM
     ! input/output variables
     type(ESMF_State)       , intent(inout) :: exportState
     logical                , intent(in)    :: mainproc
@@ -195,7 +195,7 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        ! determine tbotmax (see below for use)
        rtmp(1) = maxval(Sa_tbot(:))
-       call ESMF_VMAllReduce(vm, rtmp, rtmp(2:), 1, ESMF_MAX, rc=rc)
+       call ESMF_VMAllReduce(vm, rtmp, rtmp(2:), 1, ESMF_REDUCE_MAX, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        tbotmax = rtmp(2)
 
@@ -203,7 +203,7 @@ contains
 
        ! determine maskmax (see below for use)
        rtmp(1) = maxval(strm_mask(:))
-       call ESMF_VMAllReduce(vm, rtmp, rtmp(2:), 1, ESMF_MAX, rc=rc)
+       call ESMF_VMAllReduce(vm, rtmp, rtmp(2:), 1, ESMF_REDUCE_MAX, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        maxkmax = rtmp(2)
        if (mainproc) write(logunit,*) trim(subname),' maskmax = ',maskmax

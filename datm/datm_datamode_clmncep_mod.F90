@@ -344,7 +344,7 @@ contains
 
   !===============================================================================
   subroutine datm_datamode_clmncep_advance(mainproc, logunit, mpicom, rc)
-    use ESMF, only: ESMF_VMGetCurrent, ESMF_VMAllReduce, ESMF_MAX
+    use ESMF, only: ESMF_VMGetCurrent, ESMF_VMAllReduce, ESMF_REDUCE_MAX
 
     ! input/output variables
     logical                , intent(in)    :: mainproc
@@ -378,7 +378,7 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        ! determine tbotmax (see below for use)
        rtmp(1) = maxval(Sa_tbot(:))
-       call ESMF_VMAllReduce(vm, rtmp, rtmp(2:), 1, ESMF_MAX, rc=rc)
+       call ESMF_VMAllReduce(vm, rtmp, rtmp(2:), 1, ESMF_REDUCE_MAX, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        tbotmax = rtmp(2)
        if (mainproc) write(logunit,*) trim(subname),' tbotmax = ',tbotmax
@@ -389,7 +389,7 @@ contains
        ! determine anidrmax (see below for use)
        if (atm_prognostic) then
           rtmp(1) = maxval(Sx_anidr(:))
-          call ESMF_VMAllReduce(vm, rtmp, rtmp(2:), 1, ESMF_MAX, rc=rc)
+          call ESMF_VMAllReduce(vm, rtmp, rtmp(2:), 1, ESMF_REDUCE_MAX, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           anidrmax = rtmp(2)
        else
@@ -400,7 +400,7 @@ contains
        ! determine tdewmax (see below for use)
        if (associated(strm_tdew)) then
           rtmp(1) = maxval(strm_tdew(:))
-          call ESMF_VMAllReduce(vm, rtmp, rtmp(2:), 1, ESMF_MAX, rc=rc)
+          call ESMF_VMAllReduce(vm, rtmp, rtmp(2:), 1, ESMF_REDUCE_MAX, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           tdewmax = rtmp(2)
           if (mainproc) write(logunit,*) trim(subname),' tdewmax = ',tdewmax
