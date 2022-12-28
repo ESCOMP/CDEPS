@@ -15,7 +15,7 @@ module cdeps_datm_comp
   use ESMF             , only : ESMF_Time, ESMF_Alarm, ESMF_TimeGet, ESMF_TimeInterval
   use ESMF             , only : operator(+), ESMF_TimeIntervalGet, ESMF_ClockGetAlarm
   use ESMF             , only : ESMF_AlarmIsRinging, ESMF_AlarmRingerOff, ESMF_StateGet
-  use ESMF             , only : ESMF_FieldGet, ESMF_MAXSTR
+  use ESMF             , only : ESMF_FieldGet, ESMF_MAXSTR, ESMF_VMBroadcast
   use ESMF             , only : ESMF_TraceRegionEnter, ESMF_TraceRegionExit
   use NUOPC            , only : NUOPC_CompDerive, NUOPC_CompSetEntryPoint, NUOPC_CompSpecialize
   use NUOPC            , only : NUOPC_CompAttributeGet, NUOPC_Advertise
@@ -28,7 +28,6 @@ module cdeps_datm_comp
   use shr_const_mod    , only : shr_const_cday
   use shr_sys_mod      , only : shr_sys_abort
   use shr_cal_mod      , only : shr_cal_ymd2date
-  use shr_mpi_mod      , only : shr_mpi_bcast
   use shr_log_mod     , only : shr_log_setLogUnit
   use dshr_methods_mod , only : dshr_state_diagnose, chkerr, memcheck
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_init_from_config, shr_strdata_advance
@@ -222,17 +221,32 @@ contains
     integer           :: nu         ! unit number
     integer           :: ierr       ! error code
     logical           :: exists     ! check for file existence
+    integer           :: bcasttmp(9)
+    type(EMSF_VM)     :: vm
     character(len=*),parameter :: subname=trim(modName) // ':(InitializeAdvertise) '
     character(*)    ,parameter :: F00 = "('(" // trim(modName) // ") ',8a)"
     character(*)    ,parameter :: F01 = "('(" // trim(modName) // ") ',a,2x,i8)"
     character(*)    ,parameter :: F02 = "('(" // trim(modName) // ") ',a,l6)"
     !-------------------------------------------------------------------------------
 
-    namelist / datm_nml / datamode, &
-         model_meshfile, model_maskfile, &
-         nx_global, ny_global, restfilm, iradsw, factorFn_data, factorFn_mesh, &
-         flds_presaero, flds_co2, flds_wiso, bias_correct, anomaly_forcing, &
-         skip_restart_read, flds_presndep, flds_preso3
+    namelist / datm_nml / &
+         datamode, &
+         model_meshfile,
+         model_maskfile, &
+         nx_global, &
+         ny_global, &
+         restfilm, &
+         iradsw, &
+         factorFn_data, &
+         factorFn_mesh, &
+         flds_presaero, &
+         flds_co2, &
+         flds_wiso, &
+         bias_correct, &
+         anomaly_forcing, &
+         skip_restart_read, &
+         flds_presndep, &
+         flds_preso3
 
     rc = ESMF_SUCCESS
 
@@ -259,23 +273,44 @@ contains
           write(logunit,*) 'ERROR: reading input namelist, '//trim(nlfilename)//' iostat=',ierr
           call shr_sys_abort(subName//': namelist read error '//trim(nlfilename))
        end if
-    end if
+       bcasttmp = 0
+       bcasttmp(1) = nx_global
+       bcasttmp(2) = ny_global
+       bcasttmp(3) = iradsw
+       if(flds_presaero)     bcasttmp(4) = 1
+       if(flds_presndep)     bcasttmp(5) = 1
+       if(flds_preso3)       bcasttmp(6) = 1
+       if(flds_co2)          bcasttmp(7) = 1
+       if(flds_wiso)         bcasttmp(8) = 1
+       if(skip_restart_read) bcasttmp(9) = 1
 
-    call shr_mpi_bcast(datamode                  , mpicom, 'datamode')
-    call shr_mpi_bcast(model_meshfile            , mpicom, 'model_meshfile')
-    call shr_mpi_bcast(model_maskfile            , mpicom, 'model_maskfile')
-    call shr_mpi_bcast(nx_global                 , mpicom, 'nx_global')
-    call shr_mpi_bcast(ny_global                 , mpicom, 'ny_global')
-    call shr_mpi_bcast(iradsw                    , mpicom, 'iradsw')
-    call shr_mpi_bcast(factorFn_data             , mpicom, 'factorFn_data')
-    call shr_mpi_bcast(factorFn_mesh             , mpicom, 'factorFn_mesh')
-    call shr_mpi_bcast(restfilm                  , mpicom, 'restfilm')
-    call shr_mpi_bcast(flds_presaero             , mpicom, 'flds_presaero')
-    call shr_mpi_bcast(flds_presndep             , mpicom, 'flds_presndep')
-    call shr_mpi_bcast(flds_preso3               , mpicom, 'flds_preso3')
-    call shr_mpi_bcast(flds_co2                  , mpicom, 'flds_co2')
-    call shr_mpi_bcast(flds_wiso                 , mpicom, 'flds_wiso')
-    call shr_mpi_bcast(skip_restart_read         , mpicom, 'skip_restart_read')
+    end if
+    call ESMF_GridCompGet(gcomp, vm=vm, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    call ESMF_VMBroadcast(vm, datamode, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, model_meshfile, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, model_maskfile, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, factorFn_data, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, factorFn_mesh, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, restfilm, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, bcasttmp, 9, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    nx_global         = bcasttmp(1)
+    ny_global         = bcasttmp(2)
+    iradsw            = bcasttmp(3)
+    flds_presaero     = (bcasttmp(4) == 1)
+    flds_presndep     = (bcasttmp(5) == 1)
+    flds_preso3       = (bcasttmp(6) == 1)
+    flds_co2          = (bcasttmp(7) == 1)
+    flds_wiso         = (bcasttmp(8) == 1)
+    skip_restart_read = (bcasttmp(9) == 1)
 
     ! write namelist input to standard out
     if (my_task == main_task) then
