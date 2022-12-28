@@ -965,12 +965,13 @@ contains
     ! local variables
     type(ESMF_VM)     :: vm
     integer           :: nu
-    logical           :: exists(1)  ! file existance
+    logical           :: exists  ! file existance
     type(file_desc_t) :: pioid
     type(var_desc_t)  :: varid
     type(io_desc_t)   :: pio_iodesc
     integer           :: rcode
     integer           :: rc
+    integer           :: tmp(1)
     character(*), parameter :: F00   = "('(dshr_restart_read) ',8a)"
     character(*), parameter :: subName = "(dshr_restart_read) "
     !-------------------------------------------------------------------------------
@@ -983,15 +984,15 @@ contains
     if (trim(rest_filem) == trim(nullstr)) then
        if (my_task == main_task) then
           write(logunit,F00) ' restart filename from rpointer'
-          inquire(file=trim(rpfile)//trim(inst_suffix), exist=exists(1))
-          if (.not.exists(1)) then
+          inquire(file=trim(rpfile)//trim(inst_suffix), exist=exists)
+          if (.not.exists) then
              write(logunit, F00) ' ERROR: rpointer file does not exist'
              call shr_sys_abort(trim(subname)//' ERROR: rpointer file missing')
           endif
           open(newunit=nu, file=trim(rpfile)//trim(inst_suffix), form='formatted')
           read(nu, '(a)') rest_filem
           close(nu)
-          inquire(file=trim(rest_filem), exist=exists(1))
+          inquire(file=trim(rest_filem), exist=exists)
        endif
        call ESMF_VMBroadCast(vm, rest_filem, CL, main_task, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -999,14 +1000,15 @@ contains
        ! use namelist already read
        if (my_task == main_task) then
           write(logunit, F00) ' restart filenames from namelist '
-          inquire(file=trim(rest_filem), exist=exists(1))
+          inquire(file=trim(rest_filem), exist=exists)
        endif
     endif
-
-    call ESMF_VMBroadCast(vm, exists, 1, main_task, rc=rc)
+    tmp = 0
+    if(exists) tmp=1
+    call ESMF_VMBroadCast(vm, tmp, 1, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    if (exists(1)) then
+    exists = (tmp(1) == 1)
+    if (exists) then
        if (my_task == main_task) write(logunit, F00) ' reading data model restart ', trim(rest_filem)
        rcode = pio_openfile(sdat%pio_subsystem, pioid, sdat%io_type, trim(rest_filem), pio_nowrite)
        call shr_stream_restIO(pioid, sdat%stream, 'read')
