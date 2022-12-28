@@ -25,8 +25,7 @@ module cdeps_dwav_comp
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_sys_mod      , only : shr_sys_abort
   use shr_cal_mod      , only : shr_cal_ymd2date
-  use shr_mpi_mod      , only : shr_mpi_bcast
-  use shr_log_mod     , only : shr_log_setLogUnit
+  use shr_log_mod      , only : shr_log_setLogUnit
   use dshr_methods_mod , only : dshr_state_getfldptr, chkerr, memcheck, dshr_state_diagnose
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_advance
   use dshr_strdata_mod , only : shr_strdata_init_from_config
@@ -162,6 +161,8 @@ contains
     integer           :: nu                 ! unit number
     integer           :: ierr               ! error code
     logical           :: exists
+    type(ESMF_VM)     :: vm
+    integer           :: bcasttmp(3)
     character(len=*),parameter  :: subname=trim(modName)//':(InitializeAdvertise) '
     character(*)    ,parameter :: F00 = "('(" // trim(modName) // ") ',8a)"
     character(*)    ,parameter :: F01 = "('(" // trim(modName) // ") ',a,2x,i8)"
@@ -205,16 +206,29 @@ contains
        write(logunit,F01)' ny_global = ',ny_global
        write(logunit,F00)' restfilm = ',trim(restfilm)
        write(logunit,F02)' skip_restart_read = ',skip_restart_read
+       bcasttmp = 0
+       bcasttmp(1) = nx_global
+       bcasttmp(2) = ny_global
+       if(skip_restart_read) bcasttmp(3) = 1
     endif
 
     ! broadcast namelist input
-    call shr_mpi_bcast(datamode                  , mpicom, 'datamode')
-    call shr_mpi_bcast(model_meshfile            , mpicom, 'model_meshfile')
-    call shr_mpi_bcast(model_maskfile            , mpicom, 'model_maskfile')
-    call shr_mpi_bcast(nx_global                 , mpicom, 'nx_global')
-    call shr_mpi_bcast(ny_global                 , mpicom, 'ny_global')
-    call shr_mpi_bcast(restfilm                  , mpicom, 'restfilm')
-    call shr_mpi_bcast(skip_restart_read         , mpicom, 'skip_restart_read')
+    call ESMF_GridCompGet(gcomp, vm=vm, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    call ESMF_VMBroadcast(vm, datamode, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, model_meshfile, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, model_maskfile, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, restfilm, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, bcasttmp, 3, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    nx_global = bcasttmp(1)
+    ny_global = bcasttmp(2)
+    skip_restart_read = (bcasttmp(3) == 1)
 
     ! Call advertise phase
     if (trim(datamode) == 'copyall') then
