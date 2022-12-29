@@ -192,14 +192,14 @@
 forcing data produced by a previous run using active components) to
 drive prognostic components. The various ways of running DATM is
 referred to as its mode.</p>
-<p>In the case of CESM, the active model component would be: CTSM,
+<p>In the case of CESM, the active model components would be: CTSM,
 POP2, MOM6, POP2, CICE5-6, WW3 and MOSART. As examples, CORE2_NYF
 (CORE2 normal year forcing) is the DATM mode used in driving
 POP2 and MOM6. On the other hand CLM_QIAN, CLMCRUNCEP, CLMGSWP3
 and CLM1PT are DATM modes using observational data for forcing CTSM.</p>
 <section id="supported-data-modes">
 <span id="datm-datamodes"></span><h2><span class="section-number">4.1. </span>Supported Data Modes<a class="headerlink" href="#supported-data-modes" title="Permalink to this heading">¶</a></h2>
-<p>DATM its own set of supported <code class="docutils literal notranslate"><span class="pre">datamode</span></code> values that appears in the
+<p>DATM has its own set of supported <code class="docutils literal notranslate"><span class="pre">datamode</span></code> values that appear in the
 <code class="docutils literal notranslate"><span class="pre">datm_in</span></code> namelist input. The datamode specifies what additional
 operations need to be done by DATM on <em>ALL</em> of the streams in the
 <code class="docutils literal notranslate"><span class="pre">datm.streams.xml</span></code> file. Each datamode value is also associated
@@ -238,30 +238,30 @@ v1.3 forcing data.</p></li>
 </dd>
 <dt>ERA5 (<code class="docutils literal notranslate"><span class="pre">datm_datamode_era5_mod.F90</span></code>)</dt><dd><ul class="simple">
 <li><p>Fifth generation ECMWF atmospheric reanalysis of the global climate.
-This mode mainly used by NOAA’s UFS Weather model to support
-different appalications such as HYCOM ocean and NOAHMP land components.</p></li>
+This mode is mainly used by NOAA’s UFS Weather model to support
+different applications such as HYCOM ocean and NOAHMP land components.</p></li>
 </ul>
 </dd>
 </dl>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Due to high temporal and spatial resoultion of ERA5 dataset, only 2019
+<p>Due to the high temporal and spatial resoultion of ERA5 dataset, only 2019
 data is staged on NCAR’s Cheyenne platform under
 <cite>$CESMDATAROOT/inputdata/atm/datm7/ERA5</cite></p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>In addition to the exiting DATM data modes, <a class="reference external" href="https://github.com/NOAA-EMC/CDEPS">CDEPS fork</a>
+<p>In addition to the exiting DATM data modes, the <a class="reference external" href="https://github.com/NOAA-EMC/CDEPS">CDEPS fork</a>
 used by <a class="reference external" href="https://github.com/ufs-community/ufs-weather-model">NOAA’s UFS Weather Model</a>
 also includes additional data modes such as CFSR, GEFS and GFS. These data modes are not
-merged with the NCAR’s authoritative repository yet but it tested under UFS Weather
+merged with the NCAR’s authoritative repository yet but it is tested under UFS Weather
 model.</p>
 </div>
 </section>
 <section id="configuring-datm-from-cime">
 <span id="datm-cime-vars"></span><h2><span class="section-number">4.2. </span>Configuring DATM from CIME<a class="headerlink" href="#configuring-datm-from-cime" title="Permalink to this heading">¶</a></h2>
-<p>If CDEPS is coupled to the CIME-CCS then the CIME <code class="docutils literal notranslate"><span class="pre">$CASEMROOT</span></code> xml
-variable <code class="docutils literal notranslate"><span class="pre">DATM_MODE</span></code> sets the collection of streams the streams that
+<p>If CDEPS is coupled to the CIME-CCS then the CIME <code class="docutils literal notranslate"><span class="pre">$CASEROOT</span></code> xml
+variable <code class="docutils literal notranslate"><span class="pre">DATM_MODE</span></code> sets the collection of streams that
 are associated with DATM and also sets the datm namelist variable
 <code class="docutils literal notranslate"><span class="pre">datamode</span></code> in the file <code class="docutils literal notranslate"><span class="pre">datm_in</span></code>. The following are the supported
 DATM <code class="docutils literal notranslate"><span class="pre">datamode</span></code> values, as defined in the file

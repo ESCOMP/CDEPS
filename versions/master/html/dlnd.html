@@ -193,7 +193,7 @@ using active components to drive prognostic components. Currently, there
 is one way of running DLND is referred to as its mode.</p>
 <section id="supported-data-modes">
 <span id="dlnd-datamodes"></span><h2><span class="section-number">7.1. </span>Supported Data Modes<a class="headerlink" href="#supported-data-modes" title="Permalink to this heading">¶</a></h2>
-<p>DLND its own set of supported <code class="docutils literal notranslate"><span class="pre">datamode</span></code> values that appears in the
+<p>DLND has its own set of supported <code class="docutils literal notranslate"><span class="pre">datamode</span></code> values that appears in the
 <code class="docutils literal notranslate"><span class="pre">dlnd_in</span></code> namelist input. The datamode specifies what additional
 operations need to be done by DLND on <em>ALL</em> of the streams in the
 <code class="docutils literal notranslate"><span class="pre">dlnd.streams.xml</span></code> file. Each datamode value is also associated
@@ -211,8 +211,8 @@ listed in parentheses next to the mode name.</p>
 </section>
 <section id="configuring-dlnd-from-cime">
 <span id="dlnd-cime-vars"></span><h2><span class="section-number">7.2. </span>Configuring DLND from CIME<a class="headerlink" href="#configuring-dlnd-from-cime" title="Permalink to this heading">¶</a></h2>
-<p>If CDEPS is coupled to the CIME-CCS then the CIME <code class="docutils literal notranslate"><span class="pre">$CASEMROOT</span></code> xml
-variable <code class="docutils literal notranslate"><span class="pre">DLND_MODE</span></code> sets the collection of streams the streams that
+<p>If CDEPS is coupled to the CIME-CCS then the CIME <code class="docutils literal notranslate"><span class="pre">$CASEROOT</span></code> xml
+variable <code class="docutils literal notranslate"><span class="pre">DLND_MODE</span></code> sets the collection of streams that
 are associated with DLND and also sets the dlnd namelist variable
 <code class="docutils literal notranslate"><span class="pre">datamode</span></code> in the file <code class="docutils literal notranslate"><span class="pre">dlnd_in</span></code>. The following are the supported
 DLND <code class="docutils literal notranslate"><span class="pre">datamode</span></code> values, as defined in the file

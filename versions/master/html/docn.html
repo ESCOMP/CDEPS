@@ -194,7 +194,7 @@ drive prognostic components. The various ways of running DOCN is
 referred to as its mode.</p>
 <section id="supported-data-modes">
 <span id="docn-datamodes"></span><h2><span class="section-number">5.1. </span>Supported Data Modes<a class="headerlink" href="#supported-data-modes" title="Permalink to this heading">¶</a></h2>
-<p>DOCN its own set of supported <code class="docutils literal notranslate"><span class="pre">datamode</span></code> values that appears in the
+<p>DOCN has its own set of supported <code class="docutils literal notranslate"><span class="pre">datamode</span></code> values that appears in the
 <code class="docutils literal notranslate"><span class="pre">docn_in</span></code> namelist input. The datamode specifies what additional
 operations need to be done by DOCN on <em>ALL</em> of the streams in the
 <code class="docutils literal notranslate"><span class="pre">docn.streams.xml</span></code> file. Each datamode value is also associated
@@ -213,10 +213,7 @@ converted to Kelvin. All other fields are set to zero.</p></li>
 <p>Normally the ice fraction data is found in the same data files that
 provide SST data to the data ocean model. They are normally found in
 the same file because the SST and ice fraction data are derived from
-the same observational data sets and are consistent with each other.
-to the data ocean model. They are normally found in the same file
-because the SST and ice fraction data are derived from the same
-observational data sets and are consistent with each other.</p>
+the same observational data sets and are consistent with each other.</p>
 </div>
 <dl>
 <dt>iaf (<code class="docutils literal notranslate"><span class="pre">docn_datamode_iaf_mod.F90</span></code>)</dt><dd><ul class="simple">
@@ -229,7 +226,7 @@ All other fields other than SST and ocean salinity are set to zero.</p></li>
 <li><p>This mode creates analytic sea surface temperature. In case of using
 <cite>sst_aquap[1-10]</cite> data mode, an additional information (<cite>sst_option</cite>)
 is extracted from the data mode to change the behaviour of the
-data mode such as the way of calculation of sea surface temperature.</p></li>
+data mode such as the method of calculation of sea surface temperature.</p></li>
 </ul>
 </dd>
 <dt>som and som_aquap (<code class="docutils literal notranslate"><span class="pre">docn_datamode_som_mod.F90</span></code>)</dt><dd><ul>
@@ -240,7 +237,7 @@ calculation requires an external SOM forcing data file that includes
 ocean mixed layer depths and bottom-of-the-slab Q-fluxes.
 Scientifically appropriate bottom-of-the-slab Q-fluxes are normally
 ocean resolution dependent and are derived from the ocean model output
-of a fully coupled CCSM run.  Note that while this mode runs out of
+of a fully coupled CESM run.  Note that while this mode runs out of
 the box, the default SOM forcing file is not scientifically
 appropriate and is provided for testing and development purposes only.
 Users must create scientifically appropriate data for their particular
@@ -255,8 +252,8 @@ temperature.</p>
 </section>
 <section id="configuring-docn-from-cime">
 <span id="docn-cime-vars"></span><h2><span class="section-number">5.2. </span>Configuring DOCN from CIME<a class="headerlink" href="#configuring-docn-from-cime" title="Permalink to this heading">¶</a></h2>
-<p>If CDEPS is coupled to the CIME-CCS then the CIME <code class="docutils literal notranslate"><span class="pre">$CASEMROOT</span></code> xml
-variable <code class="docutils literal notranslate"><span class="pre">DOCN_MODE</span></code> sets the collection of streams the streams that
+<p>If CDEPS is coupled to the CIME-CCS then the CIME <code class="docutils literal notranslate"><span class="pre">$CASEROOT</span></code> xml
+variable <code class="docutils literal notranslate"><span class="pre">DOCN_MODE</span></code> sets the collection of streams that
 are associated with DOCN and also sets the docn namelist variable
 <code class="docutils literal notranslate"><span class="pre">datamode</span></code> in the file <code class="docutils literal notranslate"><span class="pre">docn_in</span></code>. The following are the supported
 DOCN <code class="docutils literal notranslate"><span class="pre">datamode</span></code> values, as defined in the file

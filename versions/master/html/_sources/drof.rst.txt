@@ -13,7 +13,7 @@ referred to as its mode.
 Supported Data Modes
 --------------------
 
-DROF its own set of supported ``datamode`` values that appears in the
+DROF has its own set of supported ``datamode`` values that appears in the
 ``drof_in`` namelist input. The datamode specifies what additional
 operations need to be done by DROF on *ALL* of the streams in the
 ``drof.streams.xml`` file. Each datamode value is also associated
@@ -31,8 +31,8 @@ copyall (``rof_comp_nuopc.F90``)
 Configuring DROF from CIME
 ---------------------------------------
 
-If CDEPS is coupled to the CIME-CCS then the CIME ``$CASEMROOT`` xml
-variable ``DROF_MODE`` sets the collection of streams the streams that
+If CDEPS is coupled to the CIME-CCS then the CIME ``$CASEROOT`` xml
+variable ``DROF_MODE`` sets the collection of streams that
 are associated with DROF and also sets the DROF namelist variable
 ``datamode`` in the file ``drof_in``. The following are the supported
 DROF ``datamode`` values, as defined in the file
