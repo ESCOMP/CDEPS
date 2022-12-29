@@ -33,7 +33,6 @@ module dshr_mod
   use ESMF             , only : ESMF_UtilStringUpperCase
   use shr_kind_mod     , only : r8=>shr_kind_r8, cs=>shr_kind_cs, cl=>shr_kind_cl, cx=>shr_kind_cx, cxx=>shr_kind_cxx, i8=>shr_kind_i8
   use shr_sys_mod      , only : shr_sys_abort
-  use shr_mpi_mod      , only : shr_mpi_bcast
   use shr_log_mod     , only : shr_log_setLogUnit
   use shr_cal_mod      , only : shr_cal_noleap, shr_cal_gregorian, shr_cal_calendarname
   use shr_cal_mod      , only : shr_cal_datetod2string, shr_cal_date2julian
@@ -950,7 +949,7 @@ contains
     ! Read restart file
 
     use dshr_stream_mod, only : shr_stream_restIO
-
+    use ESMF, only : ESMF_VMGetCurrent
     ! input/output arguments
     character(len=*)            , intent(inout) :: rest_filem
     character(len=*)            , intent(in)    :: rpfile
@@ -964,18 +963,23 @@ contains
     character(len=*) , optional , intent(in)    :: fldname
 
     ! local variables
+    type(ESMF_VM)     :: vm
     integer           :: nu
     logical           :: exists  ! file existance
     type(file_desc_t) :: pioid
     type(var_desc_t)  :: varid
     type(io_desc_t)   :: pio_iodesc
     integer           :: rcode
+    integer           :: rc
+    integer           :: tmp(1)
     character(*), parameter :: F00   = "('(dshr_restart_read) ',8a)"
     character(*), parameter :: subName = "(dshr_restart_read) "
     !-------------------------------------------------------------------------------
 
     ! no streams means no restart file is read.
     if(shr_strdata_get_stream_count(sdat) <= 0) return
+    call ESMF_VMGetCurrent(vm, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     if (trim(rest_filem) == trim(nullstr)) then
        if (my_task == main_task) then
@@ -990,7 +994,8 @@ contains
           close(nu)
           inquire(file=trim(rest_filem), exist=exists)
        endif
-       call shr_mpi_bcast(rest_filem, mpicom, 'rest_filem')
+       call ESMF_VMBroadCast(vm, rest_filem, CL, main_task, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
     else
        ! use namelist already read
        if (my_task == main_task) then
@@ -998,7 +1003,11 @@ contains
           inquire(file=trim(rest_filem), exist=exists)
        endif
     endif
-    call shr_mpi_bcast(exists, mpicom, 'exists')
+    tmp = 0
+    if(exists) tmp=1
+    call ESMF_VMBroadCast(vm, tmp, 1, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    exists = (tmp(1) == 1)
     if (exists) then
        if (my_task == main_task) write(logunit, F00) ' reading data model restart ', trim(rest_filem)
        rcode = pio_openfile(sdat%pio_subsystem, pioid, sdat%io_type, trim(rest_filem), pio_nowrite)
@@ -1168,7 +1177,6 @@ contains
 
   !================================================================================
   subroutine dshr_state_setscalar(scalar_value, scalar_id, State, flds_scalar_name, flds_scalar_num,  rc)
-
     ! ----------------------------------------------
     ! Set scalar data from State for a particular name
     ! ----------------------------------------------
