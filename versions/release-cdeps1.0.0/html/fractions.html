@@ -1,0 +1,338 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>4. Fractions &mdash; CMEPS master documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="3. API for emsFldsExchange_xxx module" href="esmfldsexchange.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> CMEPS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                master
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="field_naming_convention.html">2. Application Specific Field Exchange Specification</a></li>
+<li class="toctree-l1"><a class="reference internal" href="esmfldsexchange.html">3. API for emsFldsExchange_xxx module</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">4. Fractions</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">CMEPS</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>4. Fractions</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/fractions.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="fractions">
+<h1>4. Fractions<a class="headerlink" href="#fractions" title="Permalink to this headline">¶</a></h1>
+<p>Sets fractions on all component grids.
+the fractions fields are now <code class="docutils literal notranslate"><span class="pre">afrac,</span> <span class="pre">ifrac,</span> <span class="pre">ofrac,</span> <span class="pre">lfrac,</span> <span class="pre">and</span> <span class="pre">lfrin</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">afrac</span> <span class="o">=</span> <span class="n">fraction</span> <span class="n">of</span> <span class="n">atm</span> <span class="n">on</span> <span class="n">a</span> <span class="n">grid</span>
+<span class="n">lfrac</span> <span class="o">=</span> <span class="n">fraction</span> <span class="n">of</span> <span class="n">lnd</span> <span class="n">on</span> <span class="n">a</span> <span class="n">grid</span>
+<span class="n">ifrac</span> <span class="o">=</span> <span class="n">fraction</span> <span class="n">of</span> <span class="n">ice</span> <span class="n">on</span> <span class="n">a</span> <span class="n">grid</span>
+<span class="n">ofrac</span> <span class="o">=</span> <span class="n">fraction</span> <span class="n">of</span> <span class="n">ocn</span> <span class="n">on</span> <span class="n">a</span> <span class="n">grid</span>
+<span class="n">lfrin</span> <span class="o">=</span> <span class="n">land</span> <span class="n">fraction</span> <span class="n">defined</span> <span class="n">by</span> <span class="n">the</span> <span class="n">land</span> <span class="n">model</span>
+<span class="n">ifrad</span> <span class="o">=</span> <span class="n">fraction</span> <span class="n">of</span> <span class="n">ocn</span> <span class="n">on</span> <span class="n">a</span> <span class="n">grid</span> <span class="n">at</span> <span class="n">last</span> <span class="n">radiation</span> <span class="n">time</span>
+<span class="n">ofrad</span> <span class="o">=</span> <span class="n">fraction</span> <span class="n">of</span> <span class="n">ice</span> <span class="n">on</span> <span class="n">a</span> <span class="n">grid</span> <span class="n">at</span> <span class="n">last</span> <span class="n">radiation</span> <span class="n">time</span>
+
+     <span class="n">afrac</span><span class="p">,</span> <span class="n">lfrac</span><span class="p">,</span> <span class="n">ifrac</span><span class="p">,</span> <span class="ow">and</span> <span class="n">ofrac</span><span class="p">:</span>
+        <span class="n">are</span> <span class="n">the</span> <span class="bp">self</span><span class="o">-</span><span class="n">consistent</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">system</span>
+     <span class="n">lfrin</span><span class="p">:</span>
+        <span class="ow">is</span> <span class="n">the</span> <span class="n">fraction</span> <span class="n">on</span> <span class="n">the</span> <span class="n">land</span> <span class="n">grid</span> <span class="ow">and</span> <span class="ow">is</span> <span class="n">allowed</span> <span class="n">to</span>
+        <span class="n">vary</span> <span class="kn">from</span> <span class="nn">the</span> <span class="bp">self</span><span class="o">-</span><span class="n">consistent</span> <span class="n">value</span> <span class="k">as</span> <span class="n">descibed</span> <span class="n">below</span><span class="o">.</span>
+     <span class="n">ifrad</span> <span class="ow">and</span> <span class="n">ofrad</span><span class="p">:</span>
+        <span class="n">are</span> <span class="n">needed</span> <span class="k">for</span> <span class="n">the</span> <span class="n">swnet</span> <span class="n">calculation</span><span class="o">.</span>
+
+   <span class="n">the</span> <span class="n">fractions</span> <span class="n">fields</span> <span class="n">are</span> <span class="n">defined</span> <span class="k">for</span> <span class="n">each</span> <span class="n">grid</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">fraction</span> <span class="n">bundles</span> <span class="k">as</span>
+     <span class="n">needed</span> <span class="k">as</span> <span class="n">follows</span><span class="o">.</span>
+     <span class="n">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="n">parameter</span> <span class="p">::</span> <span class="n">fraclist_a</span> <span class="o">=</span> <span class="s1">&#39;afrac:ifrac:ofrac:lfrac:lfrin&#39;</span>
+     <span class="n">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="n">parameter</span> <span class="p">::</span> <span class="n">fraclist_o</span> <span class="o">=</span> <span class="s1">&#39;afrac:ifrac:ofrac:ifrad:ofrad&#39;</span>
+     <span class="n">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="n">parameter</span> <span class="p">::</span> <span class="n">fraclist_i</span> <span class="o">=</span> <span class="s1">&#39;afrac:ifrac:ofrac&#39;</span>
+     <span class="n">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="n">parameter</span> <span class="p">::</span> <span class="n">fraclist_l</span> <span class="o">=</span> <span class="s1">&#39;afrac:lfrac:lfrin&#39;</span>
+     <span class="n">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="n">parameter</span> <span class="p">::</span> <span class="n">fraclist_g</span> <span class="o">=</span> <span class="s1">&#39;gfrac:lfrac&#39;</span>
+     <span class="n">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="n">parameter</span> <span class="p">::</span> <span class="n">fraclist_r</span> <span class="o">=</span> <span class="s1">&#39;lfrac:rfrac&#39;</span>
+
+   <span class="n">we</span> <span class="n">assume</span> <span class="n">ocean</span> <span class="ow">and</span> <span class="n">ice</span> <span class="n">are</span> <span class="n">on</span> <span class="n">the</span> <span class="n">same</span> <span class="n">grids</span><span class="p">,</span> <span class="n">same</span> <span class="n">masks</span>
+   <span class="n">we</span> <span class="n">assume</span> <span class="n">ocn2atm</span> <span class="ow">and</span> <span class="n">ice2atm</span> <span class="n">are</span> <span class="n">masked</span> <span class="n">maps</span>
+   <span class="n">we</span> <span class="n">assume</span> <span class="n">lnd2atm</span> <span class="ow">is</span> <span class="n">a</span> <span class="k">global</span> <span class="nb">map</span>
+   <span class="n">we</span> <span class="n">assume</span> <span class="n">that</span> <span class="n">the</span> <span class="n">ice</span> <span class="n">fraction</span> <span class="n">evolves</span> <span class="ow">in</span> <span class="n">time</span> <span class="n">but</span> <span class="n">that</span>
+     <span class="n">the</span> <span class="n">land</span> <span class="n">model</span> <span class="n">fraction</span> <span class="n">does</span> <span class="ow">not</span><span class="o">.</span>  <span class="n">the</span> <span class="n">ocean</span> <span class="n">fraction</span> <span class="n">then</span>
+     <span class="ow">is</span> <span class="n">just</span> <span class="n">the</span> <span class="n">complement</span> <span class="n">of</span> <span class="n">the</span> <span class="n">ice</span> <span class="n">fraction</span> <span class="n">over</span> <span class="n">the</span> <span class="n">region</span>
+     <span class="n">of</span> <span class="n">the</span> <span class="n">ocean</span><span class="o">/</span><span class="n">ice</span> <span class="n">mask</span><span class="o">.</span>
+   <span class="n">we</span> <span class="n">assume</span> <span class="n">that</span> <span class="n">component</span> <span class="n">fractions</span> <span class="n">sent</span> <span class="n">at</span> <span class="n">runtime</span>
+     <span class="n">are</span> <span class="n">always</span> <span class="n">the</span> <span class="n">relative</span> <span class="n">fraction</span> <span class="n">covered</span><span class="o">.</span>
+     <span class="k">for</span> <span class="n">example</span><span class="p">,</span> <span class="k">if</span> <span class="n">an</span> <span class="n">ice</span> <span class="n">cell</span> <span class="n">can</span> <span class="n">be</span> <span class="n">up</span> <span class="n">to</span> <span class="mi">50</span><span class="o">%</span> <span class="n">covered</span> <span class="ow">in</span>
+     <span class="n">ice</span> <span class="ow">and</span> <span class="mi">50</span><span class="o">%</span> <span class="n">land</span><span class="p">,</span> <span class="n">then</span> <span class="n">the</span> <span class="n">ice</span> <span class="n">domain</span> <span class="n">should</span> <span class="n">have</span> <span class="n">a</span> <span class="n">fraction</span>
+     <span class="n">value</span> <span class="n">of</span> <span class="mf">0.5</span> <span class="n">at</span> <span class="n">that</span> <span class="n">grid</span> <span class="n">cell</span><span class="o">.</span>  <span class="n">at</span> <span class="n">run</span> <span class="n">time</span> <span class="n">though</span><span class="p">,</span> <span class="n">the</span> <span class="n">ice</span>
+     <span class="n">fraction</span> <span class="n">will</span> <span class="n">be</span> <span class="n">between</span> <span class="mf">0.0</span> <span class="ow">and</span> <span class="mf">1.0</span> <span class="n">meaning</span> <span class="n">that</span> <span class="n">grid</span> <span class="n">cells</span>
+     <span class="ow">is</span> <span class="n">covered</span> <span class="k">with</span> <span class="n">between</span> <span class="mf">0.0</span> <span class="ow">and</span> <span class="mf">0.5</span> <span class="n">by</span> <span class="n">ice</span><span class="o">.</span>  <span class="n">the</span> <span class="s2">&quot;relative&quot;</span> <span class="n">fractions</span>
+     <span class="n">sent</span> <span class="n">at</span> <span class="n">run</span><span class="o">-</span><span class="n">time</span> <span class="n">are</span> <span class="n">corrected</span> <span class="n">by</span> <span class="n">the</span> <span class="n">model</span> <span class="n">to</span> <span class="n">be</span> <span class="n">total</span> <span class="n">fractions</span>
+     <span class="n">such</span> <span class="n">that</span> <span class="ow">in</span> <span class="n">general</span><span class="p">,</span> <span class="n">on</span> <span class="n">every</span> <span class="n">grid</span><span class="p">,</span>
+        <span class="n">fractions_</span><span class="o">*</span><span class="p">(</span><span class="n">afrac</span><span class="p">)</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="n">fractions_</span><span class="o">*</span><span class="p">(</span><span class="n">ifrac</span><span class="p">)</span> <span class="o">+</span> <span class="n">fractions_</span><span class="o">*</span><span class="p">(</span><span class="n">ofrac</span><span class="p">)</span> <span class="o">+</span> <span class="n">fractions_</span><span class="o">*</span><span class="p">(</span><span class="n">lfrac</span><span class="p">)</span> <span class="o">=</span> <span class="mf">1.0</span>
+   <span class="n">where</span> <span class="n">fractions_</span><span class="o">*</span> <span class="n">are</span> <span class="n">a</span> <span class="n">bundle</span> <span class="n">of</span> <span class="n">fractions</span> <span class="n">on</span> <span class="n">a</span> <span class="n">particular</span> <span class="n">grid</span> <span class="ow">and</span>
+     <span class="o">*</span><span class="n">frac</span> <span class="p">(</span><span class="n">ie</span> <span class="n">afrac</span><span class="p">)</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">fraction</span> <span class="n">of</span> <span class="n">a</span> <span class="n">particular</span> <span class="n">component</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">bundle</span><span class="o">.</span>
+
+   <span class="n">the</span> <span class="n">fractions</span> <span class="n">are</span> <span class="n">computed</span> <span class="n">fundamentally</span> <span class="k">as</span> <span class="n">follows</span> <span class="p">(</span><span class="n">although</span> <span class="n">the</span>
+     <span class="n">detailed</span> <span class="n">implementation</span> <span class="n">might</span> <span class="n">be</span> <span class="n">slightly</span> <span class="n">different</span><span class="p">)</span>
+
+   <span class="n">initialization</span><span class="p">:</span>
+     <span class="n">afrac</span> <span class="ow">is</span> <span class="nb">set</span> <span class="n">on</span> <span class="nb">all</span> <span class="n">grids</span>
+       <span class="n">fractions_a</span><span class="p">(</span><span class="n">afrac</span><span class="p">)</span> <span class="o">=</span> <span class="mf">1.0</span>
+       <span class="n">fractions_o</span><span class="p">(</span><span class="n">afrac</span><span class="p">)</span> <span class="o">=</span> <span class="n">mapa2o</span><span class="p">(</span><span class="n">fractions_a</span><span class="p">(</span><span class="n">afrac</span><span class="p">))</span>
+       <span class="n">fractions_i</span><span class="p">(</span><span class="n">afrac</span><span class="p">)</span> <span class="o">=</span> <span class="n">mapa2i</span><span class="p">(</span><span class="n">fractions_a</span><span class="p">(</span><span class="n">afrac</span><span class="p">))</span>
+       <span class="n">fractions_l</span><span class="p">(</span><span class="n">afrac</span><span class="p">)</span> <span class="o">=</span> <span class="n">mapa2l</span><span class="p">(</span><span class="n">fractions_a</span><span class="p">(</span><span class="n">afrac</span><span class="p">))</span>
+     <span class="n">initially</span> <span class="n">assume</span> <span class="n">ifrac</span> <span class="n">on</span> <span class="nb">all</span> <span class="n">grids</span> <span class="ow">is</span> <span class="n">zero</span>
+       <span class="n">fractions_</span><span class="o">*</span><span class="p">(</span><span class="n">ifrac</span><span class="p">)</span> <span class="o">=</span> <span class="mf">0.0</span>
+     <span class="n">fractions</span><span class="o">/</span><span class="n">masks</span> <span class="n">provided</span> <span class="n">by</span> <span class="n">surface</span> <span class="n">components</span>
+       <span class="n">fractions_o</span><span class="p">(</span><span class="n">ofrac</span><span class="p">)</span> <span class="o">=</span> <span class="n">ocean</span> <span class="s2">&quot;mask&quot;</span> <span class="n">provided</span> <span class="n">by</span> <span class="n">ocean</span>
+       <span class="n">fractions_l</span><span class="p">(</span><span class="n">lfrin</span><span class="p">)</span> <span class="o">=</span> <span class="n">land</span> <span class="s2">&quot;fraction  provided by land</span>
+     <span class="n">then</span> <span class="n">mapped</span> <span class="n">to</span> <span class="n">the</span> <span class="n">atm</span> <span class="n">model</span>
+       <span class="n">fractions_a</span><span class="p">(</span><span class="n">ofrac</span><span class="p">)</span> <span class="o">=</span> <span class="n">mapo2a</span><span class="p">(</span><span class="n">fractions_o</span><span class="p">(</span><span class="n">ofrac</span><span class="p">))</span>
+       <span class="n">fractions_a</span><span class="p">(</span><span class="n">lfrin</span><span class="p">)</span> <span class="o">=</span> <span class="n">mapl2a</span><span class="p">(</span><span class="n">fractions_l</span><span class="p">(</span><span class="n">lfrin</span><span class="p">))</span>
+     <span class="ow">and</span> <span class="n">a</span> <span class="n">few</span> <span class="n">things</span> <span class="n">are</span> <span class="n">then</span> <span class="n">derived</span>
+       <span class="n">fractions_a</span><span class="p">(</span><span class="n">lfrac</span><span class="p">)</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">fractions_a</span><span class="p">(</span><span class="n">ofrac</span><span class="p">)</span>
+            <span class="n">this</span> <span class="ow">is</span> <span class="n">truncated</span> <span class="n">to</span> <span class="n">zero</span> <span class="k">for</span> <span class="n">very</span> <span class="n">small</span> <span class="n">values</span> <span class="p">(</span><span class="o">&lt;</span> <span class="mf">0.001</span><span class="p">)</span>
+            <span class="n">to</span> <span class="n">attempt</span> <span class="n">to</span> <span class="n">preserve</span> <span class="n">non</span><span class="o">-</span><span class="n">land</span> <span class="n">gridcells</span><span class="o">.</span>
+       <span class="n">fractions_l</span><span class="p">(</span><span class="n">lfrac</span><span class="p">)</span> <span class="o">=</span> <span class="n">mapa2l</span><span class="p">(</span><span class="n">fractions_a</span><span class="p">(</span><span class="n">lfrac</span><span class="p">))</span>
+       <span class="n">fractions_r</span><span class="p">(</span><span class="n">lfrac</span><span class="p">)</span> <span class="o">=</span> <span class="n">mapl2r</span><span class="p">(</span><span class="n">fractions_l</span><span class="p">(</span><span class="n">lfrac</span><span class="p">))</span>
+       <span class="n">fractions_g</span><span class="p">(</span><span class="n">lfrac</span><span class="p">)</span> <span class="o">=</span> <span class="n">mapl2g</span><span class="p">(</span><span class="n">fractions_l</span><span class="p">(</span><span class="n">lfrac</span><span class="p">))</span>
+
+   <span class="n">run</span><span class="o">-</span><span class="n">time</span> <span class="p">(</span><span class="n">frac_set</span><span class="p">):</span>
+     <span class="n">update</span> <span class="n">fractions</span> <span class="n">on</span> <span class="n">ice</span> <span class="n">grid</span>
+       <span class="n">fractions_i</span><span class="p">(</span><span class="n">ifrac</span><span class="p">)</span> <span class="o">=</span> <span class="n">i2x_i</span><span class="p">(</span><span class="n">Si_ifrac</span><span class="p">)</span>   <span class="n">ice</span> <span class="n">frac</span> <span class="kn">from</span> <span class="nn">ice</span> <span class="n">model</span>
+       <span class="n">fractions_i</span><span class="p">(</span><span class="n">ofrac</span><span class="p">)</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">fractions_i</span><span class="p">(</span><span class="n">ifrac</span><span class="p">)</span>
+         <span class="n">note</span><span class="p">:</span> <span class="n">the</span> <span class="n">relative</span> <span class="n">fractions</span> <span class="n">are</span> <span class="n">corrected</span> <span class="n">to</span> <span class="n">total</span> <span class="n">fractions</span>
+       <span class="n">fractions_o</span><span class="p">(</span><span class="n">ifrac</span><span class="p">)</span> <span class="o">=</span> <span class="n">mapi2o</span><span class="p">(</span><span class="n">fractions_i</span><span class="p">(</span><span class="n">ifrac</span><span class="p">))</span>
+       <span class="n">fractions_o</span><span class="p">(</span><span class="n">ofrac</span><span class="p">)</span> <span class="o">=</span> <span class="n">mapi2o</span><span class="p">(</span><span class="n">fractions_i</span><span class="p">(</span><span class="n">ofrac</span><span class="p">))</span>
+       <span class="n">fractions_a</span><span class="p">(</span><span class="n">ifrac</span><span class="p">)</span> <span class="o">=</span> <span class="n">mapi2a</span><span class="p">(</span><span class="n">fractions_i</span><span class="p">(</span><span class="n">ifrac</span><span class="p">))</span>
+       <span class="n">fractions_a</span><span class="p">(</span><span class="n">ofrac</span><span class="p">)</span> <span class="o">=</span> <span class="n">mapi2a</span><span class="p">(</span><span class="n">fractions_i</span><span class="p">(</span><span class="n">ofrac</span><span class="p">))</span>
+
+   <span class="n">fractions</span> <span class="n">used</span> <span class="ow">in</span> <span class="n">merging</span> <span class="n">are</span> <span class="k">as</span> <span class="n">follows</span>
+   <span class="n">merge</span> <span class="n">to</span> <span class="n">atm</span>   <span class="n">uses</span> <span class="n">fractions_a</span><span class="p">(</span><span class="n">lfrac</span><span class="p">,</span><span class="n">ofrac</span><span class="p">,</span><span class="n">ifrac</span><span class="p">)</span>
+   <span class="n">merge</span> <span class="n">to</span> <span class="n">ocean</span> <span class="n">uses</span> <span class="n">fractions_o</span><span class="p">(</span><span class="n">ofrac</span><span class="p">,</span><span class="n">ifrac</span><span class="p">)</span> <span class="n">normalized</span> <span class="n">to</span> <span class="n">one</span>
+
+   <span class="n">fraction</span> <span class="n">corrections</span> <span class="ow">in</span> <span class="n">mapping</span> <span class="n">are</span> <span class="k">as</span> <span class="n">follows</span>
+     <span class="n">mapo2a</span> <span class="n">uses</span> <span class="o">*</span><span class="n">fractions_o</span><span class="p">(</span><span class="n">ofrac</span><span class="p">)</span> <span class="ow">and</span> <span class="o">/</span><span class="n">fractions_a</span><span class="p">(</span><span class="n">ofrac</span><span class="p">)</span>
+     <span class="n">mapi2a</span> <span class="n">uses</span> <span class="o">*</span><span class="n">fractions_i</span><span class="p">(</span><span class="n">ifrac</span><span class="p">)</span> <span class="ow">and</span> <span class="o">/</span><span class="n">fractions_a</span><span class="p">(</span><span class="n">ifrac</span><span class="p">)</span>
+     <span class="n">mapl2a</span> <span class="n">uses</span> <span class="o">*</span><span class="n">fractions_l</span><span class="p">(</span><span class="n">lfrin</span><span class="p">)</span> <span class="ow">and</span> <span class="o">/</span><span class="n">fractions_a</span><span class="p">(</span><span class="n">lfrin</span><span class="p">)</span>
+     <span class="n">mapl2g</span> <span class="n">weights</span> <span class="n">by</span> <span class="n">fractions_l</span><span class="p">(</span><span class="n">lfrac</span><span class="p">)</span> <span class="k">with</span> <span class="n">normalization</span> <span class="ow">and</span> <span class="n">multiplies</span> <span class="n">by</span> <span class="n">fractions_g</span><span class="p">(</span><span class="n">lfrac</span><span class="p">)</span>
+     <span class="n">mapa2</span><span class="o">*</span> <span class="n">should</span> <span class="n">use</span> <span class="o">*</span><span class="n">fractions_a</span><span class="p">(</span><span class="n">afrac</span><span class="p">)</span> <span class="ow">and</span> <span class="o">/</span><span class="n">fractions_</span><span class="o">*</span><span class="p">(</span><span class="n">afrac</span><span class="p">)</span> <span class="n">but</span> <span class="n">this</span>
+       <span class="n">has</span> <span class="n">been</span> <span class="n">defered</span> <span class="n">since</span> <span class="n">the</span> <span class="n">ratio</span> <span class="n">always</span> <span class="n">close</span> <span class="n">to</span> <span class="mf">1.0</span>
+
+   <span class="n">run</span> <span class="n">time</span><span class="p">:</span>
+       <span class="n">fractions_a</span><span class="p">(</span><span class="n">lfrac</span><span class="p">)</span> <span class="o">+</span> <span class="n">fractions_a</span><span class="p">(</span><span class="n">ofrac</span><span class="p">)</span> <span class="o">+</span> <span class="n">fractions_a</span><span class="p">(</span><span class="n">ifrac</span><span class="p">)</span> <span class="o">~</span> <span class="mf">1.0</span>
+       <span class="mf">0.0</span><span class="o">-</span><span class="n">eps</span> <span class="o">&lt;</span> <span class="n">fractions_</span><span class="o">*</span><span class="p">(</span><span class="o">*</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1.0</span><span class="o">+</span><span class="n">eps</span>
+
+  <span class="n">Note</span> <span class="n">that</span> <span class="n">the</span> <span class="n">following</span> <span class="n">FBImp</span> <span class="n">field</span> <span class="n">names</span> <span class="n">are</span> <span class="n">current</span> <span class="n">hard</span><span class="o">-</span><span class="n">wired</span> <span class="n">below</span>
+  <span class="n">TODO</span><span class="p">:</span> <span class="n">this</span> <span class="n">needs</span> <span class="n">to</span> <span class="n">be</span> <span class="n">generalized</span> <span class="o">-</span> <span class="n">these</span> <span class="n">names</span> <span class="n">should</span> <span class="n">be</span> <span class="nb">set</span> <span class="n">dynamically</span> <span class="n">at</span> <span class="n">run</span> <span class="n">time</span> <span class="ow">in</span> <span class="n">the</span>
+  <span class="n">source</span> <span class="n">component</span>
+     <span class="n">is_local</span><span class="o">%</span><span class="n">wrap</span><span class="o">%</span><span class="n">FBImp</span><span class="p">(</span><span class="n">compglc</span><span class="p">,</span><span class="n">compglc</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="s1">&#39;frac&#39;</span>
+     <span class="n">is_local</span><span class="o">%</span><span class="n">wrap</span><span class="o">%</span><span class="n">FBImp</span><span class="p">(</span><span class="n">complnd</span><span class="p">,</span><span class="n">complnd</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="s1">&#39;Sl_lfrin&#39;</span>
+     <span class="n">is_local</span><span class="o">%</span><span class="n">wrap</span><span class="o">%</span><span class="n">FBImp</span><span class="p">(</span><span class="n">compice</span><span class="p">,</span><span class="n">compice</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="s1">&#39;Si_imask&#39;</span>
+     <span class="n">is_local</span><span class="o">%</span><span class="n">wrap</span><span class="o">%</span><span class="n">FBImp</span><span class="p">(</span><span class="n">compocn</span><span class="p">,</span><span class="n">compocn</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="s1">&#39;So_omask&#39;</span>
+     <span class="n">is_local</span><span class="o">%</span><span class="n">wrap</span><span class="o">%</span><span class="n">FBImp</span><span class="p">(</span><span class="n">compice</span><span class="p">,</span><span class="n">compice</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="s1">&#39;Si_ifrac&#39;</span> <span class="p">(</span><span class="n">runtime</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="esmfldsexchange.html" class="btn btn-neutral" title="3. API for emsFldsExchange_xxx module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, U.S. National Science Foundation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+     
+<script>var version_json_loc = "../../versions.json";</script>
+
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'master',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="_static/language_data.js"></script>
+      <script type="text/javascript" src="_static/pop_ver.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

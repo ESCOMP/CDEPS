@@ -1,0 +1,754 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>2. Input Streams &mdash; CDEPS master documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="CDEPS master documentation" href="index.html"/>
+        <link rel="next" title="3. Design Details" href="design_details.html"/>
+        <link rel="prev" title="1. Introduction" href="introduction.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> CDEPS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                
+                  <div class="version-dropdown">
+                    <select class="version-list" id="version-list">
+                      <option value=''>master</option>
+                      
+                        
+                      
+                        
+                          <option value="">[placeholder]</option>
+                        
+                      
+                    </select>
+                  </div>
+                
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">1. Introduction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">2. Input Streams</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">2.1. Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#data-model-stream-input">2.2. Data Model Stream Input</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#xml-format">2.2.1. XML format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#esmf-config-format">2.2.2. ESMF Config format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#definitions-of-each-keys-used-in-stream-definition-file">2.2.3. Definitions of each keys used in stream definition file</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#data-model-namelist-input">2.3. Data Model Namelist Input</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cime-ccs-customization-of-stream-description-files">2.4. CIME-CCS Customization of stream description files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#data-model-stream-inline-api">2.5. Data Model Stream Inline API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#handling-stream-calendars">2.6. Handling Stream Calendars</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="design_details.html">3. Design Details</a></li>
+<li class="toctree-l1"><a class="reference internal" href="datm.html">4. Data Atmosphere (DATM)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docn.html">5. Data Ocean (DOCN)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dice.html">6. Data Ice (DICE)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dlnd.html">7. Data Land (DLND)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="drof.html">8. Data Runoff (DROF)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dwav.html">9. Data Wave (DWAV)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extending.html">10. Extending CDEPS</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">CDEPS</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li><span class="section-number">2. </span>Input Streams</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/streams.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <section id="input-streams">
+<span id="id1"></span><h1><span class="section-number">2. </span>Input Streams<a class="headerlink" href="#input-streams" title="Permalink to this heading">¶</a></h1>
+<section id="overview">
+<h2><span class="section-number">2.1. </span>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h2>
+<p>An <em>input data stream</em> is a time-series of input data files where all
+the fields in the stream are located in the same data file and all
+share the same spatial and temporal coordinates (ie. are all on the
+same grid and share the same time axis). Normally a time axis has a
+uniform dt, but this is not a requirement.</p>
+<p>The data models can have multiple input streams.</p>
+<p>The data for one stream may be all in one file or may be spread over
+several files. For example, 50 years of monthly average data might be
+contained all in one data file or it might be spread over 50 files,
+each containing one year of data.</p>
+<p>The data models can <em>loop</em> over stream data – i.e., repeatedly cycle
+over some subset of an input stream’s time axis. When looping, the
+models can only loop over whole years. For example, an input stream
+might have SST data for years 1950 through 2000, but a model could
+loop over the data for years 1960 through 1980. A model <em>cannot</em> loop
+over partial years, for example, from 1950-Feb-10 through 1980-Mar-15.</p>
+<p>The input data must be in a netcdf file and the time axis in that file
+must be CF-1.0 compliant.</p>
+<p>There are two main categories of information that the data models need
+to know about a stream:</p>
+<ul class="simple">
+<li><p>data that describes what a user wants – what streams to use and how
+to use them – things that can be changed by a user.</p></li>
+<li><p>data that describes the stream data – meta-data about the inherent
+properties of the data itself – things that cannot be changed by a
+user.</p></li>
+</ul>
+<p>Generally, information about what streams a user wants to use and how
+to use them is input via the strdata (“stream data”) Fortran namelist,
+while meta-data that describes the stream data itself is found in an
+xml-like text or ESMF config file called a “stream description file.”</p>
+</section>
+<section id="data-model-stream-input">
+<span id="stream-description-file"></span><h2><span class="section-number">2.2. </span>Data Model Stream Input<a class="headerlink" href="#data-model-stream-input" title="Permalink to this heading">¶</a></h2>
+<p>The data models advance in time discretely.  At a given time, the
+stream code is called to advance the data model by readind in fields
+from input files.  Those input files have data on a discrete time axis
+as well.  Each data point in the input files is associated with a
+discrete time (as opposed to a time interval).  Depending on whether
+you pick lower, upper, nearest, linear, or coszen, the data in the
+input file will be “interpolated” to the time in the model.</p>
+<section id="xml-format">
+<h3><span class="section-number">2.2.1. </span>XML format<a class="headerlink" href="#xml-format" title="Permalink to this heading">¶</a></h3>
+<p>In case of using XML format, stream-dependent input is named as
+<code class="docutils literal notranslate"><span class="pre">d{model_name}.streams.xml</span></code>, where <code class="docutils literal notranslate"><span class="pre">model_name</span></code> can be <code class="docutils literal notranslate"><span class="pre">atm</span></code>,
+<code class="docutils literal notranslate"><span class="pre">ice</span></code>, <code class="docutils literal notranslate"><span class="pre">lnd</span></code>, <code class="docutils literal notranslate"><span class="pre">ocn</span></code>, <code class="docutils literal notranslate"><span class="pre">rof</span></code> or <code class="docutils literal notranslate"><span class="pre">wav</span></code>.  Multiple streams can
+be specified in the this XML file (see <a class="reference internal" href="#input-streams"><span class="std std-ref">streams</span></a>).</p>
+<p>The schema for this xml file is as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">file</span> <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;stream&quot;</span> <span class="n">version</span><span class="o">=</span><span class="s2">&quot;2.0&quot;</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">stream_info</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">taxmode</span><span class="o">&gt;&lt;/</span><span class="n">taxmode</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">tintalgo</span><span class="o">&gt;&lt;/</span><span class="n">tintalgo</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">readmode</span><span class="o">&gt;&lt;/</span><span class="n">readmode</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">mapalgo</span><span class="o">&gt;&lt;/</span><span class="n">mapalgo</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">dtlimit</span><span class="o">&gt;&lt;/</span><span class="n">dtlimit</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">yearFirst</span><span class="o">&gt;&lt;/</span><span class="n">yearFirst</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">yearLast</span><span class="o">&gt;&lt;/</span><span class="n">yearLast</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">yearAlign</span><span class="o">&gt;&lt;/</span><span class="n">yearAlign</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">vectors</span><span class="o">&gt;&lt;/</span><span class="n">vectors</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">meshfile</span><span class="o">&gt;&lt;/</span><span class="n">meshfile</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">lev_dimname</span><span class="o">&gt;&lt;/</span><span class="n">lev_dimname</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">datafiles</span><span class="o">&gt;</span>
+      <span class="o">&lt;</span><span class="n">file</span><span class="o">&gt;&lt;/</span><span class="n">file</span><span class="o">&gt;</span>
+    <span class="o">&lt;/</span><span class="n">datafiles</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">datavars</span><span class="o">&gt;</span>
+      <span class="o">&lt;</span><span class="n">var</span><span class="o">&gt;&lt;/</span><span class="n">var</span><span class="o">&gt;</span>
+    <span class="o">&lt;/</span><span class="n">datavars</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">offset</span><span class="o">&gt;&lt;/</span><span class="n">offset</span><span class="o">&gt;</span>
+  <span class="o">&lt;/</span><span class="n">stream_info</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">file</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+</section>
+<section id="esmf-config-format">
+<h3><span class="section-number">2.2.2. </span>ESMF Config format<a class="headerlink" href="#esmf-config-format" title="Permalink to this heading">¶</a></h3>
+<p>In case of using ESMF Config format, stream-dependent input is named as
+<code class="docutils literal notranslate"><span class="pre">d{model_name}.streams`,</span> <span class="pre">where</span> <span class="pre">``model_name</span></code> can be <code class="docutils literal notranslate"><span class="pre">atm</span></code>,
+<code class="docutils literal notranslate"><span class="pre">ice</span></code>, <code class="docutils literal notranslate"><span class="pre">lnd</span></code>, <code class="docutils literal notranslate"><span class="pre">ocn</span></code>, <code class="docutils literal notranslate"><span class="pre">rof</span></code> or <code class="docutils literal notranslate"><span class="pre">wav</span></code>. Again, multiple streams can
+be specified in the this XML file (see <a class="reference internal" href="#input-streams"><span class="std std-ref">streams</span></a>).</p>
+<p>The structure of ESMF config file is as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">file_id</span><span class="p">:</span> <span class="s2">&quot;stream&quot;</span>
+<span class="n">file_version</span><span class="p">:</span> <span class="mf">2.0</span>
+
+<span class="n">stream_info</span><span class="p">:</span>
+
+<span class="n">taxmode</span><span class="p">{</span><span class="nb">id</span><span class="p">}:</span>
+<span class="n">tInterpAlgo</span><span class="p">{</span><span class="nb">id</span><span class="p">}:</span>
+<span class="n">readMode</span><span class="p">{</span><span class="nb">id</span><span class="p">}:</span>
+<span class="n">mapalgo</span><span class="p">{</span><span class="nb">id</span><span class="p">}:</span>
+<span class="n">dtlimit</span><span class="p">{</span><span class="nb">id</span><span class="p">}:</span>
+<span class="n">yearFirst</span><span class="p">{</span><span class="nb">id</span><span class="p">}:</span>
+<span class="n">yearLast</span><span class="p">{</span><span class="nb">id</span><span class="p">}:</span>
+<span class="n">yearAlign</span><span class="p">{</span><span class="nb">id</span><span class="p">}:</span>
+<span class="n">stream_vectors</span><span class="p">{</span><span class="nb">id</span><span class="p">}:</span>
+<span class="n">stream_mesh_file</span><span class="p">{</span><span class="nb">id</span><span class="p">}:</span>
+<span class="n">stream_lev_dimname</span><span class="p">{</span><span class="nb">id</span><span class="p">}:</span>
+<span class="n">stream_data_files</span><span class="p">{</span><span class="nb">id</span><span class="p">}:</span>
+<span class="n">stream_data_variables</span><span class="p">{</span><span class="nb">id</span><span class="p">}:</span>
+<span class="n">stream_offset</span><span class="p">{</span><span class="nb">id</span><span class="p">}:</span>
+</pre></div>
+</div>
+<p>In this case <cite>{id}</cite> is a formatted number like <cite>01</cite>, <cite>02</cite>, etc. that is
+used distinguish among each streams in the same data mode. The <cite>stream_info</cite>
+part will include multiple entry in case of using multiple stream to define
+data model. For example, <cite>stream_info</cite> can be structured as <cite>stream_info:
+CLMGSWP3v1.Solar01 CLMGSWP3v1.Precip02 CLMGSWP3v1.TPQW03 topo.observed04</cite> for
+<cite>CLMNCEP</cite> data mode and other namelist options can be repeated for all streams
+by using <cite>01</cite>, <cite>02</cite>, <cite>03</cite>, <cite>04</cite> as <cite>id</cite> in each stream respectively.</p>
+</section>
+<section id="definitions-of-each-keys-used-in-stream-definition-file">
+<h3><span class="section-number">2.2.3. </span>Definitions of each keys used in stream definition file<a class="headerlink" href="#definitions-of-each-keys-used-in-stream-definition-file" title="Permalink to this heading">¶</a></h3>
+<dl>
+<dt><strong>taxmode</strong></dt><dd><p>How to handle data outside the specified stream time axis.
+Valid options are to cycle the data based on the first, last, and align
+settings associated with the stream dataset, to extend the first and last
+valid value indefinitely, or to limit the interpolated data to fall only between
+the least and greatest valid value of the time array. Valid values are:</p>
+<p><em>extend</em> = extrapolate before and after the period by using the first or last value.</p>
+<p><em>cycle</em>  = cycle between the range of data</p>
+<p><em>limit</em>  = restrict to the period for which the data is valid</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>CIME-CCS default is <em>cycle</em></p>
+</div>
+<dl>
+<dt><strong>tintalgo</strong></dt><dd><p>Specifies time interpolation algorithm option. Valid values are:</p>
+<p><em>lower</em>   = Use lower time-value</p>
+<p><em>upper</em>   = Use upper time-value</p>
+<p><em>nearest</em> = Use the nearest time-value</p>
+<p><em>linear</em>  = Linearly interpolate between the two time-values</p>
+<p><em>coszen</em>  = Scale according to the cosine of the solar zenith angle (for solar)</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>CIME-CCS default is <em>linear</em></p>
+</div>
+<dl>
+<dt><strong>readmode</strong></dt><dd><p>Specifies data stream read mode. The valid values are:</p>
+<p><em>single</em>    = Reads single record in each time</p>
+<p><em>full_file</em> = Read entire file (might be memory consuming for high-resolution cases)</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>CIME-CCS default is <em>single</em></p>
+</div>
+<dl>
+<dt><strong>mapalgo</strong></dt><dd><p>Specifies spatial interpolation algorithm to map stream data on stream mesh
+to stream data on model mesh. The used interpolation algorithm is based on the ones
+that are provided by ESMF library. Valid values are:</p>
+<p><em>redist</em>   = Redistributes data from source mesh to destination mesh</p>
+<p><em>nn</em>       = In this version of nearest neighbor interpolation each destination point is
+mapped to the closest source point. A given source point may go to multiple
+destination points, but no destination point will receive input from more
+than one source point.</p>
+<p><em>bilinear</em> = Bilinear interpolation. Destination value is a linear combination of the
+source values in the cell which contains the destination point. The weights
+for the linear combination are based on the distance of destination point
+from each source value.</p>
+<p><em>consd</em>    = First-order conservative interpolation. The main purpose of this method is
+to preserve the integral of the field between the source and destination. Tt uses
+destination area normalization (<em>ESMF_NORMTYPE_DSTAREA</em>). Here the weights are
+calculated by dividing the area of overlap of the source and destination cells by the
+area of the entire destination cell.</p>
+<p><em>consf</em>    = Same with <em>consd</em> but in this case it uses fraction area normalization
+(<em>ESMF_NORMTYPE_FRACAREA</em>). Here in addition to the weight calculation done for
+destination area normalization the weights are also divided by the fraction that the
+destination cell overlaps with the entire source grid.</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>CIME-CCS default is <em>bilinear</em></p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>More information about ESMF provided regridding options can be found in <a class="reference external" href="http://earthsystemmodeling.org/docs/nightly/develop/ESMF_refdoc/node5.html#sec:regrid">here</a>.</p>
+</div>
+<dl>
+<dt><strong>dtlimit</strong></dt><dd><p>Specifies delta time ratio limits placed on the time interpolation
+associated with the array of streams. Causes the model to stop if
+the ratio of the running maximum delta time divided by the minimum delta time
+is greater than the dtlimit for that stream.</p>
+<p>For instance, with daily data, the delta time should be exactly one
+day throughout the dataset and the computed maximum divided by
+minimum delta time should always be 1.0. For monthly data, the
+delta time should be between 28 and 31 days and the maximum ratio
+should be about 1.1. The running value of the delta time is
+computed as data is read and any wraparound or cycling is also
+included. This input helps trap missing data or errors in cycling.
+to turn off trapping, set the value to 1.0e30 or something similar.
+In case of very high-resolution temporal datasets (i.e. hourly),
+the limit might need to be set to a value greater than 1.0 due to the
+round-off arithmetic.</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>CIME-CCS default is set to 1.5</p>
+</div>
+<dl>
+<dt><strong>yearFirst</strong></dt><dd><p>The first year of stream data that will be used</p>
+</dd>
+<dt><strong>yearLast</strong></dt><dd><p>The last year of stream data that will be used</p>
+</dd>
+<dt><strong>yearAlign</strong></dt><dd><p>The simulation year corresponding to <code class="docutils literal notranslate"><span class="pre">yearFirst</span></code>.</p>
+<p>A common usage is to set this to the first year of the model run
+(for CIME-CCS this would correspond to the xml variable
+<code class="docutils literal notranslate"><span class="pre">RUN_STARTDATE</span></code>). With this setting, the forcing in the first year
+of the run will be the forcing of year <code class="docutils literal notranslate"><span class="pre">yearFirst</span></code>.</p>
+<p>Another usage is to align the calendar of transient forcing with
+the model calendar. For example, setting <code class="docutils literal notranslate"><span class="pre">yearAlign</span></code> =
+<code class="docutils literal notranslate"><span class="pre">yearFirst</span></code> will lead to the forcing calendar being the same as
+the model calendar. The forcing for a given model year would be the
+forcing of the same year. This would be appropriate in transient
+runs where the model calendar is setup to span the same year range
+as the forcing data.</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The following pertains to CIME-CCS details for yearAlign usage.</p>
+<p>For some data model modes, <code class="docutils literal notranslate"><span class="pre">yearAlign</span></code> can be set via an xml variable
+whose name ends with <code class="docutils literal notranslate"><span class="pre">YR_ALIGN</span></code> (there are a few such xml variables,
+each pertaining to a particular data model mode).</p>
+<p>An example of this is land-only historical simulations in which we run
+the model for 1850 to 2010 using atmospheric forcing data that is only
+available for 1901 to 2010. In this case, we want to run the model for
+years 1850 (so <code class="docutils literal notranslate"><span class="pre">RUN_STARTDATE</span></code> has year 1850) through 1900 by looping
+over the forcing data for 1901-1920, and then run the model for years
+1901-2010 using the forcing data from 1901-2010. To do this, initially set:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">xmlchange</span> <span class="n">DATM_YR_ALIGN</span><span class="o">=</span><span class="mi">1901</span>
+<span class="o">./</span><span class="n">xmlchange</span> <span class="n">DATM_YR_START</span><span class="o">=</span><span class="mi">1901</span>
+<span class="o">./</span><span class="n">xmlchange</span> <span class="n">DATM_YR_END</span><span class="o">=</span><span class="mi">1920</span>
+</pre></div>
+</div>
+<p>When the model has completed year 1900, set:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">xmlchange</span> <span class="n">DATM_YR_ALIGN</span><span class="o">=</span><span class="mi">1901</span>
+<span class="o">./</span><span class="n">xmlchange</span> <span class="n">DATM_YR_START</span><span class="o">=</span><span class="mi">1901</span>
+<span class="o">./</span><span class="n">xmlchange</span> <span class="n">DATM_YR_END</span><span class="o">=</span><span class="mi">2010</span>
+</pre></div>
+</div>
+<p>With this setup, the correlation between model run year and forcing year
+looks like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">RUN</span>   <span class="n">Year</span> <span class="p">:</span> <span class="mi">1850</span> <span class="o">...</span> <span class="mi">1860</span> <span class="mi">1861</span> <span class="o">...</span> <span class="mi">1870</span> <span class="o">...</span> <span class="mi">1880</span> <span class="mi">1881</span> <span class="o">...</span> <span class="mi">1890</span> <span class="o">...</span> <span class="mi">1900</span> <span class="mi">1901</span> <span class="o">...</span> <span class="mi">2010</span>
+<span class="n">FORCE</span> <span class="n">Year</span> <span class="p">:</span> <span class="mi">1910</span> <span class="o">...</span> <span class="mi">1920</span> <span class="mi">1901</span> <span class="o">...</span> <span class="mi">1910</span> <span class="o">...</span> <span class="mi">1920</span> <span class="mi">1901</span> <span class="o">...</span> <span class="mi">1910</span> <span class="o">...</span> <span class="mi">1920</span> <span class="mi">1901</span> <span class="o">...</span> <span class="mi">2010</span>
+</pre></div>
+</div>
+<p>Setting <code class="docutils literal notranslate"><span class="pre">DATM_YR_ALIGN</span></code> to 1901 tells the code that you want
+to align model year 1901 with forcing data year 1901, and then it
+calculates what the forcing year should be if the model starts in year 1850.</p>
+</div>
+<dl class="simple">
+<dt><strong>vectors</strong></dt><dd><p>Specifies paired vector field names that will be rotated to make them
+relative to earth coordinates using source mesh coordinates. Then,
+rotated fields are remapped to the destination mesh. Rotating fields in the
+destination mesh to make them relative to the destination model mesh
+is the destination component responsibilty. For example, the valid value
+for <em>vectors</em> argument could be <em>“Sa_u:Sa_v”</em>. In the current version,
+there is no way to specify multiple vecors fields in same data stream.</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>CIME-CCS default is set to null</p>
+</div>
+<p><strong>meshfile</strong></p>
+<blockquote>
+<div><p>Specifies filename for mesh for all fields on the stream.</p>
+</div></blockquote>
+<p><strong>lev_dimname</strong></p>
+<blockquote>
+<div><p>Specifies name of vertical dimension in stream.</p>
+</div></blockquote>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>CIME-CCS default is set to null</p>
+</div>
+<dl>
+<dt><strong>datafiles</strong></dt><dd><p>In case of usage of XML format to define data stream, each
+&lt;file&gt;&lt;/file&gt; entry contains a data files to use. If there is
+more than one file, the files must be in chronological order, that
+is, the dates in time axis of the first file are before the dates
+in the time axis of the second file.</p>
+<p>The same rule also applies to the ESMF config format but in this
+case the files needs to be listed by seperating them with spaces.</p>
+</dd>
+<dt><strong>datavars</strong></dt><dd><p>In case of usage of XML format to define data stream, each
+&lt;var&gt;&lt;/var&gt; entry contains a paired list with the name of the
+variable in the netCDF file on the left and the name of the
+corresponding model variable on the right.</p>
+<p>The same rule also applies to the ESMF config format but in this
+case the variable pairs needs to be listed by seperating
+them with spaces.</p>
+</dd>
+<dt><strong>offset</strong></dt><dd><p>The offset allows a user to shift the time axis of a data stream by
+a fixed and constant number of seconds. For instance, if a data set
+contains daily average data with timestamps for the data at the end
+of the day, it might be appropriate to shift the time axis by 12
+hours so the data is taken to be at the middle of the day instead of
+the end of the day. This feature supports only simple shifts in
+seconds as a way of correcting input data time axes without having
+to modify the input data time axis manually. This feature does not
+support more complex shifts such as end of month to mid-month. But
+in conjunction with the time interpolation methods in the strdata
+input, hopefully most user needs can be accommodated with the two
+settings. Note that a positive offset advances the input data time
+axis forward by that number of seconds.</p>
+<p>As an example of offsets, if the input data is at 0, 3600, 7200,
+10800 seconds (hourly) and you set an offset of 1800, then the input
+data will be set at times 1800, 5400, 9000, and 12600. So a model
+at time 3600 using linear interpolation would have data at “n=2”
+with offset of 0 will have data at “n=(2+3)/2” with an offset
+of 1800. n=2 is the 2nd data in the time list 0, 3600, 7200, 10800
+in this example. n=(2+3)/2 is the average of the 2nd and 3rd data
+in the time list 0, 3600, 7200, 10800. Offset can be positive or
+negative.</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>CIME-CCS default is set to 0</p>
+</div>
+</section>
+</section>
+<section id="data-model-namelist-input">
+<span id="input-namelists"></span><h2><span class="section-number">2.3. </span>Data Model Namelist Input<a class="headerlink" href="#data-model-namelist-input" title="Permalink to this heading">¶</a></h2>
+<p>Each data model has an associated input namelist file, <code class="docutils literal notranslate"><span class="pre">d{model_name}_in</span></code>,
+where <code class="docutils literal notranslate"><span class="pre">model_name=[datm,dlnd,dice,docn,drof,dwav]</span></code>.</p>
+<p>The following namelist variables appear in each data model namelist:</p>
+<dl class="simple">
+<dt><strong>dataMode</strong></dt><dd><p>Component specific mode.</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Each data model has its own datamode values as described below:</p>
+<p><a class="reference internal" href="datm.html#datm"><span class="std std-ref">Data Atmosphere</span></a></p>
+<p><a class="reference internal" href="dice.html#dice"><span class="std std-ref">Data Ice</span></a></p>
+<p><a class="reference internal" href="dlnd.html#dlnd"><span class="std std-ref">Data Land</span></a></p>
+<p><a class="reference internal" href="docn.html#docn"><span class="std std-ref">Data Ocean</span></a></p>
+<p><a class="reference internal" href="drof.html#drof"><span class="std std-ref">Data Runoff</span></a></p>
+<p><a class="reference internal" href="dwav.html#dwav"><span class="std std-ref">Data Wave</span></a></p>
+</div>
+</section>
+<section id="cime-ccs-customization-of-stream-description-files">
+<h2><span class="section-number">2.4. </span>CIME-CCS Customization of stream description files<a class="headerlink" href="#cime-ccs-customization-of-stream-description-files" title="Permalink to this heading">¶</a></h2>
+<p>Each data model’s <strong>cime-config/buildnml</strong> utility automatically
+generates the required stream description files for the case.  The
+directory contents of each data model will look like the following,
+where <code class="docutils literal notranslate"><span class="pre">model_name</span></code> can be <code class="docutils literal notranslate"><span class="pre">atm</span></code>, <code class="docutils literal notranslate"><span class="pre">ice</span></code>, <code class="docutils literal notranslate"><span class="pre">lnd</span></code>, <code class="docutils literal notranslate"><span class="pre">ocn</span></code>,
+<code class="docutils literal notranslate"><span class="pre">rof</span></code> or <code class="docutils literal notranslate"><span class="pre">wav</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$CIMEROOT/components/cdeps/{model_name}/cime_config/buildnml
+$CIMEROOT/components/cdeps/{model_name}/cime_config/namelist_definition_{model_name}.xml
+$CIMEROOT/components/cdeps/{model_name}/cime_config/stream_definition_{model_name}.xml
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">namelist_definition_{model_name}.xml</span></code> file defines and sets default
+values for all the namelist variables and associated groups and also
+provides out-of-the box settings for the target data model and target
+stream.  <strong>buildnml</strong> utilizes these two files to construct the stream
+files for the given compset settings. You can modify the generated
+stream files for your particular needs by doing the following:</p>
+<ol class="arabic simple">
+<li><p>Copy the relevant description file from <code class="docutils literal notranslate"><span class="pre">$CASEROOT/CaseDocs</span></code> to
+<code class="docutils literal notranslate"><span class="pre">$CASEROOT</span></code>. Change the permission of the file to write.</p></li>
+<li><p>Edit the <code class="docutils literal notranslate"><span class="pre">$CASEROOT</span></code> file with your desired changes.</p>
+<ul class="simple">
+<li><p><em>Be sure not to put any tab characters in the file: use spaces
+instead</em>.</p></li>
+</ul>
+</li>
+<li><p>Call <strong>preview_namelists</strong> and verify that your changes do indeed
+appear in the resultant stream description file appear in
+<code class="docutils literal notranslate"><span class="pre">CaseDocs/{model_name}streams.xml</span></code>. These changes will
+also appear in <code class="docutils literal notranslate"><span class="pre">$RUNDIR/{model_name}.streams.xml</span></code>.</p></li>
+</ol>
+<p>The <code class="docutils literal notranslate"><span class="pre">stream_definition_{model_name}.xml</span></code> file defines and sets default
+values for stream data sources such as list of variable pairs, stream data files
+spatial and temporal interpolation types. The file can be modified by
+folloiwng same approach that is used to modify
+<code class="docutils literal notranslate"><span class="pre">namelist_definition_{model_name}.xml</span></code> file.</p>
+</section>
+<section id="data-model-stream-inline-api">
+<h2><span class="section-number">2.5. </span>Data Model Stream Inline API<a class="headerlink" href="#data-model-stream-inline-api" title="Permalink to this heading">¶</a></h2>
+<p>As mentioned previously, the streams code can be used from either a
+CDEPS data model <strong>OR</strong> inline calls from a prognostic component. This
+is a very powerful feature in that data model input can be obtained
+using standardized interfaces and ESMF online mapping.</p>
+<p>The inline API assumes that there is <strong>only one stream</strong> and consists
+of two calls: one to initialize the stream data type
+(<code class="docutils literal notranslate"><span class="pre">shr_strdata_init</span></code>):</p>
+<div class="highlight-Fortran notranslate"><div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">shr_strdata_init_from_inline</span><span class="p">(</span><span class="n">sdat</span><span class="p">,</span><span class="w"> </span><span class="n">my_task</span><span class="p">,</span><span class="w"> </span><span class="n">logunit</span><span class="p">,</span><span class="w"> </span><span class="n">compname</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">   </span><span class="n">model_clock</span><span class="p">,</span><span class="w"> </span><span class="n">model_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">stream_meshfile</span><span class="p">,</span><span class="w"> </span><span class="n">stream_lev_dimname</span><span class="p">,</span><span class="w"> </span><span class="n">stream_mapalgo</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">   </span><span class="n">stream_filenames</span><span class="p">,</span><span class="w"> </span><span class="n">stream_fldlistFile</span><span class="p">,</span><span class="w"> </span><span class="n">stream_fldListModel</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">   </span><span class="n">stream_yearFirst</span><span class="p">,</span><span class="w"> </span><span class="n">stream_yearLast</span><span class="p">,</span><span class="w"> </span><span class="n">stream_yearAlign</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span><span class="w"></span>
+<span class="w">   </span><span class="n">stream_offset</span><span class="p">,</span><span class="w"> </span><span class="n">stream_taxmode</span><span class="p">,</span><span class="w"> </span><span class="n">stream_dtlimit</span><span class="p">,</span><span class="w"> </span><span class="n">stream_tintalgo</span><span class="p">,</span><span class="w"> </span><span class="n">stream_name</span><span class="p">,</span><span class="w"> </span><span class="n">rc</span><span class="p">)</span><span class="w"></span>
+
+<span class="c">! input/output variables</span>
+<span class="k">type</span><span class="p">(</span><span class="n">shr_strdata_type</span><span class="p">)</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">sdat</span><span class="w">                   </span><span class="c">! stream data type</span>
+<span class="kt">integer</span><span class="w">                </span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">    </span><span class="kd">::</span><span class="w"> </span><span class="n">my_task</span><span class="w">                </span><span class="c">! my mpi task</span>
+<span class="kt">integer</span><span class="w">                </span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">    </span><span class="kd">::</span><span class="w"> </span><span class="n">logunit</span><span class="w">                </span><span class="c">! stdout logunit</span>
+<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">)</span><span class="w">       </span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">    </span><span class="kd">::</span><span class="w"> </span><span class="n">compname</span><span class="w">               </span><span class="c">! component name (e.g. ATM, OCN, ...)</span>
+<span class="k">type</span><span class="p">(</span><span class="n">ESMF_Clock</span><span class="p">)</span><span class="w">       </span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">    </span><span class="kd">::</span><span class="w"> </span><span class="n">model_clock</span><span class="w">            </span><span class="c">! model clock</span>
+<span class="k">type</span><span class="p">(</span><span class="n">ESMF_Mesh</span><span class="p">)</span><span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">    </span><span class="kd">::</span><span class="w"> </span><span class="n">model_mesh</span><span class="w">             </span><span class="c">! model mesh</span>
+<span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w">           </span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">    </span><span class="kd">::</span><span class="w"> </span><span class="n">stream_meshFile</span><span class="w">        </span><span class="c">! full pathname to stream mesh file</span>
+<span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w">           </span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">    </span><span class="kd">::</span><span class="w"> </span><span class="n">stream_lev_dimname</span><span class="w">     </span><span class="c">! name of vertical dimension in stream</span>
+<span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w">           </span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">    </span><span class="kd">::</span><span class="w"> </span><span class="n">stream_mapalgo</span><span class="w">         </span><span class="c">! stream mesh -&gt; model mesh mapping type</span>
+<span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w">           </span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">    </span><span class="kd">::</span><span class="w"> </span><span class="n">stream_filenames</span><span class="p">(:)</span><span class="w">    </span><span class="c">! stream data filenames (full pathnamesa)</span>
+<span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w">           </span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">    </span><span class="kd">::</span><span class="w"> </span><span class="n">stream_fldListFile</span><span class="p">(:)</span><span class="w">  </span><span class="c">! file field names, colon delim list</span>
+<span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w">           </span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">    </span><span class="kd">::</span><span class="w"> </span><span class="n">stream_fldListModel</span><span class="p">(:)</span><span class="w"> </span><span class="c">! model field names, colon delim list</span>
+<span class="kt">integer</span><span class="w">                </span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">    </span><span class="kd">::</span><span class="w"> </span><span class="n">stream_yearFirst</span><span class="w">       </span><span class="c">! first year to use</span>
+<span class="kt">integer</span><span class="w">                </span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">    </span><span class="kd">::</span><span class="w"> </span><span class="n">stream_yearLast</span><span class="w">        </span><span class="c">! last  year to use</span>
+<span class="kt">integer</span><span class="w">                </span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">    </span><span class="kd">::</span><span class="w"> </span><span class="n">stream_yearAlign</span><span class="w">       </span><span class="c">! align yearFirst with this model year</span>
+<span class="kt">integer</span><span class="w">                </span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">    </span><span class="kd">::</span><span class="w"> </span><span class="n">stream_offset</span><span class="w">          </span><span class="c">! offset in seconds of stream data</span>
+<span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w">           </span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">    </span><span class="kd">::</span><span class="w"> </span><span class="n">stream_taxMode</span><span class="w">         </span><span class="c">! time axis mode</span>
+<span class="kt">real</span><span class="p">(</span><span class="n">r8</span><span class="p">)</span><span class="w">               </span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">    </span><span class="kd">::</span><span class="w"> </span><span class="n">stream_dtlimit</span><span class="w">         </span><span class="c">! ratio of max/min stream delta times</span>
+<span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w">           </span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">    </span><span class="kd">::</span><span class="w"> </span><span class="n">stream_tintalgo</span><span class="w">        </span><span class="c">! time interpolation algorithm</span>
+<span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">    </span><span class="kd">::</span><span class="w"> </span><span class="n">stream_name</span><span class="w">            </span><span class="c">! name of stream</span>
+<span class="kt">integer</span><span class="w">                </span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w">   </span><span class="kd">::</span><span class="w"> </span><span class="n">rc</span><span class="w">                     </span><span class="c">! error code</span>
+</pre></div>
+</div>
+<p>and one to advance the stream (<code class="docutils literal notranslate"><span class="pre">shr_strdata_advance</span></code>):</p>
+<div class="highlight-Fortran notranslate"><div class="highlight"><pre><span></span><span class="k">subroutine </span><span class="n">shr_strdata_advance</span><span class="p">(</span><span class="n">sdat</span><span class="p">,</span><span class="w"> </span><span class="n">ymd</span><span class="p">,</span><span class="w"> </span><span class="n">tod</span><span class="p">,</span><span class="w"> </span><span class="n">logunit</span><span class="p">,</span><span class="w"> </span><span class="n">istr</span><span class="p">,</span><span class="w"> </span><span class="n">timers</span><span class="p">,</span><span class="w"> </span><span class="n">rc</span><span class="p">)</span><span class="w"></span>
+
+<span class="k">type</span><span class="p">(</span><span class="n">shr_strdata_type</span><span class="p">)</span><span class="w"> </span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span><span class="w">       </span><span class="kd">::</span><span class="w"> </span><span class="n">sdat</span><span class="w">    </span><span class="c">! stream data type</span>
+<span class="kt">integer</span><span class="w">                </span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">          </span><span class="kd">::</span><span class="w"> </span><span class="n">ymd</span><span class="w">     </span><span class="c">! current model date</span>
+<span class="kt">integer</span><span class="w">                </span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">          </span><span class="kd">::</span><span class="w"> </span><span class="n">tod</span><span class="w">     </span><span class="c">! current model date</span>
+<span class="kt">integer</span><span class="w">                </span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">          </span><span class="kd">::</span><span class="w"> </span><span class="n">logunit</span><span class="w"> </span><span class="c">! stdout logunit</span>
+<span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=*</span><span class="p">)</span><span class="w">       </span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w">          </span><span class="kd">::</span><span class="w"> </span><span class="n">istr</span><span class="w">    </span><span class="c">! string used for timing output</span>
+<span class="kt">logical</span><span class="w">                </span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="w"> </span><span class="k">optional</span><span class="kd">::</span><span class="w"> </span><span class="n">timers</span><span class="w">  </span><span class="c">! currently not used</span>
+<span class="kt">integer</span><span class="w">                </span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w">         </span><span class="kd">::</span><span class="w"> </span><span class="n">rc</span><span class="w">      </span><span class="c">! error code</span>
+</pre></div>
+</div>
+</section>
+<section id="handling-stream-calendars">
+<h2><span class="section-number">2.6. </span>Handling Stream Calendars<a class="headerlink" href="#handling-stream-calendars" title="Permalink to this heading">¶</a></h2>
+<p>Handling stream calendars can be tricky if there are mismatches
+between the stream and data model calendars. CDEPS always uses the
+stream calendar for time interpolation for reasons described below.
+When there is a calendar mismatch, Feb 29 is supported in a special
+way as needed to get reasonable values.  Note that when Feb 29 needs
+to be treated specially, a discontinuity will be introduced. The size
+of that discontinuity will depend on the time series input data.
+Four cases can occur:</p>
+<ol class="arabic simple">
+<li><p>The stream calendar and model calendar are identical and CDEPS
+proceeds in the standard way.</p></li>
+<li><p>The stream has a no leap calendar and the model is on the gregorian calendar.
+Time interpolation is performed on the noleap calendar. If the model date is Feb 29,
+the code computes stream data for Feb 28 by setting model time to Feb 28.
+This results in duplicate stream data on Feb 28 and Feb 29 and a
+discontinuity at the start of Feb 29. This could potentially be fixed
+by using the gregorian calendar for time interpolation when the input data
+is relatively infrequent (say greater than daily) with the following concerns.</p>
+<ul class="simple">
+<li><p>The forcing will not be reproduced identically on the same day with
+with climatological inputs data</p></li>
+<li><p>Input data with variable input frequency might behave funny</p></li>
+<li><p>An arbitrary discontinuity will be introduced in the time
+interpolation method based upon the logic chosen to transition
+from reproducing Feb 28 on Feb 29 and interpolating to Feb 29.</p></li>
+<li><p>The time gradient of data will change by adding a day arbitrarily.</p></li>
+</ul>
+</li>
+<li><p>The stream is a gregorian calendar and the model is a noleap calendar
+Time interpolate on the gregorian calendar. This causes Feb 29
+stream data to be skipped and lead to a discontinuity at the start
+of March 1.</p></li>
+<li><p>The calendars mismatch and none of the above
+If the calendars mismatch and neither of the three cases above are
+recognized, then abort.</p></li>
+</ol>
+</section>
+</section>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="design_details.html" class="btn btn-neutral float-right" title="3. Design Details" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="introduction.html" class="btn btn-neutral" title="1. Introduction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, U.S. National Science Foundation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+     
+<script>var version_json_loc = "../../versions.json";</script>
+
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+        <script src="_static/pop_ver.js"></script>
+    
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

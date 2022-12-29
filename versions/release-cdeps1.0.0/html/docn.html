@@ -1,0 +1,386 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>5. Data Ocean (DOCN) &mdash; CDEPS master documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="CDEPS master documentation" href="index.html"/>
+        <link rel="next" title="6. Data Ice (DICE)" href="dice.html"/>
+        <link rel="prev" title="4. Data Atmosphere (DATM)" href="datm.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> CDEPS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                
+                  <div class="version-dropdown">
+                    <select class="version-list" id="version-list">
+                      <option value=''>master</option>
+                      
+                        
+                      
+                        
+                          <option value="">[placeholder]</option>
+                        
+                      
+                    </select>
+                  </div>
+                
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="streams.html">2. Input Streams</a></li>
+<li class="toctree-l1"><a class="reference internal" href="design_details.html">3. Design Details</a></li>
+<li class="toctree-l1"><a class="reference internal" href="datm.html">4. Data Atmosphere (DATM)</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">5. Data Ocean (DOCN)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#supported-data-modes">5.1. Supported Data Modes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#configuring-docn-from-cime">5.2. Configuring DOCN from CIME</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dice.html">6. Data Ice (DICE)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dlnd.html">7. Data Land (DLND)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="drof.html">8. Data Runoff (DROF)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dwav.html">9. Data Wave (DWAV)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extending.html">10. Extending CDEPS</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">CDEPS</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li><span class="section-number">5. </span>Data Ocean (DOCN)</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/docn.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <section id="data-ocean-docn">
+<span id="docn"></span><h1><span class="section-number">5. </span>Data Ocean (DOCN)<a class="headerlink" href="#data-ocean-docn" title="Permalink to this heading">¶</a></h1>
+<p>DOCN is normally used to provide observational forcing data (or
+forcing data produced by a previous run using active components) to
+drive prognostic components. The various ways of running DOCN is
+referred to as its mode.</p>
+<section id="supported-data-modes">
+<span id="docn-datamodes"></span><h2><span class="section-number">5.1. </span>Supported Data Modes<a class="headerlink" href="#supported-data-modes" title="Permalink to this heading">¶</a></h2>
+<p>DOCN has its own set of supported <code class="docutils literal notranslate"><span class="pre">datamode</span></code> values that appears in the
+<code class="docutils literal notranslate"><span class="pre">docn_in</span></code> namelist input. The datamode specifies what additional
+operations need to be done by DOCN on <em>ALL</em> of the streams in the
+<code class="docutils literal notranslate"><span class="pre">docn.streams.xml</span></code> file. Each datamode value is also associated
+with a DOCN source file that carries out these operations and these are
+listed in parentheses next to the mode name.</p>
+<dl class="simple">
+<dt>sstdata and sst_aquap_file (<code class="docutils literal notranslate"><span class="pre">docn_datamode_copyall_mod.F90</span></code>)</dt><dd><ul class="simple">
+<li><p><cite>sstdata</cite> and <cite>sst_aquap_file</cite> modes assume that the only field in the
+input stream is SST. It also assumes the SST is in Celsius and must be
+converted to Kelvin. All other fields are set to zero.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Normally the ice fraction data is found in the same data files that
+provide SST data to the data ocean model. They are normally found in
+the same file because the SST and ice fraction data are derived from
+the same observational data sets and are consistent with each other.</p>
+</div>
+<dl>
+<dt>iaf (<code class="docutils literal notranslate"><span class="pre">docn_datamode_iaf_mod.F90</span></code>)</dt><dd><ul class="simple">
+<li><p>iaf is the interannually varying version of <cite>sstdata</cite>.
+The ocean salinity is set to a constant reference salinity value.
+All other fields other than SST and ocean salinity are set to zero.</p></li>
+</ul>
+</dd>
+<dt>sst_aquap_analytic, sst_aquap_constant and sst_aquap[1-10] (<code class="docutils literal notranslate"><span class="pre">docn_datamode_aquaplanet_mod.F90</span></code>)</dt><dd><ul class="simple">
+<li><p>This mode creates analytic sea surface temperature. In case of using
+<cite>sst_aquap[1-10]</cite> data mode, an additional information (<cite>sst_option</cite>)
+is extracted from the data mode to change the behaviour of the
+data mode such as the method of calculation of sea surface temperature.</p></li>
+</ul>
+</dd>
+<dt>som and som_aquap (<code class="docutils literal notranslate"><span class="pre">docn_datamode_som_mod.F90</span></code>)</dt><dd><ul>
+<li><p>som (“slab ocean model”) mode is a prognostic mode. This mode
+computes a prognostic sea surface temperature and a freeze/melt
+potential (surface Q-flux) used by the sea ice model.  This
+calculation requires an external SOM forcing data file that includes
+ocean mixed layer depths and bottom-of-the-slab Q-fluxes.
+Scientifically appropriate bottom-of-the-slab Q-fluxes are normally
+ocean resolution dependent and are derived from the ocean model output
+of a fully coupled CESM run.  Note that while this mode runs out of
+the box, the default SOM forcing file is not scientifically
+appropriate and is provided for testing and development purposes only.
+Users must create scientifically appropriate data for their particular
+application. A tool is available to derive valid SOM forcing.</p>
+<p>The only difference between <cite>som</cite> and <cite>som_aquap</cite> is that <cite>som_aquap</cite>
+limits sea surface temperature based on calculated value of freezing
+temperature.</p>
+</li>
+</ul>
+</dd>
+</dl>
+</section>
+<section id="configuring-docn-from-cime">
+<span id="docn-cime-vars"></span><h2><span class="section-number">5.2. </span>Configuring DOCN from CIME<a class="headerlink" href="#configuring-docn-from-cime" title="Permalink to this heading">¶</a></h2>
+<p>If CDEPS is coupled to the CIME-CCS then the CIME <code class="docutils literal notranslate"><span class="pre">$CASEROOT</span></code> xml
+variable <code class="docutils literal notranslate"><span class="pre">DOCN_MODE</span></code> sets the collection of streams that
+are associated with DOCN and also sets the docn namelist variable
+<code class="docutils literal notranslate"><span class="pre">datamode</span></code> in the file <code class="docutils literal notranslate"><span class="pre">docn_in</span></code>. The following are the supported
+DOCN <code class="docutils literal notranslate"><span class="pre">datamode</span></code> values, as defined in the file
+<code class="docutils literal notranslate"><span class="pre">namelist_definition_docn.xml</span></code>.</p>
+<p>The following table describes the valid values of <code class="docutils literal notranslate"><span class="pre">DOCN_MODE</span></code>
+(defined in the <code class="docutils literal notranslate"><span class="pre">config_component.xml</span></code> file for DOCN), and how they
+relate to the associated input streams and the <code class="docutils literal notranslate"><span class="pre">datamode</span></code> namelist
+variable. CIME will generate a value of <code class="docutils literal notranslate"><span class="pre">DOCN_MODE</span></code> based on the
+compset.</p>
+<dl class="simple">
+<dt>prescribed</dt><dd><ul class="simple">
+<li><p>SST data provided by a file</p></li>
+<li><p>streams: prescribed</p></li>
+<li><p>datamode: sstdata</p></li>
+</ul>
+</dd>
+<dt>interannual</dt><dd><ul class="simple">
+<li><p>SST data provided by a file</p></li>
+<li><p>streams: interannual</p></li>
+<li><p>datamode: iaf</p></li>
+</ul>
+</dd>
+<dt>som</dt><dd><ul class="simple">
+<li><p>Slab Ocean Model is used to calculate sea surface temperature.</p></li>
+<li><p>streams: som</p></li>
+<li><p>datamode: som</p></li>
+</ul>
+</dd>
+<dt>som_aquap</dt><dd><ul class="simple">
+<li><p>Slab Ocean Model is used to calculate sea surface temperature.</p></li>
+<li><p>streams: som_aquap</p></li>
+<li><p>datamode: som_aquap</p></li>
+</ul>
+</dd>
+<dt>sst_aquap[1-10]</dt><dd><ul class="simple">
+<li><p>Lattitude varying analytical sea surface data</p></li>
+<li><p>streams: N/A</p></li>
+<li><p>datamode: sst_aquap[1-10]</p></li>
+</ul>
+</dd>
+<dt>sst_aquap_file</dt><dd><ul class="simple">
+<li><p>SST data provided by a file</p></li>
+<li><p>streams: aquapfile</p></li>
+<li><p>datamode: sst_aquapfile</p></li>
+</ul>
+</dd>
+<dt>sst_aquap_constant</dt><dd><ul class="simple">
+<li><p>Constant sea surface data from aquaplanet</p></li>
+<li><p>streams: N/A</p></li>
+<li><p>datamode: sst_aquap_constant</p></li>
+</ul>
+</dd>
+</dl>
+</section>
+</section>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="dice.html" class="btn btn-neutral float-right" title="6. Data Ice (DICE)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="datm.html" class="btn btn-neutral" title="4. Data Atmosphere (DATM)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, U.S. National Science Foundation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+     
+<script>var version_json_loc = "../../versions.json";</script>
+
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+        <script src="_static/pop_ver.js"></script>
+    
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
