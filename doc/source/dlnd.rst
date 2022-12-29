@@ -13,7 +13,7 @@ is one way of running DLND is referred to as its mode.
 Supported Data Modes
 --------------------
 
-DLND its own set of supported ``datamode`` values that appears in the
+DLND has its own set of supported ``datamode`` values that appears in the
 ``dlnd_in`` namelist input. The datamode specifies what additional
 operations need to be done by DLND on *ALL* of the streams in the
 ``dlnd.streams.xml`` file. Each datamode value is also associated
@@ -32,8 +32,8 @@ copyall (``lnd_comp_nuopc.F90``)
 Configuring DLND from CIME
 ---------------------------------------
 
-If CDEPS is coupled to the CIME-CCS then the CIME ``$CASEMROOT`` xml
-variable ``DLND_MODE`` sets the collection of streams the streams that
+If CDEPS is coupled to the CIME-CCS then the CIME ``$CASEROOT`` xml
+variable ``DLND_MODE`` sets the collection of streams that
 are associated with DLND and also sets the dlnd namelist variable
 ``datamode`` in the file ``dlnd_in``. The following are the supported
 DLND ``datamode`` values, as defined in the file

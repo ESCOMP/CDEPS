@@ -14,7 +14,7 @@ referred to as its mode.
 Supported Data Modes
 --------------------
 
-DOCN its own set of supported ``datamode`` values that appears in the
+DOCN has its own set of supported ``datamode`` values that appears in the
 ``docn_in`` namelist input. The datamode specifies what additional
 operations need to be done by DOCN on *ALL* of the streams in the
 ``docn.streams.xml`` file. Each datamode value is also associated
@@ -31,9 +31,6 @@ sstdata and sst_aquap_file (``docn_datamode_copyall_mod.F90``)
   provide SST data to the data ocean model. They are normally found in
   the same file because the SST and ice fraction data are derived from
   the same observational data sets and are consistent with each other.
-  to the data ocean model. They are normally found in the same file
-  because the SST and ice fraction data are derived from the same
-  observational data sets and are consistent with each other.
 
 iaf (``docn_datamode_iaf_mod.F90``)
   - iaf is the interannually varying version of `sstdata`.
@@ -44,7 +41,7 @@ sst_aquap_analytic, sst_aquap_constant and sst_aquap[1-10] (``docn_datamode_aqua
   - This mode creates analytic sea surface temperature. In case of using
     `sst_aquap[1-10]` data mode, an additional information (`sst_option`)
     is extracted from the data mode to change the behaviour of the 
-    data mode such as the way of calculation of sea surface temperature.
+    data mode such as the method of calculation of sea surface temperature.
 
 som and som_aquap (``docn_datamode_som_mod.F90``)
   - som ("slab ocean model") mode is a prognostic mode. This mode
@@ -54,7 +51,7 @@ som and som_aquap (``docn_datamode_som_mod.F90``)
     ocean mixed layer depths and bottom-of-the-slab Q-fluxes.
     Scientifically appropriate bottom-of-the-slab Q-fluxes are normally
     ocean resolution dependent and are derived from the ocean model output
-    of a fully coupled CCSM run.  Note that while this mode runs out of
+    of a fully coupled CESM run.  Note that while this mode runs out of
     the box, the default SOM forcing file is not scientifically
     appropriate and is provided for testing and development purposes only.
     Users must create scientifically appropriate data for their particular
@@ -70,8 +67,8 @@ som and som_aquap (``docn_datamode_som_mod.F90``)
 Configuring DOCN from CIME
 ---------------------------------------
 
-If CDEPS is coupled to the CIME-CCS then the CIME ``$CASEMROOT`` xml
-variable ``DOCN_MODE`` sets the collection of streams the streams that
+If CDEPS is coupled to the CIME-CCS then the CIME ``$CASEROOT`` xml
+variable ``DOCN_MODE`` sets the collection of streams that
 are associated with DOCN and also sets the docn namelist variable
 ``datamode`` in the file ``docn_in``. The following are the supported
 DOCN ``datamode`` values, as defined in the file

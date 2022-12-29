@@ -13,11 +13,11 @@ Adding New Data Mode
 While, the existing ``copyall`` data modes can be used to bring 
 new data streams easily to the CDEPS, the more complex data
 streams might need to create a new data mode. For example, bringing 
-new data mode to the DATM might involve calculating added value 
+a new data mode to the DATM might involve calculating added value 
 fields such as humidity from temperature, pressure and dew point 
 temperature or wind speed from wind components.
 
-Adding new data mode to the existing data components 
+Adding a new data mode to the existing data components 
 involve multiple steps:
 
  #. Creating ESMF mesh file for data stream
@@ -96,9 +96,9 @@ most southerly latitude).
 
 ``NCAR Command Language (NCL)``
 
-The NCL way of creating SCRIP grid definition file requires additional
+The NCL method of creating SCRIP grid definition file requires additional
 development to represent stream data grid information. In this case, NCL
-provides set of functions to get grid coordinates as input to create
+provides a set of functions to get grid coordinates as input to create
 SCRIP grid definition file. These functions are listed as follows:
 
 .. _latlon_to_SCRIP: https://www.ncl.ucar.edu/Document/Functions/ESMF/latlon_to_SCRIP.shtml
@@ -124,7 +124,7 @@ SCRIP grid definition file. These functions are listed as follows:
   This procedure writes the description of a curvilinear grid 
   to a NetCDF SCRIP file, given the 2D lat/lon arrays. 
 
-A simple code snippets that demonstrates the usage of NCL provided 
+A simple code snippet that demonstrates the usage of NCL provided 
 routines to create ESMF mesh file can be seen in the following example:
 
 .. code-block:: console
@@ -181,7 +181,7 @@ To add area field to the SCRIP file:
 Creating ESMF Mesh File 
 -----------------------
 
-Once SCRIP grid definition file is created, the ESMF mesh file can
+Once a SCRIP grid definition file is created, the ESMF mesh file can
 be created using following command:
 
 .. code-block:: console
@@ -192,12 +192,12 @@ where ``input_SCRIP.nc`` is the input SCRIP grid file and
 ``output_ESMFmesh.nc`` is the ESMF mesh file.
 
 .. note::
-  Creating SCRIP grid definition file and ESMF mesh file could
+  Creating SCRIP grid definition files and ESMF mesh files could
   be very memory intensive in case of creating file for very
   high-resolution global grids like `GHRSST <https://www.ghrsst.org>`_
   dataset (0.01 deg.). 
 
-  In this case, NCL way could fail due to the memory usage since
+  In this case, the NCL method could fail due to the memory usage since
   the process is not parallel and can not be distributed to multiple
   nodes. The workaround could be generating SCRIP and ESMF mesh file 
   for smaller domains or just for the region of interest. In some 

@@ -13,7 +13,7 @@ referred to as its mode.
 Supported Data Modes
 --------------------
 
-DICE its own set of supported ``datamode`` values that appears in the
+DICE has its own set of supported ``datamode`` values that appears in the
 ``dice_in`` namelist input. The datamode specifies what additional
 operations need to be done by DICE on *ALL* of the streams in the
 ``dice.streams.xml`` file. Each datamode value is also associated
@@ -21,7 +21,7 @@ with a DICE source file that carries out these operations and these are
 listed in parentheses next to the mode name.
 
 ssmi (``dice_datamode_ssmi_mod.F90``)
-  - It provides sea-ice concantration data, which is derived from
+  - It provides sea-ice concantration data, which is
     derived from the passive microwave sensor SSM/I.
 
 ssmi_iaf (``dice_datamode_ssmi_mod.F90``)
@@ -33,8 +33,8 @@ ssmi_iaf (``dice_datamode_ssmi_mod.F90``)
 Configuring DICE from CIME
 ---------------------------------------
 
-If CDEPS is coupled to the CIME-CCS then the CIME ``$CASEMROOT`` xml
-variable ``DICE_MODE`` sets the collection of streams the streams that
+If CDEPS is coupled to the CIME-CCS then the CIME ``$CASEROOT`` xml
+variable ``DICE_MODE`` sets the collection of streams that
 are associated with DICE and also sets the dice namelist variable
 ``datamode`` in the file ``dice_in``. The following are the supported
 DICE ``datamode`` values, as defined in the file

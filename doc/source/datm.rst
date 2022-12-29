@@ -8,7 +8,7 @@ forcing data produced by a previous run using active components) to
 drive prognostic components. The various ways of running DATM is 
 referred to as its mode.
 
-In the case of CESM, the active model component would be: CTSM, 
+In the case of CESM, the active model components would be: CTSM, 
 POP2, MOM6, POP2, CICE5-6, WW3 and MOSART. As examples, CORE2_NYF 
 (CORE2 normal year forcing) is the DATM mode used in driving 
 POP2 and MOM6. On the other hand CLM_QIAN, CLMCRUNCEP, CLMGSWP3 
@@ -20,7 +20,7 @@ and CLM1PT are DATM modes using observational data for forcing CTSM.
 Supported Data Modes
 --------------------
 
-DATM its own set of supported ``datamode`` values that appears in the
+DATM has its own set of supported ``datamode`` values that appear in the
 ``datm_in`` namelist input. The datamode specifies what additional
 operations need to be done by DATM on *ALL* of the streams in the
 ``datm.streams.xml`` file. Each datamode value is also associated
@@ -55,19 +55,19 @@ CORE_IAF_JRA (``datm_datamode_jra_mod.F90``)
 
 ERA5 (``datm_datamode_era5_mod.F90``)
   - Fifth generation ECMWF atmospheric reanalysis of the global climate.
-    This mode mainly used by NOAA's UFS Weather model to support
-    different appalications such as HYCOM ocean and NOAHMP land components.
+    This mode is mainly used by NOAA's UFS Weather model to support
+    different applications such as HYCOM ocean and NOAHMP land components.
 
 .. note::
-  Due to high temporal and spatial resoultion of ERA5 dataset, only 2019
+  Due to the high temporal and spatial resoultion of ERA5 dataset, only 2019
   data is staged on NCAR's Cheyenne platform under 
   `$CESMDATAROOT/inputdata/atm/datm7/ERA5`
 
 .. note::
-  In addition to the exiting DATM data modes, `CDEPS fork <https://github.com/NOAA-EMC/CDEPS>`_ 
+  In addition to the exiting DATM data modes, the `CDEPS fork <https://github.com/NOAA-EMC/CDEPS>`_ 
   used by `NOAA's UFS Weather Model <https://github.com/ufs-community/ufs-weather-model>`_ 
   also includes additional data modes such as CFSR, GEFS and GFS. These data modes are not 
-  merged with the NCAR's authoritative repository yet but it tested under UFS Weather
+  merged with the NCAR's authoritative repository yet but it is tested under UFS Weather
   model.
  
 .. _datm-cime-vars:
@@ -76,8 +76,8 @@ ERA5 (``datm_datamode_era5_mod.F90``)
 Configuring DATM from CIME
 ---------------------------------------
 
-If CDEPS is coupled to the CIME-CCS then the CIME ``$CASEMROOT`` xml
-variable ``DATM_MODE`` sets the collection of streams the streams that
+If CDEPS is coupled to the CIME-CCS then the CIME ``$CASEROOT`` xml
+variable ``DATM_MODE`` sets the collection of streams that
 are associated with DATM and also sets the datm namelist variable
 ``datamode`` in the file ``datm_in``. The following are the supported
 DATM ``datamode`` values, as defined in the file
