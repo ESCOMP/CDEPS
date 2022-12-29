@@ -1,0 +1,419 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>4. Data Atmosphere (DATM) &mdash; CDEPS master documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="CDEPS master documentation" href="index.html"/>
+        <link rel="next" title="5. Data Ocean (DOCN)" href="docn.html"/>
+        <link rel="prev" title="3. Design Details" href="design_details.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> CDEPS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                
+                  <div class="version-dropdown">
+                    <select class="version-list" id="version-list">
+                      <option value=''>master</option>
+                      
+                        
+                      
+                        
+                          <option value="">[placeholder]</option>
+                        
+                      
+                    </select>
+                  </div>
+                
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="streams.html">2. Input Streams</a></li>
+<li class="toctree-l1"><a class="reference internal" href="design_details.html">3. Design Details</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">4. Data Atmosphere (DATM)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#supported-data-modes">4.1. Supported Data Modes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#configuring-datm-from-cime">4.2. Configuring DATM from CIME</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="docn.html">5. Data Ocean (DOCN)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dice.html">6. Data Ice (DICE)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dlnd.html">7. Data Land (DLND)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="drof.html">8. Data Runoff (DROF)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dwav.html">9. Data Wave (DWAV)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extending.html">10. Extending CDEPS</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">CDEPS</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li><span class="section-number">4. </span>Data Atmosphere (DATM)</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/datm.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <section id="data-atmosphere-datm">
+<span id="datm"></span><h1><span class="section-number">4. </span>Data Atmosphere (DATM)<a class="headerlink" href="#data-atmosphere-datm" title="Permalink to this heading">¶</a></h1>
+<p>DATM is normally used to provide observational forcing data (or
+forcing data produced by a previous run using active components) to
+drive prognostic components. The various ways of running DATM is
+referred to as its mode.</p>
+<p>In the case of CESM, the active model component would be: CTSM,
+POP2, MOM6, POP2, CICE5-6, WW3 and MOSART. As examples, CORE2_NYF
+(CORE2 normal year forcing) is the DATM mode used in driving
+POP2 and MOM6. On the other hand CLM_QIAN, CLMCRUNCEP, CLMGSWP3
+and CLM1PT are DATM modes using observational data for forcing CTSM.</p>
+<section id="supported-data-modes">
+<span id="datm-datamodes"></span><h2><span class="section-number">4.1. </span>Supported Data Modes<a class="headerlink" href="#supported-data-modes" title="Permalink to this heading">¶</a></h2>
+<p>DATM its own set of supported <code class="docutils literal notranslate"><span class="pre">datamode</span></code> values that appears in the
+<code class="docutils literal notranslate"><span class="pre">datm_in</span></code> namelist input. The datamode specifies what additional
+operations need to be done by DATM on <em>ALL</em> of the streams in the
+<code class="docutils literal notranslate"><span class="pre">datm.streams.xml</span></code> file. Each datamode value is also associated
+with a DATM source file that carries out these operations and these are
+listed in parentheses next to the mode name.</p>
+<dl class="simple">
+<dt>CLMNCEP (<code class="docutils literal notranslate"><span class="pre">datm_datamode_clmncep_mod.F90</span></code>)</dt><dd><ul class="simple">
+<li><p>In conjunction with NCEP climatological atmosphere data, provides
+the atmosphere forcing favored by the CESM Land Model Working Group
+when coupling an active land model with observed atmospheric
+forcing. This mode replicates code previously found in CLM (circa
+2005), before the LMWG started using the CIME coupling
+infrastructure and data models to do active-land-only simulations.</p></li>
+</ul>
+</dd>
+<dt>CORE2_NYF (<code class="docutils literal notranslate"><span class="pre">datm_datamode_core2_mod.F90</span></code>)</dt><dd><ul class="simple">
+<li><p>Coordinated Ocean-ice Reference Experiments (CORE) Version 2
+Normalst_aquap[1-10]Year Forcing.</p></li>
+</ul>
+</dd>
+<dt>CORE2_IAF (<code class="docutils literal notranslate"><span class="pre">datm_datamode_core2_mod.F90</span></code>)</dt><dd><ul class="simple">
+<li><p>In conjunction with CORE Version 2 atmospheric forcing data,
+provides the atmosphere forcing when coupling an active ocean model
+with observed atmospheric forcing. This mode and associated data
+sets implement the <cite>CORE-IAF</cite> Version 2 forcing data, as developed by
+Large and Yeager (2008) at NCAR. Note that <cite>CORE2_NYF</cite> and <cite>CORE2_IAF</cite>
+work exactly the same way.</p></li>
+</ul>
+</dd>
+<dt>CORE_IAF_JRA (<code class="docutils literal notranslate"><span class="pre">datm_datamode_jra_mod.F90</span></code>)</dt><dd><ul class="simple">
+<li><p>In conjunction with JRA-55 Project, provides the atmosphere forcing
+when coupling an active ocean model with observed atmospheric
+forcing. This mode and associated data sets implement the JRA-55
+v1.3 forcing data.</p></li>
+</ul>
+</dd>
+<dt>ERA5 (<code class="docutils literal notranslate"><span class="pre">datm_datamode_era5_mod.F90</span></code>)</dt><dd><ul class="simple">
+<li><p>Fifth generation ECMWF atmospheric reanalysis of the global climate.
+This mode mainly used by NOAA’s UFS Weather model to support
+different appalications such as HYCOM ocean and NOAHMP land components.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Due to high temporal and spatial resoultion of ERA5 dataset, only 2019
+data is staged on NCAR’s Cheyenne platform under
+<cite>$CESMDATAROOT/inputdata/atm/datm7/ERA5</cite></p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In addition to the exiting DATM data modes, <a class="reference external" href="https://github.com/NOAA-EMC/CDEPS">CDEPS fork</a>
+used by <a class="reference external" href="https://github.com/ufs-community/ufs-weather-model">NOAA’s UFS Weather Model</a>
+also includes additional data modes such as CFSR, GEFS and GFS. These data modes are not
+merged with the NCAR’s authoritative repository yet but it tested under UFS Weather
+model.</p>
+</div>
+</section>
+<section id="configuring-datm-from-cime">
+<span id="datm-cime-vars"></span><h2><span class="section-number">4.2. </span>Configuring DATM from CIME<a class="headerlink" href="#configuring-datm-from-cime" title="Permalink to this heading">¶</a></h2>
+<p>If CDEPS is coupled to the CIME-CCS then the CIME <code class="docutils literal notranslate"><span class="pre">$CASEMROOT</span></code> xml
+variable <code class="docutils literal notranslate"><span class="pre">DATM_MODE</span></code> sets the collection of streams the streams that
+are associated with DATM and also sets the datm namelist variable
+<code class="docutils literal notranslate"><span class="pre">datamode</span></code> in the file <code class="docutils literal notranslate"><span class="pre">datm_in</span></code>. The following are the supported
+DATM <code class="docutils literal notranslate"><span class="pre">datamode</span></code> values, as defined in the file
+<code class="docutils literal notranslate"><span class="pre">namelist_definition_datm.xml</span></code>.</p>
+<p>The following table describes the valid values of <code class="docutils literal notranslate"><span class="pre">DATM_MODE</span></code>
+(defined in the <code class="docutils literal notranslate"><span class="pre">config_component.xml</span></code> file for DATM), and how they
+relate to the associated input streams and the <code class="docutils literal notranslate"><span class="pre">datamode</span></code> namelist
+variable. CIME will generate a value of <code class="docutils literal notranslate"><span class="pre">DATM_MODE</span></code> based on the
+compset.</p>
+<dl class="simple">
+<dt>CORE2_NYF</dt><dd><ul class="simple">
+<li><p>CORE2 normal year forcing (CESM C ang G compsets)</p></li>
+<li><p>streams: CORE2_NYF.GISS,CORE2_NYF.GXGXS,CORE2_NYF.NCEP</p></li>
+<li><p>datamode: CORE2_NYF</p></li>
+</ul>
+</dd>
+<dt>CORE2_IAF</dt><dd><ul class="simple">
+<li><p>CORE2 interannual year forcing (CESM C ang G compsets)</p></li>
+<li><p>streams: CORE2_IAF.GCGCS.PREC,CORE2_IAF.GISS.LWDN,
+CORE2_IAF.GISS.SWDN,CORE2_IAF.GISS.SWUP,
+CORE2_IAF.NCEP.DN10,CORE2_IAF.NCEP.Q_10,
+CORE2_IAF.NCEP.SLP_,CORE2_IAF.NCEP.T_10,CORE2_IAF.NCEP.U_10,
+CORE2_IAF.NCEP.V_10,CORE2_IAF.CORE2.ArcFactor</p></li>
+<li><p>datamode: CORE2_IAF</p></li>
+</ul>
+</dd>
+<dt>CORE_IAF_JRA</dt><dd><ul class="simple">
+<li><p>JRA-55 intra-annual year forcing (CESM C ang G compsets)</p></li>
+<li><p>streams: CORE_IAF_JRA.PREC,CORE_IAF_JRA.LWDN,CORE_IAF_JRA.SWDN,
+CORE_IAF_JRA.Q_10,CORE_IAF_JRA.SLP_,CORE_IAF_JRA.T_10,CORE_IAF_JRA.U_10,
+CORE_IAF_JRA.V_10,CORE_IAF_JRA.CORE2.ArcFactor</p></li>
+<li><p>datamode: CORE_IAF_JRA</p></li>
+</ul>
+</dd>
+<dt>CLM_QIAN_WISO</dt><dd><ul class="simple">
+<li><p>QIAN atm input data with water isotopes (CESM I compsets)</p></li>
+<li><p>streams: CLM_QIAN_WISO.Solar,CLM_QIAN_WISO.Precip,CLM_QIAN_WISO.TPQW</p></li>
+<li><p>datamode: CLMNCEP</p></li>
+</ul>
+</dd>
+<dt>CLM_QIAN</dt><dd><ul class="simple">
+<li><p>QIAN atm input data (CESM I compsets)</p></li>
+<li><p>streams: CLM_QIAN.Solar,CLM_QIAN.Precip,CLM_QIAN.TPQW</p></li>
+<li><p>datamode: CLMNCEP</p></li>
+</ul>
+</dd>
+<dt>CLMCRUNCEPv7</dt><dd><ul class="simple">
+<li><p>CRUNCEP atm input data (CESM I compsets)</p></li>
+<li><p>streams: CLMCRUNCEP.Solar,CLMCRUNCEP.Precip,CLMCRUNCEP.TPQW</p></li>
+<li><p>datamode: CLMNCEP</p></li>
+</ul>
+</dd>
+<dt>CLMGSWP3</dt><dd><ul class="simple">
+<li><p>GSWP3 atm input data (I compsets)</p></li>
+<li><p>streams: CLMGSWP3.Solar,CLMGSWP3.Precip,CLMGSWP3.TPQW</p></li>
+<li><p>datamode: CLMNCEP</p></li>
+</ul>
+</dd>
+<dt>CLM1PT</dt><dd><ul class="simple">
+<li><p>single point tower site atm input data</p></li>
+<li><p>streams: CLM1PT.$ATM_GRID</p></li>
+<li><p>datamode: CLMNCEP</p></li>
+</ul>
+</dd>
+<dt>ERA5</dt><dd><ul class="simple">
+<li><p>ERA5 atm input data (not used any compset)</p></li>
+<li><p>streams: ERA5_HOURLY</p></li>
+<li><p>datamode: ERA5</p></li>
+</ul>
+</dd>
+<dt>CPLHIST</dt><dd><ul class="simple">
+<li><p>user generated forcing data from using coupler history files
+used to spinup relevant prognostic components (for CESM this is CLM, POP and CISM)</p></li>
+<li><p>streams: CPLHISTForcing.Solar,CPLHISTForcing.nonSolarFlux,</p></li>
+<li><p>datamode: CPLHIST</p></li>
+</ul>
+</dd>
+</dl>
+</section>
+</section>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="docn.html" class="btn btn-neutral float-right" title="5. Data Ocean (DOCN)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="design_details.html" class="btn btn-neutral" title="3. Design Details" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, U.S. National Science Foundation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+     
+<script>var version_json_loc = "../../versions.json";</script>
+
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+        <script src="_static/pop_ver.js"></script>
+    
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -1,0 +1,556 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>3. Design Details &mdash; CDEPS master documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="CDEPS master documentation" href="index.html"/>
+        <link rel="next" title="4. Data Atmosphere (DATM)" href="datm.html"/>
+        <link rel="prev" title="2. Input Streams" href="streams.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> CDEPS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                
+                  <div class="version-dropdown">
+                    <select class="version-list" id="version-list">
+                      <option value=''>master</option>
+                      
+                        
+                      
+                        
+                          <option value="">[placeholder]</option>
+                        
+                      
+                    </select>
+                  </div>
+                
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="streams.html">2. Input Streams</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">3. Design Details</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#data-model-performance">3.1. Data Model Performance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#i-o-through-data-models">3.2. I/O Through Data Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#i-o-through-data-models-in-cime-ccs">3.3. I/O Through Data Models In CIME-CCS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#restart-files">3.4. Restart Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#stream-modules">3.5. Stream Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#stream-datatypes">3.6. Stream Datatypes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="datm.html">4. Data Atmosphere (DATM)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docn.html">5. Data Ocean (DOCN)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dice.html">6. Data Ice (DICE)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dlnd.html">7. Data Land (DLND)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="drof.html">8. Data Runoff (DROF)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dwav.html">9. Data Wave (DWAV)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extending.html">10. Extending CDEPS</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">CDEPS</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li><span class="section-number">3. </span>Design Details</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/design_details.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <section id="design-details">
+<span id="id1"></span><h1><span class="section-number">3. </span>Design Details<a class="headerlink" href="#design-details" title="Permalink to this heading">¶</a></h1>
+<section id="data-model-performance">
+<h2><span class="section-number">3.1. </span>Data Model Performance<a class="headerlink" href="#data-model-performance" title="Permalink to this heading">¶</a></h2>
+<p>There are two primary costs associated with CDEPS share code: reading data and spatially mapping data.
+Time interpolation is relatively cheap in the current implementation.
+As much as possible, redundant operations are minimized.
+The upper and lower bound mapped input data is saved between time steps to reduce mapping costs in cases where data is time interpolated more often than new data is read.
+If the input data timestep is relatively small (for example, hourly data as opposed to daily or monthly data) the cost of reading input data can be quite large.
+Also, there can be significant variation in cost of the data model over the coarse of the run, for instance, when new inputdata must be read and interpolated, although it’s relatively predictable.
+The present implementation doesn’t support changing the order of operations, for instance, time interpolating the data before spatial mapping.
+Because the present computations are always linear, changing the order of operations will not fundamentally change the results.
+The present order of operations generally minimizes the mapping cost for typical data model use cases.</p>
+</section>
+<section id="i-o-through-data-models">
+<h2><span class="section-number">3.2. </span>I/O Through Data Models<a class="headerlink" href="#i-o-through-data-models" title="Permalink to this heading">¶</a></h2>
+<p>At the present time, data models can only read netcdf data, and I/O is handled through the <a class="reference external" href="https://github.com/NCAR/ParallelIO">PIO library</a> using either <a class="reference external" href="https://www.unidata.ucar.edu/software/netcdf/">netCDF</a> or <a class="reference external" href="https://parallel-netcdf.github.io">PnetCDF</a>.
+PIO can read the data either serially or in parallel in chunks that are approximately the global field size divided by the number of IO tasks.
+If PnetCDF is used through PIO, then the pnetcdf library must be included during the build of the model.</p>
+</section>
+<section id="i-o-through-data-models-in-cime-ccs">
+<h2><span class="section-number">3.3. </span>I/O Through Data Models In CIME-CCS<a class="headerlink" href="#i-o-through-data-models-in-cime-ccs" title="Permalink to this heading">¶</a></h2>
+<p>If CDEPS is used in CIME, the PnetCDF path and option is hardwired
+into the <code class="docutils literal notranslate"><span class="pre">Macros.make</span></code> file for the specific machine.  To turn on
+<code class="docutils literal notranslate"><span class="pre">PnetCDF</span></code> in the build, make sure the <code class="docutils literal notranslate"><span class="pre">Macros.make</span></code> variables
+<code class="docutils literal notranslate"><span class="pre">PNETCDF_PATH</span></code>, <code class="docutils literal notranslate"><span class="pre">INC_PNETCDF</span></code>, and <code class="docutils literal notranslate"><span class="pre">LIB_PNETCDF</span></code> are set and
+that the PIO <code class="docutils literal notranslate"><span class="pre">CONFIG_ARGS</span></code> sets the <code class="docutils literal notranslate"><span class="pre">PNETCDF_PATH</span></code> argument.</p>
+<p>The total mpi tasks that can be used for I/O is limited to the
+total number of tasks used by the data model. Often though, using
+fewer I/O tasks results in improved performance. In general,
+[io_root + (num_iotasks-1)*io_stride + 1] has to be less than the
+total number of data model tasks. In practice, PIO seems to perform
+optimally somewhere between the extremes of 1 task and all tasks,
+and is highly machine and problem dependent.</p>
+<p>Beyond just the option of selecting I/O with PIO, several namelist
+variables are available to help optimize PIO I/O performance.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The following options can be changed by using <cite>xmlchange</cite> command under
+CIME-CCS for the optimization:</p>
+<p><em>PIO_TYPENAME</em>      = It specifies PIO I/O type. The valid values can be
+<cite>netcdf</cite>, <cite>pnetcdf</cite>, <cite>netcdf4p</cite>, <cite>netcdf4c</cite>, <cite>default</cite>. For <cite>pnetcdf</cite>
+option, PIO needs to be build with PnetCDF support.</p>
+<p><em>PIO_NETCDF_FORMAT</em> = It is used when <em>PIO_TYPENAME</em> is set to <cite>netcdf</cite>
+or <cite>pnetcdf</cite>. The valid values are <cite>classic</cite>, <cite>64bit_offset</cite> and
+<cite>64bit_data</cite>. For writing/reading large amount of data <cite>64bit_data</cite>
+can be used to avoid the size constraints (variable size &lt; 4 billion elements).</p>
+<p><em>PIO_STRIDE</em>        = The distance in MPI task # between I/O tasks.</p>
+<p><em>PIO_ROOT</em>          = The first MPI task which is an I/O task. The default
+value is 1.</p>
+<p><em>PIO_NUMTASKS</em>      = The number of IO tasks must be between 1 and the
+total number of mpi tasks in the component.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Outside of the CIME CSS, following options can be provided by the top
+level ESMF config file to optimize I/O.</p>
+<p><em>pio_netcdf_format</em>   = The valid values are <cite>classic</cite>, <cite>64bit_offset</cite> and <cite>64bit_data</cite>.
+The default value is <cite>64bit_offset</cite>.</p>
+<p><em>pio_typename</em>        = The valid values are <cite>netcdf</cite>, <cite>pnetcdf</cite>, <cite>netcdf4p</cite> and <cite>netcdf4c</cite>.
+The default is <cite>netcdf</cite>.</p>
+<p><em>pio_root</em>            = The default value is 1.</p>
+<p><em>pio_stride</em>          = The default value is -99, which indicates that CDEPS will find a suitable value for it.</p>
+<p><em>pio_numiotasks</em>      = The default value is -99, which indicates that CDEPS will find a suitable value for it.</p>
+<p><em>pio_debug_level</em>     = The valid values are the numbers between 0 and 6. The default value is 0. To use
+this option, the PIO library needs to be build with <cite>–enable-logging</cite> option.</p>
+<p><em>pio_rearranger</em>      = The valid values are <cite>box</cite> and <cite>subset</cite>. The default value is <cite>box</cite>.</p>
+<p><em>pio_rearr_comm_type</em> = The valid values are <cite>p2p</cite> and <cite>coll</cite>. The default value is <cite>p2p</cite>.</p>
+<p><em>pio_rearr_comm_fcd</em>  = The valid values are <cite>2denable</cite>, <cite>io2comp</cite>, <cite>comp2io</cite> and <cite>2ddisable</cite>.
+The default value is <cite>2denable</cite>.</p>
+<p><em>pio_rearr_comm_enable_hs_comp2io</em>    = The default value is set to <cite>.true.</cite>.</p>
+<p><em>pio_rearr_comm_enable_isend_comp2io</em> = The default value is set to <cite>.false.</cite>.</p>
+<p><em>pio_rearr_comm_max_pend_req_comp2io</em> = The default value is set to 0.</p>
+<p><em>pio_rearr_comm_enable_hs_io2comp</em>    = The default value is set to <cite>.false.</cite>.</p>
+<p><em>pio_rearr_comm_enable_isend_io2comp</em> = The default value is set to <cite>.true.</cite>.</p>
+<p><em>pio_rearr_comm_max_pend_req_io2comp</em> = The default value is set to 64.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>More information related with the PIO and its optimization can be found in
+<a class="reference external" href="https://ncar.github.io/ParallelIO/users_guide.html">here</a>.</p>
+</div>
+</section>
+<section id="restart-files">
+<h2><span class="section-number">3.4. </span>Restart Files<a class="headerlink" href="#restart-files" title="Permalink to this heading">¶</a></h2>
+<p>Restart files are generated automatically by the data models. The freqency of CDEPS restart writes is controlled
+via the NUOPC attributes <code class="docutils literal notranslate"><span class="pre">restart_option</span></code> and <code class="docutils literal notranslate"><span class="pre">restart_n</span></code> specified in <code class="docutils literal notranslate"><span class="pre">ALLCOMP_attributes::</span></code> section.
+The top level configuration file is named as <cite>nems.configure</cite> for UFS Weather Model and <cite>nuopc.runconfig</cite>
+under CESM. The options that can be used in this case are:</p>
+<blockquote>
+<div><p><em>restart_dir</em>    = Directory that will be used to write restart files</p>
+<p><em>restart_n</em>      = Restart interval in the unit that is defined in <em>restart_option</em></p>
+<p><em>restart_option</em> = Unit to define restart interval. The valid values are:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>restart_option</p></th>
+<th class="head"><p>description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>none</p></td>
+<td><p>do not write any restart files</p></td>
+</tr>
+<tr class="row-odd"><td><p>never</p></td>
+<td><p>do not write any restart files</p></td>
+</tr>
+<tr class="row-even"><td><p>nsteps</p></td>
+<td><p>write files every <code class="docutils literal notranslate"><span class="pre">restart_n</span></code> mediator coupling intervals</p></td>
+</tr>
+<tr class="row-odd"><td><p>nseconds</p></td>
+<td><p>write files every <code class="docutils literal notranslate"><span class="pre">restart_n</span></code> seconds</p></td>
+</tr>
+<tr class="row-even"><td><p>nminutes</p></td>
+<td><p>write files every <code class="docutils literal notranslate"><span class="pre">restart_n</span></code> minutes</p></td>
+</tr>
+<tr class="row-odd"><td><p>nhours</p></td>
+<td><p>write files every <code class="docutils literal notranslate"><span class="pre">restart_n</span></code> hours</p></td>
+</tr>
+<tr class="row-even"><td><p>ndays</p></td>
+<td><p>write files every <code class="docutils literal notranslate"><span class="pre">restart_n</span></code> days</p></td>
+</tr>
+<tr class="row-odd"><td><p>nmonths</p></td>
+<td><p>write files every <code class="docutils literal notranslate"><span class="pre">restart_n</span></code> months</p></td>
+</tr>
+<tr class="row-even"><td><p>nyears</p></td>
+<td><p>write files every <code class="docutils literal notranslate"><span class="pre">restart_n</span></code> years</p></td>
+</tr>
+<tr class="row-odd"><td><p>monthly</p></td>
+<td><p>write files on the month boundary</p></td>
+</tr>
+<tr class="row-even"><td><p>yearly</p></td>
+<td><p>write files on the year boundary</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>The restart files must meet the CIME-CCS naming convention and an <code class="docutils literal notranslate"><span class="pre">rpointer</span></code>
+file is generated at the same time. An <code class="docutils literal notranslate"><span class="pre">rpointer</span></code> file is a <em>restart pointer</em>
+file which contains the name of the most recently created restart file.
+Normally, if restart files are read, the restart filenames are specified in
+the <code class="docutils literal notranslate"><span class="pre">rpointer</span></code> file. Optionally though, there are data model namelist
+(<code class="docutils literal notranslate"><span class="pre">d{model_name}_in</span></code>) variables such as <code class="docutils literal notranslate"><span class="pre">restfilm</span></code> to specify the restart
+filenames via namelist. If those namelist variables are set, the <code class="docutils literal notranslate"><span class="pre">rpointer</span></code>
+file will be ignored.</p>
+<p>In most cases, no restart file is required for the data models to restart i
+exactly. This is because there is no memory between timesteps in many of the
+data model science modes. If a restart file is required, it will be written
+automatically and then must be used to continue the previous run.</p>
+<p>There are separate stream restart files that only exist for performance
+reasons. A stream restart file contains information about the time axis
+of the input streams. This information helps reduce the startup costs
+associated with reading the input dataset time axis information. If a
+stream restart file is missing, the code will restart without it but may
+need to reread data from the input data files that would have been
+stored in the stream restart file. This will take extra time but will
+not impact the results.</p>
+</section>
+<section id="stream-modules">
+<span id="data-structures"></span><h2><span class="section-number">3.5. </span>Stream Modules<a class="headerlink" href="#stream-modules" title="Permalink to this heading">¶</a></h2>
+<p>The CDEPS stream code contains four modules:</p>
+<dl class="simple">
+<dt><strong>dshr_strdata_mod.F90</strong></dt><dd><p>Carries out stream IO along with the spatial and
+temporal interpolation of the stream data to the model mesh and
+model time. Initializes the module data type <code class="docutils literal notranslate"><span class="pre">shr_strdata_type</span></code>.</p>
+</dd>
+<dt><strong>dshr_stream_mod.F90</strong></dt><dd><p>Reads in the stream xml file and returns the upper and
+lower bounds of the stream data. Initializes the module data type
+<code class="docutils literal notranslate"><span class="pre">shr_stream_streamType</span></code>.</p>
+</dd>
+<dt><strong>dshr_tinterp_mod.F90</strong></dt><dd><p>Determines the time interpolation factors.</p>
+</dd>
+<dt><strong>dshr_methods_mod.F90</strong></dt><dd><p>Wrappers to ESMF such as getting a pointer to a field in a field bundle, etc.</p>
+</dd>
+</dl>
+</section>
+<section id="stream-datatypes">
+<h2><span class="section-number">3.6. </span>Stream Datatypes<a class="headerlink" href="#stream-datatypes" title="Permalink to this heading">¶</a></h2>
+<p>The most basic type, <code class="docutils literal notranslate"><span class="pre">shr_stream_fileType</span></code> is contained in
+<code class="docutils literal notranslate"><span class="pre">shr_stream_mod.F90</span></code> and specifies basic information related to a
+given stream file.</p>
+<div class="highlight-Fortran notranslate"><div class="highlight"><pre><span></span><span class="k">type </span><span class="n">shr_stream_file_type</span><span class="w"></span>
+<span class="w">   </span><span class="kt">character</span><span class="p">(</span><span class="n">CL</span><span class="p">)</span><span class="w">         </span><span class="kd">::</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">shr_stream_file_null</span><span class="w"> </span><span class="c">! the file name (full pathname)</span>
+<span class="w">   </span><span class="kt">logical</span><span class="w">               </span><span class="kd">::</span><span class="w"> </span><span class="n">haveData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w">          </span><span class="c">! has t-coord data been read in?</span>
+<span class="w">   </span><span class="kt">integer</span><span class="w">               </span><span class="kd">::</span><span class="w"> </span><span class="n">nt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w">                      </span><span class="c">! size of time dimension</span>
+<span class="w">   </span><span class="kt">integer</span><span class="w">  </span><span class="p">,</span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">date</span><span class="p">(:)</span><span class="w">                     </span><span class="c">! t-coord date: yyyymmdd</span>
+<span class="w">   </span><span class="kt">integer</span><span class="w">  </span><span class="p">,</span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">secs</span><span class="p">(:)</span><span class="w">                     </span><span class="c">! t-coord secs: elapsed on date</span>
+<span class="w">   </span><span class="k">type</span><span class="p">(</span><span class="n">file_desc_t</span><span class="p">)</span><span class="w">     </span><span class="kd">::</span><span class="w"> </span><span class="n">fileid</span><span class="w"></span>
+<span class="k">end type </span><span class="n">shr_stream_file_type</span><span class="w"></span>
+</pre></div>
+</div>
+<p>The following type, <code class="docutils literal notranslate"><span class="pre">shr_stream_streamType</span></code> contains information
+that encapsulates the information related to all files specific to a
+target stream. (see the overview of the <a class="reference internal" href="streams.html#stream-description-file"><span class="std std-ref">Data Model Stream Input</span></a>).</p>
+<div class="highlight-Fortran notranslate"><div class="highlight"><pre><span></span><span class="k">type </span><span class="n">shr_stream_streamType</span><span class="w"></span>
+<span class="w">   </span><span class="c">!private ! no public access to internal components</span>
+<span class="w">   </span><span class="k">type</span><span class="p">(</span><span class="n">iosystem_desc_t</span><span class="p">),</span><span class="w"> </span><span class="k">pointer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">pio_subsystem</span><span class="w"></span>
+<span class="w">   </span><span class="kt">integer</span><span class="w">           </span><span class="kd">::</span><span class="w"> </span><span class="n">pio_iotype</span><span class="w"></span>
+<span class="w">   </span><span class="kt">integer</span><span class="w">           </span><span class="kd">::</span><span class="w"> </span><span class="n">pio_ioformat</span><span class="w"></span>
+<span class="w">   </span><span class="kt">integer</span><span class="w">           </span><span class="kd">::</span><span class="w"> </span><span class="n">logunit</span><span class="w">                               </span><span class="c">! stdout log unit</span>
+<span class="w">   </span><span class="kt">logical</span><span class="w">           </span><span class="kd">::</span><span class="w"> </span><span class="n">init</span><span class="w">         </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w">                </span><span class="c">! has stream been initialized</span>
+<span class="w">   </span><span class="kt">integer</span><span class="w">           </span><span class="kd">::</span><span class="w"> </span><span class="n">nFiles</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w">                      </span><span class="c">! number of data files</span>
+<span class="w">   </span><span class="kt">integer</span><span class="w">           </span><span class="kd">::</span><span class="w"> </span><span class="n">yearFirst</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="w">                     </span><span class="c">! first year to use in t-axis (yyyymmdd)</span>
+<span class="w">   </span><span class="kt">integer</span><span class="w">           </span><span class="kd">::</span><span class="w"> </span><span class="n">yearLast</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="w">                     </span><span class="c">! last  year to use in t-axis (yyyymmdd)</span>
+<span class="w">   </span><span class="kt">integer</span><span class="w">           </span><span class="kd">::</span><span class="w"> </span><span class="n">yearAlign</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="w">                     </span><span class="c">! align yearFirst with this model year</span>
+<span class="w">   </span><span class="kt">character</span><span class="p">(</span><span class="n">CS</span><span class="p">)</span><span class="w">     </span><span class="kd">::</span><span class="w"> </span><span class="n">lev_dimname</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;null&#39;</span><span class="w">                 </span><span class="c">! name of vertical dimension if any</span>
+<span class="w">   </span><span class="kt">character</span><span class="p">(</span><span class="n">CS</span><span class="p">)</span><span class="w">     </span><span class="kd">::</span><span class="w"> </span><span class="n">taxMode</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="n">shr_stream_taxis_cycle</span><span class="w"> </span><span class="c">! cycling option for time axis</span>
+<span class="w">   </span><span class="kt">character</span><span class="p">(</span><span class="n">CS</span><span class="p">)</span><span class="w">     </span><span class="kd">::</span><span class="w"> </span><span class="n">tInterpAlgo</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;linear&#39;</span><span class="w">               </span><span class="c">! algorithm to use for time interpolation</span>
+<span class="w">   </span><span class="kt">character</span><span class="p">(</span><span class="n">CS</span><span class="p">)</span><span class="w">     </span><span class="kd">::</span><span class="w"> </span><span class="n">mapalgo</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;bilinear&#39;</span><span class="w">             </span><span class="c">! type of mapping - default is &#39;bilinear&#39;</span>
+<span class="w">   </span><span class="kt">character</span><span class="p">(</span><span class="n">CS</span><span class="p">)</span><span class="w">     </span><span class="kd">::</span><span class="w"> </span><span class="n">readMode</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;single&#39;</span><span class="w">               </span><span class="c">! stream read model - &#39;single&#39; or &#39;full_file&#39;</span>
+<span class="w">   </span><span class="kt">real</span><span class="p">(</span><span class="n">r8</span><span class="p">)</span><span class="w">          </span><span class="kd">::</span><span class="w"> </span><span class="n">dtlimit</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="mf">1.5_r8</span><span class="w">                 </span><span class="c">! delta time ratio limits for time interpolation</span>
+<span class="w">   </span><span class="kt">integer</span><span class="w">           </span><span class="kd">::</span><span class="w"> </span><span class="n">offset</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w">                      </span><span class="c">! offset in seconds of stream data</span>
+<span class="w">   </span><span class="kt">character</span><span class="p">(</span><span class="n">CS</span><span class="p">)</span><span class="w">     </span><span class="kd">::</span><span class="w"> </span><span class="n">calendar</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="n">shr_cal_noleap</span><span class="w">         </span><span class="c">! stream calendar (obtained from first stream data file)</span>
+<span class="w">   </span><span class="kt">character</span><span class="p">(</span><span class="n">CL</span><span class="p">)</span><span class="w">     </span><span class="kd">::</span><span class="w"> </span><span class="n">meshFile</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39; &#39;</span><span class="w">                    </span><span class="c">! filename for mesh for all fields on stream (full pathname)</span>
+<span class="w">   </span><span class="kt">integer</span><span class="w">           </span><span class="kd">::</span><span class="w"> </span><span class="n">k_lvd</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="w">                     </span><span class="c">! file/sample of least valid date</span>
+<span class="w">   </span><span class="kt">integer</span><span class="w">           </span><span class="kd">::</span><span class="w"> </span><span class="n">n_lvd</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="w">                     </span><span class="c">! file/sample of least valid date</span>
+<span class="w">   </span><span class="kt">logical</span><span class="w">           </span><span class="kd">::</span><span class="w"> </span><span class="n">found_lvd</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w">                </span><span class="c">! T &lt;=&gt; k_lvd,n_lvd have been set</span>
+<span class="w">   </span><span class="kt">integer</span><span class="w">           </span><span class="kd">::</span><span class="w"> </span><span class="n">k_gvd</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="w">                     </span><span class="c">! file/sample of greatest valid date</span>
+<span class="w">   </span><span class="kt">integer</span><span class="w">           </span><span class="kd">::</span><span class="w"> </span><span class="n">n_gvd</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="w">                     </span><span class="c">! file/sample of greatest valid date</span>
+<span class="w">   </span><span class="kt">logical</span><span class="w">           </span><span class="kd">::</span><span class="w"> </span><span class="n">found_gvd</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w">                </span><span class="c">! T &lt;=&gt; k_gvd,n_gvd have been set</span>
+<span class="w">   </span><span class="kt">logical</span><span class="w">           </span><span class="kd">::</span><span class="w"> </span><span class="n">fileopen</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w">                </span><span class="c">! is current file open</span>
+<span class="w">   </span><span class="kt">character</span><span class="p">(</span><span class="n">CL</span><span class="p">)</span><span class="w">     </span><span class="kd">::</span><span class="w"> </span><span class="n">currfile</span><span class="w">     </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39; &#39;</span><span class="w">                    </span><span class="c">! current filename</span>
+<span class="w">   </span><span class="kt">integer</span><span class="w">           </span><span class="kd">::</span><span class="w"> </span><span class="n">nvars</span><span class="w">                                 </span><span class="c">! number of stream variables</span>
+<span class="w">   </span><span class="kt">character</span><span class="p">(</span><span class="n">CL</span><span class="p">)</span><span class="w">     </span><span class="kd">::</span><span class="w"> </span><span class="n">stream_vectors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;null&#39;</span><span class="w">               </span><span class="c">! stream vectors names</span>
+<span class="w">   </span><span class="k">type</span><span class="p">(</span><span class="n">file_desc_t</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">currpioid</span><span class="w">                             </span><span class="c">! current pio file desc</span>
+<span class="w">   </span><span class="k">type</span><span class="p">(</span><span class="n">shr_stream_file_type</span><span class="p">)</span><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="k">file</span><span class="p">(:)</span><span class="w">     </span><span class="c">! filenames of stream data files (full pathname)</span>
+<span class="w">   </span><span class="k">type</span><span class="p">(</span><span class="n">shr_stream_data_variable</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">varlist</span><span class="p">(:)</span><span class="w">  </span><span class="c">! stream variable names (on file and in model)</span>
+<span class="k">end type </span><span class="n">shr_stream_streamType</span><span class="w"></span>
+</pre></div>
+</div>
+<p>Finally, the datatypes <code class="docutils literal notranslate"><span class="pre">shr_strdata_per_stream</span></code> and <code class="docutils literal notranslate"><span class="pre">shr_strdata_type</span></code>
+in <code class="docutils literal notranslate"><span class="pre">dshr_strdata_mod.F90</span></code> are at the heart of the CDEPS stream code
+and contains information for all the streams that are active for the
+target data model.</p>
+<div class="highlight-Fortran notranslate"><div class="highlight"><pre><span></span><span class="k">type </span><span class="n">shr_strdata_perstream</span><span class="w"></span>
+<span class="w">   </span><span class="kt">character</span><span class="p">(</span><span class="n">CL</span><span class="p">)</span><span class="w">                       </span><span class="kd">::</span><span class="w"> </span><span class="n">stream_meshfile</span><span class="w">                 </span><span class="c">! stream mesh file from stream txt file</span>
+<span class="w">   </span><span class="k">type</span><span class="p">(</span><span class="n">ESMF_Mesh</span><span class="p">)</span><span class="w">                     </span><span class="kd">::</span><span class="w"> </span><span class="n">stream_mesh</span><span class="w">                     </span><span class="c">! stream mesh created from stream mesh file</span>
+<span class="w">   </span><span class="k">type</span><span class="p">(</span><span class="n">io_desc_t</span><span class="p">)</span><span class="w">                     </span><span class="kd">::</span><span class="w"> </span><span class="n">stream_pio_iodesc</span><span class="w">               </span><span class="c">! stream pio descriptor</span>
+<span class="w">   </span><span class="kt">logical</span><span class="w">                             </span><span class="kd">::</span><span class="w"> </span><span class="n">stream_pio_iodesc_set</span><span class="w"> </span><span class="o">=</span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w">  </span><span class="c">! true=&gt;pio iodesc has been set</span>
+<span class="w">   </span><span class="k">type</span><span class="p">(</span><span class="n">ESMF_RouteHandle</span><span class="p">)</span><span class="w">              </span><span class="kd">::</span><span class="w"> </span><span class="n">routehandle</span><span class="w">                     </span><span class="c">! stream n -&gt; model mesh mapping</span>
+<span class="w">   </span><span class="kt">character</span><span class="p">(</span><span class="n">CL</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w">          </span><span class="kd">::</span><span class="w"> </span><span class="n">fldlist_stream</span><span class="p">(:)</span><span class="w">               </span><span class="c">! names of stream file fields</span>
+<span class="w">   </span><span class="kt">character</span><span class="p">(</span><span class="n">CL</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w">          </span><span class="kd">::</span><span class="w"> </span><span class="n">fldlist_model</span><span class="p">(:)</span><span class="w">                </span><span class="c">! names of stream model fields</span>
+<span class="w">   </span><span class="kt">integer</span><span class="w">                             </span><span class="kd">::</span><span class="w"> </span><span class="n">stream_nlev</span><span class="w">                     </span><span class="c">! number of vertical levels in stream</span>
+<span class="w">   </span><span class="kt">integer</span><span class="w">                             </span><span class="kd">::</span><span class="w"> </span><span class="n">stream_lb</span><span class="w">                       </span><span class="c">! index of the Lowerbound (LB) in fldlist_stream</span>
+<span class="w">   </span><span class="kt">integer</span><span class="w">                             </span><span class="kd">::</span><span class="w"> </span><span class="n">stream_ub</span><span class="w">                       </span><span class="c">! index of the Upperbound (UB) in fldlist_stream</span>
+<span class="w">   </span><span class="k">type</span><span class="p">(</span><span class="n">ESMF_Field</span><span class="p">)</span><span class="w">                    </span><span class="kd">::</span><span class="w"> </span><span class="n">field_stream</span><span class="w">                    </span><span class="c">! a field on the stream data domain</span>
+<span class="w">   </span><span class="k">type</span><span class="p">(</span><span class="n">ESMF_Field</span><span class="p">)</span><span class="w">                    </span><span class="kd">::</span><span class="w"> </span><span class="n">field_stream_vector</span><span class="w">             </span><span class="c">! a vector field on the stream data domain</span>
+<span class="w">   </span><span class="k">type</span><span class="p">(</span><span class="n">ESMF_FieldBundle</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">fldbun_data</span><span class="p">(:)</span><span class="w">                  </span><span class="c">! stream field bundle interpolated to model grid spatially</span>
+<span class="w">   </span><span class="k">type</span><span class="p">(</span><span class="n">ESMF_FieldBundle</span><span class="p">)</span><span class="w">              </span><span class="kd">::</span><span class="w"> </span><span class="n">fldbun_model</span><span class="w">                    </span><span class="c">! stream n field bundle interpolated to model grid and time</span>
+<span class="w">   </span><span class="kt">integer</span><span class="w">                             </span><span class="kd">::</span><span class="w"> </span><span class="n">ymdLB</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="w">                      </span><span class="c">! stream ymd lower bound</span>
+<span class="w">   </span><span class="kt">integer</span><span class="w">                             </span><span class="kd">::</span><span class="w"> </span><span class="n">todLB</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="w">                      </span><span class="c">! stream tod lower bound</span>
+<span class="w">   </span><span class="kt">integer</span><span class="w">                             </span><span class="kd">::</span><span class="w"> </span><span class="n">ymdUB</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="w">                      </span><span class="c">! stream ymd upper bound</span>
+<span class="w">   </span><span class="kt">integer</span><span class="w">                             </span><span class="kd">::</span><span class="w"> </span><span class="n">todUB</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="mi">1</span><span class="w">                      </span><span class="c">! stream tod upper bound</span>
+<span class="w">   </span><span class="kt">real</span><span class="p">(</span><span class="n">r8</span><span class="p">)</span><span class="w">                            </span><span class="kd">::</span><span class="w"> </span><span class="n">dtmin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0e30_r8</span><span class="w"></span>
+<span class="w">   </span><span class="kt">real</span><span class="p">(</span><span class="n">r8</span><span class="p">)</span><span class="w">                            </span><span class="kd">::</span><span class="w"> </span><span class="n">dtmax</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0_r8</span><span class="w"></span>
+<span class="w">   </span><span class="kt">logical</span><span class="w">                             </span><span class="kd">::</span><span class="w"> </span><span class="n">override_annual_cycle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">.</span><span class="n">false</span><span class="p">.</span><span class="w"></span>
+<span class="w">   </span><span class="k">type</span><span class="p">(</span><span class="n">ESMF_Field</span><span class="p">)</span><span class="w">                    </span><span class="kd">::</span><span class="w"> </span><span class="n">field_coszen</span><span class="w">                    </span><span class="c">! needed for coszen time interp</span>
+<span class="k">end type </span><span class="n">shr_strdata_perstream</span><span class="w"></span>
+</pre></div>
+</div>
+<div class="highlight-Fortran notranslate"><div class="highlight"><pre><span></span><span class="k">type </span><span class="n">shr_strdata_type</span><span class="w"></span>
+<span class="w">   </span><span class="k">type</span><span class="p">(</span><span class="n">shr_strdata_perstream</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">pstrm</span><span class="p">(:)</span><span class="w">              </span><span class="c">! stream info</span>
+<span class="w">   </span><span class="k">type</span><span class="p">(</span><span class="n">shr_stream_streamType</span><span class="p">),</span><span class="w"> </span><span class="k">pointer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">stream</span><span class="p">(:)</span><span class="o">=&gt;</span><span class="w"> </span><span class="nb">null</span><span class="p">()</span><span class="w">        </span><span class="c">! stream datatype</span>
+<span class="w">   </span><span class="kt">logical</span><span class="w">                        </span><span class="kd">::</span><span class="w"> </span><span class="n">mainproc</span><span class="w"></span>
+<span class="w">   </span><span class="kt">integer</span><span class="w">                        </span><span class="kd">::</span><span class="w"> </span><span class="n">io_type</span><span class="w">                         </span><span class="c">! pio info</span>
+<span class="w">   </span><span class="kt">integer</span><span class="w">                        </span><span class="kd">::</span><span class="w"> </span><span class="n">io_format</span><span class="w">                       </span><span class="c">! pio info</span>
+<span class="w">   </span><span class="kt">integer</span><span class="w">                        </span><span class="kd">::</span><span class="w"> </span><span class="n">modeldt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w">                     </span><span class="c">! model dt in seconds</span>
+<span class="w">   </span><span class="k">type</span><span class="p">(</span><span class="n">ESMF_Mesh</span><span class="p">)</span><span class="w">                </span><span class="kd">::</span><span class="w"> </span><span class="n">model_mesh</span><span class="w">                      </span><span class="c">! model mesh</span>
+<span class="w">   </span><span class="kt">real</span><span class="p">(</span><span class="n">r8</span><span class="p">),</span><span class="w"> </span><span class="k">pointer</span><span class="w">              </span><span class="kd">::</span><span class="w"> </span><span class="n">model_lon</span><span class="p">(:)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="nb">null</span><span class="p">()</span><span class="w">          </span><span class="c">! model longitudes</span>
+<span class="w">   </span><span class="kt">real</span><span class="p">(</span><span class="n">r8</span><span class="p">),</span><span class="w"> </span><span class="k">pointer</span><span class="w">              </span><span class="kd">::</span><span class="w"> </span><span class="n">model_lat</span><span class="p">(:)</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="nb">null</span><span class="p">()</span><span class="w">          </span><span class="c">! model latitudes</span>
+<span class="w">   </span><span class="kt">integer</span><span class="w">                        </span><span class="kd">::</span><span class="w"> </span><span class="n">model_nxg</span><span class="w">                       </span><span class="c">! model global domain lon size</span>
+<span class="w">   </span><span class="kt">integer</span><span class="w">                        </span><span class="kd">::</span><span class="w"> </span><span class="n">model_nyg</span><span class="w">                       </span><span class="c">! model global domain lat size</span>
+<span class="w">   </span><span class="kt">integer</span><span class="w">                        </span><span class="kd">::</span><span class="w"> </span><span class="n">model_nzg</span><span class="w">                       </span><span class="c">! model global domain vertical size</span>
+<span class="w">   </span><span class="kt">integer</span><span class="w">                        </span><span class="kd">::</span><span class="w"> </span><span class="n">model_lsize</span><span class="w">                     </span><span class="c">! model local domain size</span>
+<span class="w">   </span><span class="kt">integer</span><span class="p">,</span><span class="w"> </span><span class="k">pointer</span><span class="w">               </span><span class="kd">::</span><span class="w"> </span><span class="n">model_gindex</span><span class="p">(:)</span><span class="w">                 </span><span class="c">! model global index spzce</span>
+<span class="w">   </span><span class="kt">integer</span><span class="w">                        </span><span class="kd">::</span><span class="w"> </span><span class="n">model_gsize</span><span class="w">                     </span><span class="c">! model global domain size</span>
+<span class="w">   </span><span class="k">type</span><span class="p">(</span><span class="n">ESMF_CLock</span><span class="p">)</span><span class="w">               </span><span class="kd">::</span><span class="w"> </span><span class="n">model_clock</span><span class="w">                     </span><span class="c">! model clock</span>
+<span class="w">   </span><span class="kt">character</span><span class="p">(</span><span class="n">CL</span><span class="p">)</span><span class="w">                  </span><span class="kd">::</span><span class="w"> </span><span class="n">model_calendar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">shr_cal_noleap</span><span class="w"> </span><span class="c">! model calendar for ymd,tod</span>
+<span class="w">   </span><span class="kt">integer</span><span class="w">                        </span><span class="kd">::</span><span class="w"> </span><span class="n">ymd</span><span class="p">,</span><span class="w"> </span><span class="n">tod</span><span class="w">                        </span><span class="c">! model time</span>
+<span class="w">   </span><span class="k">type</span><span class="p">(</span><span class="n">iosystem_desc_t</span><span class="p">),</span><span class="w"> </span><span class="k">pointer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">pio_subsystem</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="nb">null</span><span class="p">()</span><span class="w">         </span><span class="c">! pio info</span>
+<span class="w">   </span><span class="kt">real</span><span class="p">(</span><span class="n">r8</span><span class="p">)</span><span class="w">                       </span><span class="kd">::</span><span class="w"> </span><span class="n">eccen</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">SHR_ORB_UNDEF_REAL</span><span class="w">     </span><span class="c">! cosz t-interp info</span>
+<span class="w">   </span><span class="kt">real</span><span class="p">(</span><span class="n">r8</span><span class="p">)</span><span class="w">                       </span><span class="kd">::</span><span class="w"> </span><span class="n">mvelpp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SHR_ORB_UNDEF_REAL</span><span class="w">     </span><span class="c">! cosz t-interp info</span>
+<span class="w">   </span><span class="kt">real</span><span class="p">(</span><span class="n">r8</span><span class="p">)</span><span class="w">                       </span><span class="kd">::</span><span class="w"> </span><span class="n">lambm0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SHR_ORB_UNDEF_REAL</span><span class="w">     </span><span class="c">! cosz t-interp info</span>
+<span class="w">   </span><span class="kt">real</span><span class="p">(</span><span class="n">r8</span><span class="p">)</span><span class="w">                       </span><span class="kd">::</span><span class="w"> </span><span class="n">obliqr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SHR_ORB_UNDEF_REAL</span><span class="w">     </span><span class="c">! cosz t-interp info</span>
+<span class="w">   </span><span class="kt">real</span><span class="p">(</span><span class="n">r8</span><span class="p">),</span><span class="w"> </span><span class="k">allocatable</span><span class="w">          </span><span class="kd">::</span><span class="w"> </span><span class="n">tavCoszen</span><span class="p">(:)</span><span class="w">                    </span><span class="c">! cosz t-interp data</span>
+<span class="k">end type </span><span class="n">shr_strdata_type</span><span class="w"></span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="datm.html" class="btn btn-neutral float-right" title="4. Data Atmosphere (DATM)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="streams.html" class="btn btn-neutral" title="2. Input Streams" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, U.S. National Science Foundation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+     
+<script>var version_json_loc = "../../versions.json";</script>
+
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+        <script src="_static/pop_ver.js"></script>
+    
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

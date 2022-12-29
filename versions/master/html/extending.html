@@ -1,0 +1,480 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>10. Extending CDEPS &mdash; CDEPS master documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="CDEPS master documentation" href="index.html"/>
+        <link rel="prev" title="9. Data Wave (DWAV)" href="dwav.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> CDEPS
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                
+                  <div class="version-dropdown">
+                    <select class="version-list" id="version-list">
+                      <option value=''>master</option>
+                      
+                        
+                      
+                        
+                          <option value="">[placeholder]</option>
+                        
+                      
+                    </select>
+                  </div>
+                
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">1. Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="streams.html">2. Input Streams</a></li>
+<li class="toctree-l1"><a class="reference internal" href="design_details.html">3. Design Details</a></li>
+<li class="toctree-l1"><a class="reference internal" href="datm.html">4. Data Atmosphere (DATM)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docn.html">5. Data Ocean (DOCN)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dice.html">6. Data Ice (DICE)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dlnd.html">7. Data Land (DLND)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="drof.html">8. Data Runoff (DROF)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dwav.html">9. Data Wave (DWAV)</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">10. Extending CDEPS</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#adding-new-data-mode">10.1. Adding New Data Mode</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#creating-scrip-file">10.1.1. Creating SCRIP File</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#creating-esmf-mesh-file">10.1.2. Creating ESMF Mesh File</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#creating-new-fortran-module">10.1.3. Creating New Fortran Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#adding-new-data-mode-to-data-component">10.1.4. Adding New Data Mode to Data Component</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">CDEPS</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li><span class="section-number">10. </span>Extending CDEPS</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/extending.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <section id="extending-cdeps">
+<span id="id1"></span><h1><span class="section-number">10. </span>Extending CDEPS<a class="headerlink" href="#extending-cdeps" title="Permalink to this heading">¶</a></h1>
+<section id="adding-new-data-mode">
+<span id="adding-datamodes"></span><h2><span class="section-number">10.1. </span>Adding New Data Mode<a class="headerlink" href="#adding-new-data-mode" title="Permalink to this heading">¶</a></h2>
+<p>While, the existing <code class="docutils literal notranslate"><span class="pre">copyall</span></code> data modes can be used to bring
+new data streams easily to the CDEPS, the more complex data
+streams might need to create a new data mode. For example, bringing
+new data mode to the DATM might involve calculating added value
+fields such as humidity from temperature, pressure and dew point
+temperature or wind speed from wind components.</p>
+<p>Adding new data mode to the existing data components
+involve multiple steps:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>Creating ESMF mesh file for data stream</p></li>
+<li><p>Creating new Fortran module file for new data mode</p></li>
+<li><p>Adding New Data Mode to Data Component</p></li>
+</ol>
+</div></blockquote>
+<section id="creating-scrip-file">
+<span id="create-scrip"></span><h3><span class="section-number">10.1.1. </span>Creating SCRIP File<a class="headerlink" href="#creating-scrip-file" title="Permalink to this heading">¶</a></h3>
+<p>The easiest way to create ESMF Mesh file is to use the
+<code class="docutils literal notranslate"><span class="pre">ESMF_Scrip2Unstruct</span></code> application. The application is a parallel
+program that converts a <a class="reference external" href="http://earthsystemmodeling.org/docs/nightly/develop/ESMF_refdoc/node3.html#sec:fileformat:scrip">SCRIP format grid file</a>
+into an unstructured grid file in the <a class="reference external" href="http://earthsystemmodeling.org/docs/nightly/develop/ESMF_refdoc/node3.html#sec:fileformat:esmf">ESMF unstructured file format</a> or in the <a class="reference external" href="http://earthsystemmodeling.org/docs/nightly/develop/ESMF_refdoc/node3.html#sec:fileformat:ugrid">UGRID file format</a>.</p>
+<p>To use <code class="docutils literal notranslate"><span class="pre">ESMF_Scrip2Unstruct</span></code> application, SCRIP or UGRID format grid files need
+to be created first by using coordinate information found in the stream data
+files. The SCRIP format grid file can be created using existing tools such
+as <a class="reference external" href="https://nco.sourceforge.net">netCDF Operator (NCO)</a> and <a class="reference external" href="https://www.ncl.ucar.edu">NCAR Command
+Language (NCL)</a> while UGRID format requires to
+develop a custom tool to generate.</p>
+<p>For more sophisticated mesh definitions such as unstructured grids and
+the polygons with more sides, SCRIP format grid file or ESMF Mesh file
+needs to be directly created by developing custom tool by following the
+exiting convention that is used to define SCRIP and ESMF Mesh file formats.</p>
+<p id="create-scrip-nco"><code class="docutils literal notranslate"><span class="pre">netCDF</span> <span class="pre">Operator</span> <span class="pre">(NCO)</span></code></p>
+<p>The <a class="reference external" href="https://nco.sourceforge.net/nco.html#ncks-netCDF-Kitchen-Sink">ncks</a>
+command provided by <code class="docutils literal notranslate"><span class="pre">NCO</span></code> generates accurate and complete SCRIP-format
+gridfiles for select grid types, including uniform, capped and Gaussian
+rectangular, latitude/longitude grids, global or regional. In this case, the grids
+are stored in an external grid-file. The more information and examples can be
+found in <a class="reference external" href="https://nco.sourceforge.net/nco.html#Grid-Generation">here</a>.</p>
+<p>As an example, a SCRIP grid definition file for <a class="reference external" href="https://www.mmm.ucar.edu/models/wrf">Weather Research &amp; Forecasting
+Model (WRF)</a> can be created using
+following command:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">ncks --rgr infer --rgr scrip=wrfinput_d01_scrip.nc wrfinput_d01_2d_lat_lon.nc wrfinput_d01_foo.nc</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">wrfinput_d01_scrip.nc</span></code> is the output file (in SCRIP format),
+<code class="docutils literal notranslate"><span class="pre">wrfinput_d01_2d_lat_lon.nc</span></code> is the input file with the 2d grid information,
+and <code class="docutils literal notranslate"><span class="pre">wrfinput_d01_foo.nc</span></code> is an output file containing metadata. In this case,
+<code class="docutils literal notranslate"><span class="pre">wrfinput_d01_2d_lat_lon.nc</span></code> needs to be created from origial WRF input file
+by following netCDF <a class="reference external" href="https://cfconventions.org">CF conventions</a>.</p>
+<p>The following example also creates SCRIP grid file using <a class="reference external" href="https://nco.sourceforge.net/nco.html#ncremap-netCDF-Remapper">ncremap</a>.
+command without providing any input file:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">ncremap -g glo_30m.SCRIP.nc -G latlon=321,720#snwe=-80.25,80.25,-0.25,359.75#lat_typ=uni#lat_drc=s2n</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">glo_30m.SCRIP.nc</span></code> is the output file, <code class="docutils literal notranslate"><span class="pre">-G</span></code> options indicates that
+the command will create the gridfile in SCRIP format, <code class="docutils literal notranslate"><span class="pre">latlon</span></code> is used
+to indicate the size of latitude and longitude coordinates, <code class="docutils literal notranslate"><span class="pre">snwe</span></code> option specifies the
+the outer edges of a regional rectangular grid, <code class="docutils literal notranslate"><span class="pre">lat_typ</span></code> option is used to
+define grid type (<code class="docutils literal notranslate"><span class="pre">uni</span></code> is used for global and uniform grids) and
+<code class="docutils literal notranslate"><span class="pre">lat_drc</span></code> option specifies whether latitudes monotonically increase
+or decrease in rectangular grids (<code class="docutils literal notranslate"><span class="pre">s2n</span></code> for grids that begin with the
+most southerly latitude).</p>
+<p id="create-scrip-ncl"><code class="docutils literal notranslate"><span class="pre">NCAR</span> <span class="pre">Command</span> <span class="pre">Language</span> <span class="pre">(NCL)</span></code></p>
+<p>The NCL way of creating SCRIP grid definition file requires additional
+development to represent stream data grid information. In this case, NCL
+provides set of functions to get grid coordinates as input to create
+SCRIP grid definition file. These functions are listed as follows:</p>
+<dl class="simple">
+<dt><a class="reference external" href="https://www.ncl.ucar.edu/Document/Functions/ESMF/latlon_to_SCRIP.shtml"><strong>latlon_to_SCRIP</strong></a></dt><dd><p>This procedure writes the description of the requested lat/lon
+grid to a netCDF SCRIP output file. It does not get any input arguments
+related to the coordinates but generates them internally based on given
+<cite>grid_type</cite> option (“1deg”, “0.25deg”, etc).</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt><a class="reference external" href="https://www.ncl.ucar.edu/Document/Functions/ESMF/rectilinear_to_SCRIP.shtml"><strong>rectilinear_to_SCRIP</strong></a></dt><dd><p>This procedure writes the description of a rectilinear grid,
+given the 1D coordinate lat/lon arrays, to a netCDF SCRIP file.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt><a class="reference external" href="https://www.ncl.ucar.edu/Document/Functions/ESMF/curvilinear_to_SCRIP.shtml"><strong>curvilinear_to_SCRIP</strong></a></dt><dd><p>This procedure writes the description of a curvilinear grid
+to a NetCDF SCRIP file, given the 2D lat/lon arrays.</p>
+</dd>
+</dl>
+<p>A simple code snippets that demonstrates the usage of NCL provided
+routines to create ESMF mesh file can be seen in the following example:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">;--- open file and read variables ---</span>
+<span class="go">ncGrdFilePath = &quot;domain.nc&quot;</span>
+<span class="go">grd_file = addfile(ncGrdFilePath,&quot;r&quot;)</span>
+<span class="go">lon = grd_file-&gt;lon</span>
+<span class="go">lat = grd_file-&gt;lat</span>
+
+<span class="go">;--- set options for SCRIP generation ---</span>
+<span class="go">opt = True</span>
+<span class="go">opt@ForceOverwrite = True</span>
+<span class="go">opt@NetCDFType = &quot;netcdf4&quot;</span>
+<span class="go">opt@Title = &quot;Global Grid&quot;</span>
+
+<span class="go">;--- generate SCRIP file ---</span>
+<span class="go">dstGridPath = &quot;SCRIP.nc&quot;</span>
+<span class="go">rectilinear_to_SCRIP(dstGridPath, lat, lon, opt)</span>
+</pre></div>
+</div>
+<p>To add area field to the SCRIP file:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">;--- add area to SCRIP file ---</span>
+<span class="go">scripFile = addfile(&quot;scrip.nc&quot;, &quot;w&quot;)</span>
+
+<span class="go">grid_size = dimsizes(scripFile-&gt;grid_center_lat)</span>
+<span class="go">grid_area = new(grid_size,double)</span>
+<span class="go">grid_area!0 = &quot;grid_size&quot;</span>
+
+<span class="go">do i = 0,grid_size-1</span>
+<span class="go">  temp_tlat = (/ scripFile-&gt;grid_corner_lat(i,3), \</span>
+<span class="go">            scripFile-&gt;grid_corner_lat(i,1), \</span>
+<span class="go">            scripFile-&gt;grid_corner_lat(i,0), \</span>
+<span class="go">            scripFile-&gt;grid_corner_lat(i,2)    /)</span>
+<span class="go">  temp_tlon = (/ scripFile-&gt;grid_corner_lon(i,3), \</span>
+<span class="go">            scripFile-&gt;grid_corner_lon(i,1), \</span>
+<span class="go">            scripFile-&gt;grid_corner_lon(i,0), \</span>
+<span class="go">            scripFile-&gt;grid_corner_lon(i,2)    /)</span>
+<span class="go">  grid_area(i) = area_poly_sphere(temp_tlat, temp_tlon, 1)</span>
+<span class="go">end do</span>
+
+<span class="go">scripFile-&gt;grid_area = (/ grid_area /)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The NCL project is feature frozen. The next generation
+Python tool is now underway, and more information about Geoscience
+Community Analysis Toolkit (GeoCAT) project can be found in the
+following <a class="reference external" href="https://geocat.ucar.edu">site</a>.</p>
+</div>
+</section>
+<section id="creating-esmf-mesh-file">
+<span id="create-mesh"></span><h3><span class="section-number">10.1.2. </span>Creating ESMF Mesh File<a class="headerlink" href="#creating-esmf-mesh-file" title="Permalink to this heading">¶</a></h3>
+<p>Once SCRIP grid definition file is created, the ESMF mesh file can
+be created using following command:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">ESMF_Scrip2Unstruct input_SCRIP.nc output_ESMFmesh.nc 0</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">input_SCRIP.nc</span></code> is the input SCRIP grid file and
+<code class="docutils literal notranslate"><span class="pre">output_ESMFmesh.nc</span></code> is the ESMF mesh file.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Creating SCRIP grid definition file and ESMF mesh file could
+be very memory intensive in case of creating file for very
+high-resolution global grids like <a class="reference external" href="https://www.ghrsst.org">GHRSST</a>
+dataset (0.01 deg.).</p>
+<p>In this case, NCL way could fail due to the memory usage since
+the process is not parallel and can not be distributed to multiple
+nodes. The workaround could be generating SCRIP and ESMF mesh file
+for smaller domains or just for the region of interest. In some
+cases taking advantage of parallelization in <code class="docutils literal notranslate"><span class="pre">ESMF_Scrip2Unstruct</span></code>
+might help but the current implementation of <code class="docutils literal notranslate"><span class="pre">ESMF_Scrip2Unstruct</span></code>
+requires reading whole coordinate information in each MPI task and
+This could prevent scaling of the job in terms of its memory usage.</p>
+</div>
+</section>
+<section id="creating-new-fortran-module">
+<span id="create-fortran-module"></span><h3><span class="section-number">10.1.3. </span>Creating New Fortran Module<a class="headerlink" href="#creating-new-fortran-module" title="Permalink to this heading">¶</a></h3>
+<p>The existing date mode specific Fortran module files can be used
+as a reference to create a new data mode. As an example,
+existing <a class="reference external" href="https://github.com/ESCOMP/CDEPS/blob/master/datm/datm_datamode_clmncep_mod.F90">clmncep</a> data mode under DATM can
+be used for this purpose.</p>
+<p>In <code class="docutils literal notranslate"><span class="pre">datm_datamode_clmncep_mod.F90</span></code>, there are five main routines:</p>
+<dl class="simple">
+<dt><strong>datm_datamode_clmncep_advertise()</strong></dt><dd><p>This routine advertises a field in a state. In this case, an empty
+field is created and added to the state through use of ESMF/NUOPC
+provided <code class="docutils literal notranslate"><span class="pre">NUOPC_Advertise()</span></code> call. The <code class="docutils literal notranslate"><span class="pre">dshr_fldList_add()</span></code> is a
+generic routine defined under <code class="docutils literal notranslate"><span class="pre">dshr/dshr_fldlist_mod.F90</span></code> and
+populates the internal data structure.</p>
+</dd>
+<dt><strong>datm_datamode_clmncep_init_pointers()</strong></dt><dd><p>This routine initializes pointers for module level stream arrays.
+It provides flexibility to access data pointer in actual stream
+data file (<a class="reference external" href="https://github.com/ESCOMP/CDEPS/blob/master/streams/dshr_strdata_mod.F90#L75">shr_strdata_get_stream_pointer()</a>) as
+well as ESMF Fields (<a class="reference external" href="https://github.com/ESCOMP/CDEPS/blob/master/streams/dshr_methods_mod.F90">dshr_state_getfldptr()</a>).
+The flexibility of checking the fields in the stream data file
+allows control the behaviour of the data mode based on different
+conditions. In this routine, it is also possible to access
+data provided by other model components to support interaction
+with other components like prognostic mode defined in this mode.</p>
+</dd>
+<dt><strong>datm_datamode_clmncep_advance()</strong></dt><dd><p>This routine is called every time when the data component needs
+to provide the data to other components. It also includes custom
+calculations like limiting temperature field, calculating
+specific humidity or downward longwave and applying unit
+conversions.</p>
+</dd>
+<dt><strong>datm_datamode_clmncep_restart_write()</strong></dt><dd><p>This routine is used to write restart information to data model
+specific restart file through the use of <a class="reference external" href="https://github.com/ESCOMP/CDEPS/blob/master/dshr/dshr_mod.F90">dshr_restart_write()</a>
+call.</p>
+</dd>
+<dt><strong>datm_datamode_clmncep_restart_read()</strong></dt><dd><p>This routine is used to read restart information from data model
+specific restart file through the use of <a class="reference external" href="https://github.com/ESCOMP/CDEPS/blob/master/dshr/dshr_mod.F90">dshr_restart_read()</a>
+call.</p>
+</dd>
+</dl>
+</section>
+<section id="adding-new-data-mode-to-data-component">
+<span id="adding-new-datamode"></span><h3><span class="section-number">10.1.4. </span>Adding New Data Mode to Data Component<a class="headerlink" href="#adding-new-data-mode-to-data-component" title="Permalink to this heading">¶</a></h3>
+<p>The data modes are defined in data component specific Fortran modules
+named as <code class="docutils literal notranslate"><span class="pre">CDEPS/d[model_name]/[model_name]_comp_nuopc.F90</span></code> where
+<code class="docutils literal notranslate"><span class="pre">model_name</span></code> can be <code class="docutils literal notranslate"><span class="pre">atm</span></code>, <code class="docutils literal notranslate"><span class="pre">ice</span></code>, <code class="docutils literal notranslate"><span class="pre">lnd</span></code>, <code class="docutils literal notranslate"><span class="pre">ocn</span></code>, <code class="docutils literal notranslate"><span class="pre">rof</span></code>
+or <code class="docutils literal notranslate"><span class="pre">wav</span></code>. In the <code class="docutils literal notranslate"><span class="pre">clmncep</span></code> example, the data mode is defined in
+<code class="docutils literal notranslate"><span class="pre">CDEPS/datm/atm_comp_nuopc.F90</span></code> and DATM component <a class="reference external" href="https://github.com/ESCOMP/CDEPS/blob/master/datm/atm_comp_nuopc.F90#L315">calls different
+routine</a> based on selected <code class="docutils literal notranslate"><span class="pre">datamode</span></code> argument
+in the <code class="docutils literal notranslate"><span class="pre">[model_name]_in</span></code> namelist file.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="dwav.html" class="btn btn-neutral" title="9. Data Wave (DWAV)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, U.S. National Science Foundation.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+     
+<script>var version_json_loc = "../../versions.json";</script>
+
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+        <script src="_static/pop_ver.js"></script>
+    
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
