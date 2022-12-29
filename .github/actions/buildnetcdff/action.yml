@@ -23,7 +23,7 @@ runs:
       with:
         repository: Unidata/netcdf-fortran
         path: netcdf-fortran-src
-        ref: ${{ env.NETCDF_FORTRAN_VERSION }}
+        ref: ${{ inputs.NETCDF_FORTRAN_VERSION }}
     - id: netcdf-fortran-build
       shell: bash
       run: |
