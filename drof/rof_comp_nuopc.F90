@@ -8,7 +8,7 @@ module cdeps_drof_comp
   !----------------------------------------------------------------------------
   ! This is the NUOPC cap for DROF
   !----------------------------------------------------------------------------
-  use ESMF             , only : ESMF_VM, ESMF_VMBroadcast
+  use ESMF             , only : ESMF_VM, ESMF_VMBroadcast, ESMF_GridCompGet
   use ESMF             , only : ESMF_Mesh, ESMF_GridComp, ESMF_Time, ESMF_TimeInterval
   use ESMF             , only : ESMF_State, ESMF_Clock, ESMF_SUCCESS, ESMF_LOGMSG_INFO
   use ESMF             , only : ESMF_TraceRegionEnter, ESMF_TraceRegionExit

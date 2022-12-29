@@ -205,7 +205,7 @@ contains
        rtmp(1) = maxval(strm_mask(:))
        call ESMF_VMAllReduce(vm, rtmp, rtmp(2:), 1, ESMF_REDUCE_MAX, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       maxkmax = rtmp(2)
+       maskmax = rtmp(2)
        if (mainproc) write(logunit,*) trim(subname),' maskmax = ',maskmax
 
        ! reset first_time

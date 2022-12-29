@@ -17,7 +17,7 @@ module cdeps_datm_comp
   use ESMF             , only : operator(+), ESMF_TimeIntervalGet, ESMF_ClockGetAlarm
   use ESMF             , only : ESMF_AlarmIsRinging, ESMF_AlarmRingerOff, ESMF_StateGet
   use ESMF             , only : ESMF_FieldGet, ESMF_MAXSTR, ESMF_VMBroadcast
-  use ESMF             , only : ESMF_TraceRegionEnter, ESMF_TraceRegionExit
+  use ESMF             , only : ESMF_TraceRegionEnter, ESMF_TraceRegionExit, ESMF_GridCompGet
   use NUOPC            , only : NUOPC_CompDerive, NUOPC_CompSetEntryPoint, NUOPC_CompSpecialize
   use NUOPC            , only : NUOPC_CompAttributeGet, NUOPC_Advertise
   use NUOPC_Model      , only : model_routine_SS        => SetServices
@@ -232,7 +232,7 @@ contains
 
     namelist / datm_nml / &
          datamode, &
-         model_meshfile,
+         model_meshfile, &
          model_maskfile, &
          nx_global, &
          ny_global, &

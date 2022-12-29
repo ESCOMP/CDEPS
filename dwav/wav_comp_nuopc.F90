@@ -7,7 +7,7 @@ module cdeps_dwav_comp
   !----------------------------------------------------------------------------
   ! This is the NUOPC cap for DWAV
   !----------------------------------------------------------------------------
-  use ESMF             , only : ESMF_VM, ESMF_VMBroadcast
+  use ESMF             , only : ESMF_VM, ESMF_VMBroadcast, ESMF_GridCompGet
   use ESMF             , only : ESMF_SUCCESS, ESMF_TraceRegionExit, ESMF_TraceRegionEnter
   use ESMF             , only : ESMF_State, ESMF_Clock, ESMF_Alarm, ESMF_LogWrite, ESMF_Time
   use ESMF             , only : ESMF_ClockGetAlarm, ESMF_LOGMSG_INFO

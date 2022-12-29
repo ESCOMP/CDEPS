@@ -7,7 +7,7 @@ module cdeps_docn_comp
   !----------------------------------------------------------------------------
   ! This is the NUOPC cap for DOCN
   !----------------------------------------------------------------------------
-  use ESMF             , only : ESMF_VM, ESMF_VMBroadcast
+  use ESMF             , only : ESMF_VM, ESMF_VMBroadcast, ESMF_GridCompGet
   use ESMF             , only : ESMF_Mesh, ESMF_GridComp, ESMF_State, ESMF_Clock, ESMF_Time
   use ESMF             , only : ESMF_SUCCESS, ESMF_LogWrite, ESMF_LOGMSG_INFO, ESMF_METHOD_INITIALIZE
   use ESMF             , only : ESMF_TraceRegionEnter, ESMF_TraceRegionExit, ESMF_ClockGet

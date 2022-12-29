@@ -8,7 +8,7 @@ module cdeps_dice_comp
   ! This is the NUOPC cap for DICE
   !----------------------------------------------------------------------------
 
-  use ESMF                 , only : ESMF_VM, ESMF_VMBroadcast
+  use ESMF                 , only : ESMF_VM, ESMF_VMBroadcast, ESMF_GridCompGet
   use ESMF                 , only : ESMF_Mesh, ESMF_GridComp, ESMF_State, ESMF_Clock
   use ESMF                 , only : ESMF_SUCCESS, ESMF_Time, ESMF_LogWrite, ESMF_LOGMSG_INFO
   use ESMF                 , only : ESMF_TraceRegionEnter, ESMF_TraceRegionExit
