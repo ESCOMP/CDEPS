@@ -150,7 +150,7 @@ the ``rpointer`` file. Optionally though, there are data model namelist
 filenames via namelist. If those namelist variables are set, the ``rpointer`` 
 file will be ignored.
 
-In most cases, no restart file is required for the data models to restart i
+In most cases, no restart file is required for the data models to restart 
 exactly. This is because there is no memory between timesteps in many of the 
 data model science modes. If a restart file is required, it will be written 
 automatically and then must be used to continue the previous run.
