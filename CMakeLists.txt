@@ -90,8 +90,10 @@ target_include_directories(dshr PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_
                                        $<INSTALL_INTERFACE:mod>)
 
 foreach(COMP datm dice dlnd docn drof dwav)
-#  target_include_directories(${COMP} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/share>
-#                                            $<INSTALL_INTERFACE:mod>)
+  if(BLD_STANDALONE)
+    target_include_directories(${COMP} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/share>
+                                            $<INSTALL_INTERFACE:mod>)
+  endif()
   target_include_directories(${COMP} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/streams>
                                             $<INSTALL_INTERFACE:mod>)
   target_include_directories(${COMP} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/dshr>

@@ -73,7 +73,8 @@ jobs:
           parallelio_version: ${{ env.ParallelIO_VERSION }}
           enable_fortran: True
           install_prefix: $HOME/pio
-      - id: cache-esmf
+      - name: Cache ESMF
+        id: cache-esmf
         uses: actions/cache@v3
         with:
           path: ~/ESMF
