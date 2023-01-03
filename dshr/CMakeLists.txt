@@ -15,6 +15,7 @@ add_library(dshr ${SRCFILES})
 
 if(BLD_STANDALONE)
   add_dependencies(dshr cdeps_share)
+  target_include_directories (streams PRIVATE ${CMAKE_BINARY_DIR}/share)
 endif()
 add_dependencies(dshr streams)
 
