@@ -97,6 +97,6 @@ jobs:
           export SRC_ROOT=
           mkdir build-cdeps
           pushd build-cdeps
-          cmake -Wno-dev -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_Fortran_FLAGS="-DCPRGNU -g -Wall -ffree-form -ffree-line-length-none -fallow-argument-mismatch -fno-unused-dummy-argument " ../
+          cmake -Wno-dev -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_Fortran_FLAGS="-DCPRGNU -g -Wall -ffree-form -ffree-line-length-none -fallow-argument-mismatch -Wno-unused-dummy-argument " ../
           make VERBOSE=1
           popd
