@@ -12,7 +12,7 @@ foreach(FILE ${SRCFILES})
   endif()
 endforeach()
 add_library(dshr ${SRCFILES})
-
+message("here BLD_STANDALONE is ${BLD_STANDALONE}")
 if(BLD_STANDALONE)
   add_dependencies(dshr cdeps_share)
   target_include_directories (streams PRIVATE ${CMAKE_BINARY_DIR}/share)
