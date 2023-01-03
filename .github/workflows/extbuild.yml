@@ -30,31 +30,36 @@ jobs:
       - id: load-env
         run: |
           sudo apt-get update
-          sudo apt-get install gfortran wget openmpi-bin netcdf-bin libopenmpi-dev libnetcdf-dev autotools-dev autoconf
-      - id: cache-pnetcdf
-        uses: actions/cache@v3
-        with:
-          path: ~/pnetcdf
-          key: ${{ runner.os }}-${{ env.PNETCDF_VERSION}}-pnetcdf1
-      - name: Build PNetCDF
-        if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
-        uses: ./.github/actions/buildpnetcdf
-        with:
-          pnetcdf_version: ${{ env.PNETCDF_VERSION }}
-          install_prefix: $HOME/pnetcdf
-      - name: Cache netcdf-fortran
-        id: cache-netcdf-fortran
-        uses: actions/cache@v3
-        with:
-          path: ~/netcdf-fortran
-          key: ${{ runner.os }}-${{ env.NETCDF_FORTRAN_VERSION }}-netcdf-fortran1
-      - name: Build NetCDF Fortran
-        if: steps.cache-netcdf-fortran.outputs.cache-hit != 'true'
-        uses: ./.github/actions/buildnetcdff
-        with:
-          netcdf_fortran_version: ${{ env.NETCDF_FORTRAN_VERSION }}
-          install_prefix: $HOME/netcdf-fortran
-          netcdf_c_path: /usr
+          sudo apt-get install gfortran
+          sudo apt-get install wget
+          sudo apt-get install openmpi-bin libopenmpi-dev
+          sudo apt-get install netcdf-bin libnetcdf-dev libnetcdff-dev
+          sudo apt-get install pnetcdf-bin libpnetcdf-dev
+          sudo apt-get install autotools-dev autoconf
+      # - id: cache-pnetcdf
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: ~/pnetcdf
+      #     key: ${{ runner.os }}-${{ env.PNETCDF_VERSION}}-pnetcdf1
+      # - name: Build PNetCDF
+      #   if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
+      #   uses: ./.github/actions/buildpnetcdf
+      #   with:
+      #     pnetcdf_version: ${{ env.PNETCDF_VERSION }}
+      #     install_prefix: $HOME/pnetcdf
+      # - name: Cache netcdf-fortran
+      #   id: cache-netcdf-fortran
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: ~/netcdf-fortran
+      #     key: ${{ runner.os }}-${{ env.NETCDF_FORTRAN_VERSION }}-netcdf-fortran1
+      # - name: Build NetCDF Fortran
+      #   if: steps.cache-netcdf-fortran.outputs.cache-hit != 'true'
+      #   uses: ./.github/actions/buildnetcdff
+      #   with:
+      #     netcdf_fortran_version: ${{ env.NETCDF_FORTRAN_VERSION }}
+      #     install_prefix: $HOME/netcdf-fortran
+      #     netcdf_c_path: /usr
       - name: Cache PARALLELIO
         id: cache-PARALLELIO
         uses: actions/cache@v3
@@ -63,12 +68,10 @@ jobs:
           key: ${{ runner.os }}-${{ env.ParallelIO_VERSION }}-parallelio
       - name: Build ParallelIO
         if: steps.cache-PARALLELIO.outputs.cache-hit != 'true'
-        uses: ./.github/actions/buildpio
+        uses: NCAR/ParallelIO/.github/actions/parallelio_cmake
         with:
           parallelio_version: ${{ env.ParallelIO_VERSION }}
-          netcdf_c_path: /usr
-          netcdf_fortran_path: $HOME/netcdf-fortran
-          pnetcdf_path: $HOME/pnetcdf
+          enable_fortran: True
           install_prefix: $HOME/pio
       - id: cache-esmf
         uses: actions/cache@v3
@@ -84,8 +87,8 @@ jobs:
           esmf_comm: openmpi
           install_prefix: $HOME/ESMF
           netcdf_c_path: /usr
-          netcdf_fortran_path: $HOME/netcdf-fortran
-          pnetcdf_path: $HOME/pnetcdf
+          netcdf_fortran_path: /usr
+          pnetcdf_path: /usr
           parallelio_path: $HOME/pio
       - name: Build CDEPS
         run: |
@@ -94,6 +97,6 @@ jobs:
           export SRC_ROOT=
           mkdir build-cdeps
           pushd build-cdeps
-          cmake -Wno-dev -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_Fortran_FLAGS="-DCPRGNU -g -Wall -ffree-form -ffree-line-length-none -fallow-argument-mismatch " ../
+          cmake -Wno-dev -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_Fortran_FLAGS="-DCPRGNU -g -Wall -ffree-form -ffree-line-length-none -fallow-argument-mismatch -fno-unused-dummy-argument " ../
           make VERBOSE=1
           popd
