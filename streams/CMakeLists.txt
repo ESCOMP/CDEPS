@@ -21,7 +21,7 @@ add_library(streams ${SRCFILES})
 add_dependencies(streams FoX_dom)
 if(BLD_STANDALONE)
   add_dependencies(streams cdeps_share)
-  target_include_directories (streams PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/../share)
+  target_include_directories (streams PRIVATE ${CMAKE_BINARY_DIR}/share)
 endif()
 
 
