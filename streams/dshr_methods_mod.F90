@@ -598,8 +598,8 @@ contains
     logical          , intent(in) :: maintask
 
     ! local variables
-    integer :: ierr
 #ifdef CESMCOUPLED
+    integer :: ierr
     integer, external :: GPTLprint_memusage
 #endif
     !-----------------------------------------------------------------------
