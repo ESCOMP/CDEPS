@@ -150,7 +150,7 @@ contains
     ! ----------------------------------------------
 
     rc = ESMF_SUCCESS
-
+    found = .false.
     allocate(dfield_new, stat=status)
     if (status /= 0) then
        write(msgstr,*)'allocation error ',__LINE__,':',__FILE__

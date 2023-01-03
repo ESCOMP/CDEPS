@@ -181,7 +181,6 @@ contains
     integer  :: n                   ! indices
     integer  :: lsize               ! size of attr vect
     real(r8) :: rtmp(2)
-    real(r8) :: tbot, pbot
     type(ESMF_VM) :: vm
     character(len=*), parameter :: subname='(datm_datamode_gefs_advance): '
     !-------------------------------------------------------------------------------

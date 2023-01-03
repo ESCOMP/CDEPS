@@ -15,15 +15,15 @@ if (DEFINED CIMEROOT)
     set(CMAKE_Fortran_COMPILER ${MPIFC})
     set(CMAKE_C_COMPILER ${MPICC})
   endif()
-  set(CMAKE_Fortran_FLAGS "${FFLAGS} ${CPPDEFS} -I${LIBROOT}/include -I${LIBROOT}/finclude -I${LIBROOT}/nuopc/esmf/${NINST_VALUE}/include")
+  set(CMAKE_Fortran_FLAGS "${FFLAGS} ${CPPDEFS} -I${LIBROOT}/include -I${LIBROOT}/nuopc/esmf/${NINST_VALUE}/include")
   add_compile_definitions(CESMCOUPLED)
   list(APPEND CMAKE_MODULE_PATH ${SRC_ROOT}/components/cdeps/cmake)
-  set(FOX_ROOT ${SRC_ROOT}/components/cdeps/fox)  
+  set(FOX_ROOT ${SRC_ROOT}/components/cdeps/fox)
 else()
   set(BLD_STANDALONE TRUE)
   project(NUOPC_DATA_MODELS LANGUAGES Fortran VERSION 0.1)
   list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
-  set(FOX_ROOT ${CMAKE_SOURCE_DIR}/fox)  
+  set(FOX_ROOT ${CMAKE_SOURCE_DIR}/fox)
 endif()
 message("CMAKE_MODULE_PATH is ${CMAKE_MODULE_PATH}, CMAKE_Fortran_COMPILER is ${CMAKE_Fortran_COMPILER}")
 enable_language(Fortran)
@@ -52,7 +52,6 @@ endif()
 if(BLD_STANDALONE)
   add_subdirectory(share)
   list(APPEND EXTRA_LIBS cdeps_share)
-  list(APPEND EXTRA_INCLUDES "${CMAKE_BINARY_DIR}/share" )
 endif()
 if("${COMPILER}" STREQUAL "nag")
   set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -D__NAG__")
@@ -83,20 +82,16 @@ foreach(COMP datm dice dlnd docn drof dwav)
   add_subdirectory("${COMP}")
 endforeach(COMP)
 
-target_include_directories(streams PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/share>
-                                          $<INSTALL_INTERFACE:mod>)
 target_include_directories(streams PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/fox/include>
                                           $<INSTALL_INTERFACE:mod>)
-target_include_directories(dshr PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/share>
-                                       $<INSTALL_INTERFACE:mod>)
 target_include_directories(dshr PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/fox/include>
                                        $<INSTALL_INTERFACE:mod>)
 target_include_directories(dshr PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/streams>
                                        $<INSTALL_INTERFACE:mod>)
 
 foreach(COMP datm dice dlnd docn drof dwav)
-  target_include_directories(${COMP} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/share>
-                                            $<INSTALL_INTERFACE:mod>)
+#  target_include_directories(${COMP} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/share>
+#                                            $<INSTALL_INTERFACE:mod>)
   target_include_directories(${COMP} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/streams>
                                             $<INSTALL_INTERFACE:mod>)
   target_include_directories(${COMP} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/dshr>

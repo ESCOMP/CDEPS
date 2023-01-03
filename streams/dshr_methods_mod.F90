@@ -544,7 +544,7 @@ contains
     character(len=*), parameter :: subname='(field_getfldptr)'
     ! ----------------------------------------------
     rc = ESMF_SUCCESS
-
+    lrank = 0
     labort = .true.
     if (present(abort)) then
        labort = abort

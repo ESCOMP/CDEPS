@@ -88,15 +88,21 @@ contains
 !===============================================================================
 
   subroutine dshr_model_initphase(gcomp, importState, exportState, clock, rc)
-
+    use ESMF, only : ESMF_ClockIsCreated, ESMF_StateIsCreated
     ! input/output variables
     type(ESMF_GridComp)   :: gcomp
     type(ESMF_State)      :: importState, exportState
     type(ESMF_Clock)      :: clock
     integer, intent(out)  :: rc
+    character(len=*), parameter :: subname ='dshr_model_initphase'
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
+    ! To prevent an unused variable warning
+    if(.not. (ESMF_StateIsCreated(importState) .or. ESMF_StateIsCreated(exportState) .or. ESMF_ClockIsCreated(clock))) then
+       call ESMF_LogWrite(trim(subname)//' state or clock not created', ESMF_LOGMSG_ERROR)
+
+    endif
 
     ! Switch to IPDv01 by filtering all other phaseMap entries
     call NUOPC_CompFilterPhaseMap(gcomp, ESMF_METHOD_INITIALIZE, acceptStringList=(/"IPDv01p"/), rc=rc)
@@ -625,6 +631,7 @@ contains
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
+    update_nextalarm = .false.
 
     lalarmname = 'alarm_unknown'
     if (present(alarmname)) lalarmname = trim(alarmname)
@@ -881,7 +888,6 @@ contains
 
     case default
        call shr_sys_abort(subname//'unknown option '//trim(option))
-
     end select
 
     ! --------------------------------------------------------------------------------
@@ -1529,9 +1535,6 @@ contains
     integer           :: ret
     character(len=CL) :: cvalue
     character(len=CS) :: cname
-    character(len=CL) :: logmsg
-    character(len=CL) :: diro
-    character(len=CL) :: logfile
     character(len=*),parameter  :: subname='(dshr_pio_init)'
     !-------------------------------------------------------------------------------
 
@@ -1561,8 +1564,8 @@ contains
           sdat%io_format = PIO_64BIT_DATA
        else
          call ESMF_LogWrite(trim(subname)//'-'//trim(cname)// &
-              ' : need to provide valid option for pio_ioformat &
-              (CLASSIC|64BIT_OFFSET|64BIT_DATA)', ESMF_LOGMSG_INFO)
+              ' : need to provide valid option for pio_ioformat'// &
+              ' (CLASSIC|64BIT_OFFSET|64BIT_DATA)', ESMF_LOGMSG_INFO)
          rc = ESMF_FAILURE
          return
        end if
@@ -1590,8 +1593,8 @@ contains
           sdat%io_type = PIO_IOTYPE_NETCDF4P
        else
          call ESMF_LogWrite(trim(subname)//'-'//trim(cname)// &
-              ' : need to provide valid option for pio_typename &
-              (NETCDF|PNETCDF|NETCDF4C|NETCDF4P)', ESMF_LOGMSG_INFO)
+              ' : need to provide valid option for pio_typename'// &
+              ' (NETCDF|PNETCDF|NETCDF4C|NETCDF4P)', ESMF_LOGMSG_INFO)
          rc = ESMF_FAILURE
          return
        end if
@@ -1715,8 +1718,8 @@ contains
     if (isPresent .and. isSet) then
        read(cvalue,*) pio_debug_level
        if (pio_debug_level < 0 .or. pio_debug_level > 6) then
-         call ESMF_LogWrite(trim(subname)//': need to provide valid option for &
-              pio_debug_level (0-6)', ESMF_LOGMSG_INFO)
+         call ESMF_LogWrite(trim(subname)//': need to provide valid option for'// &
+              ' pio_debug_level (0-6)', ESMF_LOGMSG_INFO)
          rc = ESMF_FAILURE
          return
        end if
@@ -1741,8 +1744,8 @@ contains
          pio_rearranger = PIO_REARR_SUBSET
        else
          call ESMF_LogWrite(trim(subname)//'-'//trim(cname)// &
-              ' : need to provide valid option for pio_rearranger &
-              (BOX|SUBSET)', ESMF_LOGMSG_INFO)
+              ' : need to provide valid option for pio_rearranger'// &
+              ' (BOX|SUBSET)', ESMF_LOGMSG_INFO)
          rc = ESMF_FAILURE
          return
        end if
@@ -1772,8 +1775,8 @@ contains
        else if (trim(cvalue) .eq. 'COLL') then
           pio_rearr_comm_type = PIO_REARR_COMM_COLL
        else
-         call ESMF_LogWrite(trim(subname)//' : need to provide valid option for &
-              pio_rearr_comm_type (P2P|COLL)', ESMF_LOGMSG_INFO)
+         call ESMF_LogWrite(trim(subname)//' : need to provide valid option for'// &
+              ' pio_rearr_comm_type (P2P|COLL)', ESMF_LOGMSG_INFO)
          rc = ESMF_FAILURE
          return
        end if
@@ -1800,8 +1803,8 @@ contains
        else if (trim(cvalue) .eq. '2DDISABLE') then
           pio_rearr_comm_fcd = PIO_REARR_COMM_FC_2D_DISABLE
        else
-         call ESMF_LogWrite(trim(subname)//' : need to provide valid option for &
-              pio_rearr_comm_fcd (2DENABLE|IO2COMP|COMP2IO|2DDISABLE)', ESMF_LOGMSG_INFO)
+         call ESMF_LogWrite(trim(subname)//' : need to provide valid option for'// &
+              ' pio_rearr_comm_fcd (2DENABLE|IO2COMP|COMP2IO|2DDISABLE)', ESMF_LOGMSG_INFO)
          rc = ESMF_FAILURE
          return
        end if
@@ -1917,13 +1920,13 @@ contains
     type(ESMF_CLOCK), intent(in) :: clock
 
     type(ESMF_ALARM) :: alarm
-    logical :: nlend, rstwr
+    logical :: nlend
     !--------------------------------
     ! Determine if time to stop
     !--------------------------------
 
     rc = ESMF_SUCCESS
-
+    dshr_check_restart_alarm = .false.
     call ESMF_ClockGetAlarm(clock, alarmname='alarm_stop', alarm=alarm, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
@@ -1941,21 +1944,21 @@ contains
     !--------------------------------
 
     if (nlend .and. write_restart_at_endofrun) then
-       rstwr = .true.
+       dshr_check_restart_alarm = .true.
     else
        call ESMF_ClockGetAlarm(clock, alarmname='alarm_restart', alarm=alarm, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
        if (ESMF_AlarmIsRinging(alarm, rc=rc)) then
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          rstwr = .true.
+          dshr_check_restart_alarm = .true.
           call ESMF_AlarmRingerOff( alarm, rc=rc )
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        else
-          rstwr = .false.
+          dshr_check_restart_alarm = .false.
        endif
     end if
-    dshr_check_restart_alarm = rstwr
+
   end function dshr_check_restart_alarm
 
 

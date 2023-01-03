@@ -48,7 +48,8 @@ module datm_datamode_era5_mod
   real(r8), pointer :: Faxa_lat(:)          => null()
   real(r8), pointer :: Faxa_taux(:)         => null()
   real(r8), pointer :: Faxa_tauy(:)         => null()
-  real(r8), pointer :: Faxa_ndep(:,:)       => null()
+!
+!  real(r8), pointer :: Faxa_ndep(:,:)       => null()
 
   ! stream data
   real(r8), pointer :: strm_tdew(:)         => null()
@@ -213,7 +214,6 @@ contains
     integer  :: lsize               ! size of attr vect
     real(r8) :: rtmp(2)
     real(r8) :: t2, pslv
-    real(r8) :: vp
     real(r8) :: e, qsat
     type(ESMF_VM) :: vm
     character(len=*), parameter :: subname='(datm_datamode_era5_advance): '

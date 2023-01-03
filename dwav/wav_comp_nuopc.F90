@@ -160,7 +160,6 @@ contains
     integer           :: inst_index         ! number of current instance (ie. 1)
     integer           :: nu                 ! unit number
     integer           :: ierr               ! error code
-    logical           :: exists
     type(ESMF_VM)     :: vm
     integer           :: bcasttmp(3)
     character(len=*),parameter  :: subname=trim(modName)//':(InitializeAdvertise) '
@@ -315,7 +314,6 @@ contains
 
     ! local variables
     type(ESMF_Clock)        :: clock
-    type(ESMF_Alarm)        :: alarm
     type(ESMF_Time)         :: currTime, nextTime
     type(ESMF_TimeInterval) :: timeStep
     type(ESMF_State)        :: importState, exportState

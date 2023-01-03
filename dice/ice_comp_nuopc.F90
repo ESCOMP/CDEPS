@@ -171,7 +171,6 @@ contains
     character(len=CL) :: cvalue             ! temporary
     integer           :: nu                 ! unit number
     integer           :: ierr               ! error code
-    logical           :: exists             ! check for file existence
     integer           :: bcasttmp(4)
     real(r8)          :: rbcasttmp(3)
     type(ESMF_VM)     :: vm
@@ -182,7 +181,7 @@ contains
     character(*)    ,parameter :: F03 = "('(" // trim(modName) // ") ',a,d13.5)"
     !-------------------------------------------------------------------------------
 
-    namelist / dice_nml / case_name, datamode, &
+    namelist / dice_nml /  datamode, &
          model_meshfile, model_maskfile, &
          restfilm, nx_global, ny_global, flux_swpf, flux_Qmin, flux_Qacc, flux_Qacc0
 
@@ -397,7 +396,6 @@ contains
     ! local variables
     type(ESMF_State)        :: importState, exportState
     type(ESMF_Clock)        :: clock
-    type(ESMF_Alarm)        :: alarm
     type(ESMF_TimeInterval) :: timeStep
     type(ESMF_Time)         :: currTime, nextTime
     real(R8)                :: cosarg        ! for setting ice temp pattern
