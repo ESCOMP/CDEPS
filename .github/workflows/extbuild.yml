@@ -68,7 +68,7 @@ jobs:
           key: ${{ runner.os }}-${{ env.ParallelIO_VERSION }}-parallelio
       - name: Build ParallelIO
         if: steps.cache-PARALLELIO.outputs.cache-hit != 'true'
-        uses: NCAR/ParallelIO/.github/actions/parallelio_cmake
+        uses: NCAR/ParallelIO/.github/actions/parallelio_cmake@9390e30e29d4ebbfbef0fc72162cacd9e8f25e4e
         with:
           parallelio_version: ${{ env.ParallelIO_VERSION }}
           enable_fortran: True
