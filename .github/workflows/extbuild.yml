@@ -17,6 +17,7 @@ jobs:
       FC: mpifort
       CXX: mpicxx
       CPPFLAGS: "-I/usr/include -I/usr/local/include "
+      LDFLAGS: "-L/usr/lib/x86_64-linux-gnu "
       # Versions of all dependencies can be updated here - these match tag names in the github repo
       ESMF_VERSION: v8.4.0
       #PNETCDF_VERSION: checkpoint.1.12.3
@@ -65,7 +66,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/pio
-          key: ${{ runner.os }}-${{ env.ParallelIO_VERSION }}-parallelio
+          key: ${{ runner.os }}-${{ env.ParallelIO_VERSION }}-parallelio2
       - name: Build ParallelIO
         if: steps.cache-PARALLELIO.outputs.cache-hit != 'true'
         uses: NCAR/ParallelIO/.github/actions/parallelio_cmake@9390e30e29d4ebbfbef0fc72162cacd9e8f25e4e
@@ -78,7 +79,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/ESMF
-          key: ${{ runner.os }}-${{ env.ESMF_VERSION }}-ESMF1
+          key: ${{ runner.os }}-${{ env.ESMF_VERSION }}-ESMF2
       - name: Build ESMF
         if: steps.cache-esmf.outputs.cache-hit != 'true'
         uses: ./.github/actions/buildesmf
@@ -98,6 +99,6 @@ jobs:
           export SRC_ROOT=
           mkdir build-cdeps
           pushd build-cdeps
-          cmake -Wno-dev -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_Fortran_FLAGS="-DCPRGNU -g -Wall -ffree-form -ffree-line-length-none -fallow-argument-mismatch -Wno-unused-dummy-argument " ../
+          cmake -Wno-dev -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_Fortran_FLAGS="-DCPRGNU -g -Wall -ffree-form -ffree-line-length-none -fallow-argument-mismatch -Wno-unused-dummy-argument " -DWERROR=ON ../
           make VERBOSE=1
           popd

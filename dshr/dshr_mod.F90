@@ -134,7 +134,9 @@ contains
     ! local variables
     type(ESMF_VM)     :: vm
     logical           :: isPresent, isSet
+#ifdef CESMCOUPLED
     integer           :: slogunit
+#endif
     character(len=CX) :: cvalue
     character(len=CX) :: logmsg
     character(len=CX) :: diro

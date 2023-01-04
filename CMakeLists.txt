@@ -34,6 +34,9 @@ else()
   find_package(ESMF REQUIRED)
 endif()
 
+option(WERROR "add the -Werror flag to compiler (works with gcc and intel)" OFF)
+
+
 if (DEFINED ENV{PIO_ROOT})
   message("PIO_ROOT is $ENV{PIO_ROOT}")
 else()
@@ -78,10 +81,6 @@ else()
 endif()
 add_subdirectory(fox)
 
-foreach(COMP datm dice dlnd docn drof dwav)
-  add_subdirectory("${COMP}")
-endforeach(COMP)
-
 target_include_directories(streams PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/fox/include>
                                           $<INSTALL_INTERFACE:mod>)
 target_include_directories(dshr PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/fox/include>
@@ -90,6 +89,7 @@ target_include_directories(dshr PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_
                                        $<INSTALL_INTERFACE:mod>)
 
 foreach(COMP datm dice dlnd docn drof dwav)
+  add_subdirectory("${COMP}")
   if(BLD_STANDALONE)
     target_include_directories(${COMP} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/share>
                                             $<INSTALL_INTERFACE:mod>)
@@ -99,6 +99,9 @@ foreach(COMP datm dice dlnd docn drof dwav)
   target_include_directories(${COMP} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/dshr>
                                             $<INSTALL_INTERFACE:mod>)
 
+  if(WERROR)
+     target_compile_options(${COMP} PRIVATE -Werror)
+  endif()
   install(TARGETS ${COMP}
           EXPORT  ${COMP}
           ARCHIVE DESTINATION lib
@@ -112,6 +115,12 @@ foreach(DEPS streams dshr cdeps_share FoX_dom FoX_wxml FoX_sax FoX_common FoX_ut
   if(NOT BLD_STANDALONE AND ${DEPS} STREQUAL "cdeps_share")
      continue()
   endif()
+  string(SUBSTRING ${DEPS} 0 3 fox)
+  if(WERROR AND NOT ${fox} STREQUAL "FoX")
+     message("Adding Werror flag to ${DEPS} (fox = ${fox})")
+     target_compile_options(${DEPS} PRIVATE -Werror)
+  endif()
+
   install(TARGETS ${DEPS}
           EXPORT  ${DEPS}
           ARCHIVE DESTINATION lib

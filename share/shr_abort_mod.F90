@@ -42,7 +42,6 @@ contains
     integer(shr_kind_in), intent(in), optional :: rc      ! error code
 
     !----- local -----
-    logical :: flag
 
     ! Local version of the string.
     ! (Gets a default value if string is not present.)
