@@ -85,6 +85,8 @@ def buildlib(bldroot, libroot, case):
     cmake_flags += " -DLIBROOT={} ".format(libroot)
     cmake_flags += " -DMPILIB={} ".format(mpilib)
     cmake_flags += " -DSRCROOT={} ".format(case.get_value("SRCROOT"))
+    if compiler == "gnu" and strdebug == "debug":
+        cmake_flags += " -DWERROR=ON "
     piolibdir = os.getenv("PIO_LIBDIR")
     if piolibdir:
         pioincdir = os.getenv("PIO_INCDIR")

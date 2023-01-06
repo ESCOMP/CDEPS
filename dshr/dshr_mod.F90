@@ -988,7 +988,7 @@ contains
     if(shr_strdata_get_stream_count(sdat) <= 0) return
     call ESMF_VMGetCurrent(vm, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
+    exists = .false.
     if (trim(rest_filem) == trim(nullstr)) then
        if (my_task == main_task) then
           write(logunit,F00) ' restart filename from rpointer'
