@@ -75,7 +75,8 @@ module cdeps_dlnd_comp
   character(CL)            :: model_maskfile = nullstr            ! full pathname to obtain mask from
   character(CL)            :: streamfilename                      ! filename to obtain stream info from
   character(CL)            :: nlfilename = nullstr                ! filename to obtain namelist info from
-  logical                  :: force_prognostic_true = .false.     ! if true set prognostic true
+!  not currently used
+!  logical                  :: force_prognostic_true = .false.     ! if true set prognostic true
   character(CL)            :: restfilm = nullstr                  ! model restart file namelist
   integer                  :: nx_global                           ! global nx dimension of model mesh
   integer                  :: ny_global                           ! global ny dimension of model mesh
@@ -167,7 +168,6 @@ contains
     integer       :: nu         ! unit number
     integer       :: bcasttmp(3)
     integer       :: ierr       ! error code
-    logical           :: exists     ! check for file existence
     character(len=*) , parameter :: subname=trim(modName)//':(InitializeAdvertise) '
     character(*)     , parameter :: F00 = "('(" // trim(modName) // ") ',8a)"
     character(*)     , parameter :: F01 = "('(" // trim(modName) // ") ',a,2x,i8)"
@@ -332,7 +332,6 @@ contains
     ! local variables
     type(ESMF_State)        :: importState, exportState
     type(ESMF_Clock)        :: clock
-    type(ESMF_Alarm)        :: alarm
     type(ESMF_TimeInterval) :: timeStep
     type(ESMF_Time)         :: currTime, nextTime
     integer                 :: next_ymd      ! model date

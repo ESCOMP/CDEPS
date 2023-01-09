@@ -128,6 +128,7 @@ module cdeps_datm_comp
   logical                      :: flds_preso3 = .false.               ! true => send valid prescribed ozone fields to mediator
   logical                      :: flds_co2 = .false.                  ! true => send prescribed co2 to mediator
   logical                      :: flds_wiso = .false.                 ! true => send water isotopes to mediator
+
   character(CL)                :: bias_correct = nullstr              ! send bias correction fields to coupler
   character(CL)                :: anomaly_forcing(8) = nullstr        ! send anomaly forcing fields to coupler
 
@@ -221,7 +222,6 @@ contains
     ! local variables
     integer           :: nu         ! unit number
     integer           :: ierr       ! error code
-    logical           :: exists     ! check for file existence
     integer           :: bcasttmp(9)
     type(ESMF_VM)     :: vm
     character(len=*),parameter :: subname=trim(modName) // ':(InitializeAdvertise) '
@@ -290,6 +290,10 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     call ESMF_VMBroadcast(vm, datamode, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, bias_correct, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, anomaly_forcing, CL*8, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_VMBroadcast(vm, model_meshfile, CL, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -490,7 +494,6 @@ contains
     ! local variables
     type(ESMF_State)        :: importState, exportState
     type(ESMF_Clock)        :: clock
-    type(ESMF_Alarm)        :: alarm
     type(ESMF_Time)         :: currTime
     type(ESMF_Time)         :: nextTime
     type(ESMF_TimeInterval) :: timeStep

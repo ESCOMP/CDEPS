@@ -544,7 +544,7 @@ contains
     character(len=*), parameter :: subname='(field_getfldptr)'
     ! ----------------------------------------------
     rc = ESMF_SUCCESS
-
+    lrank = 0
     labort = .true.
     if (present(abort)) then
        labort = abort
@@ -598,8 +598,8 @@ contains
     logical          , intent(in) :: maintask
 
     ! local variables
-    integer :: ierr
 #ifdef CESMCOUPLED
+    integer :: ierr
     integer, external :: GPTLprint_memusage
 #endif
     !-----------------------------------------------------------------------

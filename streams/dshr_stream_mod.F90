@@ -410,6 +410,10 @@ contains
        streamdat(i)%pio_subsystem => shr_pio_getiosys(trim(compname))
        streamdat(i)%pio_iotype    =  shr_pio_getiotype(trim(compname))
        streamdat(i)%pio_ioformat  =  shr_pio_getioformat(trim(compname))
+       ! This is to avoid an unused dummy argument warning
+       if(.false.) then
+          if(associated(pio_subsystem)) print *, io_type, io_format
+       endif
 #else
        streamdat(i)%pio_subsystem => pio_subsystem
        streamdat(i)%pio_iotype = io_type
@@ -498,6 +502,10 @@ contains
     streamdat(1)%pio_subsystem => shr_pio_getiosys(trim(compname))
     streamdat(1)%pio_iotype    =  shr_pio_getiotype(trim(compname))
     streamdat(1)%pio_ioformat  =  shr_pio_getioformat(trim(compname))
+    ! This is to avoid an unused dummy argument warning
+    if(.false.) then
+       if(associated(pio_subsystem)) print *, io_type, io_format
+    endif
 #else
     streamdat(1)%pio_subsystem => pio_subsystem
     streamdat(1)%pio_iotype = io_type
@@ -816,7 +824,7 @@ contains
     nYears  = yrLast - yrFirst + 1      ! number of years in data sequence
     dDateF  = yrFirst * 10000 + 101     ! first date in valid range
     dDateL  = (yrLast+1)  * 10000 + 101 ! last date in valid range
-
+    n = 0
     if (cycle) then
        dYear  = yrFirst + modulo(mYear-yrAlign+(2*nYears),nYears)   ! current data year
        if(debug>0 .and. isroot_task) then
@@ -1493,7 +1501,6 @@ contains
     integer(PIO_OFFSET_KIND) :: attlen
     integer                :: old_handle
     integer                :: rCode
-    integer :: ierr
     integer :: rc
     character(*),parameter :: subName = '(shr_stream_getCalendar) '
     !-------------------------------------------------------------------------------
@@ -1717,7 +1724,7 @@ contains
     type(var_desc_t)     :: varid, tvarid, dvarid, ntvarid, hdvarid
     integer              :: rcode
     integer              :: dimid_stream, dimid_files,dimid_nt, dimid_str
-    integer              :: n,i, k, maxnfiles=0
+    integer              :: n, k, maxnfiles=0
     integer              :: maxnt = 0
     integer, allocatable :: tmp(:)
     character(len=CL)    :: fname

@@ -182,7 +182,6 @@ contains
     integer           :: inst_index         ! number of current instance (ie. 1)
     integer           :: nu                 ! unit number
     integer           :: ierr               ! error code
-    logical           :: exists             ! check for file existence
     integer           :: bcasttmp(3)
     real(r8)          :: rtmp(1)
     type(ESMF_VM)     :: vm
@@ -433,7 +432,6 @@ contains
     type(ESMF_Clock)        :: clock
     type(ESMF_TimeInterval) :: timeStep
     type(ESMF_Time)         :: currTime, nextTime
-    type(ESMF_Alarm)        :: alarm
     integer                 :: next_ymd      ! model date
     integer                 :: next_tod      ! model sec into model date
     integer                 :: yr            ! year

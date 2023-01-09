@@ -27,7 +27,8 @@ module datm_datamode_cplhist_mod
   real(r8), pointer :: Sa_tbot(:)           => null()
   real(r8), pointer :: Sa_ptem(:)           => null()
   real(r8), pointer :: Sa_shum(:)           => null()
-  real(r8), pointer :: Sa_shum_wiso(:,:)    => null() ! water isotopes
+! TODO: water isotope support
+!  real(r8), pointer :: Sa_shum_wiso(:,:)    => null() ! water isotopes
   real(r8), pointer :: Sa_dens(:)           => null()
   real(r8), pointer :: Sa_pbot(:)           => null()
   real(r8), pointer :: Sa_pslv(:)           => null()
@@ -133,7 +134,6 @@ contains
     integer                , intent(out)   :: rc
 
     ! local variables
-    type(ESMF_StateItem_Flag) :: itemFlag
     character(len=*), parameter :: subname='(datm_init_pointers): '
     !-------------------------------------------------------------------------------
 

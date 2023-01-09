@@ -162,7 +162,6 @@ contains
     integer           :: inst_index ! number of current instance (ie. 1)
     integer           :: nu         ! unit number
     integer           :: ierr       ! error code
-    logical           :: exists     ! check for file existence
     type(fldlist_type), pointer :: fldList
     type(ESMF_VM)     :: vm
     integer :: bcasttmp(3)
@@ -327,7 +326,6 @@ contains
     ! local variables
     type(ESMF_State)        :: importState, exportState
     type(ESMF_Clock)        :: clock
-    type(ESMF_Alarm)        :: alarm
     type(ESMF_TimeInterval) :: timeStep
     type(ESMF_Time)         :: currTime, nextTime
     integer                 :: next_ymd      ! model date
