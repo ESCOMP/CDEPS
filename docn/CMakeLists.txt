@@ -1,9 +1,11 @@
 project(docn Fortran)
 set(SRCFILES ocn_comp_nuopc.F90
-   	     docn_datamode_copyall_mod.F90
+	     docn_datamode_copyall_mod.F90
 	     docn_datamode_som_mod.F90
 	     docn_datamode_aquaplanet_mod.F90
-	     docn_datamode_iaf_mod.F90)
+	     docn_datamode_iaf_mod.F90
+       docn_datamode_cplhist_mod.F90
+       docn_import_atmdata_mod.F90)
 
 foreach(FILE ${SRCFILES})
   if(EXISTS "${CASEROOT}/SourceMods/src.docn/${FILE}")

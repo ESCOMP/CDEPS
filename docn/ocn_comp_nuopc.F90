@@ -53,6 +53,12 @@ module cdeps_docn_comp
   use docn_datamode_aquaplanet_mod , only : docn_datamode_aquaplanet_advertise
   use docn_datamode_aquaplanet_mod , only : docn_datamode_aquaplanet_init_pointers
   use docn_datamode_aquaplanet_mod , only : docn_datamode_aquaplanet_advance
+  use docn_datamode_cplhist_mod    , only : docn_datamode_cplhist_advertise
+  use docn_datamode_cplhist_mod    , only : docn_datamode_cplhist_init_pointers
+  use docn_datamode_cplhist_mod    , only : docn_datamode_cplhist_advance
+  use docn_datamode_cplhist_mod    , only : docn_datamode_cplhist_restart_read
+  use docn_datamode_cplhist_mod    , only : docn_datamode_cplhist_restart_write
+  use docn_import_atmdata_mod      , only : docn_import_atmdata_advertise
 
   implicit none
   private ! except
@@ -179,10 +185,11 @@ contains
     integer, intent(out) :: rc
 
     ! local variables
-    integer           :: inst_index         ! number of current instance (ie. 1)
-    integer           :: nu                 ! unit number
-    integer           :: ierr               ! error code
-    logical           :: exists             ! check for file existence
+    integer           :: inst_index     ! number of current instance (ie. 1)
+    integer           :: nu             ! unit number
+    integer           :: ierr           ! error code
+    logical           :: exists         ! check for file existence
+    logical           :: get_atm_import ! if true, obtain atm import data even if its not used
     character(len=*),parameter :: subname=trim(module_name)//':(InitializeAdvertise) '
     character(*)    ,parameter :: F00 = "('(" // trim(module_name) // ") ',8a)"
     character(*)    ,parameter :: F01 = "('(" // trim(module_name) // ") ',a,2x,i8)"
@@ -192,7 +199,9 @@ contains
 
     namelist / docn_nml / datamode, &
          model_meshfile, model_maskfile, &
-         restfilm,  nx_global, ny_global, sst_constant_value, skip_restart_read
+         restfilm,  nx_global, ny_global, sst_constant_value, skip_restart_read, &
+         get_atm_import
+
 
     rc = ESMF_SUCCESS
 
@@ -209,6 +218,9 @@ contains
     mainproc = (my_task == main_task)
 
     if (my_task == main_task) then
+
+       ! Set default
+       get_atm_import = .false.
 
        ! Read docn_nml from nlfilename
        nlfilename = "docn_in"//trim(inst_suffix)
@@ -229,6 +241,7 @@ contains
        write(logunit,F01)' ny_global = ',ny_global
        write(logunit,F00)' restfilm = ',trim(restfilm)
        write(logunit,F02)' skip_restart_read = ',skip_restart_read
+       write(logunit,F02)' get_atm_import = ',get_atm_import
     endif
 
     ! Broadcast namelist input
@@ -240,6 +253,7 @@ contains
     call shr_mpi_bcast(restfilm                  , mpicom, 'restfilm')
     call shr_mpi_bcast(sst_constant_value        , mpicom, 'sst_constant_value')
     call shr_mpi_bcast(skip_restart_read         , mpicom, 'skip_restart_read')
+    call shr_mpi_bcast(get_atm_import            , mpicom, 'get_atm_import')
 
     ! Special logic for prescribed aquaplanet
     if (datamode(1:9) == 'sst_aquap' .and. trim(datamode) /= 'sst_aquap_constant') then
@@ -259,6 +273,7 @@ contains
          trim(datamode) == 'sst_aquap_file'     .or. & ! read stream, no import data
          trim(datamode) == 'som'                .or. & ! read stream, needs import data
          trim(datamode) == 'som_aquap'          .or. & ! read stream, needs import data
+         trim(datamode) == 'cplhist'            .or. & ! read stream, needs import data
          trim(datamode) == 'sst_aquap_analytic' .or. & ! analytic, no streams, import or export data
          trim(datamode) == 'sst_aquap_constant' ) then ! analytic, no streams, import or export data
        ! success do nothing
@@ -279,6 +294,14 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     else if (trim(datamode) == 'iaf') then
        call docn_datamode_iaf_advertise(importState, exportState, fldsImport, fldsExport, flds_scalar_name, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    else if (trim(datamode) == 'cplhist') then
+       call docn_datamode_cplhist_advertise(exportState, fldsExport, flds_scalar_name, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    end if
+
+    if (get_atm_import) then
+       call docn_import_atmdata_advertise(importState, fldsImport, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
@@ -499,6 +522,9 @@ contains
        case('sst_aquap_analytic', 'sst_aquap_constant')
           call  docn_datamode_aquaplanet_init_pointers(exportState, model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       case('cplhist')
+          call docn_datamode_cplhist_init_pointers(exportState, model_frac, rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end select
 
        ! Read restart if needed
@@ -553,6 +579,9 @@ contains
     case('sst_aquap_constant')
        call  docn_datamode_aquaplanet_advance(exportState, model_mesh, sst_constant_value=sst_constant_value, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    case('cplhist')
+       call  docn_datamode_cplhist_advance(rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end select
 
     ! Write restarts if needed (no restarts for aquaplanet analytic or aquaplanet input file)
@@ -566,6 +595,9 @@ contains
                logunit, my_task, sdat)
        case('som','som_aquap')
           call docn_datamode_som_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
+               logunit, my_task, sdat)
+       case('cplhist')
+          call docn_datamode_cplhist_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
                logunit, my_task, sdat)
        end select
     end if

@@ -13,7 +13,7 @@
        This file may have ocn desc entries.
   -->
   <description modifier_mode="1">
-    <desc ocn="DOCN[%DOM][%SOM][%SOMAQP][%IAF][%SST_AQUAP][%AQP1][%AQP2][%AQP3][%AQP4][%AQP5][%AQP6][%AQP7][%AQP8][%AQP9][%AQP10][%AQPFILE][%AQPCONST]">DOCN </desc>
+    <desc ocn="DOCN[%DOM][%SOM][%SOMAQP][%IAF][%SST_AQUAP][%AQP1][%AQP2][%AQP3][%AQP4][%AQP5][%AQP6][%AQP7][%AQP8][%AQP9][%AQP10][%AQPFILE][%AQPCONST][%CPLHIST]">DOCN </desc>
     <desc option="DOM">  prescribed ocean mode</desc>
     <desc option="SOM">  slab ocean mode</desc>
     <desc option="SOMAQP">  aquaplanet slab ocean mode</desc>
@@ -31,6 +31,7 @@
     <desc option="AQP10">  analytic aquaplanet sst - option 10</desc>
     <desc option="AQPFILE">  file input aquaplanet sst </desc>
     <desc option="AQPCONST">  globally constant SST for idealized experiments, such as RCE </desc>
+    <desc option="CPLHIST"> mediator history output for ocean fields imported to mediator </desc>
   </description>
 
   <entry id="COMP_OCN">
@@ -44,7 +45,7 @@
 
   <entry id="DOCN_MODE">
     <type>char</type>
-    <valid_values>prescribed,sst_aquap1,sst_aquap2,sst_aquap3,sst_aquap4,sst_aquap5,sst_aquap6,sst_aquap7,sst_aquap8,sst_aquap9,sst_aquap10,sst_aquapfile,som,som_aquap,sst_aquap_constant,interannual,null</valid_values>
+    <valid_values>prescribed,sst_aquap1,sst_aquap2,sst_aquap3,sst_aquap4,sst_aquap5,sst_aquap6,sst_aquap7,sst_aquap8,sst_aquap9,sst_aquap10,sst_aquapfile,som,som_aquap,sst_aquap_constant,interannual,cplhist</valid_values>
     <default_value>prescribed</default_value>
     <values match="last">
       <value compset="_DOCN%DOM_" >prescribed</value>
@@ -63,6 +64,7 @@
       <value compset="_DOCN%AQP10_">sst_aquap10</value>
       <value compset="_DOCN%AQPFILE_">sst_aquapfile</value>
       <value compset="_DOCN%AQPCONST_">sst_aquap_constant</value>
+      <value compset="_DOCN%CPLHIST">cplhist</value>
     </values>
     <group>run_component_docn</group>
     <file>env_run.xml</file>
@@ -247,6 +249,63 @@
     example, if a data file has data for years 0-99, and value is 49,
     years 50-99 in the file will not be used.
     This is only used when DOCN_MODE=prescribed.</desc>
+  </entry>
+
+  <entry id="DOCN_CPLHIST_DIR">
+    <type>char</type>
+    <valid_values></valid_values>
+    <default_value>UNSET</default_value>
+    <group>run_component_docn</group>
+    <file>env_run.xml</file>
+    <desc>directory for coupler history data mode (only used for when DOCN_MODE is CPLHIST)</desc>
+  </entry>
+
+  <entry id="DOCN_CPLHIST_CASE">
+    <type>char</type>
+    <valid_values></valid_values>
+    <default_value>UNSET</default_value>
+    <group>run_component_docn</group>
+    <file>env_run.xml</file>
+    <desc>case name used to determine stream filenames when DOCN_MODE is CPLHIST</desc>
+  </entry>
+
+  <entry id="DOCN_CPLHIST_YR_ALIGN">
+    <type>integer</type>
+    <valid_values></valid_values>
+    <default_value>1</default_value>
+    <group>run_component_docn</group>
+    <file>env_run.xml</file>
+    <desc>
+      Simulation year corresponding to DOCN_CPLHIST_YR_START. A common usage
+      is to set this to RUN_STARTDATE. With this setting, the forcing
+      in the first year of the run will be the forcing of year
+      DOCN_CPLHIST_YR_START. Another use case is to align the calendar
+      of transient forcing with the model calendar. For example,
+      setting DOCN_CPLHIST_YR_ALIGN=DOCN_CPLHIST_YR_START will lead to
+      the forcing calendar being the same as the model calendar. The
+      forcing for a given model year would be the forcing of the same
+      year. This would be appropriate in transient runs where the
+      model calendar is setup to span the same year range as the
+      forcing data.
+    </desc>
+  </entry>
+
+  <entry id="DOCN_CPLHIST_YR_START">
+    <type>integer</type>
+    <valid_values></valid_values>
+    <default_value>1</default_value>
+    <group>run_component_docn</group>
+    <file>env_run.xml</file>
+    <desc>starting year to loop data over</desc>
+  </entry>
+
+  <entry id="DOCN_CPLHIST_YR_END">
+    <type>integer</type>
+    <valid_values></valid_values>
+    <default_value>1</default_value>
+    <group>run_component_docn</group>
+    <file>env_run.xml</file>
+    <desc>ending year to loop data over</desc>
   </entry>
 
   <entry id="DOCN_SKIP_RESTART_READ">

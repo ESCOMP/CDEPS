@@ -49,18 +49,18 @@
       CLMCRUNCEPv7, CLMGSWP3v1, CLMNLDAS2 and 1PT are modes using observational data for forcing prognostic land components.
       WARNING for CLMNLDAS2: This is a regional forcing dataset over the U.S. (25-53N, 235-293E). Garbage data will be produced for runs extending beyond this regional domain. </desc>
     <values match="last">
-      <value compset="%NYF">CORE2_NYF</value>
-      <value compset="%IAF">CORE2_IAF</value>
-      <value compset="%JRA">CORE_IAF_JRA</value>
-      <value compset="%JRA-1p4-2018">CORE_IAF_JRA_1p4_2018</value>
-      <value compset="%QIA">CLM_QIAN</value>
-      <value compset="%WISOQIA">CLM_QIAN_WISO</value>
-      <value compset="%CRUv7">CLMCRUNCEPv7</value>
-      <value compset="%GSWP3v1">CLMGSWP3v1</value>
-      <value compset="%NLDAS2">CLMNLDAS2</value>
-      <value compset="%1PT">1PT</value>
-      <value compset="%CPLHIST">CPLHIST</value>
-      <value compset="%ERA5">ERA5</value>
+      <value compset="DATM%NYF">CORE2_NYF</value>
+      <value compset="DATM%IAF">CORE2_IAF</value>
+      <value compset="DATM%JRA">CORE_IAF_JRA</value>
+      <value compset="DATM%JRA-1p4-2018">CORE_IAF_JRA_1p4_2018</value>
+      <value compset="DATM%QIA">CLM_QIAN</value>
+      <value compset="DATM%WISOQIA">CLM_QIAN_WISO</value>
+      <value compset="DATM%CRUv7">CLMCRUNCEPv7</value>
+      <value compset="DATM%GSWP3v1">CLMGSWP3v1</value>
+      <value compset="DATM%NLDAS2">CLMNLDAS2</value>
+      <value compset="DATM%1PT">1PT</value>
+      <value compset="DATM%ERA5">ERA5</value>
+      <value compset="DATM%CPLHIST">CPLHIST</value>
     </values>
   </entry>
 
