@@ -58,7 +58,7 @@ module cdeps_docn_comp
   use docn_datamode_cplhist_mod    , only : docn_datamode_cplhist_advance
   use docn_datamode_cplhist_mod    , only : docn_datamode_cplhist_restart_read
   use docn_datamode_cplhist_mod    , only : docn_datamode_cplhist_restart_write
-  use docn_import_atmdata_mod      , only : docn_import_atmdata_advertise
+  use docn_import_data_mod         , only : docn_import_data_advertise
 
   implicit none
   private ! except
@@ -189,7 +189,7 @@ contains
     integer           :: nu             ! unit number
     integer           :: ierr           ! error code
     logical           :: exists         ! check for file existence
-    logical           :: get_atm_import ! if true, obtain atm import data even if its not used
+    logical           :: get_import_data ! if true, obtain atm import data even if its not used
     character(len=*),parameter :: subname=trim(module_name)//':(InitializeAdvertise) '
     character(*)    ,parameter :: F00 = "('(" // trim(module_name) // ") ',8a)"
     character(*)    ,parameter :: F01 = "('(" // trim(module_name) // ") ',a,2x,i8)"
@@ -200,7 +200,7 @@ contains
     namelist / docn_nml / datamode, &
          model_meshfile, model_maskfile, &
          restfilm,  nx_global, ny_global, sst_constant_value, skip_restart_read, &
-         get_atm_import
+         get_import_data
 
 
     rc = ESMF_SUCCESS
@@ -218,9 +218,6 @@ contains
     mainproc = (my_task == main_task)
 
     if (my_task == main_task) then
-
-       ! Set default
-       get_atm_import = .false.
 
        ! Read docn_nml from nlfilename
        nlfilename = "docn_in"//trim(inst_suffix)
@@ -241,7 +238,7 @@ contains
        write(logunit,F01)' ny_global = ',ny_global
        write(logunit,F00)' restfilm = ',trim(restfilm)
        write(logunit,F02)' skip_restart_read = ',skip_restart_read
-       write(logunit,F02)' get_atm_import = ',get_atm_import
+       write(logunit,F02)' get_import_data = ',get_import_data
     endif
 
     ! Broadcast namelist input
@@ -253,7 +250,7 @@ contains
     call shr_mpi_bcast(restfilm                  , mpicom, 'restfilm')
     call shr_mpi_bcast(sst_constant_value        , mpicom, 'sst_constant_value')
     call shr_mpi_bcast(skip_restart_read         , mpicom, 'skip_restart_read')
-    call shr_mpi_bcast(get_atm_import            , mpicom, 'get_atm_import')
+    call shr_mpi_bcast(get_import_data           , mpicom, 'get_import_data')
 
     ! Special logic for prescribed aquaplanet
     if (datamode(1:9) == 'sst_aquap' .and. trim(datamode) /= 'sst_aquap_constant') then
@@ -300,8 +297,8 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
-    if (get_atm_import) then
-       call docn_import_atmdata_advertise(importState, fldsImport, flds_scalar_name, rc)
+    if (get_import_data) then
+       call docn_import_data_advertise(importState, fldsImport, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 

@@ -1,4 +1,4 @@
-module docn_import_atmdata_mod
+module docn_import_data_mod
 
    use ESMF             , only : ESMF_State, ESMF_LOGMSG_INFO, ESMF_LogWrite, ESMF_SUCCESS
    use NUOPC            , only : NUOPC_Advertise
@@ -9,7 +9,7 @@ module docn_import_atmdata_mod
    implicit none
    private ! except
 
-   public :: docn_import_atmdata_advertise
+   public :: docn_import_data_advertise
 
    character(*) , parameter :: u_FILE_u = &
         __FILE__
@@ -18,7 +18,7 @@ module docn_import_atmdata_mod
 contains
 !===============================================================================
 
-   subroutine docn_import_atmdata_advertise(importState, fldsimport, flds_scalar_name, rc)
+   subroutine docn_import_data_advertise(importState, fldsimport, flds_scalar_name, rc)
 
       ! input/output variables
       type(esmf_State)   , intent(inout) :: importState
@@ -30,7 +30,7 @@ contains
       type(fldlist_type), pointer :: fldList
       !-------------------------------------------------------------------------------
 
-      ! Advertise import fields from DATM if appropriate
+      ! Advertise import fields from datm, dice and med_aofluxes if appropriate
       call dshr_fldList_add(fldsImport, trim(flds_scalar_name))
       call dshr_fldList_add(fldsImport, 'Sa_z'       )
       call dshr_fldList_add(fldsImport, 'Sa_u'       )
@@ -63,6 +63,10 @@ contains
 
       call dshr_fldList_add(fldsImport, 'Faxa_ndep', ungridded_lbound=1, ungridded_ubound=2)
 
+      call dshr_fldList_add(fldsImport, 'Si_ifrac' )
+
+      call dshr_fldList_add(fldsImport, 'So_duu10n')
+
       fldlist => fldsImport ! the head of the linked list
       do while (associated(fldlist))
          call NUOPC_Advertise(importState, standardName=fldlist%stdname, rc=rc)
@@ -71,6 +75,6 @@ contains
          fldList => fldList%next
       enddo
 
-   end subroutine docn_import_atmdata_advertise
+   end subroutine docn_import_data_advertise
 
-end module docn_import_atmdata_mod
+end module docn_import_data_mod

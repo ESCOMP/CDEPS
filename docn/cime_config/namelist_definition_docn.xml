@@ -204,12 +204,12 @@
     </values>
   </entry>
 
-  <entry id="get_atm_import">
+  <entry id="get_import_data">
     <type>logical</type>
     <category>docn</category>
     <group>docn_nml</group>
     <desc>
-      If set to true, then advertise will include import fields from datm.
+      If set to true, then advertise will include import fields normally sent to prognostic ocean.
     </desc>
     <values>
       <value>.false.</value>
