@@ -216,4 +216,16 @@
     </values>
   </entry>
 
+  <entry id="import_data_fields">
+    <type>char</type>
+    <category>docn</category>
+    <group>docn_nml</group>
+    <desc>
+      If get_import_data is true, then colon delimited set of fields to advertise as import data
+    </desc>
+    <values>
+      <value>Faxa_bcph:Faxa_dstdry:Faxa_dstwet:So_duu10n:Si_ifrac</value>
+    </values>
+  </entry>
+
 </entry_id>

@@ -185,11 +185,12 @@ contains
     integer, intent(out) :: rc
 
     ! local variables
-    integer           :: inst_index     ! number of current instance (ie. 1)
-    integer           :: nu             ! unit number
-    integer           :: ierr           ! error code
-    logical           :: exists         ! check for file existence
-    logical           :: get_import_data ! if true, obtain atm import data even if its not used
+    integer           :: inst_index         ! number of current instance (ie. 1)
+    integer           :: nu                 ! unit number
+    integer           :: ierr               ! error code
+    logical           :: exists             ! check for file existence
+    logical           :: get_import_data    ! if true, obtain atm import data even if its not used
+    character(len=CL) :: import_data_fields ! colon deliminted strings of input data fields
     character(len=*),parameter :: subname=trim(module_name)//':(InitializeAdvertise) '
     character(*)    ,parameter :: F00 = "('(" // trim(module_name) // ") ',8a)"
     character(*)    ,parameter :: F01 = "('(" // trim(module_name) // ") ',a,2x,i8)"
@@ -200,8 +201,7 @@ contains
     namelist / docn_nml / datamode, &
          model_meshfile, model_maskfile, &
          restfilm,  nx_global, ny_global, sst_constant_value, skip_restart_read, &
-         get_import_data
-
+         get_import_data, import_data_fields
 
     rc = ESMF_SUCCESS
 
@@ -230,27 +230,29 @@ contains
        end if
 
        ! write namelist input to standard out
-       write(logunit,F00)' case_name = ',trim(case_name)
-       write(logunit,F00)' datamode  = ',trim(datamode)
-       write(logunit,F00)' model_meshfile = ',trim(model_meshfile)
-       write(logunit,F00)' model_maskfile = ',trim(model_maskfile)
-       write(logunit,F01)' nx_global = ',nx_global
-       write(logunit,F01)' ny_global = ',ny_global
-       write(logunit,F00)' restfilm = ',trim(restfilm)
+       write(logunit,F00)' case_name         = ',trim(case_name)
+       write(logunit,F00)' datamode          = ',trim(datamode)
+       write(logunit,F00)' model_meshfile    = ',trim(model_meshfile)
+       write(logunit,F00)' model_maskfile    = ',trim(model_maskfile)
+       write(logunit,F01)' nx_global         = ',nx_global
+       write(logunit,F01)' ny_global         = ',ny_global
+       write(logunit,F00)' restfilm          = ',trim(restfilm)
        write(logunit,F02)' skip_restart_read = ',skip_restart_read
-       write(logunit,F02)' get_import_data = ',get_import_data
+       write(logunit,F02)' get_import_data   = ',get_import_data
+       write(logunit,F00)' import_data_flds  = ',trim(import_data_fields)
     endif
 
     ! Broadcast namelist input
-    call shr_mpi_bcast(datamode                  , mpicom, 'datamode')
-    call shr_mpi_bcast(model_meshfile            , mpicom, 'model_meshfile')
-    call shr_mpi_bcast(model_maskfile            , mpicom, 'model_maskfile')
-    call shr_mpi_bcast(nx_global                 , mpicom, 'nx_global')
-    call shr_mpi_bcast(ny_global                 , mpicom, 'ny_global')
-    call shr_mpi_bcast(restfilm                  , mpicom, 'restfilm')
-    call shr_mpi_bcast(sst_constant_value        , mpicom, 'sst_constant_value')
-    call shr_mpi_bcast(skip_restart_read         , mpicom, 'skip_restart_read')
-    call shr_mpi_bcast(get_import_data           , mpicom, 'get_import_data')
+    call shr_mpi_bcast(datamode           , mpicom, 'datamode')
+    call shr_mpi_bcast(model_meshfile     , mpicom, 'model_meshfile')
+    call shr_mpi_bcast(model_maskfile     , mpicom, 'model_maskfile')
+    call shr_mpi_bcast(nx_global          , mpicom, 'nx_global')
+    call shr_mpi_bcast(ny_global          , mpicom, 'ny_global')
+    call shr_mpi_bcast(restfilm           , mpicom, 'restfilm')
+    call shr_mpi_bcast(sst_constant_value , mpicom, 'sst_constant_value')
+    call shr_mpi_bcast(skip_restart_read  , mpicom, 'skip_restart_read')
+    call shr_mpi_bcast(get_import_data    , mpicom, 'get_import_data')
+    call shr_mpi_bcast(import_data_fields , mpicom, 'import_data_fields')
 
     ! Special logic for prescribed aquaplanet
     if (datamode(1:9) == 'sst_aquap' .and. trim(datamode) /= 'sst_aquap_constant') then
@@ -298,7 +300,7 @@ contains
     end if
 
     if (get_import_data) then
-       call docn_import_data_advertise(importState, fldsImport, flds_scalar_name, rc)
+       call docn_import_data_advertise(importState, fldsImport, flds_scalar_name, import_data_fields, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
