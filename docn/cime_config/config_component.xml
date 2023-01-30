@@ -251,24 +251,6 @@
     This is only used when DOCN_MODE=prescribed.</desc>
   </entry>
 
-  <entry id="DOCN_CPLHIST_DIR">
-    <type>char</type>
-    <valid_values></valid_values>
-    <default_value>UNSET</default_value>
-    <group>run_component_docn</group>
-    <file>env_run.xml</file>
-    <desc>directory for coupler history data mode (only used for when DOCN_MODE is CPLHIST)</desc>
-  </entry>
-
-  <entry id="DOCN_CPLHIST_CASE">
-    <type>char</type>
-    <valid_values></valid_values>
-    <default_value>UNSET</default_value>
-    <group>run_component_docn</group>
-    <file>env_run.xml</file>
-    <desc>case name used to determine stream filenames when DOCN_MODE is CPLHIST</desc>
-  </entry>
-
   <entry id="DOCN_CPLHIST_YR_ALIGN">
     <type>integer</type>
     <valid_values></valid_values>
