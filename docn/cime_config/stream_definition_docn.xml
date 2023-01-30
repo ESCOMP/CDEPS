@@ -186,7 +186,7 @@
       <var>ocnImp_So_bldepth So_bldepth</var>
       <var>ocnImp_So_t       So_t</var>
       <var>ocnImp_So_u       So_u</var>
-      <var>ocnImp_So_v       So_topo</var>
+      <var>ocnImp_So_v       So_v</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
