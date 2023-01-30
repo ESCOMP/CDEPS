@@ -77,7 +77,6 @@ contains
       integer          :: i,k,n ! generic indecies
       integer          :: nflds ! allocatable size of flds
       integer          :: count ! counts occurances of char
-      integer          :: kFlds ! number of fields in list
       integer          :: i0,i1 ! name = list(i0:i1)
       integer          :: nChar ! temporary
       logical          :: valid ! check if str is valid
