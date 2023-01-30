@@ -204,27 +204,15 @@
     </values>
   </entry>
 
-  <entry id="get_import_data">
-    <type>logical</type>
-    <category>docn</category>
-    <group>docn_nml</group>
-    <desc>
-      If set to true, then advertise will include import fields normally sent to prognostic ocean.
-    </desc>
-    <values>
-      <value>.false.</value>
-    </values>
-  </entry>
-
-  <entry id="import_data_fields">
+  <entry id="import_data_fields" modify_via_xml="DOCN_IMPORT_FIELDS">
     <type>char</type>
     <category>docn</category>
     <group>docn_nml</group>
     <desc>
-      If get_import_data is true, then colon delimited set of fields to advertise as import data
+      Colon delimited set of fields to advertise as import data
     </desc>
     <values>
-      <value>Faxa_bcph:Faxa_dstdry:Faxa_dstwet:So_duu10n:Si_ifrac</value>
+      <value>$DOCN_IMPORT_FIELDS</value>
     </values>
   </entry>
 

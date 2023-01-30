@@ -318,6 +318,14 @@
     </desc>
   </entry>
 
+  <entry id="DOCN_IMPORT_FIELDS">
+    <type>char</type>
+    <default_value>none</default_value>
+    <group>run_component_docn</group>
+    <file>env_run.xml</file>
+    <desc>none or colon deliminted string of import fields that DOCN will advertise</desc>
+  </entry>
+
   <help>
     =========================================
     DOCN naming conventions

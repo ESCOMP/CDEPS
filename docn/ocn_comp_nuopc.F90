@@ -189,7 +189,6 @@ contains
     integer           :: nu                 ! unit number
     integer           :: ierr               ! error code
     logical           :: exists             ! check for file existence
-    logical           :: get_import_data    ! if true, obtain atm import data even if its not used
     character(len=CL) :: import_data_fields ! colon deliminted strings of input data fields
     character(len=*),parameter :: subname=trim(module_name)//':(InitializeAdvertise) '
     character(*)    ,parameter :: F00 = "('(" // trim(module_name) // ") ',8a)"
@@ -201,7 +200,7 @@ contains
     namelist / docn_nml / datamode, &
          model_meshfile, model_maskfile, &
          restfilm,  nx_global, ny_global, sst_constant_value, skip_restart_read, &
-         get_import_data, import_data_fields
+         import_data_fields
 
     rc = ESMF_SUCCESS
 
@@ -238,7 +237,6 @@ contains
        write(logunit,F01)' ny_global         = ',ny_global
        write(logunit,F00)' restfilm          = ',trim(restfilm)
        write(logunit,F02)' skip_restart_read = ',skip_restart_read
-       write(logunit,F02)' get_import_data   = ',get_import_data
        write(logunit,F00)' import_data_flds  = ',trim(import_data_fields)
     endif
 
@@ -251,7 +249,6 @@ contains
     call shr_mpi_bcast(restfilm           , mpicom, 'restfilm')
     call shr_mpi_bcast(sst_constant_value , mpicom, 'sst_constant_value')
     call shr_mpi_bcast(skip_restart_read  , mpicom, 'skip_restart_read')
-    call shr_mpi_bcast(get_import_data    , mpicom, 'get_import_data')
     call shr_mpi_bcast(import_data_fields , mpicom, 'import_data_fields')
 
     ! Special logic for prescribed aquaplanet
@@ -299,7 +296,7 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
-    if (get_import_data) then
+    if (trim(import_data_fields) /= 'none') then
        call docn_import_data_advertise(importState, fldsImport, flds_scalar_name, import_data_fields, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
