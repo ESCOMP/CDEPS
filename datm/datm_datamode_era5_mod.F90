@@ -5,7 +5,6 @@ module datm_datamode_era5_mod
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_sys_mod      , only : shr_sys_abort
   use shr_precip_mod   , only : shr_precip_partition_rain_snow_ramp
-  use shr_mpi_mod      , only : shr_mpi_max
   use shr_const_mod    , only : shr_const_tkfrz, shr_const_rhofw, shr_const_rdair
   use dshr_methods_mod , only : dshr_state_getfldptr, chkerr
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_get_stream_pointer
@@ -49,7 +48,8 @@ module datm_datamode_era5_mod
   real(r8), pointer :: Faxa_lat(:)          => null()
   real(r8), pointer :: Faxa_taux(:)         => null()
   real(r8), pointer :: Faxa_tauy(:)         => null()
-  real(r8), pointer :: Faxa_ndep(:,:)       => null()
+!
+!  real(r8), pointer :: Faxa_ndep(:,:)       => null()
 
   ! stream data
   real(r8), pointer :: strm_tdew(:)         => null()
@@ -196,6 +196,7 @@ contains
 
   !===============================================================================
   subroutine datm_datamode_era5_advance(exportstate, mainproc, logunit, mpicom, target_ymd, target_tod, model_calendar, rc)
+    use ESMF, only: ESMF_VMGetCurrent, ESMF_VMAllReduce, ESMF_REDUCE_MAX, ESMF_VM
 
     ! input/output variables
     type(ESMF_State)       , intent(inout) :: exportState
@@ -211,28 +212,32 @@ contains
     logical  :: first_time = .true.
     integer  :: n                   ! indices
     integer  :: lsize               ! size of attr vect
-    real(r8) :: rtmp
+    real(r8) :: rtmp(2)
     real(r8) :: t2, pslv
-    real(r8) :: vp
     real(r8) :: e, qsat
+    type(ESMF_VM) :: vm
     character(len=*), parameter :: subname='(datm_datamode_era5_advance): '
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
 
     lsize = size(strm_tdew)
-
     if (first_time) then
+       call ESMF_VMGetCurrent(vm, rc=rc)
        ! determine t2max (see below for use)
        if (associated(Sa_t2m)) then
-         rtmp = maxval(Sa_t2m(:))
-         call shr_mpi_max(rtmp, t2max, mpicom, 'datm_t2m', all=.true.)
+         rtmp(1) = maxval(Sa_t2m(:))
+
+         call ESMF_VMAllReduce(vm, rtmp, rtmp(2:), 1, ESMF_REDUCE_MAX, rc=rc)
+         t2max = rtmp(2)
          if (mainproc) write(logunit,*) trim(subname),' t2max = ',t2max
        end if
 
        ! determine tdewmax (see below for use)
-       rtmp = maxval(strm_tdew(:))
-       call shr_mpi_max(rtmp, td2max, mpicom, 'datm_td2m', all=.true.)
+       rtmp(1) = maxval(strm_tdew(:))
+       call ESMF_VMAllReduce(vm, rtmp, rtmp(2:), 1, ESMF_REDUCE_MAX, rc=rc)
+       td2max = rtmp(2)
+
        if (mainproc) write(logunit,*) trim(subname),' td2max = ',td2max
 
        ! reset first_time
@@ -272,7 +277,7 @@ contains
     if (associated(Faxa_swvdf)) Faxa_swvdf(:) = Faxa_swdn(:)*Faxa_swvdf(:)
     if (associated(Faxa_swndf)) Faxa_swndf(:) = Faxa_swdn(:)*Faxa_swndf(:)
 
-    !--- TODO: need to understand relationship between shortwave bands and 
+    !--- TODO: need to understand relationship between shortwave bands and
     !--- net shortwave rad. currently it is provided directly from ERA5
     !--- and the total of the bands are not consistent with the swnet
     !--- swnet: a diagnostic quantity ---

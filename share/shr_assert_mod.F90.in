@@ -6,7 +6,8 @@ use shr_kind_mod, only: &
      r4 => shr_kind_r4, &
      r8 => shr_kind_r8, &
      i4 => shr_kind_i4, &
-     i8 => shr_kind_i8
+     i8 => shr_kind_i8, &
+     CL => shr_kind_CL
 
 use shr_sys_mod, only: &
      shr_sys_abort
@@ -79,8 +80,8 @@ subroutine shr_assert(var, msg, file, line)
   character(len=*), intent(in), optional :: file
   integer         , intent(in), optional :: line
 
-  character(len=:), allocatable :: full_msg
-  
+  character(len=CL) :: full_msg
+
   full_msg = ''
   if (.not. var) then
      full_msg = 'ERROR'

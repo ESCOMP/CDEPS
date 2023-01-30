@@ -8,6 +8,7 @@ module cdeps_dice_comp
   ! This is the NUOPC cap for DICE
   !----------------------------------------------------------------------------
 
+  use ESMF                 , only : ESMF_VM, ESMF_VMBroadcast, ESMF_GridCompGet
   use ESMF                 , only : ESMF_Mesh, ESMF_GridComp, ESMF_State, ESMF_Clock
   use ESMF                 , only : ESMF_SUCCESS, ESMF_Time, ESMF_LogWrite, ESMF_LOGMSG_INFO
   use ESMF                 , only : ESMF_TraceRegionEnter, ESMF_TraceRegionExit
@@ -25,9 +26,9 @@ module cdeps_dice_comp
   use NUOPC_Model          , only : NUOPC_ModelGet, SetVM
   use shr_kind_mod         , only : r8=>shr_kind_r8, cxx=>shr_kind_cxx, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_const_mod        , only : shr_const_pi
+  use shr_log_mod         , only : shr_log_setLogUnit
   use shr_sys_mod          , only : shr_sys_abort
   use shr_cal_mod          , only : shr_cal_ymd2date, shr_cal_ymd2julian
-  use shr_mpi_mod          , only : shr_mpi_bcast
   use dshr_mod             , only : dshr_model_initphase, dshr_init, dshr_mesh_init, dshr_check_restart_alarm
   use dshr_mod             , only : dshr_state_setscalar, dshr_set_runclock, dshr_log_clock_advance
   use dshr_methods_mod     , only : dshr_state_diagnose, chkerr, memcheck
@@ -170,7 +171,9 @@ contains
     character(len=CL) :: cvalue             ! temporary
     integer           :: nu                 ! unit number
     integer           :: ierr               ! error code
-    logical           :: exists             ! check for file existence
+    integer           :: bcasttmp(4)
+    real(r8)          :: rbcasttmp(3)
+    type(ESMF_VM)     :: vm
     character(len=*),parameter  :: subname=trim(modName)//':(InitializeAdvertise) '
     character(*)    ,parameter :: F00 = "('(" // trim(modName) // ") ',8a)"
     character(*)    ,parameter :: F01 = "('(" // trim(modName) // ") ',a,2x,i8)"
@@ -178,7 +181,7 @@ contains
     character(*)    ,parameter :: F03 = "('(" // trim(modName) // ") ',a,d13.5)"
     !-------------------------------------------------------------------------------
 
-    namelist / dice_nml / case_name, datamode, &
+    namelist / dice_nml /  datamode, &
          model_meshfile, model_maskfile, &
          restfilm, nx_global, ny_global, flux_swpf, flux_Qmin, flux_Qacc, flux_Qacc0
 
@@ -219,19 +222,40 @@ contains
        write(logunit,F02)' flux_Qacc  = ',flux_Qacc
        write(logunit,F03)' flux_Qacc0 = ',flux_Qacc0
        write(logunit,F00)' restfilm = ',trim(restfilm)
+       bcasttmp = 0
+       bcasttmp(1) = nx_global
+       bcasttmp(2) = ny_global
+       if(flux_Qacc) bcasttmp(3) = 1
+       rbcasttmp(1) = flux_swpf
+       rbcasttmp(2) = flux_Qmin
+       rbcasttmp(3) = flux_Qacc0
     endif
 
     ! broadcast namelist input
-    call shr_mpi_bcast(datamode       , mpicom, 'datamode')
-    call shr_mpi_bcast(model_meshfile , mpicom, 'model_meshfile')
-    call shr_mpi_bcast(model_maskfile , mpicom, 'model_maskfile')
-    call shr_mpi_bcast(nx_global      , mpicom, 'nx_global')
-    call shr_mpi_bcast(ny_global      , mpicom, 'ny_global')
-    call shr_mpi_bcast(restfilm       , mpicom, 'restfilm')
-    call shr_mpi_bcast(flux_swpf      , mpicom, 'flux_swpf')
-    call shr_mpi_bcast(flux_Qmin      , mpicom, 'flux_Qmin')
-    call shr_mpi_bcast(flux_Qacc      , mpicom, 'flux_Qacc')
-    call shr_mpi_bcast(flux_Qacc0     , mpicom, 'flux_Qacc0')
+    call ESMF_GridCompGet(gcomp, vm=vm, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    call ESMF_VMBroadcast(vm, datamode, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, model_meshfile, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, model_maskfile, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, restfilm, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, bcasttmp, 3, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, rbcasttmp, 3, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    nx_global = bcasttmp(1)
+    ny_global = bcasttmp(2)
+    flux_Qacc = (bcasttmp(3) == 1)
+
+    flux_swpf  = rbcasttmp(1)
+    flux_Qmin  = rbcasttmp(2)
+    flux_Qacc0 = rbcasttmp(3)
+
 
     ! Validate datamode
     if ( trim(datamode) == 'ssmi' .or. trim(datamode) == 'ssmi_iaf') then
@@ -372,7 +396,6 @@ contains
     ! local variables
     type(ESMF_State)        :: importState, exportState
     type(ESMF_Clock)        :: clock
-    type(ESMF_Alarm)        :: alarm
     type(ESMF_TimeInterval) :: timeStep
     type(ESMF_Time)         :: currTime, nextTime
     real(R8)                :: cosarg        ! for setting ice temp pattern
@@ -389,6 +412,7 @@ contains
     if (.not. valid_ice) then
        RETURN
     end if
+    call shr_log_setLogUnit(logunit)
 
     rc = ESMF_SUCCESS
 

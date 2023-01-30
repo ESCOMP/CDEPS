@@ -7,7 +7,7 @@ module cdeps_dlnd_comp
   !----------------------------------------------------------------------------
   ! This is the NUOPC cap for DLND
   !----------------------------------------------------------------------------
-
+  use ESMF              , only : ESMF_VM, ESMF_VMBroadcast, ESMF_GridCompGet
   use ESMF              , only : ESMF_Mesh, ESMF_GridComp, ESMF_SUCCESS, ESMF_LOGMSG_INFO
   use ESMF              , only : ESMF_LogWrite, ESMF_TraceRegionExit, ESMF_TraceRegionEnter
   use ESMF              , only : ESMF_Clock, ESMF_Alarm, ESMF_State, ESMF_ClockGet, ESMF_timeGet
@@ -25,7 +25,7 @@ module cdeps_dlnd_comp
   use shr_kind_mod      , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_sys_mod       , only : shr_sys_abort
   use shr_cal_mod       , only : shr_cal_ymd2date
-  use shr_mpi_mod       , only : shr_mpi_bcast
+  use shr_log_mod     , only : shr_log_setLogUnit
   use dshr_methods_mod  , only : dshr_state_getfldptr, dshr_state_diagnose, chkerr, memcheck
   use dshr_strdata_mod  , only : shr_strdata_type, shr_strdata_advance, shr_strdata_get_stream_domain
   use dshr_strdata_mod  , only : shr_strdata_init_from_config
@@ -75,7 +75,8 @@ module cdeps_dlnd_comp
   character(CL)            :: model_maskfile = nullstr            ! full pathname to obtain mask from
   character(CL)            :: streamfilename                      ! filename to obtain stream info from
   character(CL)            :: nlfilename = nullstr                ! filename to obtain namelist info from
-  logical                  :: force_prognostic_true = .false.     ! if true set prognostic true
+!  not currently used
+!  logical                  :: force_prognostic_true = .false.     ! if true set prognostic true
   character(CL)            :: restfilm = nullstr                  ! model restart file namelist
   integer                  :: nx_global                           ! global nx dimension of model mesh
   integer                  :: ny_global                           ! global ny dimension of model mesh
@@ -162,10 +163,11 @@ contains
     integer, intent(out) :: rc
 
     ! local variables
+    type(ESMF_VM) :: vm
     character(CL) :: cvalue
     integer       :: nu         ! unit number
+    integer       :: bcasttmp(3)
     integer       :: ierr       ! error code
-    logical           :: exists     ! check for file existence
     character(len=*) , parameter :: subname=trim(modName)//':(InitializeAdvertise) '
     character(*)     , parameter :: F00 = "('(" // trim(modName) // ") ',8a)"
     character(*)     , parameter :: F01 = "('(" // trim(modName) // ") ',a,2x,i8)"
@@ -200,14 +202,27 @@ contains
           write(logunit,*) 'ERROR: reading input namelist, '//trim(nlfilename)//' iostat=',ierr
           call shr_sys_abort(subName//': namelist read error '//trim(nlfilename))
        end if
+       bcasttmp = 0
+       bcasttmp(1) = nx_global
+       bcasttmp(2) = ny_global
+       if(skip_restart_read) bcasttmp(3) = 1
     end if
-    call shr_mpi_bcast(datamode                  , mpicom, 'datamode')
-    call shr_mpi_bcast(model_meshfile            , mpicom, 'model_meshfile')
-    call shr_mpi_bcast(model_maskfile            , mpicom, 'model_maskfile')
-    call shr_mpi_bcast(nx_global                 , mpicom, 'nx_global')
-    call shr_mpi_bcast(ny_global                 , mpicom, 'ny_global')
-    call shr_mpi_bcast(restfilm                  , mpicom, 'restfilm')
-    call shr_mpi_bcast(skip_restart_read         , mpicom, 'skip_restart_read')
+    call ESMF_GridCompGet(gcomp, vm=vm, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    call ESMF_VMBroadcast(vm, datamode, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, model_meshfile, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, model_maskfile, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, restfilm, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, bcasttmp, 3, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    nx_global = bcasttmp(1)
+    ny_global = bcasttmp(2)
+    skip_restart_read = (bcasttmp(3) == 1)
 
     ! write namelist input to standard out
     if (my_task == main_task) then
@@ -317,7 +332,6 @@ contains
     ! local variables
     type(ESMF_State)        :: importState, exportState
     type(ESMF_Clock)        :: clock
-    type(ESMF_Alarm)        :: alarm
     type(ESMF_TimeInterval) :: timeStep
     type(ESMF_Time)         :: currTime, nextTime
     integer                 :: next_ymd      ! model date
@@ -330,7 +344,7 @@ contains
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
-
+    call shr_log_setLogUnit(logunit)
     call memcheck(subname, 5, my_task==main_task)
 
     ! query the Component for its clock, importState and exportState

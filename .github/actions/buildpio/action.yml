@@ -1,0 +1,78 @@
+name: Parallelio build and cache
+description: 'Build the parallelio library'
+inputs:
+  parallelio_version:
+    description: 'Tag in the parallelio repository to use'
+    default: pio2_5_10
+    required: False
+    type: string
+  netcdf_c_path:
+    description: 'Path to the installed netcdf c code root'
+    default: /usr
+    required: False
+    type: string
+  netcdf_fortran_path:
+    description: 'Path to the installed netcdf fortran code root'
+    default:
+    required: False
+    type: string
+  pnetcdf_path:
+    description: 'Path to the installed pnetcdf code root'
+    default:
+    required: False
+    type: string
+  enable_hdf5_logging:
+    description: 'Enable hdf5 logging'
+    default: False
+    required: False
+    type: boolean
+  install_prefix:
+    description: 'Install path of parallelio'
+    default: $HOME/parallelio
+    required: False
+    type: string
+  enable_examples:
+    description: 'Enable build of ParallelIO examples'
+    default: False
+    required: False
+    type: boolean
+  enable_logging:
+    description: 'Enable ParallelIO verbose logging'
+    default: False
+    required: False
+    type: boolean
+  enable_timing:
+    description: 'Enable ParallelIO gptl timing library'
+    default: False
+    required: False
+    type: boolean
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v3
+      with:
+        repository: NCAR/ParallelIO
+        path: parallelio-src
+        ref: ${{ inputs.parallelio_version }}
+    - id : Build-ParallelIO
+      shell: bash
+      run: |
+        mkdir build-pio
+        pushd build-pio
+        if [ -z "${{ inputs.pnetcdf_path }}" ]
+        then
+          pnetarg="-DPIO_ENABLE_PNETCDF=OFF"
+        else
+          pnetarg="-DPNetCDF_PATH=${{ inputs.pnetcdf_path }}"
+        fi
+        if [ -z "${{ inputs.netcdf_fortran_path }}" ]
+        then
+          nfarg="-DPIO_ENABLE_FORTRAN=OFF"
+        else
+          nfarg="-DNetCDF_Fortran_PATH=${{ inputs.netcdf_fortran_path }}"
+        fi
+        cmake -Wno-dev -DNetCDF_C_LIBRARY=${{ inputs.netcdf_c_path }}/lib/x86_64-linux-gnu/libnetcdf.so -DNetCDF_C_INCLUDE_DIR=${{ inputs.netcdf_c_path }}/include -DCMAKE_PREFIX_PATH=/usr -DCMAKE_INSTALL_PREFIX=${{ inputs.install_prefix }} -DPIO_HDF5_LOGGING=${{ inputs.enable_hdf5_logging }} -DPIO_ENABLE_EXAMPLES=Off -DPIO_ENABLE_LOGGING=${{ inputs.enable_logging }} -DPIO_ENABLE_TIMING=${{ inputs.enable_timing }} $nfarg $pnetarg ../parallelio-src
+        make VERBOSE=1
+        make install
+        popd

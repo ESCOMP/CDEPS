@@ -192,7 +192,7 @@ contains
 
     ! local variables
     type(ESMF_VM) :: vm
-    integer       :: i, localPet
+    integer       :: localPet
     character(len=*), parameter  :: subname='(shr_strdata_init_from_config)'
     ! ----------------------------------------------
     rc = ESMF_SUCCESS
@@ -389,7 +389,6 @@ contains
     logical                      :: mainproc
     integer                      :: nvars
     integer                      :: i, stream_nlev, index
-    integer,  allocatable        :: mask(:)
     character(CL)                :: stream_vector_names
     character(len=*), parameter  :: subname='(shr_sdat_init)'
     ! ----------------------------------------------
@@ -861,7 +860,6 @@ contains
     integer                             :: datayear,datamonth,dataday   ! data date year month day
     integer                             :: nstreams
     integer                             :: stream_index
-    integer                             :: lsize
     real(r8)         ,parameter         :: solZenMin = 0.001_r8 ! minimum solar zenith angle
     integer          ,parameter         :: tadj = 2
     character(len=*) ,parameter         :: timname = "_strd_adv"
@@ -891,7 +889,10 @@ contains
     if (nstreams < 1) return ! TODO: is this needed
 
     lstr = trim(istr)
-
+    ! To avoid an unused dummy variable warning
+    if(present(timers)) then
+       write(sdat%stream(1)%logunit,*) trim(subname),'optional variable timers present but unused'
+    endif
     call ESMF_TraceRegionEnter(trim(lstr)//trim(timname)//'_total')
 
     sdat%ymd = ymd
@@ -1229,7 +1230,7 @@ contains
     character(len=*)       , intent(in) :: name
 
     ! local variables
-    integer  :: ns,n
+    integer  :: ns
     character(*),parameter :: subName = "(shr_strdata_print) "
     character(*),parameter ::   F00 = "('(shr_strdata_print) ',8a)"
     character(*),parameter ::   F01 = "('(shr_strdata_print) ',a,i6,a)"
