@@ -39,23 +39,29 @@ copyall (``wav_comp_nuopc.F90``)
 .. _dwav-cime-vars:
 
 ---------------------------------------
-Configuring DWAV from CIME
+Configuring DWAV using the CIME-CCS
 ---------------------------------------
 
 If CDEPS is coupled to the CIME-CCS then the CIME ``$CASEROOT`` xml
-variable ``DWAV_MODE`` sets the collection of streams that
-are associated with DWAV and also sets the DWAV namelist variable
-``datamode`` in the file ``dwav_in``. The following are the supported
-DROF ``datamode`` values, as defined in the file
-``namelist_definition_dwav.xml``.
+variable ``DWAV_MODE`` will be generated based on the compset
+specification ``DWAV%{DWAV_MODE}``.  ``DWAV_MODE`` will in term be
+used in the ``namelist_definition_dwav.xml`` file to determine the
+collection of streams that are associated with DWAV and also sets the
+dwav namelist variable ``datamode`` in the file ``dwav_in``.
 
-The following table describes the valid values of ``DWAV_MODE``
+The following list describes the valid values of ``DWAV_MODE``
 (defined in the ``config_component.xml`` file for DWAV), and how they
 relate to the associated input streams and the ``datamode`` namelist
-variable. CIME will generate a value of ``DWAV_MODE`` based on the
-compset.
+variable.
 
-CLIMO
+DWAV%CLIMO
    - Reads data from wave climatology file
+   - dwav_mode: CLIMO
    - streams: climo
    - datamode: copyall
+
+In addition, the following DICE specific CIME-CCS xml variables will appear in ``$CASEROOT/env_run.xml``:
+
+DWAV_SKIP_RESTART_READ
+   - If set to true, than dice restarts will not be read on a continuation run.
+     

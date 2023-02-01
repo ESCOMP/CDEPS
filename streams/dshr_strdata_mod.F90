@@ -1009,11 +1009,11 @@ contains
 
                    if ((sdat%pstrm(ns)%dtmax/sdat%pstrm(ns)%dtmin) > sdat%stream(ns)%dtlimit) then
                       if (sdat%mainproc) then
-                         write(sdat%stream(1)%logunit,*) trim(subname),' ERROR: for stream ',ns
-                         write(sdat%stream(1)%logunit,*) trim(subname),' ERROR: dday = ',dday
-                         write(sdat%stream(1)%logunit,*) trim(subName),' ERROR: dtime, dtmax, dtmin, dtlimit = ',&
+                         write(sdat%stream(1)%logunit,'(a,i8)') trim(subname),' ERROR: for stream ',ns
+                         write(sdat%stream(1)%logunit,'(a,i8)') trim(subname),' ERROR: dday = ',dday
+                         write(sdat%stream(1)%logunit,'(a,4(f15.5,2x))') trim(subName),' ERROR: dtime, dtmax, dtmin, dtlimit = ',&
                               dtime, sdat%pstrm(ns)%dtmax, sdat%pstrm(ns)%dtmin, sdat%stream(ns)%dtlimit
-                         write(sdat%stream(1)%logunit,*) trim(subName),' ERROR: ymdLB, todLB, ymdUB, todUB = ', &
+                         write(sdat%stream(1)%logunit,'(a,4(i10,2x))') trim(subName),' ERROR: ymdLB, todLB, ymdUB, todUB = ', &
                               sdat%pstrm(ns)%ymdLB, sdat%pstrm(ns)%todLB, sdat%pstrm(ns)%ymdUB, sdat%pstrm(ns)%todUB
                       end if
                       write(6,*) trim(subname),' ERROR: for stream ',ns, ' and calendar ',trim(calendar)

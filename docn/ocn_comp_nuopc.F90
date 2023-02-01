@@ -53,6 +53,12 @@ module cdeps_docn_comp
   use docn_datamode_aquaplanet_mod , only : docn_datamode_aquaplanet_advertise
   use docn_datamode_aquaplanet_mod , only : docn_datamode_aquaplanet_init_pointers
   use docn_datamode_aquaplanet_mod , only : docn_datamode_aquaplanet_advance
+  use docn_datamode_cplhist_mod    , only : docn_datamode_cplhist_advertise
+  use docn_datamode_cplhist_mod    , only : docn_datamode_cplhist_init_pointers
+  use docn_datamode_cplhist_mod    , only : docn_datamode_cplhist_advance
+  use docn_datamode_cplhist_mod    , only : docn_datamode_cplhist_restart_read
+  use docn_datamode_cplhist_mod    , only : docn_datamode_cplhist_restart_write
+  use docn_import_data_mod         , only : docn_import_data_advertise
 
   implicit none
   private ! except
@@ -182,6 +188,7 @@ contains
     integer           :: inst_index         ! number of current instance (ie. 1)
     integer           :: nu                 ! unit number
     integer           :: ierr               ! error code
+    character(len=CL) :: import_data_fields ! colon deliminted strings of input data fields
     integer           :: bcasttmp(3)
     real(r8)          :: rtmp(1)
     type(ESMF_VM)     :: vm
@@ -194,7 +201,8 @@ contains
 
     namelist / docn_nml / datamode, &
          model_meshfile, model_maskfile, &
-         restfilm,  nx_global, ny_global, sst_constant_value, skip_restart_read
+         restfilm,  nx_global, ny_global, sst_constant_value, skip_restart_read, &
+         import_data_fields
 
     rc = ESMF_SUCCESS
 
@@ -223,15 +231,17 @@ contains
        end if
 
        ! write namelist input to standard out
-       write(logunit,F00)' case_name = ',trim(case_name)
-       write(logunit,F00)' datamode  = ',trim(datamode)
-       write(logunit,F00)' model_meshfile = ',trim(model_meshfile)
-       write(logunit,F00)' model_maskfile = ',trim(model_maskfile)
-       write(logunit,F01)' nx_global = ',nx_global
-       write(logunit,F01)' ny_global = ',ny_global
-       write(logunit,F00)' restfilm = ',trim(restfilm)
+       write(logunit,F00)' case_name         = ',trim(case_name)
+       write(logunit,F00)' datamode          = ',trim(datamode)
+       write(logunit,F00)' model_meshfile    = ',trim(model_meshfile)
+       write(logunit,F00)' model_maskfile    = ',trim(model_maskfile)
+       write(logunit,F01)' nx_global         = ',nx_global
+       write(logunit,F01)' ny_global         = ',ny_global
+       write(logunit,F00)' restfilm          = ',trim(restfilm)
        write(logunit,F02)' skip_restart_read = ',skip_restart_read
+       write(logunit,F00)' import_data_fields = ',trim(import_data_fields)
        write(logunit,*)  ' sst_constant_value = ',sst_constant_value
+
        bcasttmp = 0
        bcasttmp(1) = nx_global
        bcasttmp(2) = ny_global
@@ -251,6 +261,8 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_VMBroadcast(vm, restfilm, CL, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, import_data_fields, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     call ESMF_VMBroadcast(vm, bcasttmp, 3, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -262,7 +274,6 @@ contains
     ny_global = bcasttmp(2)
     skip_restart_read = (bcasttmp(3) == 1)
     sst_constant_value = rtmp(1)
-
 
     ! Special logic for prescribed aquaplanet
     if (datamode(1:9) == 'sst_aquap' .and. trim(datamode) /= 'sst_aquap_constant') then
@@ -282,6 +293,7 @@ contains
          trim(datamode) == 'sst_aquap_file'     .or. & ! read stream, no import data
          trim(datamode) == 'som'                .or. & ! read stream, needs import data
          trim(datamode) == 'som_aquap'          .or. & ! read stream, needs import data
+         trim(datamode) == 'cplhist'            .or. & ! read stream, needs import data
          trim(datamode) == 'sst_aquap_analytic' .or. & ! analytic, no streams, import or export data
          trim(datamode) == 'sst_aquap_constant' ) then ! analytic, no streams, import or export data
        ! success do nothing
@@ -302,6 +314,14 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     else if (trim(datamode) == 'iaf') then
        call docn_datamode_iaf_advertise(importState, exportState, fldsImport, fldsExport, flds_scalar_name, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    else if (trim(datamode) == 'cplhist') then
+       call docn_datamode_cplhist_advertise(exportState, fldsExport, flds_scalar_name, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    end if
+
+    if (trim(import_data_fields) /= 'none') then
+       call docn_import_data_advertise(importState, fldsImport, flds_scalar_name, import_data_fields, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
@@ -522,6 +542,9 @@ contains
        case('sst_aquap_analytic', 'sst_aquap_constant')
           call  docn_datamode_aquaplanet_init_pointers(exportState, model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       case('cplhist')
+          call docn_datamode_cplhist_init_pointers(exportState, model_frac, rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end select
 
        ! Read restart if needed
@@ -576,6 +599,9 @@ contains
     case('sst_aquap_constant')
        call  docn_datamode_aquaplanet_advance(exportState, model_mesh, sst_constant_value=sst_constant_value, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    case('cplhist')
+       call  docn_datamode_cplhist_advance(rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end select
 
     ! Write restarts if needed (no restarts for aquaplanet analytic or aquaplanet input file)
@@ -589,6 +615,9 @@ contains
                logunit, my_task, sdat)
        case('som','som_aquap')
           call docn_datamode_som_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
+               logunit, my_task, sdat)
+       case('cplhist')
+          call docn_datamode_cplhist_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
                logunit, my_task, sdat)
        end select
     end if
