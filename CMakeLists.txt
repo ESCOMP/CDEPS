@@ -100,7 +100,7 @@ foreach(COMP datm dice dlnd docn drof dwav)
                                             $<INSTALL_INTERFACE:mod>)
 
   if(WERROR)
-     target_compile_options(${COMP} PRIVATE -Werror --warn-no-unused-dummy-argument)
+     target_compile_options(${COMP} PRIVATE -Werror --warn-no-unused-dummy-argument --warn-no-missing-include-dirs)
   endif()
   install(TARGETS ${COMP}
           EXPORT  ${COMP}
@@ -118,7 +118,7 @@ foreach(DEPS streams dshr cdeps_share FoX_dom FoX_wxml FoX_sax FoX_common FoX_ut
   string(SUBSTRING ${DEPS} 0 3 fox)
   if(WERROR AND NOT ${fox} STREQUAL "FoX")
      message("Adding Werror flag to ${DEPS} (fox = ${fox})")
-     target_compile_options(${DEPS} PRIVATE -Werror --warn-no-unused-dummy-argument)
+     target_compile_options(${DEPS} PRIVATE -Werror --warn-no-unused-dummy-argument --warn-no-missing-include-dirs)
   endif()
 
   install(TARGETS ${DEPS}
