@@ -9,7 +9,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>6. Data Ice (DICE) &mdash; CDEPS master documentation</title>
+  <title>6. Data Ice (DICE) &mdash; CDEPS main documentation</title>
   
 
   
@@ -40,7 +40,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="CDEPS master documentation" href="index.html"/>
+    <link rel="top" title="CDEPS main documentation" href="index.html"/>
         <link rel="next" title="7. Data Land (DLND)" href="dlnd.html"/>
         <link rel="prev" title="5. Data Ocean (DOCN)" href="docn.html"/> 
 
@@ -74,7 +74,7 @@
                 
                   <div class="version-dropdown">
                     <select class="version-list" id="version-list">
-                      <option value=''>master</option>
+                      <option value=''>main</option>
                       
                         
                       
@@ -214,30 +214,32 @@ derived from the passive microwave sensor SSM/I.</p></li>
 <section id="configuring-dice-from-cime">
 <span id="dice-cime-vars"></span><h2><span class="section-number">6.2. </span>Configuring DICE from CIME<a class="headerlink" href="#configuring-dice-from-cime" title="Permalink to this heading">¶</a></h2>
 <p>If CDEPS is coupled to the CIME-CCS then the CIME <code class="docutils literal notranslate"><span class="pre">$CASEROOT</span></code> xml
-variable <code class="docutils literal notranslate"><span class="pre">DICE_MODE</span></code> sets the collection of streams that
-are associated with DICE and also sets the dice namelist variable
-<code class="docutils literal notranslate"><span class="pre">datamode</span></code> in the file <code class="docutils literal notranslate"><span class="pre">dice_in</span></code>. The following are the supported
-DICE <code class="docutils literal notranslate"><span class="pre">datamode</span></code> values, as defined in the file
-<code class="docutils literal notranslate"><span class="pre">namelist_definition_dice.xml</span></code>.</p>
-<p>The following table describes the valid values of <code class="docutils literal notranslate"><span class="pre">DICE_MODE</span></code>
+variable <code class="docutils literal notranslate"><span class="pre">DICE_MODE</span></code> will be generated based on the compset
+specification <code class="docutils literal notranslate"><span class="pre">DICE%{DICE_MODE}</span></code>.  <code class="docutils literal notranslate"><span class="pre">DICE_MODE</span></code> will in term be
+used in the <code class="docutils literal notranslate"><span class="pre">namelist_definition_dice.xml</span></code> file to determine the
+collection of streams that are associated with DICE and also sets the
+dice namelist variable <code class="docutils literal notranslate"><span class="pre">datamode</span></code> in the file <code class="docutils literal notranslate"><span class="pre">dice_in</span></code>.</p>
+<p>The following list describes the valid values of <code class="docutils literal notranslate"><span class="pre">DICE_MODE</span></code>
 (defined in the <code class="docutils literal notranslate"><span class="pre">config_component.xml</span></code> file for DICE), and how they
 relate to the associated input streams and the <code class="docutils literal notranslate"><span class="pre">datamode</span></code> namelist
-variable. CIME will generate a value of <code class="docutils literal notranslate"><span class="pre">DICE_MODE</span></code> based on the
-compset.</p>
+variable.</p>
 <dl class="simple">
-<dt>ssmi</dt><dd><ul class="simple">
+<dt>DICE%SSMI</dt><dd><ul class="simple">
 <li><p>Reads data from file</p></li>
+<li><p>dice_mode: ssmi</p></li>
 <li><p>streams: ssmi_nyf</p></li>
 <li><p>datamode: ssmi</p></li>
 </ul>
 </dd>
-<dt>ssmi_iaf</dt><dd><ul class="simple">
+<dt>DICE%IAF</dt><dd><ul class="simple">
 <li><p>Reads data from file</p></li>
+<li><p>dice_mode: ssmi_iaf</p></li>
 <li><p>streams: ssmi_iaf</p></li>
 <li><p>datamode: ssmi_iaf</p></li>
 </ul>
 </dd>
 </dl>
+<p>There are currently no DICE other specific xml variables in <code class="docutils literal notranslate"><span class="pre">$CASEROOT/env_run.xml</span></code>.</p>
 </section>
 </section>
 

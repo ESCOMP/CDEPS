@@ -9,7 +9,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>7. Data Land (DLND) &mdash; CDEPS master documentation</title>
+  <title>7. Data Land (DLND) &mdash; CDEPS main documentation</title>
   
 
   
@@ -40,7 +40,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="CDEPS master documentation" href="index.html"/>
+    <link rel="top" title="CDEPS main documentation" href="index.html"/>
         <link rel="next" title="8. Data Runoff (DROF)" href="drof.html"/>
         <link rel="prev" title="6. Data Ice (DICE)" href="dice.html"/> 
 
@@ -74,7 +74,7 @@
                 
                   <div class="version-dropdown">
                     <select class="version-list" id="version-list">
-                      <option value=''>master</option>
+                      <option value=''>main</option>
                       
                         
                       
@@ -117,7 +117,7 @@
 <li class="toctree-l1"><a class="reference internal" href="dice.html">6. Data Ice (DICE)</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">7. Data Land (DLND)</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#supported-data-modes">7.1. Supported Data Modes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#configuring-dlnd-from-cime">7.2. Configuring DLND from CIME</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#configuring-dlnd-using-the-cime-ccs">7.2. Configuring DLND using the CIME-CCS</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="drof.html">8. Data Runoff (DROF)</a></li>
@@ -209,35 +209,66 @@ listed in parentheses next to the mode name.</p>
 </dd>
 </dl>
 </section>
-<section id="configuring-dlnd-from-cime">
-<span id="dlnd-cime-vars"></span><h2><span class="section-number">7.2. </span>Configuring DLND from CIME<a class="headerlink" href="#configuring-dlnd-from-cime" title="Permalink to this heading">¶</a></h2>
+<section id="configuring-dlnd-using-the-cime-ccs">
+<span id="dlnd-cime-vars"></span><h2><span class="section-number">7.2. </span>Configuring DLND using the CIME-CCS<a class="headerlink" href="#configuring-dlnd-using-the-cime-ccs" title="Permalink to this heading">¶</a></h2>
 <p>If CDEPS is coupled to the CIME-CCS then the CIME <code class="docutils literal notranslate"><span class="pre">$CASEROOT</span></code> xml
-variable <code class="docutils literal notranslate"><span class="pre">DLND_MODE</span></code> sets the collection of streams that
-are associated with DLND and also sets the dlnd namelist variable
-<code class="docutils literal notranslate"><span class="pre">datamode</span></code> in the file <code class="docutils literal notranslate"><span class="pre">dlnd_in</span></code>. The following are the supported
-DLND <code class="docutils literal notranslate"><span class="pre">datamode</span></code> values, as defined in the file
-<code class="docutils literal notranslate"><span class="pre">namelist_definition_dlnd.xml</span></code>.</p>
-<p>The following table describes the valid values of <code class="docutils literal notranslate"><span class="pre">DLND_MODE</span></code>
+variable <code class="docutils literal notranslate"><span class="pre">DLND_MODE</span></code> will be generated based on the compset
+specification <code class="docutils literal notranslate"><span class="pre">DLND%{DLND_MODE}</span></code>.  <code class="docutils literal notranslate"><span class="pre">DLND_MODE</span></code> will in term be
+used in the <code class="docutils literal notranslate"><span class="pre">namelist_definition_dlnd.xml</span></code> file to determine the
+collection of streams that are associated with DLND and also sets the
+dlnd namelist variable <code class="docutils literal notranslate"><span class="pre">datamode</span></code> in the file <code class="docutils literal notranslate"><span class="pre">dlnd_in</span></code>.</p>
+<p>The following list describes the valid values of <code class="docutils literal notranslate"><span class="pre">DLND_MODE</span></code>
 (defined in the <code class="docutils literal notranslate"><span class="pre">config_component.xml</span></code> file for DLND), and how they
 relate to the associated input streams and the <code class="docutils literal notranslate"><span class="pre">datamode</span></code> namelist
-variable. CIME will generate a value of <code class="docutils literal notranslate"><span class="pre">DLND_MODE</span></code> based on the
-compset.</p>
+variable.</p>
 <dl class="simple">
-<dt>LCPL</dt><dd><ul class="simple">
-<li><dl class="simple">
-<dt>Non-snow coupling mode. Land forcing data (produced by CLM) from a previous</dt><dd><p>model run is read in from a coupler history file.</p>
-</dd>
-</dl>
-</li>
+<dt>DLND%LCPL</dt><dd><ul class="simple">
+<li><p>Non-snow coupling mode. Land forcing data (produced by CLM) from a previous
+model run is read in from a coupler history file.</p></li>
+<li><p>dlnd_mode: SCPL</p></li>
 <li><p>streams: lnd.cplhist</p></li>
 <li><p>datamode: copyall</p></li>
 </ul>
 </dd>
-<dt>SCPL</dt><dd><ul class="simple">
+<dt>DLND%SCPL</dt><dd><ul class="simple">
 <li><p>Snow coupling mode. Glacier coupling data (produced by CISM) from a previous
 model run is read in from a coupler history file.</p></li>
+<li><p>dlnd_mode: LCPL</p></li>
 <li><p>streams: sno.cplhist</p></li>
 <li><p>datamode: copyall</p></li>
+</ul>
+</dd>
+</dl>
+<p>In addition, the following DLND specific CIME-CCS xml variables will appear in <code class="docutils literal notranslate"><span class="pre">$CASEROOT/env_run.xml</span></code>:</p>
+<dl class="simple">
+<dt>DLND_CPLHIST_DIR</dt><dd><ul class="simple">
+<li><p>directory for coupler history data mode</p></li>
+</ul>
+</dd>
+<dt>DLND_CPLHIST_CASE</dt><dd><ul class="simple">
+<li><p>case name for coupler history data mode</p></li>
+</ul>
+</dd>
+<dt>DLND_CPLHIST_YR_START</dt><dd><ul class="simple">
+<li><p>starting year to loop data over</p></li>
+</ul>
+</dd>
+<dt>DLND_CPLHIST_YR_ALIGN</dt><dd><ul class="simple">
+<li><p>Simulation year corresponding to DLND_CPLHIST_YR_START (only used
+when DLND_MODE is CPLHIST or GLC_CPLHIST). A common usage is to
+set this to RUN_STARTDATE. With this setting, the forcing in the
+first year of the run will be the forcing of year
+DLND_CPLHIST_YR_START. Another use case is to align the calendar
+of transient forcing with the model calendar. For example, setting
+DLND_CPLHIST_YR_ALIGN=DLND_CPLHIST_YR_START will lead to the
+forcing calendar being the same as the model calendar. The forcing
+for a given model year would be the forcing of the same year. This
+would be appropriate in transient runs where the model calendar is
+setup to span the same year range as the forcing data.</p></li>
+</ul>
+</dd>
+<dt>DLND_SKIP_RESTART_READ</dt><dd><ul class="simple">
+<li><p>If set to true, than dlnd restarts will not be read on a continuation run.</p></li>
 </ul>
 </dd>
 </dl>

@@ -4,7 +4,7 @@ Data Ice (DICE)
 ===============
 
 DICE is normally used to provide observational forcing data to
-drive prognostic components. The various ways of running DICE is 
+drive prognostic components. The various ways of running DICE is
 referred to as its mode.
 
 .. _dice-datamodes:
@@ -34,24 +34,27 @@ Configuring DICE from CIME
 ---------------------------------------
 
 If CDEPS is coupled to the CIME-CCS then the CIME ``$CASEROOT`` xml
-variable ``DICE_MODE`` sets the collection of streams that
-are associated with DICE and also sets the dice namelist variable
-``datamode`` in the file ``dice_in``. The following are the supported
-DICE ``datamode`` values, as defined in the file
-``namelist_definition_dice.xml``.
+variable ``DICE_MODE`` will be generated based on the compset
+specification ``DICE%{DICE_MODE}``.  ``DICE_MODE`` will in term be
+used in the ``namelist_definition_dice.xml`` file to determine the
+collection of streams that are associated with DICE and also sets the
+dice namelist variable ``datamode`` in the file ``dice_in``.
 
-The following table describes the valid values of ``DICE_MODE``
+The following list describes the valid values of ``DICE_MODE``
 (defined in the ``config_component.xml`` file for DICE), and how they
 relate to the associated input streams and the ``datamode`` namelist
-variable. CIME will generate a value of ``DICE_MODE`` based on the
-compset.
+variable.
 
-ssmi
+DICE%SSMI
    - Reads data from file
+   - dice_mode: ssmi
    - streams: ssmi_nyf
-   - datamode: ssmi 
+   - datamode: ssmi
 
-ssmi_iaf
-   - Reads data from file 
+DICE%IAF
+   - Reads data from file
+   - dice_mode: ssmi_iaf
    - streams: ssmi_iaf
-   - datamode: ssmi_iaf 
+   - datamode: ssmi_iaf
+
+There are currently no DICE other specific xml variables in ``$CASEROOT/env_run.xml``.

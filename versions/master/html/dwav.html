@@ -9,7 +9,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>9. Data Wave (DWAV) &mdash; CDEPS master documentation</title>
+  <title>9. Data Wave (DWAV) &mdash; CDEPS main documentation</title>
   
 
   
@@ -40,7 +40,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="CDEPS master documentation" href="index.html"/>
+    <link rel="top" title="CDEPS main documentation" href="index.html"/>
         <link rel="next" title="10. Extending CDEPS" href="extending.html"/>
         <link rel="prev" title="8. Data Runoff (DROF)" href="drof.html"/> 
 
@@ -74,7 +74,7 @@
                 
                   <div class="version-dropdown">
                     <select class="version-list" id="version-list">
-                      <option value=''>master</option>
+                      <option value=''>main</option>
                       
                         
                       
@@ -119,7 +119,7 @@
 <li class="toctree-l1"><a class="reference internal" href="drof.html">8. Data Runoff (DROF)</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">9. Data Wave (DWAV)</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#supported-data-modes">9.1. Supported Data Modes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#configuring-dwav-from-cime">9.2. Configuring DWAV from CIME</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#configuring-dwav-using-the-cime-ccs">9.2. Configuring DWAV using the CIME-CCS</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="extending.html">10. Extending CDEPS</a></li>
@@ -217,24 +217,31 @@ on an input stream will be set to zero.</p></li>
 <p><em>Sw_vstokes</em> = Stokes drift v component</p>
 </div>
 </section>
-<section id="configuring-dwav-from-cime">
-<span id="dwav-cime-vars"></span><h2><span class="section-number">9.2. </span>Configuring DWAV from CIME<a class="headerlink" href="#configuring-dwav-from-cime" title="Permalink to this heading">¶</a></h2>
+<section id="configuring-dwav-using-the-cime-ccs">
+<span id="dwav-cime-vars"></span><h2><span class="section-number">9.2. </span>Configuring DWAV using the CIME-CCS<a class="headerlink" href="#configuring-dwav-using-the-cime-ccs" title="Permalink to this heading">¶</a></h2>
 <p>If CDEPS is coupled to the CIME-CCS then the CIME <code class="docutils literal notranslate"><span class="pre">$CASEROOT</span></code> xml
-variable <code class="docutils literal notranslate"><span class="pre">DWAV_MODE</span></code> sets the collection of streams that
-are associated with DWAV and also sets the DWAV namelist variable
-<code class="docutils literal notranslate"><span class="pre">datamode</span></code> in the file <code class="docutils literal notranslate"><span class="pre">dwav_in</span></code>. The following are the supported
-DROF <code class="docutils literal notranslate"><span class="pre">datamode</span></code> values, as defined in the file
-<code class="docutils literal notranslate"><span class="pre">namelist_definition_dwav.xml</span></code>.</p>
-<p>The following table describes the valid values of <code class="docutils literal notranslate"><span class="pre">DWAV_MODE</span></code>
+variable <code class="docutils literal notranslate"><span class="pre">DWAV_MODE</span></code> will be generated based on the compset
+specification <code class="docutils literal notranslate"><span class="pre">DWAV%{DWAV_MODE}</span></code>.  <code class="docutils literal notranslate"><span class="pre">DWAV_MODE</span></code> will in term be
+used in the <code class="docutils literal notranslate"><span class="pre">namelist_definition_dwav.xml</span></code> file to determine the
+collection of streams that are associated with DWAV and also sets the
+dwav namelist variable <code class="docutils literal notranslate"><span class="pre">datamode</span></code> in the file <code class="docutils literal notranslate"><span class="pre">dwav_in</span></code>.</p>
+<p>The following list describes the valid values of <code class="docutils literal notranslate"><span class="pre">DWAV_MODE</span></code>
 (defined in the <code class="docutils literal notranslate"><span class="pre">config_component.xml</span></code> file for DWAV), and how they
 relate to the associated input streams and the <code class="docutils literal notranslate"><span class="pre">datamode</span></code> namelist
-variable. CIME will generate a value of <code class="docutils literal notranslate"><span class="pre">DWAV_MODE</span></code> based on the
-compset.</p>
+variable.</p>
 <dl class="simple">
-<dt>CLIMO</dt><dd><ul class="simple">
+<dt>DWAV%CLIMO</dt><dd><ul class="simple">
 <li><p>Reads data from wave climatology file</p></li>
+<li><p>dwav_mode: CLIMO</p></li>
 <li><p>streams: climo</p></li>
 <li><p>datamode: copyall</p></li>
+</ul>
+</dd>
+</dl>
+<p>In addition, the following DICE specific CIME-CCS xml variables will appear in <code class="docutils literal notranslate"><span class="pre">$CASEROOT/env_run.xml</span></code>:</p>
+<dl class="simple">
+<dt>DWAV_SKIP_RESTART_READ</dt><dd><ul class="simple">
+<li><p>If set to true, than dice restarts will not be read on a continuation run.</p></li>
 </ul>
 </dd>
 </dl>
