@@ -9,7 +9,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>1. Introduction &mdash; CDEPS master documentation</title>
+  <title>1. Introduction &mdash; CDEPS main documentation</title>
   
 
   
@@ -40,7 +40,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="CDEPS master documentation" href="index.html"/>
+    <link rel="top" title="CDEPS main documentation" href="index.html"/>
         <link rel="next" title="2. Input Streams" href="streams.html"/>
         <link rel="prev" title="CDEPS documentation" href="index.html"/> 
 
@@ -74,7 +74,7 @@
                 
                   <div class="version-dropdown">
                     <select class="version-list" id="version-list">
-                      <option value=''>master</option>
+                      <option value=''>main</option>
                       
                         
                       
@@ -114,6 +114,14 @@
 <li class="toctree-l2"><a class="reference internal" href="#code-tree">1.2. Code Tree</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#design">1.3. Design</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#cdeps-and-cime-control-system-ccs">1.4. CDEPS and CIME Control System (CCS)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#nuopc-cap">1.5. NUOPC Cap</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#initialization-phases">1.5.1. Initialization phases</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#run-phase">1.5.2. Run phase</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#finalization-phase">1.5.3. Finalization phase</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#integration-clock">1.5.4. Integration clock</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#grid-type-decomposition-mapping-to-internal-grid">1.5.5. Grid type, decomposition, mapping to internal grid</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="streams.html">2. Input Streams</a></li>
@@ -337,6 +345,66 @@ Each data model has an xml variable in <code class="docutils literal notranslate
 These are: <code class="docutils literal notranslate"><span class="pre">DATM_MODE</span></code>, <code class="docutils literal notranslate"><span class="pre">DICE_MODE</span></code>, <code class="docutils literal notranslate"><span class="pre">DLND_MODE</span></code>, <code class="docutils literal notranslate"><span class="pre">DOCN_MODE</span></code>, <code class="docutils literal notranslate"><span class="pre">DROF_MODE</span></code>, <code class="docutils literal notranslate"><span class="pre">DWAV_MODE</span></code>.
 Each data model mode specifies the streams that are associated with that data model.</p>
 <p>More details of the data model design are covered in <a class="reference internal" href="design_details.html#design-details"><span class="std std-ref">design details</span></a>.</p>
+</section>
+<section id="nuopc-cap">
+<h2><span class="section-number">1.5. </span>NUOPC Cap<a class="headerlink" href="#nuopc-cap" title="Permalink to this heading">¶</a></h2>
+<section id="initialization-phases">
+<h3><span class="section-number">1.5.1. </span>Initialization phases<a class="headerlink" href="#initialization-phases" title="Permalink to this heading">¶</a></h3>
+<p>The CDEPS data component has two initialization phases for each data model:
+(1) advertise and, (2) realize phases. In the advertise phase, the data
+component queries namelist files and specifies a data model mesh and mask
+files along with other stream-independent data model specific configuration
+variables. Then, the advertise phase initializes PIO for reading and writing
+netCDF files under CDEPS. As a last step, the top level advertise phase calls
+the stream specific one since advertised fields are changed based on used data
+mode. This will allow CDEPS to specialize based on the selected data mode
+and list of exported fields. In the realize phase, the data model
+reads the stream definition file and runs the data component to prepare
+initial data for other components.</p>
+</section>
+<section id="run-phase">
+<h3><span class="section-number">1.5.2. </span>Run phase<a class="headerlink" href="#run-phase" title="Permalink to this heading">¶</a></h3>
+<p>The CDEPS data component is designed to have a different run phase for each
+data mode, which is controlled by a top-level data component specific NUOPC “cap”.
+In the first advance step, the data model specific run phase initializes the
+export fields that have a corresponding stream field. Then, initializes the
+data mode specific stream and export field pointers. If it is required, the
+data model also reads the restart files in this initial step. The spatial and
+temporal interpolation is performed internally using ESMF provided spatial
+interpolation types and custom temporal interpolation routines if the data
+model and stream meshes are not identical. After interpolating (or transferring)
+stream to data model mesh, the top-level advance routine calls data mode
+specific routines, which are responsible to calculate added value fields
+(i.e., wind speed from wind components) and convert units of the data
+stream based on the convention used in CDEPS.</p>
+</section>
+<section id="finalization-phase">
+<h3><span class="section-number">1.5.3. </span>Finalization phase<a class="headerlink" href="#finalization-phase" title="Permalink to this heading">¶</a></h3>
+<p>The data model just returns a message that indicates the end of the main integration loop.</p>
+</section>
+<section id="integration-clock">
+<h3><span class="section-number">1.5.4. </span>Integration clock<a class="headerlink" href="#integration-clock" title="Permalink to this heading">¶</a></h3>
+<p>The CDEPS data component run time is set through the shared <code class="docutils literal notranslate"><span class="pre">dshr_set_runclock</span></code>
+routine. In this case, the driver configuration dictates the model start and stop
+times (through use of ESMF config file, <code class="docutils literal notranslate"><span class="pre">nuopc.runconfig</span></code>) and coupling interval to
+call the data component through the use of ESMF/NUOPC run sequence (<code class="docutils literal notranslate"><span class="pre">nuopc.runseq</span></code>).
+The <code class="docutils literal notranslate"><span class="pre">dshr_set_runclock</span></code> call also sets up ESMF alarms for restart and stop times
+that are used internally in the model and create internal clock representations.</p>
+</section>
+<section id="grid-type-decomposition-mapping-to-internal-grid">
+<h3><span class="section-number">1.5.5. </span>Grid type, decomposition, mapping to internal grid<a class="headerlink" href="#grid-type-decomposition-mapping-to-internal-grid" title="Permalink to this heading">¶</a></h3>
+<p>As it mentioned previously, CDEPS includes two programming layers to support flexible
+data components: (1) data model and (2) streams. In this design, the data model stays
+on top and interacts with the other active model components or mediator. Unlike the
+data models, streams do not directly interact with other components but are used by
+the data models to create export states. In this case, the streams could have different
+meshes but they are spatially mapped to data model mesh before passing to the other
+components. This step also includes temporal interpolation to calculate the data
+in a certain time and has ability to perform different temporal interpolation
+types for each variable such as <code class="docutils literal notranslate"><span class="pre">coszen</span></code>, which scale the data according to the
+cosine of the solar zenith angle and can be used to represent the diurnal
+cycle for solar radiation. The decomposition of the data is handled by the ESMF.</p>
+</section>
 </section>
 </section>
 

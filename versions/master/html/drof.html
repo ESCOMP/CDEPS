@@ -9,7 +9,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>8. Data Runoff (DROF) &mdash; CDEPS master documentation</title>
+  <title>8. Data Runoff (DROF) &mdash; CDEPS main documentation</title>
   
 
   
@@ -40,7 +40,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="CDEPS master documentation" href="index.html"/>
+    <link rel="top" title="CDEPS main documentation" href="index.html"/>
         <link rel="next" title="9. Data Wave (DWAV)" href="dwav.html"/>
         <link rel="prev" title="7. Data Land (DLND)" href="dlnd.html"/> 
 
@@ -74,7 +74,7 @@
                 
                   <div class="version-dropdown">
                     <select class="version-list" id="version-list">
-                      <option value=''>master</option>
+                      <option value=''>main</option>
                       
                         
                       
@@ -211,99 +211,145 @@ fields not found on an input stream will be set to zero.</p></li>
 <section id="configuring-drof-from-cime">
 <span id="drof-cime-vars"></span><h2><span class="section-number">8.2. </span>Configuring DROF from CIME<a class="headerlink" href="#configuring-drof-from-cime" title="Permalink to this heading">¶</a></h2>
 <p>If CDEPS is coupled to the CIME-CCS then the CIME <code class="docutils literal notranslate"><span class="pre">$CASEROOT</span></code> xml
-variable <code class="docutils literal notranslate"><span class="pre">DROF_MODE</span></code> sets the collection of streams that
-are associated with DROF and also sets the DROF namelist variable
-<code class="docutils literal notranslate"><span class="pre">datamode</span></code> in the file <code class="docutils literal notranslate"><span class="pre">drof_in</span></code>. The following are the supported
-DROF <code class="docutils literal notranslate"><span class="pre">datamode</span></code> values, as defined in the file
-<code class="docutils literal notranslate"><span class="pre">namelist_definition_drof.xml</span></code>.</p>
-<p>The following table describes the valid values of <code class="docutils literal notranslate"><span class="pre">DROF_MODE</span></code>
+variable <code class="docutils literal notranslate"><span class="pre">DROF_MODE</span></code> will be generated based on the compset
+specification <code class="docutils literal notranslate"><span class="pre">DROF%{DROF_MODE}</span></code>.  <code class="docutils literal notranslate"><span class="pre">DROF_MODE</span></code> will in term be
+used in the <code class="docutils literal notranslate"><span class="pre">namelist_definition_drof.xml</span></code> file to determine the
+collection of streams that are associated with DROF and also sets the
+drof namelist variable <code class="docutils literal notranslate"><span class="pre">datamode</span></code> in the file <code class="docutils literal notranslate"><span class="pre">drof_in</span></code>.</p>
+<p>The following list describes the valid values of <code class="docutils literal notranslate"><span class="pre">DROF_MODE</span></code>
 (defined in the <code class="docutils literal notranslate"><span class="pre">config_component.xml</span></code> file for DROF), and how they
 relate to the associated input streams and the <code class="docutils literal notranslate"><span class="pre">datamode</span></code> namelist
-variable. CIME will generate a value of <code class="docutils literal notranslate"><span class="pre">DROF_MODE</span></code> based on the
-compset.</p>
+variable.</p>
 <dl class="simple">
-<dt>CPLHIST</dt><dd><ul class="simple">
+<dt>DROF%CPLHIST</dt><dd><ul class="simple">
 <li><p>Reads data from coupler history file</p></li>
+<li><p>drof_mode: CPLHIST</p></li>
 <li><p>streams: rof.cplhist</p></li>
 <li><p>datamode: copyall</p></li>
 </ul>
 </dd>
-<dt>DIATREN_ANN_RX1</dt><dd><ul class="simple">
+<dt>DROF%DIATREN_ANN_RX1</dt><dd><ul class="simple">
 <li><p>Annual Average data from Dai_Trenberth Continental Freshwater Discharge</p></li>
+<li><p>drof_mode: DIATREN_ANN_RX1</p></li>
 <li><p>streams: rof.diatren_ann_rx1</p></li>
 <li><p>datamode: copyall</p></li>
 </ul>
 </dd>
-<dt>DIATREN_ANN_AIS00_RX1</dt><dd><ul class="simple">
+<dt>DROF%DIATREN_ANN_AIS00_RX1</dt><dd><ul class="simple">
 <li><p>Annual Average data from Dai_Trenberth Continental Freshwater Discharge</p></li>
+<li><p>drof_mode: DIATREN_ANN_AIS00_RX1</p></li>
 <li><p>streams: rof.diatren_ann_ais00_rx1</p></li>
 <li><p>datamode: copyall</p></li>
 </ul>
 </dd>
-<dt>DIATREN_ANN_AIS45_RX1</dt><dd><ul class="simple">
+<dt>DROF%DIATREN_ANN_AIS45_RX1</dt><dd><ul class="simple">
 <li><p>Annual Average data from Dai_Trenberth Continental Freshwater Discharge</p></li>
+<li><p>drof_mode: DIATREN_ANN_AIS45_RX1</p></li>
 <li><p>streams: rof.diatren_ann_ais45_rx1</p></li>
 <li><p>datamode: copyall</p></li>
 </ul>
 </dd>
-<dt>DIATREN_ANN_AIS55_RX1</dt><dd><ul class="simple">
+<dt>DROF%DIATREN_ANN_AIS55_RX1</dt><dd><ul class="simple">
 <li><p>Annual Average data from Dai_Trenberth Continental Freshwater Discharge</p></li>
+<li><p>drof_mode: DIATREN_ANN_AIS55_RX1</p></li>
 <li><p>streams: rof.diatren_ann_ais55_rx1</p></li>
 <li><p>datamode: copyall</p></li>
 </ul>
 </dd>
-<dt>DIATREN_IAF_AIS00_RX1</dt><dd><ul class="simple">
+<dt>DROF%DIATREN_IAF_RX1</dt><dd><ul class="simple">
 <li><p>Monthly data from Dai_Trenberth Continental Freshwater Discharge</p></li>
-<li><p>streams: rof.diatren_iaf_ais00_rx1</p></li>
-<li><p>datamode: copyall</p></li>
-</ul>
-</dd>
-<dt>DIATREN_IAF_RX1</dt><dd><ul class="simple">
-<li><p>Monthly data from Dai_Trenberth Continental Freshwater Discharge</p></li>
+<li><p>drof_mode: DIATREN_IAF_RX1</p></li>
 <li><p>streams: rof.diatren_iaf_rx1</p></li>
 <li><p>datamode: copyall</p></li>
 </ul>
 </dd>
-<dt>DIATREN_IAF_AIS45_RX1</dt><dd><ul class="simple">
+<dt>DROF%DIATREN_IAF_AIS00_RX1</dt><dd><ul class="simple">
 <li><p>Monthly data from Dai_Trenberth Continental Freshwater Discharge</p></li>
+<li><p>drof_mode: DIATREN_IAF_AIS00_RX1</p></li>
+<li><p>streams: rof.diatren_iaf_ais00_rx1</p></li>
+<li><p>datamode: copyall</p></li>
+</ul>
+</dd>
+<dt>DROF%DIATREN_IAF_AIS45_RX1</dt><dd><ul class="simple">
+<li><p>Monthly data from Dai_Trenberth Continental Freshwater Discharge</p></li>
+<li><p>drof_mode: DIATREN_IAF_AIS45_RX1</p></li>
 <li><p>streams: rof.diatren_iaf_ais45_rx1</p></li>
 <li><p>datamode: copyall</p></li>
 </ul>
 </dd>
-<dt>DIATREN_IAF_AIS55_RX1</dt><dd><ul class="simple">
+<dt>DROF%DIATREN_IAF_AIS55_RX1</dt><dd><ul class="simple">
 <li><p>Monthly data from Dai_Trenberth Continental Freshwater Discharge</p></li>
+<li><p>drof_mode: DIATREN_IAF_AIS55_RX1</p></li>
 <li><p>streams: rof.diatren_iaf_ais55_rx1</p></li>
 <li><p>datamode: copyall</p></li>
 </ul>
 </dd>
-<dt>IAF_JRA_1p4_2018</dt><dd><ul class="simple">
-<li><p>JRA-55 based river runoff data (2018)</p></li>
-<li><p>streams: rof.iaf_jra_1p4_2018</p></li>
-<li><p>datamode: copyall</p></li>
-</ul>
-</dd>
-<dt>IAF_JRA</dt><dd><ul class="simple">
+<dt>DROF%IAF_JRA</dt><dd><ul class="simple">
 <li><p>JRA-55 based river runoff data</p></li>
+<li><p>drof_mode: IAF_JRA</p></li>
 <li><p>streams: rof.iaf_jra</p></li>
 <li><p>datamode: copyall</p></li>
 </ul>
 </dd>
-<dt>RYF8485_JRA</dt><dd><ul class="simple">
-<li><p>JRA55 v1.3 1984 May - 1985 Apr RAF</p></li>
+<dt>DROF%IAF_JRA_1p4_2018</dt><dd><ul class="simple">
+<li><p>JRA-55 based river runoff data (2018)</p></li>
+<li><p>drof_mode: IAF_JRA_1p4_2018</p></li>
+<li><p>streams: rof.iaf_jra_1p4_2018</p></li>
+<li><p>datamode: copyall</p></li>
+</ul>
+</dd>
+<dt>DROF%RYF8485_JRA</dt><dd><ul class="simple">
+<li><p>JRA55 v1.3 data from 1984 May - 1985 Apr RAF</p></li>
+<li><p>drof_mode: RYF8485_JRA</p></li>
 <li><p>streams: rof.ryf8485_jra</p></li>
 <li><p>datamode: copyall</p></li>
 </ul>
 </dd>
-<dt>RYF9091_JRA</dt><dd><ul class="simple">
-<li><p>JRA55 v1.3 1990 May - 1991 Apr RAF</p></li>
+<dt>DROF%RYF9091_JRA</dt><dd><ul class="simple">
+<li><p>JRA55 v1.3 data from 1990 May - 1991 Apr RAF</p></li>
+<li><p>drof_mode: RYF9091_JRA</p></li>
 <li><p>streams: rof.ryf9091_jra</p></li>
 <li><p>datamode: copyall</p></li>
 </ul>
 </dd>
-<dt>RYF0304_JRA</dt><dd><ul class="simple">
-<li><p>JRA55 v1.3 2003 May - 2004 Apr RAF</p></li>
+<dt>DROF%RYF0304_JRA</dt><dd><ul class="simple">
+<li><p>JRA55 v1.3 data form 2003 May - 2004 Apr RAF</p></li>
+<li><p>drof_mode: RYF0304_JRA</p></li>
 <li><p>streams: rof.ryf0304_jra</p></li>
 <li><p>datamode: copyall</p></li>
+</ul>
+</dd>
+</dl>
+<p>In addition, the following DATM specific CIME-CCS xml variables will appear in <code class="docutils literal notranslate"><span class="pre">$CASEROOT/env_run.xml</span></code>:</p>
+<dl class="simple">
+<dt>DROF_CPLHIST_CASE</dt><dd><ul class="simple">
+<li><p>Case name used to determine stream filenames when DROF_MODE is CPLHIST</p></li>
+</ul>
+</dd>
+<dt>DROF_CPLHIST_YR_START</dt><dd><ul class="simple">
+<li><p>starting year to loop data over (only used when DROF_MODE is CPLHIST)</p></li>
+</ul>
+</dd>
+<dt>DROF_CPLHIST_YR_END</dt><dd><ul class="simple">
+<li><p>ending year to loop data over (only used when DROF_MODE is CPLHIST)</p></li>
+</ul>
+</dd>
+<dt>DROF_CPLHIST_YR_ALIGN</dt><dd><ul class="simple">
+<li><p>Simulation year corresponding to DROF_CPLHIST_YR_START (only used
+when DROF_MODE is CPLHIST). A common usage is to set this to
+RUN_STARTDATE. With this setting, the forcing in the first year of
+the run will be the forcing of year DROF_CPLHIST_YR_START. Another
+use case is to align the calendar of transient forcing with the
+model calendar. For example, setting
+DROF_CPLHIST_YR_ALIGN=DROF_CPLHIST_YR_START will lead to the
+forcing calendar being the same as the model calendar. The forcing
+for a given model year would be the forcing of the same year. This
+would be appropriate in transient runs where the model calendar is
+setup to span the same year range as the forcing data.</p></li>
+</ul>
+</dd>
+<dt>DROF_SKIP_RESTART_READ</dt><dd><ul class="simple">
+<li><p>If set to true, than drof restarts will not be read on a continuation run</p></li>
 </ul>
 </dd>
 </dl>

@@ -9,7 +9,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>5. Data Ocean (DOCN) &mdash; CDEPS master documentation</title>
+  <title>5. Data Ocean (DOCN) &mdash; CDEPS main documentation</title>
   
 
   
@@ -40,7 +40,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="CDEPS master documentation" href="index.html"/>
+    <link rel="top" title="CDEPS main documentation" href="index.html"/>
         <link rel="next" title="6. Data Ice (DICE)" href="dice.html"/>
         <link rel="prev" title="4. Data Atmosphere (DATM)" href="datm.html"/> 
 
@@ -74,7 +74,7 @@
                 
                   <div class="version-dropdown">
                     <select class="version-list" id="version-list">
-                      <option value=''>master</option>
+                      <option value=''>main</option>
                       
                         
                       
@@ -115,7 +115,7 @@
 <li class="toctree-l1"><a class="reference internal" href="datm.html">4. Data Atmosphere (DATM)</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">5. Data Ocean (DOCN)</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#supported-data-modes">5.1. Supported Data Modes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#configuring-docn-from-cime">5.2. Configuring DOCN from CIME</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#configuring-docn-using-cime-ccs">5.2. Configuring DOCN using CIME-CCS</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="dice.html">6. Data Ice (DICE)</a></li>
@@ -249,61 +249,152 @@ temperature.</p>
 </ul>
 </dd>
 </dl>
+<p>cplhist (<code class="docutils literal notranslate"><span class="pre">docn_datamode_cplhist_mod.F90</span></code>)</p>
 </section>
-<section id="configuring-docn-from-cime">
-<span id="docn-cime-vars"></span><h2><span class="section-number">5.2. </span>Configuring DOCN from CIME<a class="headerlink" href="#configuring-docn-from-cime" title="Permalink to this heading">¶</a></h2>
+<section id="configuring-docn-using-cime-ccs">
+<span id="docn-cime-vars"></span><h2><span class="section-number">5.2. </span>Configuring DOCN using CIME-CCS<a class="headerlink" href="#configuring-docn-using-cime-ccs" title="Permalink to this heading">¶</a></h2>
 <p>If CDEPS is coupled to the CIME-CCS then the CIME <code class="docutils literal notranslate"><span class="pre">$CASEROOT</span></code> xml
-variable <code class="docutils literal notranslate"><span class="pre">DOCN_MODE</span></code> sets the collection of streams that
-are associated with DOCN and also sets the docn namelist variable
-<code class="docutils literal notranslate"><span class="pre">datamode</span></code> in the file <code class="docutils literal notranslate"><span class="pre">docn_in</span></code>. The following are the supported
-DOCN <code class="docutils literal notranslate"><span class="pre">datamode</span></code> values, as defined in the file
-<code class="docutils literal notranslate"><span class="pre">namelist_definition_docn.xml</span></code>.</p>
-<p>The following table describes the valid values of <code class="docutils literal notranslate"><span class="pre">DOCN_MODE</span></code>
+variable <code class="docutils literal notranslate"><span class="pre">DOCN_MODE</span></code> will be generated based on the compset
+specification <code class="docutils literal notranslate"><span class="pre">DOCN%{DOCN_MODE}</span></code>.  <code class="docutils literal notranslate"><span class="pre">DOCN_MODE</span></code> will in term be
+used in the <code class="docutils literal notranslate"><span class="pre">namelist_definition_docn.xml</span></code> file to determine the
+collection of streams that are associated with DOCN and also sets the
+docn namelist variable <code class="docutils literal notranslate"><span class="pre">datamode</span></code> in the file <code class="docutils literal notranslate"><span class="pre">docn_in</span></code>.</p>
+<p>The following list describes the valid values of <code class="docutils literal notranslate"><span class="pre">DOCN_MODE</span></code>
 (defined in the <code class="docutils literal notranslate"><span class="pre">config_component.xml</span></code> file for DOCN), and how they
 relate to the associated input streams and the <code class="docutils literal notranslate"><span class="pre">datamode</span></code> namelist
-variable. CIME will generate a value of <code class="docutils literal notranslate"><span class="pre">DOCN_MODE</span></code> based on the
-compset.</p>
+variable.</p>
 <dl class="simple">
-<dt>prescribed</dt><dd><ul class="simple">
+<dt>DOCN%DOM</dt><dd><ul class="simple">
 <li><p>SST data provided by a file</p></li>
+<li><p>docn_mode: prescribed</p></li>
 <li><p>streams: prescribed</p></li>
 <li><p>datamode: sstdata</p></li>
 </ul>
 </dd>
-<dt>interannual</dt><dd><ul class="simple">
+<dt>DOCN%IAF</dt><dd><ul class="simple">
 <li><p>SST data provided by a file</p></li>
+<li><p>docn_mode: interannual</p></li>
 <li><p>streams: interannual</p></li>
 <li><p>datamode: iaf</p></li>
 </ul>
 </dd>
-<dt>som</dt><dd><ul class="simple">
+<dt>DOCN%SOM</dt><dd><ul class="simple">
 <li><p>Slab Ocean Model is used to calculate sea surface temperature.</p></li>
+<li><p>docn_mode: som</p></li>
 <li><p>streams: som</p></li>
 <li><p>datamode: som</p></li>
 </ul>
 </dd>
-<dt>som_aquap</dt><dd><ul class="simple">
+<dt>DOCN%SOMAQP</dt><dd><ul class="simple">
 <li><p>Slab Ocean Model is used to calculate sea surface temperature.</p></li>
-<li><p>streams: som_aquap</p></li>
+<li><p>docn_mode: som_aquap</p></li>
+<li><p>streams: N/A</p></li>
 <li><p>datamode: som_aquap</p></li>
 </ul>
 </dd>
-<dt>sst_aquap[1-10]</dt><dd><ul class="simple">
+<dt>DOCN%AQP[1-10]</dt><dd><ul class="simple">
 <li><p>Lattitude varying analytical sea surface data</p></li>
+<li><p>docn_mode: sst_aquap[1-10]</p></li>
 <li><p>streams: N/A</p></li>
 <li><p>datamode: sst_aquap[1-10]</p></li>
 </ul>
 </dd>
-<dt>sst_aquap_file</dt><dd><ul class="simple">
+<dt>DOCN%AQPFILE</dt><dd><ul class="simple">
 <li><p>SST data provided by a file</p></li>
+<li><p>docn_mode: sst_aquap_file</p></li>
 <li><p>streams: aquapfile</p></li>
 <li><p>datamode: sst_aquapfile</p></li>
 </ul>
 </dd>
-<dt>sst_aquap_constant</dt><dd><ul class="simple">
+<dt>DOCN%AQPCONST</dt><dd><ul class="simple">
 <li><p>Constant sea surface data from aquaplanet</p></li>
+<li><p>docn_mode: sst_aquap_constant</p></li>
 <li><p>streams: N/A</p></li>
 <li><p>datamode: sst_aquap_constant</p></li>
+</ul>
+</dd>
+</dl>
+<p>In addition, the following list outlines the DOCN specific CIME-CCS xml variables that  appear in <code class="docutils literal notranslate"><span class="pre">$CASEROOT/env_run.xml</span></code>:</p>
+<dl class="simple">
+<dt>SSTICE_DATA_FILENAME</dt><dd><ul class="simple">
+<li><p>Prescribed SST and ice coverage data file name.
+Sets SST and ice coverage data file name.
+This is only used when DOCN%DOM or DOCN%IAF is present in the compset.
+(used by both DOCN and CICE running in prescribed mode)</p></li>
+</ul>
+</dd>
+<dt>SSTICE_MESH_FILENAME</dt><dd><ul class="simple">
+<li><p>Prescribed SST and ice coverage mesh file name.
+Sets SST and ice coverage grid file name for prescribed runs.
+This is only used when DOCN%DOM or DOCN%IAF is present in the compset.
+(used by both DOCN and CICE running in prescribed mode)</p></li>
+</ul>
+</dd>
+<dt>SSTICE_YR_START</dt><dd><ul class="simple">
+<li><p>Starting year to loop data over
+(only used by both DOCN runing in prescribed mode and CICE running in prescribed mode)</p></li>
+</ul>
+</dd>
+<dt>SSTICE_YR_END</dt><dd><ul class="simple">
+<li><p>Ending year to loop data over
+(only used by both DOCN runing in prescribed mode and CICE running in prescribed mode)</p></li>
+</ul>
+</dd>
+<dt>SSTICE_YR_ALIGN</dt><dd><ul class="simple">
+<li><p>The model year that corresponds to SSTICE_YEAR_START on the data file.
+Prescribed SST and ice coverage data will be aligned so that the first year of
+data corresponds to SSTICE_YEAR_ALIGN in the model. For instance, if the first
+year of prescribed data is the same as the first year of the model run, this
+should be set to the year given in RUN_STARTDATE.
+If SSTICE_YEAR_ALIGN is later than the model’s starting year, or if the model is
+run after the prescribed data ends (as determined by SSTICE_YEAR_END), the
+default behavior is to assume that the data from SSTICE_YEAR_START to
+SSTICE_YEAR_END cyclically repeats. This behavior is controlled by the
+&amp;quot;taxmode&amp;quot; stream option; see the data model documentation for more details.
+(only used by both DOCN runing in prescribed mode and CICE running in prescribed mode)</p></li>
+</ul>
+</dd>
+<dt>DOCN_AQPCONST_VALUE</dt><dd><ul class="simple">
+<li><p>Sets globally constant SST value and is only used when DOCN%AQPCONST is present in the compset.</p></li>
+</ul>
+</dd>
+<dt>DOCN_SOMAQP_DATAFILE</dt><dd><ul class="simple">
+<li><p>Sets the SOM aquaplanet file and is only used when DOCN%AQPFILE is present in the compset.</p></li>
+</ul>
+</dd>
+<dt>DOCN_CPLHIST_YR_START</dt><dd><ul class="simple">
+<li><p>Starting year to loop data over
+Only used if DOCN_MODE=cplhist.</p></li>
+</ul>
+</dd>
+<dt>DOCN_CPLHIST_YR_END</dt><dd><ul class="simple">
+<li><p>Ending year to loop data over
+Only used if DOCN_MODE=cplhist.</p></li>
+</ul>
+</dd>
+<dt>DOCN_CPLHIST_YR_ALIGN</dt><dd><ul class="simple">
+<li><p>Simulation year corresponding to DOCN_CPLHIST_YR_START. A common usage
+is to set this to RUN_STARTDATE. With this setting, the forcing
+in the first year of the run will be the forcing of year
+DOCN_CPLHIST_YR_START. Another use case is to align the calendar
+of transient forcing with the model calendar. For example,
+setting DOCN_CPLHIST_YR_ALIGN=DOCN_CPLHIST_YR_START will lead to
+the forcing calendar being the same as the model calendar. The
+forcing for a given model year would be the forcing of the same
+year. This would be appropriate in transient runs where the
+model calendar is setup to span the same year range as the forcing data.
+Only used if DOCN_MODE=cplhist.</p></li>
+</ul>
+</dd>
+<dt>DOCN_IMPORT_FIELDS</dt><dd><ul class="simple">
+<li><p>A column delimited set of import fields that are advertised by DOCN but never used.
+In some cases it is needed for DOCN to advertise import fields even though it never will actually use them.
+This is needed in order for the mediator to add fields that would
+be sent to the ocean from the atmosphere, ice and runoff if the
+ocean were prognostic.
+If the value of DOCN_IMPORT_FIELDS is ‘none’ then no import fields are advertised
+by DOCN. If the DOCN_IMPORT_FIELDS is set to ‘Faxa_bcph:Faxa_dstdry:Faxa_dstwet:So_duu10n:Si_ifrac’ then
+these fields will be written to the mediator history file(s).</p></li>
 </ul>
 </dd>
 </dl>

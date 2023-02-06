@@ -9,7 +9,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>4. Data Atmosphere (DATM) &mdash; CDEPS master documentation</title>
+  <title>4. Data Atmosphere (DATM) &mdash; CDEPS main documentation</title>
   
 
   
@@ -40,7 +40,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="CDEPS master documentation" href="index.html"/>
+    <link rel="top" title="CDEPS main documentation" href="index.html"/>
         <link rel="next" title="5. Data Ocean (DOCN)" href="docn.html"/>
         <link rel="prev" title="3. Design Details" href="design_details.html"/> 
 
@@ -74,7 +74,7 @@
                 
                   <div class="version-dropdown">
                     <select class="version-list" id="version-list">
-                      <option value=''>master</option>
+                      <option value=''>main</option>
                       
                         
                       
@@ -261,25 +261,26 @@ model.</p>
 <section id="configuring-datm-from-cime">
 <span id="datm-cime-vars"></span><h2><span class="section-number">4.2. </span>Configuring DATM from CIME<a class="headerlink" href="#configuring-datm-from-cime" title="Permalink to this heading">¶</a></h2>
 <p>If CDEPS is coupled to the CIME-CCS then the CIME <code class="docutils literal notranslate"><span class="pre">$CASEROOT</span></code> xml
-variable <code class="docutils literal notranslate"><span class="pre">DATM_MODE</span></code> sets the collection of streams that
-are associated with DATM and also sets the datm namelist variable
-<code class="docutils literal notranslate"><span class="pre">datamode</span></code> in the file <code class="docutils literal notranslate"><span class="pre">datm_in</span></code>. The following are the supported
-DATM <code class="docutils literal notranslate"><span class="pre">datamode</span></code> values, as defined in the file
-<code class="docutils literal notranslate"><span class="pre">namelist_definition_datm.xml</span></code>.</p>
-<p>The following table describes the valid values of <code class="docutils literal notranslate"><span class="pre">DATM_MODE</span></code>
+variable <code class="docutils literal notranslate"><span class="pre">DATM_MODE</span></code> will be generated based on the compset
+specification <code class="docutils literal notranslate"><span class="pre">DATM%{DATM_MODE}</span></code>.  <code class="docutils literal notranslate"><span class="pre">DATM_MODE</span></code> will in term be
+used in the <code class="docutils literal notranslate"><span class="pre">namelist_definition_datm.xml</span></code> file to determine the
+collection of streams that are associated with DATM and also sets the
+datm namelist variable <code class="docutils literal notranslate"><span class="pre">datamode</span></code> in the file <code class="docutils literal notranslate"><span class="pre">datm_in</span></code>.</p>
+<p>The following list describes the valid values of <code class="docutils literal notranslate"><span class="pre">DATM_MODE</span></code>
 (defined in the <code class="docutils literal notranslate"><span class="pre">config_component.xml</span></code> file for DATM), and how they
 relate to the associated input streams and the <code class="docutils literal notranslate"><span class="pre">datamode</span></code> namelist
-variable. CIME will generate a value of <code class="docutils literal notranslate"><span class="pre">DATM_MODE</span></code> based on the
-compset.</p>
+variable.</p>
 <dl class="simple">
-<dt>CORE2_NYF</dt><dd><ul class="simple">
+<dt>DATM%CORE2_NYF,</dt><dd><ul class="simple">
 <li><p>CORE2 normal year forcing (CESM C ang G compsets)</p></li>
+<li><p>datm_mode: CORE2_NYF</p></li>
 <li><p>streams: CORE2_NYF.GISS,CORE2_NYF.GXGXS,CORE2_NYF.NCEP</p></li>
 <li><p>datamode: CORE2_NYF</p></li>
 </ul>
 </dd>
-<dt>CORE2_IAF</dt><dd><ul class="simple">
+<dt>DATM%CORE2_IAF,</dt><dd><ul class="simple">
 <li><p>CORE2 interannual year forcing (CESM C ang G compsets)</p></li>
+<li><p>datm_mode: CORE2_IAF</p></li>
 <li><p>streams: CORE2_IAF.GCGCS.PREC,CORE2_IAF.GISS.LWDN,
 CORE2_IAF.GISS.SWDN,CORE2_IAF.GISS.SWUP,
 CORE2_IAF.NCEP.DN10,CORE2_IAF.NCEP.Q_10,
@@ -288,7 +289,7 @@ CORE2_IAF.NCEP.V_10,CORE2_IAF.CORE2.ArcFactor</p></li>
 <li><p>datamode: CORE2_IAF</p></li>
 </ul>
 </dd>
-<dt>CORE_IAF_JRA</dt><dd><ul class="simple">
+<dt>DATM%CORE_IAF_JRA</dt><dd><ul class="simple">
 <li><p>JRA-55 intra-annual year forcing (CESM C ang G compsets)</p></li>
 <li><p>streams: CORE_IAF_JRA.PREC,CORE_IAF_JRA.LWDN,CORE_IAF_JRA.SWDN,
 CORE_IAF_JRA.Q_10,CORE_IAF_JRA.SLP_,CORE_IAF_JRA.T_10,CORE_IAF_JRA.U_10,
@@ -296,47 +297,105 @@ CORE_IAF_JRA.V_10,CORE_IAF_JRA.CORE2.ArcFactor</p></li>
 <li><p>datamode: CORE_IAF_JRA</p></li>
 </ul>
 </dd>
-<dt>CLM_QIAN_WISO</dt><dd><ul class="simple">
+<dt>DATM%CLM_QIAN_WISO</dt><dd><ul class="simple">
 <li><p>QIAN atm input data with water isotopes (CESM I compsets)</p></li>
+<li><p>datm_mode: CLMNCEP</p></li>
 <li><p>streams: CLM_QIAN_WISO.Solar,CLM_QIAN_WISO.Precip,CLM_QIAN_WISO.TPQW</p></li>
 <li><p>datamode: CLMNCEP</p></li>
 </ul>
 </dd>
-<dt>CLM_QIAN</dt><dd><ul class="simple">
+<dt>DATM%CLM_QIAN</dt><dd><ul class="simple">
 <li><p>QIAN atm input data (CESM I compsets)</p></li>
+<li><p>datm_mode: CLMNCEP</p></li>
 <li><p>streams: CLM_QIAN.Solar,CLM_QIAN.Precip,CLM_QIAN.TPQW</p></li>
 <li><p>datamode: CLMNCEP</p></li>
 </ul>
 </dd>
-<dt>CLMCRUNCEPv7</dt><dd><ul class="simple">
+<dt>DATM%CLMCRUNCEPv7</dt><dd><ul class="simple">
 <li><p>CRUNCEP atm input data (CESM I compsets)</p></li>
+<li><p>datm_mode: CLMNCEP</p></li>
 <li><p>streams: CLMCRUNCEP.Solar,CLMCRUNCEP.Precip,CLMCRUNCEP.TPQW</p></li>
 <li><p>datamode: CLMNCEP</p></li>
 </ul>
 </dd>
-<dt>CLMGSWP3</dt><dd><ul class="simple">
+<dt>DATM%CLMGSWP3</dt><dd><ul class="simple">
 <li><p>GSWP3 atm input data (I compsets)</p></li>
+<li><p>datm_mode: CLMNCEP</p></li>
 <li><p>streams: CLMGSWP3.Solar,CLMGSWP3.Precip,CLMGSWP3.TPQW</p></li>
 <li><p>datamode: CLMNCEP</p></li>
 </ul>
 </dd>
-<dt>CLM1PT</dt><dd><ul class="simple">
+<dt>DATM%CLM1PT</dt><dd><ul class="simple">
 <li><p>single point tower site atm input data</p></li>
+<li><p>datm_mode: CLMNCEP</p></li>
 <li><p>streams: CLM1PT.$ATM_GRID</p></li>
 <li><p>datamode: CLMNCEP</p></li>
 </ul>
 </dd>
-<dt>ERA5</dt><dd><ul class="simple">
+<dt>DATM%ERA5</dt><dd><ul class="simple">
 <li><p>ERA5 atm input data (not used any compset)</p></li>
+<li><p>datm_mode: ERA5</p></li>
 <li><p>streams: ERA5_HOURLY</p></li>
 <li><p>datamode: ERA5</p></li>
 </ul>
 </dd>
-<dt>CPLHIST</dt><dd><ul class="simple">
+<dt>DATM%CPLHIST</dt><dd><ul class="simple">
 <li><p>user generated forcing data from using coupler history files
 used to spinup relevant prognostic components (for CESM this is CLM, POP and CISM)</p></li>
+<li><p>datm_mode:CPLHIST</p></li>
 <li><p>streams: CPLHISTForcing.Solar,CPLHISTForcing.nonSolarFlux,</p></li>
 <li><p>datamode: CPLHIST</p></li>
+</ul>
+</dd>
+</dl>
+<p>In addition, the following DATM specific CIME-CCS xml variables will appear in <code class="docutils literal notranslate"><span class="pre">$CASEROOT/env_run.xml</span></code>:</p>
+<dl class="simple">
+<dt>DATM_PRESAERO</dt><dd><ul class="simple">
+<li><p>DATM prescribed aerosol forcing mode</p></li>
+</ul>
+</dd>
+<dt>DATM_TOPO</dt><dd><ul class="simple">
+<li><p>DATM surface topography forcing (only needed for compsets with active land)</p></li>
+</ul>
+</dd>
+<dt>DATM_CO2_TSERIES</dt><dd><ul class="simple">
+<li><p>Full pathname for domain file for datm when DATM_MODE is
+CPLHIST, NOTE: if this is set to ‘null’ (the default), then
+domain information is read in from the first coupler history
+file in the target stream and it is assumed that the first
+coupler stream file that is pointed to contains the domain
+information for that stream.</p></li>
+</ul>
+</dd>
+<dt>DATM_CPLHIST_CASE</dt><dd><ul class="simple">
+<li><p>Case name used to determine stream filenames when DATM_MODE is CPLHIST</p></li>
+</ul>
+</dd>
+<dt>DATM_YR_START</dt><dd><ul class="simple">
+<li><p>Starting year to loop data over</p></li>
+</ul>
+</dd>
+<dt>DATM_YR_END</dt><dd><ul class="simple">
+<li><p>Ending year to loop data over</p></li>
+</ul>
+</dd>
+<dt>DATM_YR_ALIGN</dt><dd><ul class="simple">
+<li><p>Simulation year corresponding to DATM_YR_START. A common usage
+is to set this to RUN_STARTDATE. With this setting, the forcing
+in the first year of the run will be the forcing of year
+DATM_YR_START. Another use case is to align the calendar
+of transient forcing with the model calendar. For example,
+setting DATM_YR_ALIGN=DATM_YR_START will lead to
+the forcing calendar being the same as the model calendar. The
+forcing for a given model year would be the forcing of the same
+year. This would be appropriate in transient runs where the
+model calendar is setup to span the same year range as the
+forcing data.</p></li>
+</ul>
+</dd>
+<dt>DATM_SKIP_RESTART_READ</dt><dd><ul class="simple">
+<li><p>If set to true, than datm restarts will not be read on a continuation run.
+This capability is used, for example, in CTSM spinup runs.</p></li>
 </ul>
 </dd>
 </dl>
