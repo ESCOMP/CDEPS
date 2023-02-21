@@ -95,6 +95,7 @@ class StreamCDEPS(GenericXML):
                 # endif
             # end while
             index += 1
+            line = case.get_resolved_value(line)
             lines_input_new.append(line)
         #end while
 
