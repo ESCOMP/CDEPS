@@ -269,10 +269,10 @@
 
 
   <!-- ===================================  -->
-  <!-- datm_mode NEON.$NEONSITE.PRECIP           -->
+  <!-- datm_mode NEON.PRISM_PRECIP.$NEONSITE           -->
   <!-- ===================================  -->
 
-  <stream_entry name="NEON.$NEONSITE.PRECIP">
+  <stream_entry name="NEON.PRISM_PRECIP.$NEONSITE">
     <stream_meshfile>
       <meshfile>none</meshfile>
     </stream_meshfile>
