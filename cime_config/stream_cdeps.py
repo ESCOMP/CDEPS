@@ -135,7 +135,10 @@ class StreamCDEPS(GenericXML):
 
         # write contents of stream file
         for stream_name in stream_names:
-            if stream_name.startswith("NEON."):
+            if stream_name.startswith("NEON.PRISM"):
+                self.stream_nodes = super(StreamCDEPS,self).get_child("stream_entry", {"name" : "NEON.PRISM_PRECIP.$NEONSITE"},
+                                                                     err_msg="No stream_entry {} found".format(stream_name))
+            elif stream_name.startswith("NEON."):
                 self.stream_nodes = super(StreamCDEPS,self).get_child("stream_entry", {"name" : "NEON.$NEONSITE"},
                                                                      err_msg="No stream_entry {} found".format(stream_name))
 
