@@ -189,10 +189,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     if datm_co2_tseries != "none":
         streamlist.append("co2tseries.{}".format(datm_co2_tseries))
     if 'NEON' in clm_usrdat_name:
-        # streamlist.append("NEON.PRISM_PRECIP.CPER")
-        # streamlist.append("NEON.PRISM_PRECIP.".format(clm_usrdat_name[-4:])) # this ends up being .RISM because the last for of NEON.PRISM are RISM
-        # streamlist.append(clm_usrdat_name+"_PRECIP."+neonsite) # USE THIS VERSION ONCE IT DOESN'T CAUSE SVN FAILURES
-        streamlist.append("NEON.PRISM_PRECIP."+neonsite)
+        streamlist.append(clm_usrdat_name+"_PRECIP."+neonsite)
 
     bias_correct = nmlgen.get_value("bias_correct")
     if bias_correct is not None:
