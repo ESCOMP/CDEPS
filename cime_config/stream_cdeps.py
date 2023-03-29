@@ -135,17 +135,19 @@ class StreamCDEPS(GenericXML):
 
         # write contents of stream file
         for stream_name in stream_names:
-            if stream_name.startswith("NEON.PRISM"):
-                self.stream_nodes = super(StreamCDEPS,self).get_child("stream_entry", {"name" : "NEON.PRISM_PRECIP.$NEONSITE"},
-                                                                     err_msg="No stream_entry {} found".format(stream_name))
-            elif stream_name.startswith("NEON."):
+            # include NEON.$NEONSITE non-precipitation data streams whether use PRISM or NEON precip
+            if stream_name.startswith("NEON.") and ('PRECIP' not in stream_name):
                 self.stream_nodes = super(StreamCDEPS,self).get_child("stream_entry", {"name" : "NEON.$NEONSITE"},
                                                                      err_msg="No stream_entry {} found".format(stream_name))
-
+            elif stream_name.startswith("NEON.PRISM_PRECIP"):
+                self.stream_nodes = super(StreamCDEPS,self).get_child("stream_entry", {"name" : "NEON.PRISM_PRECIP.$NEONSITE"},
+                                                                     err_msg="No stream_entry {} found".format(stream_name))
+            elif stream_name.startswith("NEON.NEON_PRECIP"):
+                self.stream_nodes = super(StreamCDEPS,self).get_child("stream_entry", {"name" : "NEON.NEON_PRECIP.$NEONSITE"},
+                                                                     err_msg="No stream_entry {} found".format(stream_name))
             elif stream_name.startswith("CLM_USRDAT."):
                 self.stream_nodes = super(StreamCDEPS,self).get_child("stream_entry", {"name" : "CLM_USRDAT.$CLM_USRDAT_NAME"},
                                                                      err_msg="No stream_entry {} found".format(stream_name))
-
             elif stream_name:
                 self.stream_nodes = super(StreamCDEPS,self).get_child("stream_entry", {"name" : stream_name},
                                                                      err_msg="No stream_entry {} found".format(stream_name))

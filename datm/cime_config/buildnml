@@ -177,7 +177,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     streamlist = nmlgen.get_streams()
     if type(streamlist) == type(str()):
         streamlist = []
-
+    logger.info("streamlist prior to additions:{}".format(streamlist))
     if datm_presaero != "none":
         streamlist.append("presaero.{}".format(datm_presaero))
     if datm_presndep != "none":
@@ -188,8 +188,15 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
         streamlist.append("topo.{}".format(datm_topo))
     if datm_co2_tseries != "none":
         streamlist.append("co2tseries.{}".format(datm_co2_tseries))
-    if 'NEON' in clm_usrdat_name:
+    if  clm_usrdat_name == 'NEON.PRISM':
         streamlist.append(clm_usrdat_name+"_PRECIP."+neonsite)
+        logger.info("appended {} to streamlist".format(clm_usrdat_name+"_PRECIP."+neonsite))
+    if  clm_usrdat_name == 'NEON':
+        streamlist.append(clm_usrdat_name+".NEON_PRECIP."+neonsite)   
+    #if 'NEON' in clm_usrdat_name:
+    #    streamlist.append("NEON."+neonsite)
+    # non-precip datm stream should already be in usermods for any neon case
+    logger.info('full streamlist: {}'.format(streamlist))
 
     bias_correct = nmlgen.get_value("bias_correct")
     if bias_correct is not None:
