@@ -275,7 +275,7 @@
       <meshfile>none</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file first_year="2018" last_year="2021">/glade/u/home/tking/neon/prism_$NEONSITE_%y.nc</file>
+      <file first_year="2018" last_year="2021">/glade/u/home/tking/neon/prism_${NEONSITE}_%y.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>PRECIP   Faxa_precn</var>

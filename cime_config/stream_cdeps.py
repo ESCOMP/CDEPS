@@ -181,7 +181,7 @@ class StreamCDEPS(GenericXML):
                     stream_vars[node_name] = ""
                     stream_datafiles = ""
                     for child in self.get_children(root=node):
-                        if available_neon_data and stream_name.startswith("NEON"):
+                        if available_neon_data and stream_name.startswith("NEON") and ('PRISM' not in stream_name):
                             rundir = case.get_value("RUNDIR")
                             for neon in available_neon_data:
                                 stream_datafiles += os.path.join(rundir,"inputdata","atm",neon) + "\n"
