@@ -849,7 +849,7 @@
 
   <!-- Generic single point site  -->
 
-  <stream_entry name="CLM_USRDAT.$CLM_USRDSAT_NAME">
+  <stream_entry name="CLM_USRDAT.$CLM_USRDAT_NAME">
     <stream_meshfile>
       <meshfile>none</meshfile>
     </stream_meshfile>
