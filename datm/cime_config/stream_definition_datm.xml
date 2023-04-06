@@ -275,7 +275,7 @@
       <meshfile>none</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file first_year="2018" last_year="2021">/glade/u/home/tking/neon/prism_${NEONSITE}_%y.nc</file>
+      <file first_year="$DATM_YR_START" last_year="$DATM_YR_END">/glade/u/home/tking/neon/prism_${NEONSITE}_%y.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>PRECIP   Faxa_precn</var>
@@ -311,7 +311,7 @@
       <meshfile>none</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file first_year="2018" last_year="2021">$DIN_LOC_ROOT/atm/cdeps/v1/$NEONSITE/%ym.nc</file>
+      <file first_year="$DATM_YR_START" last_year="$DATM_YR_END">$DIN_LOC_ROOT/atm/cdeps/v1/$NEONSITE/%ym.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>PRECTmms   Faxa_precn</var>
@@ -849,12 +849,12 @@
 
   <!-- Generic single point site  -->
 
-  <stream_entry name="CLM_USRDAT.NEON">
+  <stream_entry name="CLM_USRDAT.$CLM_USRDSAT_NAME">
     <stream_meshfile>
       <meshfile>none</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file first_year="$DATM_YR_START" last_year="$DATM_YR_END">$DIN_LOC_ROOT_CLMFORC/NEON/CLM1PT_data/%ym.nc</file>
+      <file first_year="$DATM_YR_START" last_year="$DATM_YR_END">$DIN_LOC_ROOT_CLMFORC/$CLM_USRDAT_NAME/CLM1PT_data/%ym.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>PRECTmms Faxa_precn</var>

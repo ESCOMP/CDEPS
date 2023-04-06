@@ -193,9 +193,6 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
         logger.info("appended {} to streamlist".format(clm_usrdat_name+"_PRECIP."+neonsite))
     if  clm_usrdat_name == 'NEON':
         streamlist.append(clm_usrdat_name+".NEON_PRECIP."+neonsite)   
-    #if 'NEON' in clm_usrdat_name:
-    #    streamlist.append("NEON."+neonsite)
-    # non-precip datm stream should already be in usermods for any neon case
     logger.info('full streamlist: {}'.format(streamlist))
 
     bias_correct = nmlgen.get_value("bias_correct")
