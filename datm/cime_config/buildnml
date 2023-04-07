@@ -42,7 +42,6 @@ def _get_neon_data_availability(case, neonsite):
     if not os.path.exists(fullpath):
         inputdata = Inputdata()
         protocol, address, user, passwd, _, _, inventory = inputdata.get_next_server(attributes={'CLM_USRDAT_NAME':'NEON'})
-        # CLM_USRDAT_NAME could also be NEON.PRISM
         success = case.check_input_data(protocol=protocol, address=address, download=True)
         logger.debug("_get_neon_data_availablity: address {} inventory is {} success {}".format(address, inventory, success))
 
@@ -177,7 +176,6 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     streamlist = nmlgen.get_streams()
     if type(streamlist) == type(str()):
         streamlist = []
-    logger.info("streamlist prior to additions:{}".format(streamlist))
     if datm_presaero != "none":
         streamlist.append("presaero.{}".format(datm_presaero))
     if datm_presndep != "none":
@@ -190,10 +188,8 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
         streamlist.append("co2tseries.{}".format(datm_co2_tseries))
     if  clm_usrdat_name == 'NEON.PRISM':
         streamlist.append(clm_usrdat_name+"_PRECIP."+neonsite)
-        logger.info("appended {} to streamlist".format(clm_usrdat_name+"_PRECIP."+neonsite))
     if  clm_usrdat_name == 'NEON':
         streamlist.append(clm_usrdat_name+".NEON_PRECIP."+neonsite)   
-    logger.info('full streamlist: {}'.format(streamlist))
 
     bias_correct = nmlgen.get_value("bias_correct")
     if bias_correct is not None:
