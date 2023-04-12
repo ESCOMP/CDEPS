@@ -12,6 +12,22 @@
   <xs:attribute name="compset"    type="xs:string"/>
   <xs:attribute name="version"    type="xs:string"/>
 
+  <!-- For file names with the %ymd specifier, this attribute can be set
+       to 1 to indicate that the dates have a one-day offset, starting
+       with day 2 in the first year and ending with day 1 in the year
+       following the last year. This can be the case, for example, for
+       daily coupler history files. (The absence of this attribute is
+       equivalent to a value of 0. Currently only values of 0 and 1 are
+       supported, though we may extend that in the future if needed.)
+       -->
+  <xs:attribute name="filename_add_days">
+    <xs:simpleType>
+      <xs:restriction base="xs:integer">
+        <xs:pattern value="0|1"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+
   <!-- ======================== -->
   <!-- simple elements -->
   <!-- ======================== -->
@@ -166,6 +182,7 @@
           <xs:attribute ref="first_year"/>
           <xs:attribute ref="last_year"/>
           <xs:attribute ref="model_grid"/>
+          <xs:attribute ref="filename_add_days"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
