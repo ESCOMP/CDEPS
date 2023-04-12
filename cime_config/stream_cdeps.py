@@ -192,14 +192,14 @@ class StreamCDEPS(GenericXML):
                             stream_year_last = int(value)
                             year_first = max(stream_year_first, data_year_first)
                             year_last = min(stream_year_last, data_year_last)
-                            if 'filename_add_days' in child.xml_element.attrib:
-                                filename_add_days = int(child.xml_element.get('filename_add_days'))
+                            if 'filename_advance_days' in child.xml_element.attrib:
+                                filename_advance_days = int(child.xml_element.get('filename_advance_days'))
                             else:
-                                filename_add_days = 0
+                                filename_advance_days = 0
                             stream_datafiles = self._sub_paths(stream_name,
                                                                stream_datafiles,
                                                                year_first, year_last,
-                                                               filename_add_days)
+                                                               filename_advance_days)
                             stream_datafiles = stream_datafiles.strip()
                         #endif
                         if stream_vars[node_name]:
@@ -460,7 +460,7 @@ class StreamCDEPS(GenericXML):
             adjusted_year = adjusted_year + 1
         return (adjusted_year, adjusted_month, adjusted_day)
 
-    def _sub_paths(self, stream_name, filenames, year_start, year_end, filename_add_days):
+    def _sub_paths(self, stream_name, filenames, year_start, year_end, filename_advance_days):
         """Substitute indicators with given values in a list of filenames.
 
         Replace any instance of the following substring indicators with the
@@ -480,7 +480,7 @@ class StreamCDEPS(GenericXML):
         also that we use a no-leap calendar, i.e. every month has the same
         number of days every year.
 
-        filename_add_days is an integer specifying the number of days to add to the date
+        filename_advance_days is an integer specifying the number of days to add to the date
         portion of the file name when using %ymd. Currently only values of 0 or 1 are
         supported. This is typically 0 but can be 1 to indicate that the dates have a
         one-day offset, starting with day 2 in the first year and ending with day 1 in the
@@ -494,9 +494,9 @@ class StreamCDEPS(GenericXML):
 
         Returns a string (filenames separated by newlines).
         """
-        expect(filename_add_days == 0 or filename_add_days == 1,
-               "Bad filename_add_days attribute ({}) for {}: must be 0 or 1".format(
-                   filename_add_days, stream_name))
+        expect(filename_advance_days == 0 or filename_advance_days == 1,
+               "Bad filename_advance_days attribute ({}) for {}: must be 0 or 1".format(
+                   filename_advance_days, stream_name))
 
         lines = [line for line in filenames.split("\n") if line]
         new_lines = []
@@ -514,7 +514,7 @@ class StreamCDEPS(GenericXML):
                     for month in range(1, 13):
                         days = self._days_in_month(month)
                         for day in range(1, days+1):
-                            if filename_add_days == 1:
+                            if filename_advance_days == 1:
                                 (adjusted_year, adjusted_month, adjusted_day) = self._add_day(year, month, day)
                             else:
                                 (adjusted_year, adjusted_month, adjusted_day) = (year, month, day)

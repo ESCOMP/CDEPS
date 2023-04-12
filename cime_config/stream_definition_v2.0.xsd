@@ -20,7 +20,7 @@
        equivalent to a value of 0. Currently only values of 0 and 1 are
        supported, though we may extend that in the future if needed.)
        -->
-  <xs:attribute name="filename_add_days">
+  <xs:attribute name="filename_advance_days">
     <xs:simpleType>
       <xs:restriction base="xs:integer">
         <xs:pattern value="0|1"/>
@@ -182,7 +182,7 @@
           <xs:attribute ref="first_year"/>
           <xs:attribute ref="last_year"/>
           <xs:attribute ref="model_grid"/>
-          <xs:attribute ref="filename_add_days"/>
+          <xs:attribute ref="filename_advance_days"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
