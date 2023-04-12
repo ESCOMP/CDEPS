@@ -441,6 +441,13 @@ class StreamCDEPS(GenericXML):
         Returns a new tuple, (adjusted_year, adjusted_month, adjusted_day)
 
         Assumes a no-leap calendar
+
+        >>> StreamCDEPS._add_day(1999, 1, 1)
+        (1999, 1, 2)
+        >>> StreamCDEPS._add_day(1999, 1, 31)
+        (1999, 2, 1)
+        >>> StreamCDEPS._add_day(1999, 12, 31)
+        (2000, 1, 1)
         """
         adjusted_year = year
         adjusted_month = month
