@@ -58,7 +58,7 @@ def _get_neon_data_availability(case, neonsite):
     neonatm = None
     dataversion = case.get_value("NEONVERSION")
     if dataversion == "latest":
-        dataversions = ["v2", "v1"]
+        dataversions = ["v3", "v2", "v1"]
     else:
         dataversions = [dataversion]
 
