@@ -198,7 +198,14 @@ class StreamCDEPS(GenericXML):
                             stream_year_last = int(value)
                             year_first = max(stream_year_first, data_year_first)
                             year_last = min(stream_year_last, data_year_last)
-                            stream_datafiles = self._sub_paths(stream_datafiles, year_first, year_last)
+                            if 'filename_advance_days' in child.xml_element.attrib:
+                                filename_advance_days = int(child.xml_element.get('filename_advance_days'))
+                            else:
+                                filename_advance_days = 0
+                            stream_datafiles = self._sub_paths(stream_name,
+                                                               stream_datafiles,
+                                                               year_first, year_last,
+                                                               filename_advance_days)
                             stream_datafiles = stream_datafiles.strip()
                         #endif
                         if stream_vars[node_name]:
@@ -433,7 +440,33 @@ class StreamCDEPS(GenericXML):
         next_month_start = datetime.date(next_year, next_month, 1)
         return (next_month_start - month_start).days
 
-    def _sub_paths(self, filenames, year_start, year_end):
+    @classmethod
+    def _add_day(cls, year, month, day):
+        """Given a year, month and day, add 1 day
+
+        Returns a new tuple, (adjusted_year, adjusted_month, adjusted_day)
+
+        Assumes a no-leap calendar
+
+        >>> StreamCDEPS._add_day(1999, 1, 1)
+        (1999, 1, 2)
+        >>> StreamCDEPS._add_day(1999, 1, 31)
+        (1999, 2, 1)
+        >>> StreamCDEPS._add_day(1999, 12, 31)
+        (2000, 1, 1)
+        """
+        adjusted_year = year
+        adjusted_month = month
+        adjusted_day = day + 1
+        if adjusted_day > cls._days_in_month(month):
+            adjusted_day = 1
+            adjusted_month = adjusted_month + 1
+        if adjusted_month > 12:
+            adjusted_month = 1
+            adjusted_year = adjusted_year + 1
+        return (adjusted_year, adjusted_month, adjusted_day)
+
+    def _sub_paths(self, stream_name, filenames, year_start, year_end, filename_advance_days):
         """Substitute indicators with given values in a list of filenames.
 
         Replace any instance of the following substring indicators with the
@@ -453,6 +486,13 @@ class StreamCDEPS(GenericXML):
         also that we use a no-leap calendar, i.e. every month has the same
         number of days every year.
 
+        filename_advance_days is an integer specifying the number of days to add to the date
+        portion of the file name when using %ymd. Currently only values of 0 or 1 are
+        supported. This is typically 0 but can be 1 to indicate that the dates have a
+        one-day offset, starting with day 2 in the first year and ending with day 1 in the
+        year following the last year. This can be the case, for example, for daily coupler
+        history files.
+
         The difference between this function and `_sub_fields` is that this
         function is intended to be used for file names (especially from the
         `strm_datfil` defaults), whereas `_sub_fields` is intended for use on
@@ -460,6 +500,10 @@ class StreamCDEPS(GenericXML):
 
         Returns a string (filenames separated by newlines).
         """
+        expect(filename_advance_days == 0 or filename_advance_days == 1,
+               "Bad filename_advance_days attribute ({}) for {}: must be 0 or 1".format(
+                   filename_advance_days, stream_name))
+
         lines = [line for line in filenames.split("\n") if line]
         new_lines = []
         for line in lines:
@@ -476,7 +520,11 @@ class StreamCDEPS(GenericXML):
                     for month in range(1, 13):
                         days = self._days_in_month(month)
                         for day in range(1, days+1):
-                            date_string = (year_format + "-{:02d}-{:02d}").format(year, month, day)
+                            if filename_advance_days == 1:
+                                (adjusted_year, adjusted_month, adjusted_day) = self._add_day(year, month, day)
+                            else:
+                                (adjusted_year, adjusted_month, adjusted_day) = (year, month, day)
+                            date_string = (year_format + "-{:02d}-{:02d}").format(adjusted_year, adjusted_month, adjusted_day)
                             new_line = line.replace(match.group(0), date_string)
                             new_lines.append(new_line)
                 elif match.group('month'):
