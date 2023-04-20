@@ -233,6 +233,7 @@
       <meshfile>none</meshfile>
     </stream_meshfile>
     <stream_datafiles>
+      <!-- v1 gets updated to newest version when using run_neon -->
       <file first_year="$DATM_YR_START" last_year="$DATM_YR_END">$DIN_LOC_ROOT/atm/cdeps/v1/$NEONSITE/%ym.nc</file>
     </stream_datafiles>
     <stream_datavars>
@@ -311,6 +312,7 @@
       <meshfile>none</meshfile>
     </stream_meshfile>
     <stream_datafiles>
+      <!-- v1 gets updated to newest version when using run_neon -->
       <file first_year="$DATM_YR_START" last_year="$DATM_YR_END">$DIN_LOC_ROOT/atm/cdeps/v1/$NEONSITE/%ym.nc</file>
     </stream_datafiles>
     <stream_datavars>
