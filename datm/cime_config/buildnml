@@ -63,7 +63,11 @@ def _get_neon_data_availability(case, neonsite):
         dataversions = [dataversion]
 
     for version in dataversions:
-        if not newestdate:
+        # Once a date range for a version has been determined for any version, the loop is complete.
+	# Eg, if data is available for v3, the loop will not continue to v2;
+	# however, if data is not available for v3, it will check for v2.
+	# Thus, it is important for dataversions to be listed from newest to oldest.
+	if not newestdate:
             with open(fullpath, "r") as fd:
                 for line in fd.readlines():
                     fpath, fname = os.path.split(line)
