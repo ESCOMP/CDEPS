@@ -47,6 +47,8 @@ contains
             call dshr_fldList_add(fldsImport, trim(fieldnamelist(n)), ungridded_lbound=1, ungridded_ubound=3)
          else if (trim(fieldnamelist(n)) == 'Faxa_dstwet' .or. trim(fieldnamelist(n)) == 'Faxa_dstdry') then
             call dshr_fldList_add(fldsImport, trim(fieldnamelist(n)), ungridded_lbound=1, ungridded_ubound=4)
+         else if (trim(fieldnamelist(n)) == 'Faxa_ndep') then
+            call dshr_fldList_add(fldsImport, trim(fieldnamelist(n)), ungridded_lbound=1, ungridded_ubound=2)
          else
             call dshr_fldList_add(fldsImport, trim(fieldnamelist(n)))
          end if
