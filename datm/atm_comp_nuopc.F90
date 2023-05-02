@@ -872,10 +872,18 @@ contains
 
     if (liradsw > 1) then
        delta_radsw = liradsw * dtime
-       if (mod(tod+dtime,delta_radsw) == 0 .and. stepno > 0) then
-          nextsw_cday = julday + 2*dtime/shr_const_cday
+       if (trim(cplhist_nextsw_cday_calc) == 'cam7' ) then
+          if (mod(tod,delta_radsw) == 0 .and. stepno > 0) then
+             nextsw_cday = julday + 1*dtime/shr_const_cday
+          else
+             nextsw_cday = -1._r8
+          end if
        else
-          nextsw_cday = -1._r8
+          if (mod(tod+dtime,delta_radsw) == 0 .and. stepno > 0) then
+             nextsw_cday = julday + 2*dtime/shr_const_cday
+          else
+             nextsw_cday = -1._r8
+          end if
        end if
     else
        nextsw_cday = julday + dtime/shr_const_cday
