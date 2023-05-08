@@ -64,10 +64,10 @@ def _get_neon_data_availability(case, neonsite):
 
     for version in dataversions:
         # Once a date range for a version has been determined for any version, the loop is complete.
-	# Eg, if data is available for v3, the loop will not continue to v2;
-	# however, if data is not available for v3, it will check for v2.
-	# Thus, it is important for dataversions to be listed from newest to oldest.
-	if not newestdate:
+        # Eg, if data is available for v3, the loop will not continue to v2;
+        # however, if data is not available for v3, it will check for v2.
+        # Thus, it is important for dataversions to be listed from newest to oldest.
+        if not newestdate:
             with open(fullpath, "r") as fd:
                 for line in fd.readlines():
                     fpath, fname = os.path.split(line)
@@ -220,7 +220,7 @@ def _create_drv_flds_in(case, confdir):
     # for now we are hard-coding this file name and values because we only need it for ozone
     if datm_preso3 != "none":
         
-	# Generate drv_flds_in file
+        # Generate drv_flds_in file
         outfile = os.path.join(confdir, "drv_flds_in")
         ozone_nl_name = "&ozone_coupling_nl"
         ozone_freq_par = "atm_ozone_frequency"
