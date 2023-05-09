@@ -233,10 +233,10 @@
       <meshfile>none</meshfile>
     </stream_meshfile>
     <stream_datafiles>
+      <!-- v1 gets updated to newest version when using run_neon -->
       <file first_year="$DATM_YR_START" last_year="$DATM_YR_END">$DIN_LOC_ROOT/atm/cdeps/v1/$NEONSITE/%ym.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>PRECTmms Faxa_precn</var>
       <var>FSDS     Faxa_swdn </var>
       <var>ZBOT     Sa_z    </var>
       <var>TBOT     Sa_tbot </var>
@@ -244,6 +244,79 @@
       <var>RH       Sa_rh   </var>
       <var>PSRF     Sa_pbot </var>
       <var>FLDS     Faxa_lwdn </var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>none</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_YR_START</stream_year_first>
+    <stream_year_last>$DATM_YR_END</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode               >cycle</taxmode>
+      <taxmode compset="HIST">limit</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <!-- ===================================  -->
+  <!-- datm_mode NEON.PRISM_PRECIP.$NEONSITE           -->
+  <!-- ===================================  -->
+
+  <stream_entry name="NEON.PRISM_PRECIP.$NEONSITE">
+    <stream_meshfile>
+      <meshfile>none</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="$DATM_YR_START" last_year="$DATM_YR_END">$DIN_LOC_ROOT/atm/cdeps/PRISM/${NEONSITE}_%y.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>PRECIP   Faxa_precn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>none</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_YR_START</stream_year_first>
+    <stream_year_last>$DATM_YR_END</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode               >cycle</taxmode>
+      <taxmode compset="HIST">limit</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <!-- ===================================  -->
+  <!-- datm_mode NEON.NEON_PRECIP.$NEONSITE           -->
+  <!-- ===================================  -->
+
+  <stream_entry name="NEON.NEON_PRECIP.$NEONSITE">
+    <stream_meshfile>
+      <meshfile>none</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <!-- v1 gets updated to newest version when using run_neon -->
+      <file first_year="$DATM_YR_START" last_year="$DATM_YR_END">$DIN_LOC_ROOT/atm/cdeps/v1/$NEONSITE/%ym.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>PRECTmms   Faxa_precn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
