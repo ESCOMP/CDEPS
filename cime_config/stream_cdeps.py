@@ -7,12 +7,11 @@ import datetime
 import re
 import hashlib
 
-from standard_script_setup          import *
 from CIME.XML.standard_module_setup import *
 from CIME.XML.generic_xml import GenericXML
-from CIME.XML.files import Files
 from CIME.utils import expect
 
+# pragma pylint: disable=undefined-variable
 logger = logging.getLogger(__name__)
 
 _var_ref_re = re.compile(r"\$(\{)?(?P<name>\w+)(?(1)\})")
@@ -44,25 +43,40 @@ _stream_file_template = """
 """
 
 valid_values = {}
-valid_values["mapalgo"]  = ["bilinear", "nn", "redist", "mapconsd", "mapconf", "none"]
+valid_values["mapalgo"] = ["bilinear", "nn", "redist", "mapconsd", "mapconf", "none"]
 valid_values["tintalgo"] = ["lower", "upper", "nearest", "linear", "coszen"]
-valid_values["taxmode"]  = ["cycle", "extend", "limit"]
+valid_values["taxmode"] = ["cycle", "extend", "limit"]
 
-xml_scalar_names = ["stream_meshfile", "stream_mapalgo", "stream_tintalgo", "stream_taxmode", "stream_dtlimit"]
+xml_scalar_names = [
+    "stream_meshfile",
+    "stream_mapalgo",
+    "stream_tintalgo",
+    "stream_taxmode",
+    "stream_dtlimit",
+]
+
 
 class StreamCDEPS(GenericXML):
-
     def __init__(self, infile, schema):
         """
         Initialize a CDEPS stream object
         """
         logger.debug("Verifying using schema {}".format(schema))
         GenericXML.__init__(self, infile, schema)
+        self.stream_nodes = None
+
         if os.path.exists(infile):
             GenericXML.read(self, infile, schema)
 
-    def create_stream_xml(self, stream_names, case, streams_xml_file, data_list_file, user_mods_file,
-                          available_neon_data=None):
+    def create_stream_xml(
+        self,
+        stream_names,
+        case,
+        streams_xml_file,
+        data_list_file,
+        user_mods_file,
+        available_neon_data=None,
+    ):
         """
         Create the stream xml file and append the required stream input data to the input data list file
         available_neon_data is an optional list of NEON tower data available for the given case, if provided
@@ -71,98 +85,134 @@ class StreamCDEPS(GenericXML):
 
         # determine if there are user mods
         lines_input = []
-        expect (os.path.isfile(user_mods_file),
-                "No file {} found in case directory".format(user_mods_file))
-        with open(user_mods_file, "r", encoding='utf-8') as stream_mods_file:
+        expect(
+            os.path.isfile(user_mods_file),
+            "No file {} found in case directory".format(user_mods_file),
+        )
+        with open(user_mods_file, "r", encoding="utf-8") as stream_mods_file:
             lines_input = stream_mods_file.readlines()
         stream_mod_dict = {}
         n = len(lines_input)
 
         index = 0
         lines_input_new = []
-        while index < len(lines_input):
+        while index < n:
             line = lines_input[index].strip()
-            if line.startswith('!') or (not line):
+            if line.startswith("!") or (not line):
                 index = index + 1
                 continue
-            while line[-1] == '\\':
+            while line[-1] == "\\":
                 index += 1
-                if index < len(lines_input):
-                    line = line[:-1].strip() + ' ' + lines_input[index].strip()
+                if index < n:
+                    line = line[:-1].strip() + " " + lines_input[index].strip()
                 else:
-                    line = line.replace('\\', '').strip()
+                    line = line.replace("\\", "").strip()
                     break
                 # endif
             # end while
             index += 1
             line = case.get_resolved_value(line)
             lines_input_new.append(line)
-        #end while
+        # end while
 
         for line in lines_input_new:
             # read in a single line in user_nl_xxx_streams and parse it if it is not a comment
-            stream_mods = [x.strip() for x in line.strip().split(":",maxsplit=1) if x]
-            expect(len(stream_mods) == 2,
-                   "input stream mod can only be of the form streamname:var=value(s)")
-            stream,varmod = stream_mods
-            expect (stream in stream_names,
-                    "{} contains a streamname \'{}\' that is not part of valid streamnames {}".
-                    format(user_mods_file,stream,stream_names))
-            if stream  not in stream_mod_dict:
+            stream_mods = [x.strip() for x in line.strip().split(":", maxsplit=1) if x]
+            expect(
+                len(stream_mods) == 2,
+                "input stream mod can only be of the form streamname:var=value(s)",
+            )
+            stream, varmod = stream_mods
+            expect(
+                stream in stream_names,
+                "{} contains a streamname '{}' that is not part of valid streamnames {}".format(
+                    user_mods_file, stream, stream_names
+                ),
+            )
+            if stream not in stream_mod_dict:
                 stream_mod_dict[stream] = {}
             # var=value and check the validity
             varmod_args = [x.strip() for x in varmod.split("=") if x]
-            expect(len(varmod_args) == 2,
-                   "input stream mod can only be of the form streamname:var=value(s)")
+            expect(
+                len(varmod_args) == 2,
+                "input stream mod can only be of the form streamname:var=value(s)",
+            )
             # allow multiple entries for varmod_args, most recent wins
-            varname,varval = varmod_args
+            varname, varval = varmod_args
             if varname in stream_mod_dict[stream]:
-                logger.warning("varname {} is already in stream mod dictionary".format(varname))
+                logger.warning(
+                    "varname {} is already in stream mod dictionary".format(varname)
+                )
 
             if varname == "datavars" or varname == "datafiles":
                 if varname == "datavars":
-                    varvals = ["<var>{}</var>".format(x.strip()) for x in varval.split(",") if x]
+                    varvals = [
+                        "<var>{}</var>".format(x.strip())
+                        for x in varval.split(",")
+                        if x
+                    ]
                 if varname == "datafiles":
-                    varvals = ["<file>{}</file>".format(x.strip()) for x in varval.split(",") if x]
+                    varvals = [
+                        "<file>{}</file>".format(x.strip())
+                        for x in varval.split(",")
+                        if x
+                    ]
                 varval = "      " + "\n      ".join(varvals)
                 varval = varval.strip()
             stream_mod_dict[stream][varname] = varval
 
         # write header of stream file
-        with open(streams_xml_file, 'w', encoding='utf-8') as stream_file:
+        with open(streams_xml_file, "w", encoding="utf-8") as stream_file:
             stream_file.write('<?xml version="1.0"?>\n')
             stream_file.write('<file id="stream" version="2.0">\n')
 
         # write contents of stream file
         for stream_name in stream_names:
             # include NEON.$NEONSITE non-precipitation data streams whether use PRISM or NEON precip
-            if stream_name.startswith("NEON.") and ('PRECIP' not in stream_name):
-                self.stream_nodes = super(StreamCDEPS,self).get_child("stream_entry", {"name" : "NEON.$NEONSITE"},
-                                                                     err_msg="No stream_entry {} found".format(stream_name))
+            if stream_name.startswith("NEON.") and ("PRECIP" not in stream_name):
+                self.stream_nodes = super(StreamCDEPS, self).get_child(
+                    "stream_entry",
+                    {"name": "NEON.$NEONSITE"},
+                    err_msg="No stream_entry {} found".format(stream_name),
+                )
             elif stream_name.startswith("NEON.PRISM_PRECIP"):
-                self.stream_nodes = super(StreamCDEPS,self).get_child("stream_entry", {"name" : "NEON.PRISM_PRECIP.$NEONSITE"},
-                                                                     err_msg="No stream_entry {} found".format(stream_name))
+                self.stream_nodes = super(StreamCDEPS, self).get_child(
+                    "stream_entry",
+                    {"name": "NEON.PRISM_PRECIP.$NEONSITE"},
+                    err_msg="No stream_entry {} found".format(stream_name),
+                )
             elif stream_name.startswith("NEON.NEON_PRECIP"):
-                self.stream_nodes = super(StreamCDEPS,self).get_child("stream_entry", {"name" : "NEON.NEON_PRECIP.$NEONSITE"},
-                                                                     err_msg="No stream_entry {} found".format(stream_name))
+                self.stream_nodes = super(StreamCDEPS, self).get_child(
+                    "stream_entry",
+                    {"name": "NEON.NEON_PRECIP.$NEONSITE"},
+                    err_msg="No stream_entry {} found".format(stream_name),
+                )
             elif stream_name.startswith("CLM_USRDAT."):
-                self.stream_nodes = super(StreamCDEPS,self).get_child("stream_entry", {"name" : "CLM_USRDAT.$CLM_USRDAT_NAME"},
-                                                                     err_msg="No stream_entry {} found".format(stream_name))
+                self.stream_nodes = super(StreamCDEPS, self).get_child(
+                    "stream_entry",
+                    {"name": "CLM_USRDAT.$CLM_USRDAT_NAME"},
+                    err_msg="No stream_entry {} found".format(stream_name),
+                )
             elif stream_name:
-                self.stream_nodes = super(StreamCDEPS,self).get_child("stream_entry", {"name" : stream_name},
-                                                                     err_msg="No stream_entry {} found".format(stream_name))
+                self.stream_nodes = super(StreamCDEPS, self).get_child(
+                    "stream_entry",
+                    {"name": stream_name},
+                    err_msg="No stream_entry {} found".format(stream_name),
+                )
 
             # determine stream_year_first and stream_year_list
-            data_year_first,data_year_last = self._get_stream_first_and_last_dates(self.stream_nodes, case)
+            data_year_first, data_year_last = self._get_stream_first_and_last_dates(
+                self.stream_nodes, case
+            )
 
             # now write the data model streams xml file
             stream_vars = {}
-            stream_vars['streamname'] = stream_name
+            stream_vars["streamname"] = stream_name
             attributes = {}
             for node in self.get_children(root=self.stream_nodes):
                 node_name = node.xml_element.tag.strip()
 
-                if node_name == 'stream_datavars':
+                if node_name == "stream_datavars":
                     # Get the resolved stream data variables
                     stream_vars[node_name] = None
                     for child in self.get_children(root=node):
@@ -171,52 +221,79 @@ class StreamCDEPS(GenericXML):
                         datavars = self._sub_glc_fields(datavars, case)
                         datavars = self._add_xml_delimiter(datavars.split("\n"), "var")
                         if stream_vars[node_name]:
-                            stream_vars[node_name] = stream_vars[node_name] + "\n      " + datavars.strip()
+                            stream_vars[node_name] = (
+                                stream_vars[node_name] + "\n      " + datavars.strip()
+                            )
                         else:
                             stream_vars[node_name] = datavars.strip()
                         # endif
 
-                elif node_name == 'stream_datafiles':
+                elif node_name == "stream_datafiles":
                     # Get the resolved stream data files
                     stream_vars[node_name] = ""
                     stream_datafiles = ""
                     for child in self.get_children(root=node):
-                        if available_neon_data and stream_name.startswith("NEON") and ('PRISM' not in stream_name):
+                        if (
+                            available_neon_data
+                            and stream_name.startswith("NEON")
+                            and ("PRISM" not in stream_name)
+                        ):
                             rundir = case.get_value("RUNDIR")
                             for neon in available_neon_data:
-                                stream_datafiles += os.path.join(rundir,"inputdata","atm",neon) + "\n"
+                                stream_datafiles += (
+                                    os.path.join(rundir, "inputdata", "atm", neon)
+                                    + "\n"
+                                )
                         else:
                             stream_datafiles = child.xml_element.text
-                            stream_datafiles = self._resolve_values(case, stream_datafiles)
-                        #endif neon
-                        if 'first_year' in child.xml_element.attrib and 'last_year' in child.xml_element.attrib:
-                            value = child.xml_element.get('first_year')
+                            stream_datafiles = self._resolve_values(
+                                case, stream_datafiles
+                            )
+                        # endif neon
+                        if (
+                            "first_year" in child.xml_element.attrib
+                            and "last_year" in child.xml_element.attrib
+                        ):
+                            value = child.xml_element.get("first_year")
                             value = self._resolve_values(case, value)
-                            stream_year_first= int(value)
-                            value = child.xml_element.get('last_year')
+                            stream_year_first = int(value)
+                            value = child.xml_element.get("last_year")
                             value = self._resolve_values(case, value)
                             stream_year_last = int(value)
                             year_first = max(stream_year_first, data_year_first)
                             year_last = min(stream_year_last, data_year_last)
-                            if 'filename_advance_days' in child.xml_element.attrib:
-                                filename_advance_days = int(child.xml_element.get('filename_advance_days'))
+                            if "filename_advance_days" in child.xml_element.attrib:
+                                filename_advance_days = int(
+                                    child.xml_element.get("filename_advance_days")
+                                )
                             else:
                                 filename_advance_days = 0
-                            stream_datafiles = self._sub_paths(stream_name,
-                                                               stream_datafiles,
-                                                               year_first, year_last,
-                                                               filename_advance_days)
+                            stream_datafiles = self._sub_paths(
+                                stream_name,
+                                stream_datafiles,
+                                year_first,
+                                year_last,
+                                filename_advance_days,
+                            )
                             stream_datafiles = stream_datafiles.strip()
-                        #endif
+                        # endif
                         if stream_vars[node_name]:
-                            stream_vars[node_name] += "\n      " + self._add_xml_delimiter(stream_datafiles.split("\n"), "file")
+                            stream_vars[
+                                node_name
+                            ] += "\n      " + self._add_xml_delimiter(
+                                stream_datafiles.split("\n"), "file"
+                            )
                         else:
-                            stream_vars[node_name] = self._add_xml_delimiter(stream_datafiles.split("\n"), "file")
-                        #endif
-                elif (node_name in xml_scalar_names):
-                    attributes['model_grid'] = case.get_value("GRID")
-                    attributes['compset'] = case.get_value("COMPSET")
-                    value = self._get_value_match(node, node_name[7:], attributes=attributes)
+                            stream_vars[node_name] = self._add_xml_delimiter(
+                                stream_datafiles.split("\n"), "file"
+                            )
+                        # endif
+                elif node_name in xml_scalar_names:
+                    attributes["model_grid"] = case.get_value("GRID")
+                    attributes["compset"] = case.get_value("COMPSET")
+                    value = self._get_value_match(
+                        node, node_name[7:], attributes=attributes
+                    )
                     if value:
                         value = self._resolve_values(case, value)
                         value = value.strip()
@@ -224,36 +301,50 @@ class StreamCDEPS(GenericXML):
 
                 elif node_name.strip():
                     # Get the other dependencies
-                    stream_dict = self._add_value_to_dict(stream_vars, case, node)
+                    self._add_value_to_dict(stream_vars, case, node)
 
             # substitute user_mods in generated stream file (i.e. stream_vars)
             mod_dict = {}
-            if stream_vars['streamname'] in stream_mod_dict:
-                mod_dict = stream_mod_dict[stream_vars['streamname']]
+            if stream_vars["streamname"] in stream_mod_dict:
+                mod_dict = stream_mod_dict[stream_vars["streamname"]]
                 for var_key in mod_dict:
-                    expect( 'stream_' + var_key in stream_vars,
-                            "stream mod {} is not a valid name in {}".format(var_key,user_mods_file))
+                    expect(
+                        "stream_" + var_key in stream_vars,
+                        "stream mod {} is not a valid name in {}".format(
+                            var_key, user_mods_file
+                        ),
+                    )
                     if var_key in valid_values:
-                        expect(mod_dict[var_key] in valid_values[var_key],
-                               "{} can only have values of {} for stream {} in file {}".
-                               format(var_key, valid_values[var_key], stream_name, user_mods_file))
-                    stream_vars['stream_' + var_key] = mod_dict[var_key]
-                    if var_key == 'datafiles':
+                        expect(
+                            mod_dict[var_key] in valid_values[var_key],
+                            "{} can only have values of {} for stream {} in file {}".format(
+                                var_key,
+                                valid_values[var_key],
+                                stream_name,
+                                user_mods_file,
+                            ),
+                        )
+                    stream_vars["stream_" + var_key] = mod_dict[var_key]
+                    if var_key == "datafiles":
                         stream_datafiles = mod_dict[var_key]
-                        stream_datafiles = stream_datafiles.replace('<file>','').replace('</file>','')
+                        stream_datafiles = stream_datafiles.replace(
+                            "<file>", ""
+                        ).replace("</file>", "")
 
             # append to stream xml file
             stream_file_text = _stream_file_template.format(**stream_vars)
-            with open(streams_xml_file, 'a', encoding='utf-8') as stream_file:
+            with open(streams_xml_file, "a", encoding="utf-8") as stream_file:
                 stream_file.write(case.get_resolved_value(stream_file_text))
 
             # append to input_data_list
-            if stream_vars['stream_meshfile']:
-                stream_meshfile = stream_vars['stream_meshfile'].strip()
-                self._add_entries_to_inputdata_list(stream_meshfile, stream_datafiles.split("\n"), data_list_file)
+            if stream_vars["stream_meshfile"]:
+                stream_meshfile = stream_vars["stream_meshfile"].strip()
+                self._add_entries_to_inputdata_list(
+                    stream_meshfile, stream_datafiles.split("\n"), data_list_file
+                )
 
         # write close of stream xml file
-        with open(streams_xml_file, 'a', encoding='utf-8') as stream_file:
+        with open(streams_xml_file, "a", encoding="utf-8") as stream_file:
             stream_file.write("</file>\n")
 
     def _get_stream_first_and_last_dates(self, stream, case):
@@ -261,32 +352,34 @@ class StreamCDEPS(GenericXML):
         Get first and last dates for data for the stream file
         """
         for node in self.get_children(root=stream):
-            if node.xml_element.tag == 'stream_year_first':
+            if node.xml_element.tag == "stream_year_first":
                 data_year_first = node.xml_element.text.strip()
                 data_year_first = int(self._resolve_values(case, data_year_first))
-            if node.xml_element.tag == 'stream_year_last':
+            if node.xml_element.tag == "stream_year_last":
                 data_year_last = node.xml_element.text.strip()
                 data_year_last = int(self._resolve_values(case, data_year_last))
         return data_year_first, data_year_last
 
-    def _add_entries_to_inputdata_list(self, stream_meshfile, stream_datafiles, data_list_file):
+    def _add_entries_to_inputdata_list(
+        self, stream_meshfile, stream_datafiles, data_list_file
+    ):
         """
         Appends input data information entries to input data list file
         and writes out the new file
         """
         lines_hash = self._get_input_file_hash(data_list_file)
-        with open(data_list_file, 'a', encoding='utf-8') as input_data_list:
+        with open(data_list_file, "a", encoding="utf-8") as input_data_list:
             # write out the mesh file separately
             string = "mesh = {}\n".format(stream_meshfile)
-            hashValue = hashlib.md5(string.rstrip().encode('utf-8')).hexdigest()
+            hashValue = hashlib.md5(string.rstrip().encode("utf-8")).hexdigest()
             if hashValue not in lines_hash:
                 input_data_list.write(string)
             # now append the stream_datafile entries
             for i, filename in enumerate(stream_datafiles):
-                if filename.strip() == '':
+                if filename.strip() == "":
                     continue
-                string = "file{:d} = {}\n".format(i+1, filename.strip())
-                hashValue = hashlib.md5(string.rstrip().encode('utf-8')).hexdigest()
+                string = "file{:d} = {}\n".format(i + 1, filename.strip())
+                hashValue = hashlib.md5(string.rstrip().encode("utf-8")).hexdigest()
                 if hashValue not in lines_hash:
                     input_data_list.write(string)
 
@@ -296,15 +389,15 @@ class StreamCDEPS(GenericXML):
         """
         lines_hash = set()
         if os.path.isfile(data_list_file):
-            with open(data_list_file, "r", encoding='utf-8') as input_data_list:
+            with open(data_list_file, "r", encoding="utf-8") as input_data_list:
                 for line in input_data_list:
-                    hashValue = hashlib.md5(line.rstrip().encode('utf-8')).hexdigest()
-                    logger.debug( "Found line {} with hash {}".format(line,hashValue))
+                    hashValue = hashlib.md5(line.rstrip().encode("utf-8")).hexdigest()
+                    logger.debug("Found line {} with hash {}".format(line, hashValue))
                     lines_hash.add(hashValue)
         return lines_hash
 
     def _get_value_match(self, node, child_name, attributes=None, exact_match=False):
-        '''
+        """
         Get the first best match for multiple tags in child_name based on the
         attributes input
 
@@ -314,7 +407,7 @@ class StreamCDEPS(GenericXML):
           <value A="a3" B="b1">Z</value>
          </values>
         </values>
-        '''
+        """
         # Store nodes that match the attributes and their scores.
         matches = []
         nodes = self.get_children(child_name, root=node)
@@ -328,13 +421,15 @@ class StreamCDEPS(GenericXML):
                     # If some attribute is specified that we don't know about,
                     # or the values don't match, it's not a match we want.
                     if exact_match:
-                        if attribute not in attributes or \
-                                attributes[attribute] != self.get(vnode, attribute):
+                        if attribute not in attributes or attributes[
+                            attribute
+                        ] != self.get(vnode, attribute):
                             score = -1
                             break
                     else:
-                        if attribute not in attributes or not \
-                                re.search(self.get(vnode, attribute),attributes[attribute]):
+                        if attribute not in attributes or not re.search(
+                            self.get(vnode, attribute), attributes[attribute]
+                        ):
                             score = -1
                             break
 
@@ -348,7 +443,7 @@ class StreamCDEPS(GenericXML):
         # Get maximum score using either a "last" or "first" match in case of a tie
         max_score = -1
         mnode = None
-        for score,node in matches:
+        for score, node in matches:
             # take the *first* best match
             if score > max_score:
                 max_score = score
@@ -374,10 +469,13 @@ class StreamCDEPS(GenericXML):
         """
         match = _var_ref_re.search(value)
         while match:
-            env_val = case.get_value(match.group('name'))
-            expect(env_val is not None,
-                   "Namelist default for variable {} refers to unknown XML variable {}.".
-                   format(value, match.group('name')))
+            env_val = case.get_value(match.group("name"))
+            expect(
+                env_val is not None,
+                "Namelist default for variable {} refers to unknown XML variable {}.".format(
+                    value, match.group("name")
+                ),
+            )
             value = value.replace(match.group(0), str(env_val), 1)
             match = _var_ref_re.search(value)
         return value
@@ -413,10 +511,10 @@ class StreamCDEPS(GenericXML):
             if not line:
                 continue
             if "%glc" in line:
-                if case.get_value('GLC_NEC') == 0:
+                if case.get_value("GLC_NEC") == 0:
                     glc_nec_indices = []
                 else:
-                    glc_nec_indices = range(case.get_value('GLC_NEC')+1)
+                    glc_nec_indices = range(case.get_value("GLC_NEC") + 1)
                 for i in glc_nec_indices:
                     new_lines.append(line.replace("%glc", "{:02d}".format(i)))
             else:
@@ -432,7 +530,7 @@ class StreamCDEPS(GenericXML):
         """
         month_start = datetime.date(year, month, 1)
         if month == 12:
-            next_year = year+1
+            next_year = year + 1
             next_month = 1
         else:
             next_year = year
@@ -466,7 +564,9 @@ class StreamCDEPS(GenericXML):
             adjusted_year = adjusted_year + 1
         return (adjusted_year, adjusted_month, adjusted_day)
 
-    def _sub_paths(self, stream_name, filenames, year_start, year_end, filename_advance_days):
+    def _sub_paths(
+        self, stream_name, filenames, year_start, year_end, filename_advance_days
+    ):
         """Substitute indicators with given values in a list of filenames.
 
         Replace any instance of the following substring indicators with the
@@ -500,9 +600,12 @@ class StreamCDEPS(GenericXML):
 
         Returns a string (filenames separated by newlines).
         """
-        expect(filename_advance_days == 0 or filename_advance_days == 1,
-               "Bad filename_advance_days attribute ({}) for {}: must be 0 or 1".format(
-                   filename_advance_days, stream_name))
+        expect(
+            filename_advance_days == 0 or filename_advance_days == 1,
+            "Bad filename_advance_days attribute ({}) for {}: must be 0 or 1".format(
+                filename_advance_days, stream_name
+            ),
+        )
 
         lines = [line for line in filenames.split("\n") if line]
         new_lines = []
@@ -511,23 +614,33 @@ class StreamCDEPS(GenericXML):
             if match is None:
                 new_lines.append(line)
                 continue
-            if match.group('digits'):
-                year_format = "{:0"+match.group('digits')+"d}"
+            if match.group("digits"):
+                year_format = "{:0" + match.group("digits") + "d}"
             else:
                 year_format = "{:04d}"
-            for year in range(year_start, year_end+1):
-                if match.group('day'):
+            for year in range(year_start, year_end + 1):
+                if match.group("day"):
                     for month in range(1, 13):
                         days = self._days_in_month(month)
-                        for day in range(1, days+1):
+                        for day in range(1, days + 1):
                             if filename_advance_days == 1:
-                                (adjusted_year, adjusted_month, adjusted_day) = self._add_day(year, month, day)
+                                (
+                                    adjusted_year,
+                                    adjusted_month,
+                                    adjusted_day,
+                                ) = self._add_day(year, month, day)
                             else:
-                                (adjusted_year, adjusted_month, adjusted_day) = (year, month, day)
-                            date_string = (year_format + "-{:02d}-{:02d}").format(adjusted_year, adjusted_month, adjusted_day)
+                                (adjusted_year, adjusted_month, adjusted_day) = (
+                                    year,
+                                    month,
+                                    day,
+                                )
+                            date_string = (year_format + "-{:02d}-{:02d}").format(
+                                adjusted_year, adjusted_month, adjusted_day
+                            )
                             new_line = line.replace(match.group(0), date_string)
                             new_lines.append(new_line)
-                elif match.group('month'):
+                elif match.group("month"):
                     for month in range(1, 13):
                         date_string = (year_format + "-{:02d}").format(year, month)
                         new_line = line.replace(match.group(0), date_string)
@@ -543,22 +656,24 @@ class StreamCDEPS(GenericXML):
         expect(delimiter and not " " in delimiter, "Missing or badly formed delimiter")
         pred = "<{}>".format(delimiter)
         postd = "</{}>".format(delimiter)
-        for n,item in enumerate(list_to_deliminate):
+        for n, item in enumerate(list_to_deliminate):
             if item.strip():
                 list_to_deliminate[n] = pred + item.strip() + postd
-            #endif
-        #endfor
+            # endif
+        # endfor
         return "\n      ".join(list_to_deliminate)
 
     def update_input_data_list(self, data_list_file):
-        ''' From the stream object parse out and list required input files '''
+        """From the stream object parse out and list required input files"""
         sinodes = self.scan_children("stream_info")
         for node in sinodes:
             meshnode = self.scan_child("stream_mesh_file", root=node)
             stream_meshfile = self.text(meshnode)
             data_file_node = self.scan_child("stream_data_files", root=node)
-            filenodes = self.scan_children("file",root=data_file_node)
+            filenodes = self.scan_children("file", root=data_file_node)
             stream_datafiles = []
             for fnode in filenodes:
                 stream_datafiles.append(self.text(fnode))
-            self._add_entries_to_inputdata_list(stream_meshfile, stream_datafiles, data_list_file)
+            self._add_entries_to_inputdata_list(
+                stream_meshfile, stream_datafiles, data_list_file
+            )
