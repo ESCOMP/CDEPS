@@ -93,7 +93,7 @@ jobs:
           pnetcdf_path: /usr
           parallelio_path: $HOME/pio
       - name: Build CDEPS
-        uses: ESCOMP/CDEPS/.github/actions/buildcdeps
+        uses: ./.github/actions/buildcdeps
         with:
           esmfmkfile: $HOME/ESMF/lib/libg/Linux.gfortran.64.openmpi.default/esmf.mk
           pio_path: $HOME/pio
