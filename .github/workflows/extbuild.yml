@@ -101,6 +101,6 @@ jobs:
           cmake_flags: " -Wno-dev -DCMAKE_BUILD_TYPE=DEBUG -DWERROR=ON  -DCMAKE_Fortran_FLAGS=\"-DCPRGNU -g -Wall \
           -ffree-form -ffree-line-length-none -fallow-argument-mismatch \""
       - name: Test CDEPS
-        run:
+        run: |
           cd build-cdeps
           make VERBOSE=1
