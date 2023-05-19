@@ -93,12 +93,9 @@ jobs:
           pnetcdf_path: /usr
           parallelio_path: $HOME/pio
       - name: Build CDEPS
-        run: |
-          export ESMFMKFILE=$HOME/ESMF/lib/libg/Linux.gfortran.64.openmpi.default/esmf.mk
-          export PIO=$HOME/pio
-          export SRC_ROOT=
-          mkdir build-cdeps
-          pushd build-cdeps
-          cmake -Wno-dev -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_Fortran_FLAGS="-DCPRGNU -g -Wall -ffree-form -ffree-line-length-none -fallow-argument-mismatch " -DWERROR=ON ../
-          make VERBOSE=1
-          popd
+        uses: ESCOMP/CDEPS/.github/actions/buildcdeps
+        with:
+          esmfmkfile: $HOME/ESMF/lib/libg/Linux.gfortran.64.openmpi.default/esmf.mk
+          pio_path: $HOME/pio
+          src_root: $GITHUB_WORKSPACE
+
