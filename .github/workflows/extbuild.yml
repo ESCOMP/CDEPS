@@ -98,4 +98,9 @@ jobs:
           esmfmkfile: $HOME/ESMF/lib/libg/Linux.gfortran.64.openmpi.default/esmf.mk
           pio_path: $HOME/pio
           src_root: $GITHUB_WORKSPACE
-
+          cmake_flags: " -Wno-dev -DCMAKE_BUILD_TYPE=DEBUG -DWERROR=ON  -DCMAKE_Fortran_FLAGS=\"-DCPRGNU -g -Wall \
+          -ffree-form -ffree-line-length-none -fallow-argument-mismatch \""
+      - name: Test CDEPS
+        run:
+          cd build-cdeps
+          make VERBOSE=1
