@@ -42,4 +42,5 @@ runs:
         export ESMFMKFILE=${{ inputs.esmfmkfile }}
         export PIO=${{ inputs.pio_path }}
         cmake ${{ inputs.cmake_flags }} ${{ inputs.src_root }}
+        make VERBOSE=1
         popd
