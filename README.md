@@ -3,7 +3,7 @@ Community Data Models for Earth Prediction Systems
 
 For documentation see
 
-https://escomp.github.io/CDEPS/html/index.html
+https://escomp.github.io/CDEPS/versions/master/html/index.html
 
 ## A note on github tag action
 
