@@ -85,6 +85,7 @@ module cdeps_dice_comp
   character(CL)                :: restfilm = nullstr                  ! model restart file namelist
   integer                      :: nx_global
   integer                      :: ny_global
+  logical                      :: export_all = .false.                ! true => export all fields, do not check connected or not
 
   ! linked lists
   type(fldList_type) , pointer :: fldsImport => null()
@@ -183,7 +184,8 @@ contains
 
     namelist / dice_nml /  datamode, &
          model_meshfile, model_maskfile, &
-         restfilm, nx_global, ny_global, flux_swpf, flux_Qmin, flux_Qacc, flux_Qacc0
+         restfilm, nx_global, ny_global, &
+         flux_swpf, flux_Qmin, flux_Qacc, flux_Qacc0, export_all
 
     rc = ESMF_SUCCESS
 
@@ -212,7 +214,7 @@ contains
        end if
 
        ! write namelist input to standard out
-       write(logunit,F00)' datamode = ',trim(datamode)
+       write(logunit,F00)' datamode       = ',trim(datamode)
        write(logunit,F00)' model_meshfile = ',trim(model_meshfile)
        write(logunit,F00)' model_maskfile = ',trim(model_maskfile)
        write(logunit,F01)' nx_global  = ',nx_global
@@ -222,10 +224,12 @@ contains
        write(logunit,F02)' flux_Qacc  = ',flux_Qacc
        write(logunit,F03)' flux_Qacc0 = ',flux_Qacc0
        write(logunit,F00)' restfilm = ',trim(restfilm)
+       write(logunit,F02)' export_all = ',export_all
        bcasttmp = 0
        bcasttmp(1) = nx_global
        bcasttmp(2) = ny_global
        if(flux_Qacc) bcasttmp(3) = 1
+       if(export_all) bcasttmp(4) = 1
        rbcasttmp(1) = flux_swpf
        rbcasttmp(2) = flux_Qmin
        rbcasttmp(3) = flux_Qacc0
@@ -251,11 +255,11 @@ contains
     nx_global = bcasttmp(1)
     ny_global = bcasttmp(2)
     flux_Qacc = (bcasttmp(3) == 1)
+    export_all= (bcasttmp(4) == 1)
 
     flux_swpf  = rbcasttmp(1)
     flux_Qmin  = rbcasttmp(2)
     flux_Qacc0 = rbcasttmp(3)
-
 
     ! Validate datamode
     if ( trim(datamode) == 'ssmi' .or. trim(datamode) == 'ssmi_iaf') then
@@ -327,10 +331,10 @@ contains
     ! NUOPC_Realize "realizes" a previously advertised field in the importState and exportState
     ! by replacing the advertised fields with the newly created fields of the same name.
     call dshr_fldlist_realize( exportState, fldsExport, flds_scalar_name, flds_scalar_num, model_mesh, &
-         subname//':diceExport', rc=rc)
+         subname//':diceExport', export_all, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_fldlist_realize( importState, fldsImport, flds_scalar_name, flds_scalar_num, model_mesh, &
-         subname//':diceImport', rc=rc)
+         subname//':diceImport', .false., rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! for single column, the target point might not be a point where the ice/ocn mask is > 0
