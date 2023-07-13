@@ -267,7 +267,7 @@ contains
     call ESMF_VMBroadcast(vm, import_data_fields, CL, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    call ESMF_VMBroadcast(vm, bcasttmp, 3, main_task, rc=rc)
+    call ESMF_VMBroadcast(vm, bcasttmp, 4, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     call ESMF_VMBroadcast(vm, rtmp, 1, main_task, rc=rc)
