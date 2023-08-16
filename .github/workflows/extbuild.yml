@@ -80,18 +80,31 @@ jobs:
         with:
           path: ~/ESMF
           key: ${{ runner.os }}-${{ env.ESMF_VERSION }}-ESMF2
-      - name: Build ESMF
-        if: steps.cache-esmf.outputs.cache-hit != 'true'
-        uses: ./.github/actions/buildesmf
-        with:
-          esmf_version: ${{ env.ESMF_VERSION }}
-          esmf_bopt: g
-          esmf_comm: openmpi
-          install_prefix: $HOME/ESMF
-          netcdf_c_path: /usr
-          netcdf_fortran_path: /usr
-          pnetcdf_path: /usr
-          parallelio_path: $HOME/pio
+      # - name: Build ESMF
+      #   if: steps.cache-esmf.outputs.cache-hit != 'true'
+      #   uses: ./.github/actions/buildesmf
+      #   with:
+      #     esmf_version: ${{ env.ESMF_VERSION }}
+      #     esmf_bopt: g
+      #     esmf_comm: openmpi
+      #     install_prefix: $HOME/ESMF
+      #     netcdf_c_path: /usr
+      #     netcdf_fortran_path: /usr
+      #     pnetcdf_path: /usr
+      #     parallelio_path: $HOME/pio
+      - name: Install ESMF
+        uses: esmf-org/install-esmf-action@v1
+        env:
+          ESMF_COMPILER: gfortran
+          ESMF_BOPT: g
+          ESMF_COMM: openmpi
+          ESMF_NETCDF: nc-config
+          ESMF_INSTALL_PREFIX: $HOME/ESMF
+          with:
+            version: ${{ env.ESMF_VERSION }}
+            esmpy: false
+            cache: false
+      
       - name: Build CDEPS
         uses: ./.github/actions/buildcdeps
         with:
