@@ -99,10 +99,10 @@ jobs:
           ESMF_BOPT: g
           ESMF_COMM: openmpi
           ESMF_NETCDF: nc-config
-          ESMF_INSTALL_PREFIX: $HOME/ESMF
+          ESMF_INSTALL_PREFIX: /home/runner/ESMF
           ESMF_PIO: external
-          ESMF_PIO_INCLUDE: $HOME/pio/include
-          ESMF_PIO_LIBPATH: $HOME/pio/lib
+          ESMF_PIO_INCLUDE: /home/runner/pio/include
+          ESMF_PIO_LIBPATH: /home/runner/pio/lib
         with:
           version: ${{ env.ESMF_VERSION }}
           esmpy: false
