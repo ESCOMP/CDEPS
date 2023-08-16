@@ -74,12 +74,12 @@ jobs:
           parallelio_version: ${{ env.ParallelIO_VERSION }}
           enable_fortran: True
           install_prefix: $HOME/pio
-      - name: Cache ESMF
-        id: cache-esmf
-        uses: actions/cache@v3
-        with:
-          path: ~/ESMF
-          key: ${{ runner.os }}-${{ env.ESMF_VERSION }}-ESMF2
+      # - name: Cache ESMF
+      #   id: cache-esmf
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: ~/ESMF
+      #    key: ${{ runner.os }}-${{ env.ESMF_VERSION }}-ESMF2
       # - name: Build ESMF
       #   if: steps.cache-esmf.outputs.cache-hit != 'true'
       #   uses: ./.github/actions/buildesmf
@@ -99,6 +99,7 @@ jobs:
           ESMF_BOPT: g
           ESMF_COMM: openmpi
           ESMF_NETCDF: nc-config
+          ESMF_PNETCDF: pnetcdf-config
           ESMF_INSTALL_PREFIX: /home/runner/ESMF
           ESMF_PIO: external
           ESMF_PIO_INCLUDE: /home/runner/pio/include
