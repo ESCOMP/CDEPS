@@ -77,9 +77,7 @@ def buildlib(bldroot, libroot, case):
 
     logger.info("Running cmake for CDEPS")
     srcpath = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-    cmake_flags = get_standard_cmake_args(
-        case, os.path.join(sharedpath, "cdeps")
-    )
+    cmake_flags = get_standard_cmake_args(case, os.path.join(sharedpath, "cdeps"))
     # base path of install to be completed by setting DESTDIR in make install
     cmake_flags += " -DCMAKE_INSTALL_PREFIX:PATH=/"
     cmake_flags += " -DLIBROOT={} ".format(libroot)

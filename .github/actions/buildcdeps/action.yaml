@@ -1,0 +1,46 @@
+name: CDEPS build and cache
+description: 'Build the CDEPS library'
+inputs:
+  cdeps_version:
+    description: 'Tag in the CDEPS repository to use'
+    default: main
+    required: False
+    type: string
+  pio_path:
+    description: 'Path to the installed parallelio code root'
+    default: $HOME/pio
+    required: False
+    type: string
+  esmfmkfile:
+    description: 'Path to the installed ESMF library mkfile'
+    default: $HOME/ESMF/lib/libg/Linux.gfortran.64.openmpi.default/esmf.mk 
+    required: False
+    type: string
+  src_root:
+    description: 'Path to cdeps source'
+    default: $GITHUB_WORKSPACE
+    required: False
+    type: string
+  cmake_flags:
+    description: 'Extra flags for cmake command'
+    default: -Wno-dev
+    required: False
+    type: string
+  install_prefix:
+    description: 'Install path of cdeps'
+    default: $HOME/cdeps
+    required: False
+    type: string
+runs:
+  using: composite
+  steps:
+    - id : Build-CDEPS
+      shell: bash
+      run: |
+        mkdir build-cdeps
+        pushd build-cdeps
+        export ESMFMKFILE=${{ inputs.esmfmkfile }}
+        export PIO=${{ inputs.pio_path }}
+        cmake ${{ inputs.cmake_flags }} ${{ inputs.src_root }}
+        make VERBOSE=1
+        popd

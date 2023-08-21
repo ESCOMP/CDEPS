@@ -81,6 +81,8 @@ module cdeps_dlnd_comp
   integer                  :: nx_global                           ! global nx dimension of model mesh
   integer                  :: ny_global                           ! global ny dimension of model mesh
   logical                  :: skip_restart_read = .false.         ! true => skip restart read in continuation
+  logical                  :: export_all = .false.                ! true => export all fields, do not check connected or not
+
   ! linked lists
   type(fldList_type) , pointer :: fldsExport => null()
   type(dfield_type)  , pointer :: dfields    => null()
@@ -166,7 +168,7 @@ contains
     type(ESMF_VM) :: vm
     character(CL) :: cvalue
     integer       :: nu         ! unit number
-    integer       :: bcasttmp(3)
+    integer       :: bcasttmp(4)
     integer       :: ierr       ! error code
     character(len=*) , parameter :: subname=trim(modName)//':(InitializeAdvertise) '
     character(*)     , parameter :: F00 = "('(" // trim(modName) // ") ',8a)"
@@ -175,7 +177,7 @@ contains
     !-------------------------------------------------------------------------------
 
     namelist / dlnd_nml / datamode, model_meshfile, model_maskfile, &
-         nx_global, ny_global, restfilm, skip_restart_read
+         nx_global, ny_global, restfilm, skip_restart_read, export_all
 
     rc = ESMF_SUCCESS
 
@@ -206,7 +208,9 @@ contains
        bcasttmp(1) = nx_global
        bcasttmp(2) = ny_global
        if(skip_restart_read) bcasttmp(3) = 1
+       if(export_all) bcasttmp(4) = 1
     end if
+
     call ESMF_GridCompGet(gcomp, vm=vm, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
@@ -223,6 +227,7 @@ contains
     nx_global = bcasttmp(1)
     ny_global = bcasttmp(2)
     skip_restart_read = (bcasttmp(3) == 1)
+    export_all = (bcasttmp(4) == 1)
 
     ! write namelist input to standard out
     if (my_task == main_task) then
@@ -233,6 +238,7 @@ contains
        write(logunit,F01)' ny_global         = ',ny_global
        write(logunit,F00)' restfilm          = ',trim(restfilm)
        write(logunit,F02)' skip_restart_read = ',skip_restart_read
+       write(logunit,F02)' export_all        = ',export_all
     endif
 
     ! Validate sdat datamode
@@ -289,7 +295,7 @@ contains
 
     ! Realize the actively coupled fields, now that a mesh is established and
     ! initialize dfields data type (to map streams to export state fields)
-    call dlnd_comp_realize(importState, exportState, rc=rc)
+    call dlnd_comp_realize(importState, exportState, export_all, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Read restart if necessary
@@ -459,11 +465,12 @@ contains
   end subroutine dlnd_comp_advertise
 
   !===============================================================================
-  subroutine dlnd_comp_realize(importState, exportState, rc)
+  subroutine dlnd_comp_realize(importState, exportState, export_all, rc)
 
     ! input/output variables
     type(ESMF_State) , intent(inout) :: importState
     type(ESMF_State) , intent(inout) :: exportState
+    logical          , intent(in)    :: export_all
     integer          , intent(out)   :: rc
 
     ! local variables
@@ -478,7 +485,7 @@ contains
     ! -------------------------------------
 
     call dshr_fldlist_realize( exportState, fldsExport, flds_scalar_name, flds_scalar_num,  model_mesh, &
-         subname//':dlndExport', rc=rc)
+         subname//':dlndExport', export_all, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine dlnd_comp_realize
