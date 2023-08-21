@@ -177,8 +177,8 @@ def buildlib(bldroot, libroot, case):
     if compiler == "gnu" and case.get_value("DEBUG"):
         # Do not allow any warnings except from fox external
         nextline = ""
-        for line in e.split("\n").lower():
-            if "f90" in line and not "fox" in line:
+        for line in e.split("\n"):
+            if "f90" in line.lower() and not "fox" in line.lower():
                 nextline = nextline + line
         if len(nextline) > 0:
             expect(False, nextline)
