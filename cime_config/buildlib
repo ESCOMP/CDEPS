@@ -178,8 +178,8 @@ def buildlib(bldroot, libroot, case):
         # Do not allow any warnings except from fox external
         nextline = ""
         for line in e.split("\n"):
-            if "F90" in line and not "fox" in line:
-                nextline.append(line)
+            if "f90" in line.lower() and not "fox" in line.lower():
+                nextline = nextline + line
         if len(nextline) > 0:
             expect(False, nextline)
 
