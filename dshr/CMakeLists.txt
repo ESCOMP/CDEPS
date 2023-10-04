@@ -15,12 +15,11 @@ add_library(dshr ${SRCFILES})
 
 if(BLD_STANDALONE)
   add_dependencies(dshr cdeps_share)
+  target_include_directories (dshr PRIVATE ${CMAKE_BINARY_DIR}/share)
 endif()
 add_dependencies(dshr streams)
 
 target_include_directories (dshr PRIVATE ${ESMF_F90COMPILEPATHS})
-target_include_directories (dshr PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/../streams)
-target_include_directories (dshr PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/../share)
 target_include_directories (dshr PRIVATE "${PIO_Fortran_INCLUDE_DIR}")
 
 install(TARGETS dshr

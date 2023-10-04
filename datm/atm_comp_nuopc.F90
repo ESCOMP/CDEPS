@@ -8,6 +8,7 @@ module cdeps_datm_comp
   ! This is the NUOPC cap for DATM
   !----------------------------------------------------------------------------
 
+  use ESMF             , only : ESMF_VM, ESMF_VMBroadcast
   use ESMF             , only : ESMF_Mesh, ESMF_GridComp, ESMF_SUCCESS, ESMF_LogWrite
   use ESMF             , only : ESMF_GridCompSetEntryPoint, ESMF_METHOD_INITIALIZE
   use ESMF             , only : ESMF_MethodRemove, ESMF_State, ESMF_Clock, ESMF_TimeInterval
@@ -15,8 +16,8 @@ module cdeps_datm_comp
   use ESMF             , only : ESMF_Time, ESMF_Alarm, ESMF_TimeGet, ESMF_TimeInterval
   use ESMF             , only : operator(+), ESMF_TimeIntervalGet, ESMF_ClockGetAlarm
   use ESMF             , only : ESMF_AlarmIsRinging, ESMF_AlarmRingerOff, ESMF_StateGet
-  use ESMF             , only : ESMF_FieldGet, ESMF_MAXSTR
-  use ESMF             , only : ESMF_TraceRegionEnter, ESMF_TraceRegionExit
+  use ESMF             , only : ESMF_FieldGet, ESMF_MAXSTR, ESMF_VMBroadcast
+  use ESMF             , only : ESMF_TraceRegionEnter, ESMF_TraceRegionExit, ESMF_GridCompGet
   use NUOPC            , only : NUOPC_CompDerive, NUOPC_CompSetEntryPoint, NUOPC_CompSpecialize
   use NUOPC            , only : NUOPC_CompAttributeGet, NUOPC_Advertise
   use NUOPC_Model      , only : model_routine_SS        => SetServices
@@ -28,7 +29,6 @@ module cdeps_datm_comp
   use shr_const_mod    , only : shr_const_cday
   use shr_sys_mod      , only : shr_sys_abort
   use shr_cal_mod      , only : shr_cal_ymd2date
-  use shr_mpi_mod      , only : shr_mpi_bcast
   use shr_log_mod     , only : shr_log_setLogUnit
   use dshr_methods_mod , only : dshr_state_diagnose, chkerr, memcheck
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_init_from_config, shr_strdata_advance
@@ -134,6 +134,7 @@ module cdeps_datm_comp
   logical                      :: flds_preso3 = .false.               ! true => send valid prescribed ozone fields to mediator
   logical                      :: flds_co2 = .false.                  ! true => send prescribed co2 to mediator
   logical                      :: flds_wiso = .false.                 ! true => send water isotopes to mediator
+
   character(CL)                :: bias_correct = nullstr              ! send bias correction fields to coupler
   character(CL)                :: anomaly_forcing(8) = nullstr        ! send anomaly forcing fields to coupler
 
@@ -141,6 +142,7 @@ module cdeps_datm_comp
   integer                      :: nx_global                           ! global nx
   integer                      :: ny_global                           ! global ny
   logical                      :: skip_restart_read = .false.         ! true => skip restart read in continuation run
+  logical                      :: export_all = .false.                ! true => export all fields, do not check connected or not
 
   ! linked lists
   type(fldList_type) , pointer :: fldsImport => null()
@@ -227,18 +229,33 @@ contains
     ! local variables
     integer           :: nu         ! unit number
     integer           :: ierr       ! error code
-    logical           :: exists     ! check for file existence
+    integer           :: bcasttmp(10)
+    type(ESMF_VM)     :: vm
     character(len=*),parameter :: subname=trim(modName) // ':(InitializeAdvertise) '
     character(*)    ,parameter :: F00 = "('(" // trim(modName) // ") ',8a)"
     character(*)    ,parameter :: F01 = "('(" // trim(modName) // ") ',a,2x,i8)"
     character(*)    ,parameter :: F02 = "('(" // trim(modName) // ") ',a,l6)"
     !-------------------------------------------------------------------------------
 
-    namelist / datm_nml / datamode, &
-         model_meshfile, model_maskfile, &
-         nx_global, ny_global, restfilm, iradsw, factorFn_data, factorFn_mesh, &
-         flds_presaero, flds_co2, flds_wiso, bias_correct, anomaly_forcing, &
-         skip_restart_read, flds_presndep, flds_preso3
+    namelist / datm_nml / &
+         datamode, &
+         model_meshfile, &
+         model_maskfile, &
+         nx_global, &
+         ny_global, &
+         restfilm, &
+         iradsw, &
+         factorFn_data, &
+         factorFn_mesh, &
+         flds_presaero, &
+         flds_co2, &
+         flds_wiso, &
+         bias_correct, &
+         anomaly_forcing, &
+         skip_restart_read, &
+         flds_presndep, &
+         flds_preso3, &
+         export_all
 
     rc = ESMF_SUCCESS
 
@@ -265,23 +282,49 @@ contains
           write(logunit,*) 'ERROR: reading input namelist, '//trim(nlfilename)//' iostat=',ierr
           call shr_sys_abort(subName//': namelist read error '//trim(nlfilename))
        end if
+       bcasttmp = 0
+       bcasttmp(1) = nx_global
+       bcasttmp(2) = ny_global
+       bcasttmp(3) = iradsw
+       if(flds_presaero)     bcasttmp(4) = 1
+       if(flds_presndep)     bcasttmp(5) = 1
+       if(flds_preso3)       bcasttmp(6) = 1
+       if(flds_co2)          bcasttmp(7) = 1
+       if(flds_wiso)         bcasttmp(8) = 1
+       if(skip_restart_read) bcasttmp(9) = 1
+       if(export_all)        bcasttmp(10) = 1
     end if
+    call ESMF_GridCompGet(gcomp, vm=vm, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    call shr_mpi_bcast(datamode                  , mpicom, 'datamode')
-    call shr_mpi_bcast(model_meshfile            , mpicom, 'model_meshfile')
-    call shr_mpi_bcast(model_maskfile            , mpicom, 'model_maskfile')
-    call shr_mpi_bcast(nx_global                 , mpicom, 'nx_global')
-    call shr_mpi_bcast(ny_global                 , mpicom, 'ny_global')
-    call shr_mpi_bcast(iradsw                    , mpicom, 'iradsw')
-    call shr_mpi_bcast(factorFn_data             , mpicom, 'factorFn_data')
-    call shr_mpi_bcast(factorFn_mesh             , mpicom, 'factorFn_mesh')
-    call shr_mpi_bcast(restfilm                  , mpicom, 'restfilm')
-    call shr_mpi_bcast(flds_presaero             , mpicom, 'flds_presaero')
-    call shr_mpi_bcast(flds_presndep             , mpicom, 'flds_presndep')
-    call shr_mpi_bcast(flds_preso3               , mpicom, 'flds_preso3')
-    call shr_mpi_bcast(flds_co2                  , mpicom, 'flds_co2')
-    call shr_mpi_bcast(flds_wiso                 , mpicom, 'flds_wiso')
-    call shr_mpi_bcast(skip_restart_read         , mpicom, 'skip_restart_read')
+    call ESMF_VMBroadcast(vm, datamode, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, bias_correct, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, anomaly_forcing, CL*8, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, model_meshfile, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, model_maskfile, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, factorFn_data, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, factorFn_mesh, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, restfilm, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, bcasttmp, 10, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    nx_global         = bcasttmp(1)
+    ny_global         = bcasttmp(2)
+    iradsw            = bcasttmp(3)
+    flds_presaero     = (bcasttmp(4) == 1)
+    flds_presndep     = (bcasttmp(5) == 1)
+    flds_preso3       = (bcasttmp(6) == 1)
+    flds_co2          = (bcasttmp(7) == 1)
+    flds_wiso         = (bcasttmp(8) == 1)
+    skip_restart_read = (bcasttmp(9) == 1)
+    export_all        = (bcasttmp(10) == 1)
 
     ! write namelist input to standard out
     if (my_task == main_task) then
@@ -301,6 +344,7 @@ contains
        write(logunit,F02)' flds_co2       = ',flds_co2
        write(logunit,F02)' flds_wiso      = ',flds_wiso
        write(logunit,F02)' skip_restart_read = ',skip_restart_read
+       write(logunit,F02)' export_all     = ',export_all
     end if
 
     ! Validate sdat datamode
@@ -404,10 +448,10 @@ contains
     ! NUOPC_Realize "realizes" a previously advertised field in the importState and exportState
     ! by replacing the advertised fields with the newly created fields of the same name.
     call dshr_fldlist_realize( exportState, fldsExport, flds_scalar_name, flds_scalar_num, model_mesh, &
-         subname//':datmExport', rc=rc)
+         subname//':datmExport', export_all, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_fldlist_realize( importState, fldsImport, flds_scalar_name, flds_scalar_num, model_mesh, &
-         subname//':datmImport', rc=rc)
+         subname//':datmImport', .false., rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Get the time to interpolate the stream data to
@@ -465,7 +509,6 @@ contains
     ! local variables
     type(ESMF_State)        :: importState, exportState
     type(ESMF_Clock)        :: clock
-    type(ESMF_Alarm)        :: alarm
     type(ESMF_Time)         :: currTime
     type(ESMF_Time)         :: nextTime
     type(ESMF_TimeInterval) :: timeStep
@@ -754,6 +797,7 @@ contains
       call ESMF_StateGet(exportState, itemNameList=lfieldnames, rc=rc)
       if (chkerr(rc,__LINE__,u_FILE_u)) return
       do n = 1, fieldCount
+         call ESMF_LogWrite(trim(subname)//': field name = '//trim(lfieldnames(n)), ESMF_LOGMSG_INFO)
          call ESMF_StateGet(exportState, itemName=trim(lfieldnames(n)), field=lfield, rc=rc)
          if (chkerr(rc,__LINE__,u_FILE_u)) return
          call ESMF_FieldGet(lfield, rank=rank, rc=rc)

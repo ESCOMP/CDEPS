@@ -192,7 +192,7 @@ contains
 
     ! local variables
     type(ESMF_VM) :: vm
-    integer       :: i, localPet
+    integer       :: localPet
     character(len=*), parameter  :: subname='(shr_strdata_init_from_config)'
     ! ----------------------------------------------
     rc = ESMF_SUCCESS
@@ -389,7 +389,6 @@ contains
     logical                      :: mainproc
     integer                      :: nvars
     integer                      :: i, stream_nlev, index
-    integer,  allocatable        :: mask(:)
     character(CL)                :: stream_vector_names
     character(len=*), parameter  :: subname='(shr_sdat_init)'
     ! ----------------------------------------------
@@ -624,7 +623,7 @@ contains
           if (chkerr(rc,__LINE__,u_FILE_u)) return
           if (mainproc) then
              write(sdat%stream(1)%logunit,'(a,i8)') "creating ESMF stream vector field with names" //&
-                  trim(stream_vector_names)//" for stream ",ns   
+                  trim(stream_vector_names)//" for stream ",ns
           end if
        end if
     enddo
@@ -792,9 +791,9 @@ contains
     !     -   Model is no_leap, data is Gregorian and leapyear date 2/29 is encountered in data - skip date
     !     -   Model is Gregorian, data is no_leap and leapyear date 2/29 is encountered in model - repeat 2/28 data
     !     -   Model is Gregorian, data is gregorian but leapyears do not align.
-    !     -       if in model leap year repeat data from 2/28 
+    !     -       if in model leap year repeat data from 2/28
     !     -       if in data leap year skip date 2/29
-    !     
+    !
     !
     ! (1) The stream is a no leap calendar and the model is gregorian:
     ! Time interpolate on the noleap calendar.  If the model date is Feb 29,
@@ -861,7 +860,6 @@ contains
     integer                             :: datayear,datamonth,dataday   ! data date year month day
     integer                             :: nstreams
     integer                             :: stream_index
-    integer                             :: lsize
     real(r8)         ,parameter         :: solZenMin = 0.001_r8 ! minimum solar zenith angle
     integer          ,parameter         :: tadj = 2
     character(len=*) ,parameter         :: timname = "_strd_adv"
@@ -891,7 +889,10 @@ contains
     if (nstreams < 1) return ! TODO: is this needed
 
     lstr = trim(istr)
-
+    ! To avoid an unused dummy variable warning
+    if(present(timers)) then
+       write(sdat%stream(1)%logunit,*) trim(subname),'optional variable timers present but unused'
+    endif
     call ESMF_TraceRegionEnter(trim(lstr)//trim(timname)//'_total')
 
     sdat%ymd = ymd
@@ -993,7 +994,7 @@ contains
              timeint = timeUB-timeLB
              call ESMF_TimeIntervalGet(timeint, StartTimeIn=timeLB, d=dday)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
-             
+
              if (.not. sdat%pstrm(ns)%override_annual_cycle) then
                 if(sdat%stream(ns)%dtlimit == -1) then
                    sdat%pstrm(ns)%override_annual_cycle = .true.
@@ -1002,17 +1003,17 @@ contains
                    endif
                 else
                    dtime = abs(real(dday,r8) + real(sdat%pstrm(ns)%todUB-sdat%pstrm(ns)%todLB,r8)/shr_const_cDay)
-                   
+
                    sdat%pstrm(ns)%dtmin = min(sdat%pstrm(ns)%dtmin,dtime)
                    sdat%pstrm(ns)%dtmax = max(sdat%pstrm(ns)%dtmax,dtime)
-                   
+
                    if ((sdat%pstrm(ns)%dtmax/sdat%pstrm(ns)%dtmin) > sdat%stream(ns)%dtlimit) then
                       if (sdat%mainproc) then
-                         write(sdat%stream(1)%logunit,*) trim(subname),' ERROR: for stream ',ns
-                         write(sdat%stream(1)%logunit,*) trim(subname),' ERROR: dday = ',dday
-                         write(sdat%stream(1)%logunit,*) trim(subName),' ERROR: dtime, dtmax, dtmin, dtlimit = ',&
+                         write(sdat%stream(1)%logunit,'(a,i8)') trim(subname),' ERROR: for stream ',ns
+                         write(sdat%stream(1)%logunit,'(a,i8)') trim(subname),' ERROR: dday = ',dday
+                         write(sdat%stream(1)%logunit,'(a,4(f15.5,2x))') trim(subName),' ERROR: dtime, dtmax, dtmin, dtlimit = ',&
                               dtime, sdat%pstrm(ns)%dtmax, sdat%pstrm(ns)%dtmin, sdat%stream(ns)%dtlimit
-                         write(sdat%stream(1)%logunit,*) trim(subName),' ERROR: ymdLB, todLB, ymdUB, todUB = ', &
+                         write(sdat%stream(1)%logunit,'(a,4(i10,2x))') trim(subName),' ERROR: ymdLB, todLB, ymdUB, todUB = ', &
                               sdat%pstrm(ns)%ymdLB, sdat%pstrm(ns)%todLB, sdat%pstrm(ns)%ymdUB, sdat%pstrm(ns)%todUB
                       end if
                       write(6,*) trim(subname),' ERROR: for stream ',ns, ' and calendar ',trim(calendar)
@@ -1229,7 +1230,7 @@ contains
     character(len=*)       , intent(in) :: name
 
     ! local variables
-    integer  :: ns,n
+    integer  :: ns
     character(*),parameter :: subName = "(shr_strdata_print) "
     character(*),parameter ::   F00 = "('(shr_strdata_print) ',8a)"
     character(*),parameter ::   F01 = "('(shr_strdata_print) ',a,i6,a)"
@@ -1428,7 +1429,7 @@ contains
     real(r8)                 :: fillvalue_r8
     logical                  :: handlefill = .false.
     integer                  :: old_error_handle
-    real(r8), pointer        :: dataptr(:)         
+    real(r8), pointer        :: dataptr(:)
     real(r8), pointer        :: dataptr1d(:)        ! field bundle data
     real(r8), pointer        :: dataptr2d(:,:)      ! field bundle data
     real(r8), pointer        :: dataptr2d_src(:,:)  ! field bundle data

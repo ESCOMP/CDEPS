@@ -7,7 +7,7 @@ module cdeps_dwav_comp
   !----------------------------------------------------------------------------
   ! This is the NUOPC cap for DWAV
   !----------------------------------------------------------------------------
-
+  use ESMF             , only : ESMF_VM, ESMF_VMBroadcast, ESMF_GridCompGet
   use ESMF             , only : ESMF_SUCCESS, ESMF_TraceRegionExit, ESMF_TraceRegionEnter
   use ESMF             , only : ESMF_State, ESMF_Clock, ESMF_Alarm, ESMF_LogWrite, ESMF_Time
   use ESMF             , only : ESMF_ClockGetAlarm, ESMF_LOGMSG_INFO
@@ -25,8 +25,7 @@ module cdeps_dwav_comp
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_sys_mod      , only : shr_sys_abort
   use shr_cal_mod      , only : shr_cal_ymd2date
-  use shr_mpi_mod      , only : shr_mpi_bcast
-  use shr_log_mod     , only : shr_log_setLogUnit
+  use shr_log_mod      , only : shr_log_setLogUnit
   use dshr_methods_mod , only : dshr_state_getfldptr, chkerr, memcheck, dshr_state_diagnose
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_advance
   use dshr_strdata_mod , only : shr_strdata_init_from_config
@@ -78,6 +77,8 @@ module cdeps_dwav_comp
   integer                      :: nx_global
   integer                      :: ny_global
   logical                      :: skip_restart_read = .false.         ! true => skip restart read
+  logical                      :: export_all = .false.                ! true => export all fields, do not check connected or not
+
   ! constants
   logical                      :: diagnose_data = .true.
   integer      , parameter     :: main_task=0                       ! task number of main task
@@ -161,7 +162,8 @@ contains
     integer           :: inst_index         ! number of current instance (ie. 1)
     integer           :: nu                 ! unit number
     integer           :: ierr               ! error code
-    logical           :: exists
+    type(ESMF_VM)     :: vm
+    integer           :: bcasttmp(4)
     character(len=*),parameter  :: subname=trim(modName)//':(InitializeAdvertise) '
     character(*)    ,parameter :: F00 = "('(" // trim(modName) // ") ',8a)"
     character(*)    ,parameter :: F01 = "('(" // trim(modName) // ") ',a,2x,i8)"
@@ -169,7 +171,7 @@ contains
     !-------------------------------------------------------------------------------
 
     namelist / dwav_nml / datamode, model_meshfile, model_maskfile, &
-         restfilm, nx_global, ny_global, skip_restart_read
+         restfilm, nx_global, ny_global, skip_restart_read, export_all
 
     rc = ESMF_SUCCESS
 
@@ -198,23 +200,39 @@ contains
        end if
 
        ! write namelist input to standard out
-       write(logunit,F00)' datamode = ',trim(datamode)
+       write(logunit,F00)' datamode       = ',trim(datamode)
        write(logunit,F00)' model_meshfile = ',trim(model_meshfile)
        write(logunit,F00)' model_maskfile = ',trim(model_maskfile)
        write(logunit,F01)' nx_global = ',nx_global
        write(logunit,F01)' ny_global = ',ny_global
        write(logunit,F00)' restfilm = ',trim(restfilm)
        write(logunit,F02)' skip_restart_read = ',skip_restart_read
+       write(logunit,F02)' export_all = ', export_all
+       bcasttmp = 0
+       bcasttmp(1) = nx_global
+       bcasttmp(2) = ny_global
+       if(skip_restart_read) bcasttmp(3) = 1
+       if(export_all) bcasttmp(4) = 1
     endif
 
     ! broadcast namelist input
-    call shr_mpi_bcast(datamode                  , mpicom, 'datamode')
-    call shr_mpi_bcast(model_meshfile            , mpicom, 'model_meshfile')
-    call shr_mpi_bcast(model_maskfile            , mpicom, 'model_maskfile')
-    call shr_mpi_bcast(nx_global                 , mpicom, 'nx_global')
-    call shr_mpi_bcast(ny_global                 , mpicom, 'ny_global')
-    call shr_mpi_bcast(restfilm                  , mpicom, 'restfilm')
-    call shr_mpi_bcast(skip_restart_read         , mpicom, 'skip_restart_read')
+    call ESMF_GridCompGet(gcomp, vm=vm, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    call ESMF_VMBroadcast(vm, datamode, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, model_meshfile, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, model_maskfile, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, restfilm, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, bcasttmp, 3, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    nx_global = bcasttmp(1)
+    ny_global = bcasttmp(2)
+    skip_restart_read = (bcasttmp(3) == 1)
+    export_all = (bcasttmp(4) == 1)
 
     ! Call advertise phase
     if (trim(datamode) == 'copyall') then
@@ -265,7 +283,7 @@ contains
 
     ! Realize the actively coupled fields, now that a mesh is established and
     ! initialize dfields data type (to map streams to export state fields)
-    call dwav_comp_realize(importState, exportState, rc=rc)
+    call dwav_comp_realize(importState, exportState, export_all, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Read restart if necessary
@@ -301,7 +319,6 @@ contains
 
     ! local variables
     type(ESMF_Clock)        :: clock
-    type(ESMF_Alarm)        :: alarm
     type(ESMF_Time)         :: currTime, nextTime
     type(ESMF_TimeInterval) :: timeStep
     type(ESMF_State)        :: importState, exportState
@@ -415,11 +432,12 @@ contains
   end subroutine dwav_comp_advertise
 
   !===============================================================================
-  subroutine dwav_comp_realize(importState, exportState, rc)
+  subroutine dwav_comp_realize(importState, exportState, export_all, rc)
 
     ! input/output variables
     type(ESMF_State)       , intent(inout) :: importState
     type(ESMF_State)       , intent(inout) :: exportState
+    logical                , intent(in)    :: export_all
     integer                , intent(out)   :: rc
 
     ! local variables
@@ -434,7 +452,7 @@ contains
     ! -------------------------------------
 
     call dshr_fldlist_realize( exportState, fldsExport, flds_scalar_name, flds_scalar_num,  model_mesh, &
-         subname//':dwavExport', rc=rc)
+         subname//':dwavExport', export_all, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Create stream-> export state mapping

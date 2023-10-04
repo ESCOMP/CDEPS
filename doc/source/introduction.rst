@@ -57,15 +57,16 @@ Directory        Function
 ===============  =========================================
 cime_config      CIME Case Control System
 cmake            Build (can be used with or without CIME)
-datm             data atmosphere component
-dice	         data sea-ice component
-dlnd	         data land component
-docn	         data ocean component
-drof	         data river component
-dwav	         data wave component
-dshr             shared NUOPC cap code
-share            shared utility code
-streams          code to handle streams
+datm             Data atmosphere component
+dice	         Data sea-ice component
+dlnd	         Data land component
+docn	         Data ocean component
+drof	         Data river component
+dwav	         Data wave component
+dshr             Shared NUOPC cap code
+share            Shared utility code
+streams          Code to handle streams
+doc              Sphinx documentation source
 ===============  =========================================
 
 ------
@@ -79,14 +80,21 @@ the same time coordinates. Data models input falls into two
 categories: stream-independent and stream-dependent data.
 
 **stream-dependent-data**
-  Stream-dependent input is contained in the input xml file
+  Stream-dependent input is contained in the input XML file
   ``d{model_name}.streams.xml``, where ``model_name`` can be ``atm``,
   ``ice``, ``lnd``, ``ocn``, ``rof`` or ``wav``.  Multiple streams can
-  be specified in the this xml file (see
-  :ref:`streams<input-streams>`). In turn, each stream in the xml file
-  can be associated with multiple stream input files.  The data across
-  all the stream input files must all be on the same stream mesh and
-  share the same time coordinates.
+  be specified in the this XML file (see :ref:`streams<input-streams>`).
+  In turn, each stream in the xml file can be associated with multiple
+  stream input files.  The data across all the stream input files must 
+  all be on the same stream mesh and share the same time coordinates.
+
+  In this case, the input XML file is parsed by CDEPS using the 
+  third-party `FoX library <https://github.com/andreww/fox>`_.  
+  In addition to the XML format, it is also possible to use 
+  `ESMF config format <http://earthsystemmodeling.org/docs/nightly/develop/ESMF_refdoc/node6.html#SECTION06090000000000000000>`_
+  to define stream dependent namelist options (see :ref:`streams<input-streams>`).
+  This option is mainly used by the NOAA's `UFS Weather Model <https://ufs-weather-model.readthedocs.io/en/latest/>`_ while
+  XML format used by NCAR's `CESM <https://www.cesm.ucar.edu>`_. 
 
 **stream-independent-data**
   Stream-independent input is contained in the input namelist file
@@ -106,12 +114,12 @@ follows:
 * The two timestamps of input data that bracket the present model time are read first.
   These are called the lower and upper bounds of data and will change as the model advances.
 * The lower and upper bound data are then spatially mapped to the
-  model grid based upon the in the ``d{model_name}.streams.xml`` node
+  model grid based upon the in the ``d{model_name}.streams[.xml]`` node
   ``mapalgo``.  Spatial interpolation only occurs if the input data
   grid and model grid are not identical, and this is determined in the
   strdata module automatically.
 * Time interpolation is the final step and is done using a time
-  interpolation method specified in the ``d{model_name}.streams.xml``
+  interpolation method specified in the ``d{model_name}.streams[.xml]``
   node ``tintalgo``.
 * A final set of fields is then available to the data model on the
   model grid and for the current model time.
@@ -128,3 +136,70 @@ These are: ``DATM_MODE``, ``DICE_MODE``, ``DLND_MODE``, ``DOCN_MODE``, ``DROF_MO
 Each data model mode specifies the streams that are associated with that data model.
 
 More details of the data model design are covered in :ref:`design details<design-details>`.
+
+---------
+NUOPC Cap
+---------
+
+
+Initialization phases
+---------------------
+
+The CDEPS data component has two initialization phases for each data model: 
+(1) advertise and, (2) realize phases. In the advertise phase, the data 
+component queries namelist files and specifies a data model mesh and mask 
+files along with other stream-independent data model specific configuration 
+variables. Then, the advertise phase initializes PIO for reading and writing 
+netCDF files under CDEPS. As a last step, the top level advertise phase calls 
+the stream specific one since advertised fields are changed based on used data 
+mode. This will allow CDEPS to specialize based on the selected data mode 
+and list of exported fields. In the realize phase, the data model 
+reads the stream definition file and runs the data component to prepare 
+initial data for other components.
+
+Run phase
+---------
+
+The CDEPS data component is designed to have a different run phase for each 
+data mode, which is controlled by a top-level data component specific NUOPC "cap". 
+In the first advance step, the data model specific run phase initializes the 
+export fields that have a corresponding stream field. Then, initializes the 
+data mode specific stream and export field pointers. If it is required, the 
+data model also reads the restart files in this initial step. The spatial and 
+temporal interpolation is performed internally using ESMF provided spatial 
+interpolation types and custom temporal interpolation routines if the data 
+model and stream meshes are not identical. After interpolating (or transferring) 
+stream to data model mesh, the top-level advance routine calls data mode 
+specific routines, which are responsible to calculate added value fields 
+(i.e., wind speed from wind components) and convert units of the data 
+stream based on the convention used in CDEPS.
+
+Finalization phase
+------------------
+
+The data model just returns a message that indicates the end of the main integration loop.
+
+Integration clock
+-----------------
+
+The CDEPS data component run time is set through the shared ``dshr_set_runclock`` 
+routine. In this case, the driver configuration dictates the model start and stop 
+times (through use of ESMF config file, ``nuopc.runconfig``) and coupling interval to 
+call the data component through the use of ESMF/NUOPC run sequence (``nuopc.runseq``). 
+The ``dshr_set_runclock`` call also sets up ESMF alarms for restart and stop times 
+that are used internally in the model and create internal clock representations.
+
+Grid type, decomposition, mapping to internal grid
+--------------------------------------------------
+
+As it mentioned previously, CDEPS includes two programming layers to support flexible 
+data components: (1) data model and (2) streams. In this design, the data model stays 
+on top and interacts with the other active model components or mediator. Unlike the 
+data models, streams do not directly interact with other components but are used by 
+the data models to create export states. In this case, the streams could have different 
+meshes but they are spatially mapped to data model mesh before passing to the other 
+components. This step also includes temporal interpolation to calculate the data 
+in a certain time and has ability to perform different temporal interpolation 
+types for each variable such as ``coszen``, which scale the data according to the 
+cosine of the solar zenith angle and can be used to represent the diurnal 
+cycle for solar radiation. The decomposition of the data is handled by the ESMF.

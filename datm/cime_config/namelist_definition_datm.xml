@@ -341,7 +341,7 @@
     </desc>
     <values>
       <value>1</value>
-      <value datm_mode="CPLHISTForcing">-1</value>
+      <value datm_mode="CPLHIST">-1</value>
     </values>
   </entry>
 

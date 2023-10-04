@@ -18,16 +18,18 @@ message("Stream srcfiles are ${SRCFILES}")
 
 add_library(streams ${SRCFILES})
 
-add_dependencies(streams FoX_dom)
-if(BLD_STANDALONE)
-  add_dependencies(streams cdeps_share)
+if(NOT DISABLE_FoX)
+  add_dependencies(streams FoX_dom)
+  target_include_directories (streams PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/../fox/include)
 endif()
 
+if(BLD_STANDALONE)
+  add_dependencies(streams cdeps_share)
+  target_include_directories (streams PRIVATE ${CMAKE_BINARY_DIR}/share)
+endif()
 
-target_include_directories (streams PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/../fox/include)
 target_include_directories (streams PRIVATE ${ESMF_F90COMPILEPATHS})
 target_include_directories (streams PRIVATE ${PIO_Fortran_INCLUDE_DIR})
-target_include_directories (streams PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/../share)
 
 install(TARGETS streams
         ARCHIVE DESTINATION lib

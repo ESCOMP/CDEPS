@@ -7,7 +7,7 @@ module cdeps_docn_comp
   !----------------------------------------------------------------------------
   ! This is the NUOPC cap for DOCN
   !----------------------------------------------------------------------------
-
+  use ESMF             , only : ESMF_VM, ESMF_VMBroadcast, ESMF_GridCompGet
   use ESMF             , only : ESMF_Mesh, ESMF_GridComp, ESMF_State, ESMF_Clock, ESMF_Time
   use ESMF             , only : ESMF_SUCCESS, ESMF_LogWrite, ESMF_LOGMSG_INFO, ESMF_METHOD_INITIALIZE
   use ESMF             , only : ESMF_TraceRegionEnter, ESMF_TraceRegionExit, ESMF_ClockGet
@@ -26,7 +26,6 @@ module cdeps_docn_comp
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_sys_mod      , only : shr_sys_abort
   use shr_cal_mod      , only : shr_cal_ymd2date
-  use shr_mpi_mod      , only : shr_mpi_bcast
   use shr_log_mod     , only : shr_log_setLogUnit
   use dshr_methods_mod , only : dshr_state_diagnose, chkerr, memcheck
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_advance, shr_strdata_init_from_config
@@ -54,6 +53,12 @@ module cdeps_docn_comp
   use docn_datamode_aquaplanet_mod , only : docn_datamode_aquaplanet_advertise
   use docn_datamode_aquaplanet_mod , only : docn_datamode_aquaplanet_init_pointers
   use docn_datamode_aquaplanet_mod , only : docn_datamode_aquaplanet_advance
+  use docn_datamode_cplhist_mod    , only : docn_datamode_cplhist_advertise
+  use docn_datamode_cplhist_mod    , only : docn_datamode_cplhist_init_pointers
+  use docn_datamode_cplhist_mod    , only : docn_datamode_cplhist_advance
+  use docn_datamode_cplhist_mod    , only : docn_datamode_cplhist_restart_read
+  use docn_datamode_cplhist_mod    , only : docn_datamode_cplhist_restart_write
+  use docn_import_data_mod         , only : docn_import_data_advertise
 
   implicit none
   private ! except
@@ -98,6 +103,7 @@ module cdeps_docn_comp
   integer                      :: nx_global
   integer                      :: ny_global
   logical                      :: skip_restart_read = .false.         ! true => skip restart read in continuation run
+  logical                      :: export_all = .false.                ! true => export all fields, do not check connected or not
 
   ! linked lists
   type(fldList_type) , pointer :: fldsImport => null()
@@ -183,7 +189,10 @@ contains
     integer           :: inst_index         ! number of current instance (ie. 1)
     integer           :: nu                 ! unit number
     integer           :: ierr               ! error code
-    logical           :: exists             ! check for file existence
+    character(len=CL) :: import_data_fields ! colon deliminted strings of input data fields
+    integer           :: bcasttmp(4)
+    real(r8)          :: rtmp(1)
+    type(ESMF_VM)     :: vm
     character(len=*),parameter :: subname=trim(module_name)//':(InitializeAdvertise) '
     character(*)    ,parameter :: F00 = "('(" // trim(module_name) // ") ',8a)"
     character(*)    ,parameter :: F01 = "('(" // trim(module_name) // ") ',a,2x,i8)"
@@ -193,7 +202,8 @@ contains
 
     namelist / docn_nml / datamode, &
          model_meshfile, model_maskfile, &
-         restfilm,  nx_global, ny_global, sst_constant_value, skip_restart_read
+         restfilm,  nx_global, ny_global, sst_constant_value, skip_restart_read, &
+         import_data_fields, export_all
 
     rc = ESMF_SUCCESS
 
@@ -222,25 +232,52 @@ contains
        end if
 
        ! write namelist input to standard out
-       write(logunit,F00)' case_name = ',trim(case_name)
-       write(logunit,F00)' datamode  = ',trim(datamode)
-       write(logunit,F00)' model_meshfile = ',trim(model_meshfile)
-       write(logunit,F00)' model_maskfile = ',trim(model_maskfile)
-       write(logunit,F01)' nx_global = ',nx_global
-       write(logunit,F01)' ny_global = ',ny_global
-       write(logunit,F00)' restfilm = ',trim(restfilm)
+       write(logunit,F00)' case_name         = ',trim(case_name)
+       write(logunit,F00)' datamode          = ',trim(datamode)
+       write(logunit,F00)' model_meshfile    = ',trim(model_meshfile)
+       write(logunit,F00)' model_maskfile    = ',trim(model_maskfile)
+       write(logunit,F01)' nx_global         = ',nx_global
+       write(logunit,F01)' ny_global         = ',ny_global
+       write(logunit,F00)' restfilm          = ',trim(restfilm)
        write(logunit,F02)' skip_restart_read = ',skip_restart_read
+       write(logunit,F00)' import_data_fields = ',trim(import_data_fields)
+       write(logunit,*)  ' sst_constant_value = ',sst_constant_value
+       write(logunit,F02)' export_all        = ', export_all
+
+       bcasttmp = 0
+       bcasttmp(1) = nx_global
+       bcasttmp(2) = ny_global
+       if(skip_restart_read) bcasttmp(3) = 1
+       if(export_all) bcasttmp(4) = 1
+       rtmp(1) = sst_constant_value
     endif
 
     ! Broadcast namelist input
-    call shr_mpi_bcast(datamode                  , mpicom, 'datamode')
-    call shr_mpi_bcast(model_meshfile            , mpicom, 'model_meshfile')
-    call shr_mpi_bcast(model_maskfile            , mpicom, 'model_maskfile')
-    call shr_mpi_bcast(nx_global                 , mpicom, 'nx_global')
-    call shr_mpi_bcast(ny_global                 , mpicom, 'ny_global')
-    call shr_mpi_bcast(restfilm                  , mpicom, 'restfilm')
-    call shr_mpi_bcast(sst_constant_value        , mpicom, 'sst_constant_value')
-    call shr_mpi_bcast(skip_restart_read         , mpicom, 'skip_restart_read')
+    call ESMF_GridCompGet(gcomp, vm=vm, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    call ESMF_VMBroadcast(vm, datamode, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, model_meshfile, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, model_maskfile, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, restfilm, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, import_data_fields, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    call ESMF_VMBroadcast(vm, bcasttmp, 4, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    call ESMF_VMBroadcast(vm, rtmp, 1, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    nx_global = bcasttmp(1)
+    ny_global = bcasttmp(2)
+    skip_restart_read = (bcasttmp(3) == 1)
+    export_all = (bcasttmp(4) == 1)
+    sst_constant_value = rtmp(1)
 
     ! Special logic for prescribed aquaplanet
     if (datamode(1:9) == 'sst_aquap' .and. trim(datamode) /= 'sst_aquap_constant') then
@@ -260,6 +297,7 @@ contains
          trim(datamode) == 'sst_aquap_file'     .or. & ! read stream, no import data
          trim(datamode) == 'som'                .or. & ! read stream, needs import data
          trim(datamode) == 'som_aquap'          .or. & ! read stream, needs import data
+         trim(datamode) == 'cplhist'            .or. & ! read stream, needs import data
          trim(datamode) == 'sst_aquap_analytic' .or. & ! analytic, no streams, import or export data
          trim(datamode) == 'sst_aquap_constant' ) then ! analytic, no streams, import or export data
        ! success do nothing
@@ -280,6 +318,14 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     else if (trim(datamode) == 'iaf') then
        call docn_datamode_iaf_advertise(importState, exportState, fldsImport, fldsExport, flds_scalar_name, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    else if (trim(datamode) == 'cplhist') then
+       call docn_datamode_cplhist_advertise(exportState, fldsExport, flds_scalar_name, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    end if
+
+    if (trim(import_data_fields) /= 'none') then
+       call docn_import_data_advertise(importState, fldsImport, flds_scalar_name, import_data_fields, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
@@ -348,10 +394,10 @@ contains
     ! NUOPC_Realize "realizes" a previously advertised field in the importState and exportState
     ! by replacing the advertised fields with the newly created fields of the same name.
     call dshr_fldlist_realize( exportState, fldsExport, flds_scalar_name, flds_scalar_num, model_mesh, &
-         subname//trim(modelname)//':Export', rc=rc)
+         subname//trim(modelname)//':Export', export_all, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_fldlist_realize( importState, fldsImport, flds_scalar_name, flds_scalar_num, model_mesh, &
-         subname//trim(modelname)//':Import', rc=rc)
+         subname//trim(modelname)//':Import', .false., rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! for single column, the target point might not be a valid ocn point
@@ -410,7 +456,6 @@ contains
     type(ESMF_Clock)        :: clock
     type(ESMF_TimeInterval) :: timeStep
     type(ESMF_Time)         :: currTime, nextTime
-    type(ESMF_Alarm)        :: alarm
     integer                 :: next_ymd      ! model date
     integer                 :: next_tod      ! model sec into model date
     integer                 :: yr            ! year
@@ -501,6 +546,9 @@ contains
        case('sst_aquap_analytic', 'sst_aquap_constant')
           call  docn_datamode_aquaplanet_init_pointers(exportState, model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       case('cplhist')
+          call docn_datamode_cplhist_init_pointers(exportState, model_frac, rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end select
 
        ! Read restart if needed
@@ -555,6 +603,9 @@ contains
     case('sst_aquap_constant')
        call  docn_datamode_aquaplanet_advance(exportState, model_mesh, sst_constant_value=sst_constant_value, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    case('cplhist')
+       call  docn_datamode_cplhist_advance(rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end select
 
     ! Write restarts if needed (no restarts for aquaplanet analytic or aquaplanet input file)
@@ -568,6 +619,9 @@ contains
                logunit, my_task, sdat)
        case('som','som_aquap')
           call docn_datamode_som_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
+               logunit, my_task, sdat)
+       case('cplhist')
+          call docn_datamode_cplhist_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
                logunit, my_task, sdat)
        end select
     end if
