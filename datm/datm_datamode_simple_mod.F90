@@ -58,19 +58,19 @@ module datm_datamode_simple_mod
   real(r8), pointer :: Faxa_swnet(:) => null()
   real(r8), pointer :: Faxa_ndep(:,:) => null()
 
-  ! stream data
-  real(r8), pointer :: strm_swdn(:)      => null()
-
   ! othe module arrays
   real(R8), pointer :: yc(:)                 ! array of model latitudes
+  real(R8), pointer :: xc(:)                 ! array of model longitudes
 
-  ! constant forcing values
+  ! constant forcing values to be set via const_forcing_nml
   real(R8) :: dn10 = 1.204_R8
   real(R8) :: slp = 101325.0_R8
   real(R8) :: q = 0.0_R8
   real(R8) :: t = 273.15_R8
   real(R8) :: u = 0.0_R8
   real(R8) :: v = 0.0_R8
+  real(R8) :: peak_swdn = 330.0_R8
+  real(R8) :: peak_lwdn = 450.0_R8
 
   ! constants
   real(R8) , parameter :: tKFrz    = SHR_CONST_TKFRZ
@@ -108,7 +108,7 @@ contains
 
     !-------------------------------------------------------------------------------
 
-    namelist / const_forcing_nml / dn10, slp, q, t, u, v
+    namelist / const_forcing_nml / dn10, slp, q, t, u, v, peak_swdn, peak_lwdn
 
     rc = ESMF_SUCCESS
 
@@ -128,6 +128,8 @@ contains
     call shr_mpi_bcast(t            , mpicom, 't')
     call shr_mpi_bcast(u            , mpicom, 'u')
     call shr_mpi_bcast(v            , mpicom, 'v')
+    call shr_mpi_bcast(peak_swdn     , mpicom, 'peak_swdn')
+    call shr_mpi_bcast(peak_lwdn     , mpicom, 'peak_lwdn')
 
     call dshr_fldList_add(fldsExport, trim(flds_scalar_name))
     call dshr_fldList_add(fldsExport, 'Sa_z'       )
@@ -187,17 +189,13 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     allocate(ownedElemCoords(spatialDim*numOwnedElements))
     allocate(yc(numOwnedElements))
+    allocate(xc(numOwnedElements))
     call ESMF_MeshGet(sdat%model_mesh, ownedElemCoords=ownedElemCoords)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     do n = 1,numOwnedElements
        yc(n) = ownedElemCoords(2*n)
+       xc(n) = ownedElemCoords(2*n-1)
     end do
-
-    ! get stream pointers
-    !todo call shr_strdata_get_stream_pointer( sdat, 'Faxa_prec'  , strm_prec  , rc)
-    !if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Faxa_swdn'  , strm_swdn  , rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! get export state pointers
     call dshr_state_getfldptr(exportState, 'Sa_z'       , fldptr1=Sa_z       , rc=rc)
@@ -246,10 +244,6 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
-    if (.not. associated(strm_swdn)) then
-       call shr_sys_abort(trim(subname)//'ERROR: swdn must be in streams for SIMPLE')
-    endif
-
   end subroutine datm_datamode_simple_init_pointers
 
   !===============================================================================
@@ -266,13 +260,12 @@ contains
     ! local variables
     integer  :: n
     integer  :: lsize
-    real(R8) :: avg_alb            ! average albedo
     real(R8) :: rday               ! elapsed day
-    real(R8) :: cosFactor          ! cosine factor
-    real(R8) :: factor             ! generic/temporary correction factor
-    real(R8) :: tMin               ! minimum temperature
-    real(R8) :: uprime,vprime
     character(len=*), parameter :: subname='(datm_datamode_simple): '
+    real(R8), parameter :: epsilon_deg = 23.45 ! axial tilt of the Earth
+    real(R8) :: solar_decl ! solar declination angle (rad) to be used in idealized radiation calculations
+    real(R8) :: hour_angle ! hour angle (rad) to be used in idealized radiation calculations
+    real(R8) :: zenith_angle ! solar senith angle (rad) to be used in idealized radiation calculations
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -281,7 +274,6 @@ contains
 
     call shr_cal_date2julian(target_ymd, target_tod, rday, model_calendar)
     rday = mod((rday - 1.0_R8),365.0_R8)
-    cosfactor = cos((2.0_R8*SHR_CONST_PI*rday)/365 - phs_c0)
 
     do n = 1,lsize
       Sa_z(n) = 10.0_R8
@@ -310,33 +302,19 @@ contains
 
       !--- (iii) RADIATION DATA ---
 
-      !--- fabricate required swdn components from net swdn ---
-      Faxa_swvdr(n) = strm_swdn(n)*(0.28_R8)
-      Faxa_swndr(n) = strm_swdn(n)*(0.31_R8)
-      Faxa_swvdf(n) = strm_swdn(n)*(0.24_R8)
-      Faxa_swndf(n) = strm_swdn(n)*(0.17_R8)
-      !--- compute net short-wave based on LY08 latitudinally-varying albedo ---
-      avg_alb = ( 0.069 - 0.011*cos(2.0_R8*yc(n)*degtorad ) )
-      Faxa_swnet(n) = strm_swdn(n)*(1.0_R8 - avg_alb)
-      !--- corrections to GISS sswdn for heat budget balancing ---
-      factor = 1.0_R8
-      if      ( -60.0_R8 < yc(n) .and. yc(n) < -50.0_R8 ) then
-         factor = 1.0_R8 - (yc(n) + 60.0_R8)*(0.05_R8/10.0_R8)
-      else if ( -50.0_R8 < yc(n) .and. yc(n) <  30.0_R8 ) then
-         factor = 0.95_R8
-      else if (  30.0_R8 < yc(n) .and. yc(n) <  40._R8 ) then
-         factor = 1.0_R8 - (40.0_R8 - yc(n))*(0.05_R8/10.0_R8)
-      endif
-      Faxa_swnet(n) = Faxa_swnet(n)*factor
-      Faxa_swvdr(n) = Faxa_swvdr(n)*factor
-      Faxa_swndr(n) = Faxa_swndr(n)*factor
-      Faxa_swvdf(n) = Faxa_swvdf(n)*factor
-      Faxa_swndf(n) = Faxa_swndf(n)*factor
-      !--- correction to GISS lwdn in Arctic ---
-      if ( yc(n) > 60._R8 ) then
-         factor = MIN(1.0_R8, 0.1_R8*(yc(n)-60.0_R8) )
-         Faxa_lwdn(n) = Faxa_lwdn(n) + factor * dLWarc
-      endif
+      ! long wave
+      solar_decl = (epsilon_deg * degtorad) * sin( 2.0_R8 * shr_const_pi * (int(rday) + 284.0_R8) / 365.0_R8)
+      zenith_angle = acos(sin(yc(n) * degtorad ) * sin(solar_decl) + cos(yc(n) * degtorad) * cos(solar_decl) )
+      Faxa_lwdn(n) = max(0.0_R8, peak_lwdn * cos(zenith_angle)) 
+
+      ! short wave
+      hour_angle = (15.0_R8 * (target_tod/3600.0_R8 - 12.0_R8) + xc(n) ) * degtorad
+      zenith_angle = acos(sin(yc(n) * degtorad ) * sin(solar_decl) + cos(yc(n) * degtorad) * cos(solar_decl) * cos(hour_angle) )
+      Faxa_swnet(n) = max(0.0_R8, peak_swdn * cos(zenith_angle))
+      Faxa_swvdr(n) = Faxa_swnet(n)*(0.28_R8)
+      Faxa_swndr(n) = Faxa_swnet(n)*(0.31_R8)
+      Faxa_swvdf(n) = Faxa_swnet(n)*(0.24_R8)
+      Faxa_swndf(n) = Faxa_swnet(n)*(0.17_R8)
 
     enddo   ! lsize
 

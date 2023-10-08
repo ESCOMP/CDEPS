@@ -70,9 +70,7 @@
       <value datm_mode="ERA5">
         ERA5_HOURLY
       </value>
-      <value datm_mode="SIMPLE" >
-        CORE2_NYF.GISS
-      </value>
+      <value datm_mode="SIMPLE" ></value>
       <value datm_mode="CPLHIST">
         CPLHISTForcing.Solar,CPLHISTForcing.nonSolarFlux,CPLHISTForcing.State3hr,CPLHISTForcing.State1hr
       </value>
@@ -450,5 +448,29 @@
     </values>
   </entry>
 
+  <entry id="peak_swdn">
+    <type>real</type>
+    <category>datm</category>
+    <group>const_forcing_nml</group>
+    <desc>
+      Peak idealized shortwave radiation to be passed to ice/ocean surface.
+      units: W m-2
+    </desc>
+    <values>
+      <value>330.0</value>
+    </values>
+  </entry>
 
+  <entry id="peak_lwdn">
+    <type>real</type>
+    <category>datm</category>
+    <group>const_forcing_nml</group>
+    <desc>
+      Peak idealized longwave radiation to be passed to ice/ocean surface.
+      units: W m-2
+    </desc>
+    <values>
+      <value>450.0</value>
+    </values>
+  </entry>
 </entry_id>
