@@ -41,6 +41,7 @@
   CORE_RYF9091_JRA      = JRA55 repeat year forcing, v1.3, 1990-1991 (for forcing POP and CICE)
   CORE_RYF0304_JRA      = JRA55 repeat year forcing, v1.3, 2003-2004 (for forcing POP and CICE)
   ERA5                  = ERA5 intra-annual year forcing
+  SIMPLE                = Namelist-configurable, constant datm forcing for simple experiments
   CPLHIST               = Streams for lnd or ocn/ice forcing used for spinup
 
   Currently the following optional streams are supported

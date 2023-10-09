@@ -174,7 +174,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
 
     # Generate datm_in
     namelist_file = os.path.join(confdir, "datm_in")
-    nmlgen.write_output_file(namelist_file, data_list_path, groups=['datm_nml'])
+    nmlgen.write_output_file(namelist_file, data_list_path, groups=['datm_nml','const_forcing_nml'])
 
     # Determine streams
     streamlist = nmlgen.get_streams()
