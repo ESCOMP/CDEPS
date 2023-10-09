@@ -273,8 +273,8 @@ contains
     mainproc = (my_task == main_task)
 
     ! Read atm_nml from nlfilename
-    nlfilename = "datm_in"//trim(inst_suffix)
     if (my_task == main_task) then
+       nlfilename = "datm_in"//trim(inst_suffix)
        open (newunit=nu,file=trim(nlfilename),status="old",action="read")
        read (nu,nml=datm_nml,iostat=ierr)
        close(nu)
@@ -391,7 +391,7 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('SIMPLE')
        call datm_datamode_simple_advertise(exportState, fldsExport, flds_scalar_name, &
-            nlfilename, my_task, mpicom, rc)
+            nlfilename, my_task, vm, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end select
 

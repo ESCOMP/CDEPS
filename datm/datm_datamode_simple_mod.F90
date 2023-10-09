@@ -10,6 +10,7 @@ module datm_datamode_simple_mod
   use ESMF             , only : ESMF_RouteHandleDestroy, ESMF_EXTRAPMETHOD_NEAREST_STOD
   use ESMF             , only : ESMF_POLEMETHOD_ALLAVG, ESMF_REGRIDMETHOD_BILINEAR
   use ESMF             , only : ESMF_DistGridGet, ESMF_FieldRegridStore, ESMF_FieldRedistStore
+  use ESMF             , only : ESMF_VM, ESMF_VMBroadcast
   use pio              , only : Var_Desc_t, file_desc_t, io_desc_t, pio_read_darray, pio_freedecomp
   use pio              , only : pio_openfile, PIO_NOWRITE, pio_seterrorhandling, PIO_BCAST_ERROR
   use pio              , only : pio_initdecomp, pio_inq_dimlen, pio_inq_varid
@@ -19,7 +20,6 @@ module datm_datamode_simple_mod
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_sys_mod      , only : shr_sys_abort
   use shr_cal_mod      , only : shr_cal_date2julian
-  use shr_mpi_mod      , only : shr_mpi_bcast
   use shr_const_mod    , only : shr_const_tkfrz, shr_const_pi
   use dshr_strdata_mod , only : shr_strdata_get_stream_pointer, shr_strdata_type
   use dshr_methods_mod , only : dshr_state_getfldptr, dshr_fldbun_getfldptr, dshr_fldbun_regrid, chkerr
@@ -88,7 +88,7 @@ contains
 !===============================================================================
 
   subroutine datm_datamode_simple_advertise(exportState, fldsexport, flds_scalar_name, &
-    nlfilename, my_task, mpicom, rc)
+    nlfilename, my_task, vm, rc)
 
     ! input/output variables
     type(esmf_State)   , intent(inout) :: exportState
@@ -96,7 +96,7 @@ contains
     character(len=*)   , intent(in)    :: flds_scalar_name
     character(len=*)   , intent(in)    :: nlfilename
     integer            , intent(in)    :: my_task
-    integer            , intent(in)    :: mpicom
+    type(ESMF_VM)      , intent(in)    :: vm
     integer            , intent(out)   :: rc
 
     ! local variables
@@ -105,6 +105,7 @@ contains
     integer                       :: ierr       ! error code
     integer                       :: nu         ! unit number
     character(len=*)  , parameter :: subname='(datm_datamode_simple_advertise): '
+    real(R8)                      :: bcasttmp(8)
 
     !-------------------------------------------------------------------------------
 
@@ -120,16 +121,29 @@ contains
        if (ierr > 0) then
           call shr_sys_abort(subName//': namelist read error '//trim(nlfilename))
        end if
+
+      bcasttmp = 0
+      bcasttmp(1) = dn10
+      bcasttmp(2) = slp
+      bcasttmp(3) = q
+      bcasttmp(4) = t
+      bcasttmp(5) = u
+      bcasttmp(6) = v
+      bcasttmp(7) = peak_swdn
+      bcasttmp(8) = peak_lwdn
     end if
 
-    call shr_mpi_bcast(dn10         , mpicom, 'dn10')
-    call shr_mpi_bcast(slp          , mpicom, 'slp')
-    call shr_mpi_bcast(q            , mpicom, 'q')
-    call shr_mpi_bcast(t            , mpicom, 't')
-    call shr_mpi_bcast(u            , mpicom, 'u')
-    call shr_mpi_bcast(v            , mpicom, 'v')
-    call shr_mpi_bcast(peak_swdn     , mpicom, 'peak_swdn')
-    call shr_mpi_bcast(peak_lwdn     , mpicom, 'peak_lwdn')
+    call ESMF_VMBroadcast(vm, bcasttmp, 8, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    dn10 = bcasttmp(1)
+    slp = bcasttmp(2)
+    q = bcasttmp(3)
+    t = bcasttmp(4)
+    u = bcasttmp(5)
+    v = bcasttmp(6)
+    peak_swdn = bcasttmp(7)
+    peak_lwdn = bcasttmp(8)
 
     call dshr_fldList_add(fldsExport, trim(flds_scalar_name))
     call dshr_fldList_add(fldsExport, 'Sa_z'       )
