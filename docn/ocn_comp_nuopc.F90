@@ -178,7 +178,7 @@ contains
 
   !===============================================================================
   subroutine InitializeAdvertise(gcomp, importState, exportState, clock, rc)
-
+    use shr_nl_mod, only:  shr_nl_find_group_name
     ! input/output variables
     type(ESMF_GridComp)  :: gcomp
     type(ESMF_State)     :: importState, exportState
@@ -224,6 +224,7 @@ contains
        ! Read docn_nml from nlfilename
        nlfilename = "docn_in"//trim(inst_suffix)
        open (newunit=nu,file=trim(nlfilename),status="old",action="read")
+       call shr_nl_find_group_name(nu, 'docn_nml', status=ierr)
        read (nu,nml=docn_nml,iostat=ierr)
        close(nu)
        if (ierr > 0) then

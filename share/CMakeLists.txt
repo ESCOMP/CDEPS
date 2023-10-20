@@ -5,6 +5,7 @@ set (GenF90_SRCS shr_infnan_mod.F90
                  shr_assert_mod.F90)
 
 add_library(cdeps_share  ${GenF90_SRCS}
+                         shr_nl_mod.F90
                          glc_elevclass_mod.F90
                          shr_timer_mod.F90
                          shr_cal_mod.F90
