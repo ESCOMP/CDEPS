@@ -89,6 +89,7 @@ contains
 
   subroutine datm_datamode_simple_advertise(exportState, fldsexport, flds_scalar_name, &
     nlfilename, my_task, vm, rc)
+    use shr_nl_mod, only:  shr_nl_find_group_name
 
     ! input/output variables
     type(esmf_State)   , intent(inout) :: exportState
@@ -116,6 +117,7 @@ contains
     ! Read const_forcing_nml from nlfilename
     if (my_task == main_task) then
        open (newunit=nu,file=trim(nlfilename),status="old",action="read")
+       call shr_nl_find_group_name(nu, 'const_forcing_nml', status=ierr)
        read (nu,nml=const_forcing_nml,iostat=ierr)
        close(nu)
        if (ierr > 0) then

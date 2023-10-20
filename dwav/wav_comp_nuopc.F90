@@ -151,6 +151,7 @@ contains
 
   !===============================================================================
   subroutine InitializeAdvertise(gcomp, importState, exportState, clock, rc)
+    use shr_nl_mod, only:  shr_nl_find_group_name
 
     ! input/output variables
     type(ESMF_GridComp)  :: gcomp
@@ -192,6 +193,7 @@ contains
     if (my_task == main_task) then
        nlfilename = "dwav_in"//trim(inst_suffix)
        open (newunit=nu,file=trim(nlfilename),status="old",action="read")
+       call shr_nl_find_group_name(nu, 'dwav_nml', status=ierr)
        read (nu,nml=dwav_nml,iostat=ierr)
        close(nu)
        if (ierr > 0) then

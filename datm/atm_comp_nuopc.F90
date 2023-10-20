@@ -219,7 +219,7 @@ contains
   !===============================================================================
 
   subroutine InitializeAdvertise(gcomp, importState, exportState, clock, rc)
-
+    use shr_nl_mod, only:  shr_nl_find_group_name
     ! input/output variables
     type(ESMF_GridComp)  :: gcomp
     type(ESMF_State)     :: importState, exportState
@@ -276,6 +276,11 @@ contains
     if (my_task == main_task) then
        nlfilename = "datm_in"//trim(inst_suffix)
        open (newunit=nu,file=trim(nlfilename),status="old",action="read")
+       call shr_nl_find_group_name(nu, 'datm_nml', status=ierr)
+       if (ierr > 0) then
+          write(logunit,*) 'ERROR: reading input namelist, '//trim(nlfilename)//' iostat=',ierr
+          call shr_sys_abort(subName//': namelist read error '//trim(nlfilename))
+       end if
        read (nu,nml=datm_nml,iostat=ierr)
        close(nu)
        if (ierr > 0) then
