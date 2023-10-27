@@ -1711,7 +1711,7 @@ contains
 
   !===============================================================================
   subroutine shr_stream_restIO(pioid, streams, mode)
-
+    use shr_file_mod, only : shr_file_get_real_path
     use pio, only : pio_def_dim, pio_def_var, pio_put_var, pio_get_var, file_desc_t, var_desc_t
     use pio, only : pio_int, pio_char
 
@@ -1727,7 +1727,9 @@ contains
     integer              :: n, k, maxnfiles=0
     integer              :: maxnt = 0
     integer, allocatable :: tmp(:)
-    character(len=CL)    :: fname
+    integer              :: logunit
+    character(len=CL)    :: fname, rfname, rsfname
+
     !-------------------------------------------------------------------------------
 
     if (mode .eq. 'define') then
@@ -1735,6 +1737,7 @@ contains
        rcode = pio_def_dim(pioid, 'strlen',   CL, dimid_str)
        do k=1,size(streams)
           ! maxnfiles is the maximum number of files across all streams
+          logunit = streams(k)%logunit
           if (streams(k)%nfiles > maxnfiles) then
              maxnfiles = streams(k)%nfiles
           endif
@@ -1923,16 +1926,28 @@ contains
        rcode = pio_inq_varid(pioid, 'timeofday', tvarid)
        rcode = pio_inq_varid(pioid, 'haveData' , hdvarid)
        do k=1,size(streams)
+          logunit = streams(k)%logunit
           do n=1,streams(k)%nfiles
 
              ! read in filename
              rcode = pio_get_var(pioid, varid, (/1,n,k/), fname)
-             if (trim(fname) /= trim(streams(k)%file(n)%name)) then
-                write(6,'(a)')' fname = '//trim(fname)
-                write(6,'(a,i8,2x,i8,2x,a)')' k,n,streams(k)%file(n)%name = ',k,n,trim(streams(k)%file(n)%name)
-                call shr_sys_abort('ERROR reading in filename')
+             
+             if(trim(fname) /= trim(streams(k)%file(n)%name)) then
+                write(logunit,*) 'Filename does not match restart record, checking realpath'
+                call shr_file_get_real_path(fname, rfname)
+                call shr_file_get_real_path(trim(streams(k)%file(n)%name), rsfname)
+                if (trim(rfname) /= trim(rsfname)) then
+                   write(logunit,*) 'Filename path does not match restartfile, checking filename'
+                   rfname = fname(index(fname,'/',.true.):)
+                   rsfname = streams(k)%file(n)%name(index(streams(k)%file(n)%name, '/',.true.):)
+                   if (trim(rfname) /= trim(rsfname)) then
+                      write(logunit,*) trim(rfname), '<>', trim(rsfname)
+                      write(logunit,'(a)')' fname = '//trim(fname)
+                      write(logunit,'(a,i8,2x,i8,2x,a)')' k,n,streams(k)%file(n)%name = ',k,n,trim(streams(k)%file(n)%name)
+                      call shr_sys_abort('ERROR reading in filename')
+                   endif
+                endif
              endif
-
              ! read in nt
              allocate(tmp(1))
              rcode = pio_get_var(pioid, ntvarid, (/n,k/), tmp(1))
