@@ -240,7 +240,8 @@ contains
        stream_meshfile, stream_lev_dimname, stream_mapalgo, &
        stream_filenames, stream_fldlistFile, stream_fldListModel, &
        stream_yearFirst, stream_yearLast, stream_yearAlign, &
-       stream_offset, stream_taxmode, stream_dtlimit, stream_tintalgo, stream_name, rc)
+       stream_offset, stream_taxmode, stream_dtlimit, stream_tintalgo, &
+       stream_src_mask, stream_dst_mask, stream_name, rc)
 
     ! input/output variables
     type(shr_strdata_type) , intent(inout) :: sdat                   ! stream data type
@@ -262,8 +263,14 @@ contains
     character(*)           , intent(in)    :: stream_taxMode         ! time axis mode
     real(r8)               , intent(in)    :: stream_dtlimit         ! ratio of max/min stream delta times
     character(*)           , intent(in)    :: stream_tintalgo        ! time interpolation algorithm
+    integer, optional      , intent(in)    :: stream_src_mask        ! source mask value
+    integer, optional      , intent(in)    :: stream_dst_mask        ! destination mask value
     character(*), optional , intent(in)    :: stream_name            ! name of stream
-    integer                , intent(out)   :: rc                     ! error code
+    integer, optional      , intent(out)   :: rc                     ! error code
+
+    ! local variables
+    integer :: src_mask = 0
+    integer :: dst_mask = 0
     ! ----------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -276,6 +283,10 @@ contains
     sdat%io_type       =  shr_pio_getiotype(trim(compname))
     sdat%io_format     =  shr_pio_getioformat(trim(compname))
 #endif
+
+    ! Check source and destination mask, defaults are 0
+    if (present(stream_src_mask)) src_mask = stream_src_mask
+    if (present(stream_dst_mask)) dst_mask = stream_dst_mask
 
     ! Initialize sdat%pstrm - ASSUME only 1 stream
     allocate(sdat%pstrm(1))
@@ -292,7 +303,7 @@ contains
          stream_yearFirst, stream_yearLast, stream_yearAlign, &
          stream_offset, stream_taxmode, stream_tintalgo, stream_dtlimit, &
          stream_fldlistFile, stream_fldListModel, stream_fileNames, &
-         logunit, trim(compname))
+         logunit, trim(compname), src_mask, dst_mask)
 
     ! Now finish initializing sdat
     call shr_strdata_init(sdat, model_clock, stream_name, rc)
@@ -549,8 +560,8 @@ contains
                   regridmethod=ESMF_REGRIDMETHOD_BILINEAR,  &
                   polemethod=ESMF_POLEMETHOD_ALLAVG, &
                   extrapMethod=ESMF_EXTRAPMETHOD_NEAREST_STOD, &
-                  dstMaskValues = (/0/), &  ! ignore destination points where the mask is 0
-                  srcMaskValues = (/0/), &  ! ignore source points where the mask is 0
+                  dstMaskValues=(/sdat%stream(ns)%dst_mask_val/), &
+                  srcMaskValues=(/sdat%stream(ns)%src_mask_val/), &
                   srcTermProcessing=srcTermProcessing_Value, ignoreDegenerate=.true., rc=rc)
              if (chkerr(rc,__LINE__,u_FILE_u)) return
           else if (trim(sdat%stream(ns)%mapalgo) == 'redist') then
@@ -562,8 +573,8 @@ contains
              call ESMF_FieldReGridStore(sdat%pstrm(ns)%field_stream, lfield_dst, &
                   routehandle=sdat%pstrm(ns)%routehandle, &
                   regridmethod=ESMF_REGRIDMETHOD_NEAREST_STOD, &
-                  dstMaskValues = (/0/), &  ! ignore destination points where the mask is 0
-                  srcMaskValues = (/0/), &  ! ignore source points where the mask is 0
+                  dstMaskValues=(/sdat%stream(ns)%dst_mask_val/), &
+                  srcMaskValues=(/sdat%stream(ns)%src_mask_val/), &
                   srcTermProcessing=srcTermProcessing_Value, ignoreDegenerate=.true., &
                   unmappedaction=ESMF_UNMAPPEDACTION_IGNORE, rc=rc)
           else if (trim(sdat%stream(ns)%mapalgo) == 'consf') then
@@ -571,8 +582,8 @@ contains
                   routehandle=sdat%pstrm(ns)%routehandle, &
                   regridmethod=ESMF_REGRIDMETHOD_CONSERVE, &
                   normType=ESMF_NORMTYPE_FRACAREA, &
-                  dstMaskValues = (/0/), &  ! ignore destination points where the mask is 0
-                  srcMaskValues = (/0/), &  ! ignore source points where the mask is 0
+                  dstMaskValues=(/sdat%stream(ns)%dst_mask_val/), &
+                  srcMaskValues=(/sdat%stream(ns)%src_mask_val/), &
                   srcTermProcessing=srcTermProcessing_Value, ignoreDegenerate=.true., &
                   unmappedaction=ESMF_UNMAPPEDACTION_IGNORE, rc=rc)
           else if (trim(sdat%stream(ns)%mapalgo) == 'consd') then
@@ -580,8 +591,8 @@ contains
                   routehandle=sdat%pstrm(ns)%routehandle, &
                   regridmethod=ESMF_REGRIDMETHOD_CONSERVE, &
                   normType=ESMF_NORMTYPE_DSTAREA, &
-                  dstMaskValues = (/0/), &  ! ignore destination points where the mask is 0
-                  srcMaskValues = (/0/), &  ! ignore source points where the mask is 0
+                  dstMaskValues=(/sdat%stream(ns)%dst_mask_val/), &
+                  srcMaskValues=(/sdat%stream(ns)%src_mask_val/), &
                   srcTermProcessing=srcTermProcessing_Value, ignoreDegenerate=.true., &
                   unmappedaction=ESMF_UNMAPPEDACTION_IGNORE, rc=rc)
           else if (trim(sdat%stream(ns)%mapalgo) == 'none') then
@@ -1235,9 +1246,10 @@ contains
     character(*),parameter ::   F00 = "('(shr_strdata_print) ',8a)"
     character(*),parameter ::   F01 = "('(shr_strdata_print) ',a,i6,a)"
     character(*),parameter ::   F02 = "('(shr_strdata_print) ',a,es13.6)"
-    character(*),parameter ::   F04 = "('(shr_strdata_print) ',a,i2,a,a)"
-    character(*),parameter ::   F05 = "('(shr_strdata_print) ',a)"
-    character(*),parameter ::   F07 = "('(shr_strdata_print) ',a,i2,a,es13.6)"
+    character(*),parameter ::   F03 = "('(shr_strdata_print) ',a,i2,a,a)"
+    character(*),parameter ::   F04 = "('(shr_strdata_print) ',a)"
+    character(*),parameter ::   F05 = "('(shr_strdata_print) ',a,i2,a,es13.6)"
+    character(*),parameter ::   F06 = "('(shr_strdata_print) ',a,i2,a,i1)"
     character(*),parameter ::   F90 = "('(shr_strdata_print) ',58('-'))"
     !-------------------------------------------------------------------------------
 
@@ -1251,14 +1263,16 @@ contains
     write(sdat%stream(1)%logunit,F02) "obliqr      = ",sdat%obliqr
     write(sdat%stream(1)%logunit,F01) "pio_iotype  = ",sdat%io_type
     write(sdat%stream(1)%logunit,F01) "nstreams    = ",shr_strdata_get_stream_count(sdat)
-    write(sdat%stream(1)%logunit,F05) "Per stream information "
+    write(sdat%stream(1)%logunit,F04) "Per stream information "
     do ns = 1, shr_strdata_get_stream_count(sdat)
-       write(sdat%stream(1)%logunit,F04) "  taxMode (",ns,") = ",trim(sdat%stream(ns)%taxmode)
-       write(sdat%stream(1)%logunit,F07) "  dtlimit (",ns,") = ",sdat%stream(ns)%dtlimit
-       write(sdat%stream(1)%logunit,F04) "  mapalgo (",ns,") = ",trim(sdat%stream(ns)%mapalgo)
-       write(sdat%stream(1)%logunit,F04) "  tintalgo(",ns,") = ",trim(sdat%stream(ns)%tinterpalgo)
-       write(sdat%stream(1)%logunit,F04) "  readmode(",ns,") = ",trim(sdat%stream(ns)%readmode)
-       write(sdat%stream(1)%logunit,F04) "  vectors (",ns,") = ",trim(sdat%stream(ns)%stream_vectors)
+       write(sdat%stream(1)%logunit,F03) "  taxMode (",ns,") = ",trim(sdat%stream(ns)%taxmode)
+       write(sdat%stream(1)%logunit,F05) "  dtlimit (",ns,") = ",sdat%stream(ns)%dtlimit
+       write(sdat%stream(1)%logunit,F03) "  mapalgo (",ns,") = ",trim(sdat%stream(ns)%mapalgo)
+       write(sdat%stream(1)%logunit,F03) "  tintalgo(",ns,") = ",trim(sdat%stream(ns)%tinterpalgo)
+       write(sdat%stream(1)%logunit,F03) "  readmode(",ns,") = ",trim(sdat%stream(ns)%readmode)
+       write(sdat%stream(1)%logunit,F03) "  vectors (",ns,") = ",trim(sdat%stream(ns)%stream_vectors)
+       write(sdat%stream(1)%logunit,F06) "  src_mask(",ns,") = ",sdat%stream(ns)%src_mask_val
+       write(sdat%stream(1)%logunit,F06) "  dst_mask(",ns,") = ",sdat%stream(ns)%dst_mask_val
        write(sdat%stream(1)%logunit,F01) " "
     end do
     write(sdat%stream(1)%logunit,F90)
