@@ -1,0 +1,6 @@
+[submodule "fox"]
+	path = fox
+	url = https://github.com/ESMCI/fox.git
+[submodule "share/genf90"]
+	path = share/genf90
+	url = https://github.com/PARALLELIO/genf90
