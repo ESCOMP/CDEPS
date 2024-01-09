@@ -1,6 +1,8 @@
 [submodule "fox"]
 	path = fox
 	url = https://github.com/ESMCI/fox.git
+        fxtag = 4.1.2.1
 [submodule "share/genf90"]
 	path = share/genf90
 	url = https://github.com/PARALLELIO/genf90
+        fxtag = 4816965
