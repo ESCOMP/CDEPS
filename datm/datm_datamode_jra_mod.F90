@@ -25,6 +25,10 @@ module datm_datamode_jra_mod
 
   ! export state pointers
   real(r8), pointer :: Sa_z(:)       => null()
+  real(r8), pointer :: Sa_u(:)       => null()
+  real(r8), pointer :: Sa_v(:)       => null()
+  real(r8), pointer :: Sa_u10m(:)    => null()
+  real(r8), pointer :: Sa_v10m(:)    => null()
   real(r8), pointer :: Sa_tbot(:)    => null()
   real(r8), pointer :: Sa_ptem(:)    => null()
   real(r8), pointer :: Sa_shum(:)    => null()
@@ -88,6 +92,8 @@ contains
     call dshr_fldList_add(fldsExport, 'Sa_z'       )
     call dshr_fldList_add(fldsExport, 'Sa_u'       )
     call dshr_fldList_add(fldsExport, 'Sa_v'       )
+    call dshr_fldList_add(fldsExport, 'Sa_u10m'    )
+    call dshr_fldList_add(fldsExport, 'Sa_v10m'    )
     call dshr_fldList_add(fldsExport, 'Sa_ptem'    )
     call dshr_fldList_add(fldsExport, 'Sa_dens'    )
     call dshr_fldList_add(fldsExport, 'Sa_pslv'    )
@@ -174,6 +180,14 @@ contains
     call shr_strdata_get_stream_pointer( sdat, 'Faxa_swdn'  , strm_swdn  , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
+    call dshr_state_getfldptr(exportState, 'Sa_u'       , fldptr1=Sa_u       , rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call dshr_state_getfldptr(exportState, 'Sa_v'       , fldptr1=Sa_v       , rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call dshr_state_getfldptr(exportState, 'Sa_u10m'    , fldptr1=Sa_u10m    , rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call dshr_state_getfldptr(exportState, 'Sa_v10m'    , fldptr1=Sa_v10m    , rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Sa_z'       , fldptr1=Sa_z       , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Sa_tbot'    , fldptr1=Sa_tbot    , rc=rc)
@@ -252,6 +266,10 @@ contains
        Sa_z(n) = 10.0_R8
        Sa_pbot(n) = Sa_pslv(n)
        Sa_ptem(n) = Sa_tbot(n)
+
+       ! Set Sa_u10m and Sa_v10m to Sa_u and Sa_v
+       Sa_u10m(n) = Sa_u(n)
+       Sa_v10m(n) = Sa_v(n)
 
        ! density computation for JRA55 forcing
        Sa_dens(n) = Sa_pbot(n)/(rdair*Sa_tbot(n)*(1 + 0.608*Sa_shum(n)))
