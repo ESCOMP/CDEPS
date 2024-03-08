@@ -341,6 +341,43 @@
     <stream_readmode>single</stream_readmode>
   </stream_entry>
 
+
+  <!-- ===================================  -->
+  <!-- datm_mode PLUMBER.$PLUMBER2SITE      -->
+  <!-- ===================================  -->
+
+  <stream_entry name="PLUMBER.$PLUMBER2SITE">
+    <stream_meshfile>
+      <meshfile>none</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="$DATM_YR_START" last_year="$DATM_YR_END">$DIN_LOC_ROOT/atm/cdeps/PLUMBER2/${NEONSITE}_%y.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>PRECIP   Faxa_precn</var> # this will probably need updating
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>none</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_YR_START</stream_year_first>
+    <stream_year_last>$DATM_YR_END</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode               >cycle</taxmode>
+      <taxmode compset="HIST">limit</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
   <!-- ===================================  -->
   <!-- datm_mode CLMGSWP3v1                 -->
   <!-- ===================================  -->

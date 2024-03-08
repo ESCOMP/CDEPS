@@ -187,6 +187,12 @@ class StreamCDEPS(GenericXML):
                     {"name": "NEON.NEON_PRECIP.$NEONSITE"},
                     err_msg="No stream_entry {} found".format(stream_name),
                 )
+            elif stream_name.startswith("PLUMBER"):
+                self.stream_nodes = super(StreamCDEPS, self).get_child(
+                    "stream_entry",
+                    {"name": "PLUMBER.$PLUMBER2SITE"},
+                    err_msg="No stream_entry {} found".format(stream_name),
+                )
             elif stream_name.startswith("CLM_USRDAT."):
                 self.stream_nodes = super(StreamCDEPS, self).get_child(
                     "stream_entry",
@@ -239,6 +245,7 @@ class StreamCDEPS(GenericXML):
                             and ("PRISM" not in stream_name)
                         ):
                             rundir = case.get_value("RUNDIR")
+                            #TODO: may need to add a similar PLUMBER line
                             for neon in available_neon_data:
                                 stream_datafiles += (
                                     os.path.join(rundir, "inputdata", "atm", neon)
