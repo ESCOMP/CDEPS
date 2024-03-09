@@ -70,6 +70,7 @@
       <value datm_mode="ERA5">
         ERA5_HOURLY
       </value>
+      <value datm_mode="SIMPLE" ></value>
       <value datm_mode="CPLHIST">
         CPLHISTForcing.Solar,CPLHISTForcing.nonSolarFlux,CPLHISTForcing.State3hr,CPLHISTForcing.State1hr
       </value>
@@ -80,7 +81,7 @@
     <type>char</type>
     <category>datm</category>
     <group>datm_nml</group>
-    <valid_values>CLMNCEP,CORE2_NYF,CORE2_IAF,CORE_IAF_JRA,ERA5,CPLHIST,1PT</valid_values>
+    <valid_values>CLMNCEP,CORE2_NYF,CORE2_IAF,CORE_IAF_JRA,ERA5,SIMPLE,CPLHIST,1PT</valid_values>
     <desc>
       general method that operates on the data.
       ----datamode = "CPLHIST"----
@@ -114,6 +115,8 @@
       active-land-only simulations.
       ----datamode = "ERA5"----
       Fifth generation ECMWF atmospheric reanalysis of the global climate
+      ----datamode = "SIMPLE"----
+      Namelist-configurable, constant datm forcing for simple experiments
       ----datamode = "CPLHIST" ----
     </desc>
     <values>
@@ -131,6 +134,9 @@
       </value>
       <value datm_mode="ERA5">
         ERA5
+      </value>
+      <value datm_mode="SIMPLE">
+        SIMPLE
       </value>
       <value datm_mode="CPLHIST">
         CPLHIST
@@ -364,4 +370,107 @@
     </values>
   </entry>
 
+  <entry id="dn10">
+    <type>real</type>
+    <category>datm</category>
+    <group>const_forcing_nml</group>
+    <desc>
+      density at the lowest model layer
+      units: kg m-3
+    </desc>
+    <values>
+      <value>1.204</value>
+    </values>
+  </entry>
+
+  <entry id="slp">
+    <type>real</type>
+    <category>datm</category>
+    <group>const_forcing_nml</group>
+    <desc>
+      inst_pres_height_surface
+      units: Pa
+    </desc>
+    <values>
+      <value>101325.0</value>
+    </values>
+  </entry>
+
+  <entry id="q">
+    <type>real</type>
+    <category>datm</category>
+    <group>const_forcing_nml</group>
+    <desc>
+      Constant bottom layer specific humidity
+      units: kg kg-1
+    </desc>
+    <values>
+      <value>0.0</value>
+    </values>
+  </entry>
+
+  <entry id="t">
+    <type>real</type>
+    <category>datm</category>
+    <group>const_forcing_nml</group>
+    <desc>
+      Constant air temperature at lowest model layer
+      units: K
+    </desc>
+    <values>
+      <value>273.15</value>
+    </values>
+  </entry>
+
+  <entry id="u">
+    <type>real</type>
+    <category>datm</category>
+    <group>const_forcing_nml</group>
+    <desc>
+      Constant zonal wind speed forcing for simple models.
+      units: m s-1
+    </desc>
+    <values>
+      <value>0.0</value>
+    </values>
+  </entry>
+
+  <entry id="v">
+    <type>real</type>
+    <category>datm</category>
+    <group>const_forcing_nml</group>
+    <desc>
+      Constant meridional wind speed forcing for simple models.
+      units: m s-1
+    </desc>
+    <values>
+      <value>0.0</value>
+    </values>
+  </entry>
+
+  <entry id="peak_swdn">
+    <type>real</type>
+    <category>datm</category>
+    <group>const_forcing_nml</group>
+    <desc>
+      Peak idealized shortwave radiation to be passed to ice/ocean surface.
+      units: W m-2
+    </desc>
+    <values>
+      <value>330.0</value>
+    </values>
+  </entry>
+
+  <entry id="peak_lwdn">
+    <type>real</type>
+    <category>datm</category>
+    <group>const_forcing_nml</group>
+    <desc>
+      Peak idealized longwave radiation to be passed to ice/ocean surface.
+      units: W m-2
+    </desc>
+    <values>
+      <value>450.0</value>
+    </values>
+  </entry>
 </entry_id>

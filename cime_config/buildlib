@@ -77,9 +77,7 @@ def buildlib(bldroot, libroot, case):
 
     logger.info("Running cmake for CDEPS")
     srcpath = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-    cmake_flags = get_standard_cmake_args(
-        case, os.path.join(sharedpath, "cdeps")
-    )
+    cmake_flags = get_standard_cmake_args(case, os.path.join(sharedpath, "cdeps"))
     # base path of install to be completed by setting DESTDIR in make install
     cmake_flags += " -DCMAKE_INSTALL_PREFIX:PATH=/"
     cmake_flags += " -DLIBROOT={} ".format(libroot)
@@ -180,8 +178,8 @@ def buildlib(bldroot, libroot, case):
         # Do not allow any warnings except from fox external
         nextline = ""
         for line in e.split("\n"):
-            if "F90" in line and not "fox" in line:
-                nextline.append(line)
+            if "f90" in line.lower() and not "fox" in line.lower():
+                nextline = nextline + line
         if len(nextline) > 0:
             expect(False, nextline)
 
