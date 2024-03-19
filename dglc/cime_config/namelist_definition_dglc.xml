@@ -1,0 +1,109 @@
+<?xml version="1.0"?>
+
+<?xml-stylesheet type="text/xsl" href="namelist_definition.xsl"?>
+
+<entry_id version="2.0">
+
+  <!--
+      Values to use by default for creation of DGLC streams and input model namelist
+      The following substitutions will be made below below
+      NOTE: in the value matches below, regular expressions are used
+      If two matches are equivalent, the FIRST one will be used
+  -->
+
+  <entry id="streamslist">
+    <type>char(100)</type>
+    <category>streams</category>
+    <group>streams_file</group>
+    <desc>List of streams used for each supported dglc_mode</desc>
+    <values>
+      <value>none</value>
+    </values>
+  </entry>
+
+  <entry id="datamode">
+    <type>char</type>
+    <category>dglc</category>
+    <group>dglc_nml</group>
+    <valid_values>noevolve</valid_values>
+    <desc>
+      Copies all fields directly from the input data streams Any required
+      fields not found on an input stream will be set to zero.
+    </desc>
+    <values>
+      <value>noevolve</value>
+    </values>
+  </entry>
+
+  <entry id="model_meshfiles">
+    <type>char</type>
+    <category>streams</category>
+    <input_pathname>abs</input_pathname>
+    <group>dglc_nml</group>
+    <values>
+      <value>$GLC_DOMAIN_MESH</value>
+    </values>
+    <desc>
+      file(s) specifying model mesh
+      for more than one ice sheets this will contain an array of mesh file names
+    </desc>
+  </entry>
+
+  <entry id="nx_global">
+    <type>integer(20)</type>
+    <category>streams</category>
+    <group>dglc_nml</group>
+    <values>
+      <value glc_grid="ais8:gris4">704,416</value>
+      <value glc_grid="ais8">704</value>
+      <value glc_grid="gris4">416</value>
+      <value glc_grid="gris20">76</value>
+    </values>
+    <desc>
+      global size(s) of nx
+      for more than one ice sheets this will contain an array of nx values
+    </desc>
+  </entry>
+
+  <entry id="ny_global">
+    <type>integer(20)</type>
+    <category>streams</category>
+    <group>dglc_nml</group>
+    <values>
+      <value glc_grid="ais8:gris4">576,704</value>
+      <value glc_grid="ais8">576</value>
+      <value glc_grid="gris4">704</value>
+      <value glc_grid="gris20">141</value>
+    </values>
+    <desc>
+      global size(s) of ny
+      for more than one ice sheets this will contain an array of ny values
+    </desc>
+  </entry>
+
+  <entry id="restfilm">
+    <type>char</type>
+    <category>dglc</category>
+    <group>dglc_nml</group>
+    <desc>
+      main restart file name for dglc model
+    </desc>
+    <values>
+      <value>null</value>
+    </values>
+  </entry>
+
+  <entry id="skip_restart_read" modify_via_xml="DGLC_SKIP_RESTART_READ">
+    <type>logical</type>
+    <category>dglc</category>
+    <group>dglc_nml</group>
+    <desc>
+      If set to true, than dglc restarts will not be read on a continuation run.
+      This capability is used, for example, in CTSM spinup runs.
+    </desc>
+    <values>
+      <value>$DGLC_SKIP_RESTART_READ</value>
+    </values>
+  </entry>
+
+</entry_id>

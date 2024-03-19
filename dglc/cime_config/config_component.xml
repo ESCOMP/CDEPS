@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+
+<?xml-stylesheet type="text/xsl" href="entry_id.xsl" ?>
+
+<entry_id version="3.0">
+  <!-- modifier_mode allowed values are
+       '*' 0 or more modifiers (default)
+       '1' exactly 1 modifier
+       '?' 0 or 1 modifiers
+       '+' 1 or more modifiers
+
+       This file may have glc desc entries.
+  -->
+  <description modifier_mode="1">
+    <desc glc="DGLC[%NOEVOLVE]">Data glc model (DGLC) </desc>
+    <desc option="NOEVOLVE">no evolve mode </desc>
+  </description>
+
+  <entry id="COMP_GLC">
+    <type>char</type>
+    <valid_values>dglc</valid_values>
+    <default_value>dglc</default_value>
+    <group>case_comp</group>
+    <file>env_case.xml</file>
+    <desc>Name of land component</desc>
+  </entry>
+
+  <entry id="DGLC_MODE">
+    <type>char</type>
+    <valid_values>NOEVOLVE</valid_values>
+    <default_value>NOEVOLVE</default_value>
+    <values match="last">
+      <value compset="DGLC%NOVOLVE">noevolve</value>
+    </values>
+    <group>run_component_dglc</group>
+    <file>env_run.xml</file>
+    <desc>
+      model mode.
+      TODO: fill in what noevolve mode does
+    </desc>
+  </entry>
+
+  <entry id="DGLC_SKIP_RESTART_READ">
+    <type>logical</type>
+    <valid_values>TRUE,FALSE</valid_values>
+    <default_value>FALSE</default_value>
+    <group>run_component_dglc</group>
+    <file>env_run.xml</file>
+    <desc> If set to true, than dglc restarts will not be read on a continuation run.
+    </desc>
+  </entry>
+
+  <help>
+    =========================================
+    DGLC naming conventions
+    =========================================
+  </help>
+
+</entry_id>

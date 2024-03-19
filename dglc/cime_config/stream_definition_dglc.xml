@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+
+<?xml-stylesheet type="text/xsl" href="namelist_definition.xsl"?>
+
+  <!--
+      %y   => year from the range yearfirst to yearlast
+              obtained from values of <strm_year_start> -> <strm_year_end> below
+      %ym  => year-month from the range yearfirst to yearlast with all 12 months
+              obtained from values of <strm_year_start> -> <strm_year_end> below
+      %ymd => year-month-day from the range yearfirst to yearlast with all 12 months
+               obtained from values of <strm_year_start> -> <strm_year_end> below
+  -->
+
+<stream_data version="2.0" xmlns:xi="http://www.w3.org/2001/XInclude">
+
+</stream_data>

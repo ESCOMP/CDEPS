@@ -1,0 +1,198 @@
+#!/usr/bin/env python3
+
+"""Namelist creator for CIME's data glc model.
+"""
+
+# Typically ignore this.
+# pylint: disable=invalid-name
+
+# Disable these because this is our standard setup
+# pylint: disable=wildcard-import,unused-wildcard-import,wrong-import-position
+
+import os, sys
+
+_CDEPS_CONFIG = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir,os.pardir,"cime_config")
+_CIMEROOT = os.environ.get("CIMEROOT")
+if _CIMEROOT is None:
+    raise SystemExit("ERROR: must set CIMEROOT environment variable")
+_LIBDIR = os.path.join(_CIMEROOT, "CIME", "Tools")
+sys.path.append(_LIBDIR)
+sys.path.append(_CDEPS_CONFIG)
+
+from standard_script_setup import *
+from CIME.case import Case
+from CIME.nmlgen import NamelistGenerator
+from CIME.utils import expect, safe_copy
+from CIME.XML.files import Files
+from CIME.buildnml import create_namelist_infile, parse_input, copy_inputs_to_rundir
+from stream_cdeps import StreamCDEPS
+
+logger = logging.getLogger(__name__)
+
+# pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
+####################################################################################
+def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path):
+####################################################################################
+    """Write out the namelist and stream xml files for this component.
+
+    Most arguments are the same as those for `NamelistGenerator`. The
+    `inst_string` argument is used as a suffix to distinguish files for
+    different instances. The `confdir` argument is used to specify the directory
+    in which output files will be placed.
+    """
+    #----------------------------------------------------
+    # Write out dglc_in and dglc.streams.xml
+    #----------------------------------------------------
+    caseroot = case.get_value("CASEROOT")
+    dglc_mode = case.get_value("DGLC_MODE")
+    glc_grid = case.get_value("GLC_GRID")
+
+    # Check for incompatible options.
+    expect(glc_grid != "null",
+           "DGLC_GRID cannot be null")
+
+    # Log some settings.
+    logger.debug("DGLC mode is {}".format(dglc_mode))
+
+    # Initialize namelist defaults
+    # Note: always use model mesh file to set mask for drof
+    config = {}
+    config['dglc_mode'] = dglc_mode
+    config['glc_grid'] = glc_grid
+
+    # Do not allow single column mode for dglc
+    if case.get_value('PTS_LON'):
+        scol_lon = float(case.get_value('PTS_LON'))
+    else:
+        scol_lon = -999.
+    if case.get_value('PTS_LAT'):
+        scol_lat = float(case.get_value('PTS_LAT'))
+    else:
+        scol_lat = -999.
+    if (scol_lon > -999. and scol_lat > 999.):
+        expect(False,
+               "single column mode for DGLC is not currently allowed")
+
+    # Initialize nmlgen
+    nmlgen.init_defaults(infile, config)
+
+    # Generate dglc_in
+    namelist_file = os.path.join(confdir, "dglc_in")
+    nmlgen.write_output_file(namelist_file, data_list_path, groups=['dglc_nml'])
+
+    # Determine streams
+    streamlist = nmlgen.get_streams()
+    if type(streamlist) == type(str()):
+        streamlist = []
+
+    # Generate dglc.streams.xml
+    print("dglc_mode is {}".format(dglc_mode))
+    if 'NOEVOLVE' in dglc_mode:
+        generate_stream_file = False
+    else:
+        generate_stream_file = True
+    #endif
+    if generate_stream_file:
+        outfile = os.path.join(confdir, "dglc.streams"+inst_string+".xml" )
+        schema_file = os.path.join(_CDEPS_CONFIG,"stream_definition_v2.0.xsd")
+        stream_file = os.path.join(_CDEPS_CONFIG,os.pardir, "dglc","cime_config","stream_definition_dglc.xml")
+        streams = StreamCDEPS(stream_file, schema_file)
+        streams.create_stream_xml(streamlist, case, outfile, data_list_path,
+                                  os.path.join(caseroot,'user_nl_dglc_streams'+inst_string))
+    #endif
+
+###############################################################################
+def buildnml(case, caseroot, compname):
+###############################################################################
+    rundir = case.get_value("RUNDIR")
+    inst_name = compname.upper()[1:]
+    ninst = case.get_value("NINST_"+inst_name)
+    if ninst is None:
+        ninst = case.get_value("NINST")
+    confdir = os.path.join(caseroot,"Buildconf",compname + "conf")
+    if not os.path.isdir(confdir):
+        os.makedirs(confdir)
+
+    #----------------------------------------------------
+    # Construct the namelist generator
+    #----------------------------------------------------
+    # determine directory for user modified namelist_definitions.xml
+    user_xml_dir = os.path.join(caseroot, "SourceMods", "src." + compname)
+    expect (os.path.isdir(user_xml_dir),
+            "user_xml_dir {} does not exist ".format(user_xml_dir))
+
+    # NOTE: User definition *replaces* existing definition.
+    files = Files(comp_interface="nuopc")
+    definition_file = [files.get_value("NAMELIST_DEFINITION_FILE", {"component":compname})]
+
+    user_definition = os.path.join(user_xml_dir, "namelist_definition_"+compname+".xml")
+    if os.path.isfile(user_definition):
+        definition_file = [user_definition]
+    for file_ in definition_file:
+        expect(os.path.isfile(file_), "Namelist XML file {} not found!".format(file_))
+
+    # Create the namelist generator object - independent of instance
+    nmlgen = NamelistGenerator(case, definition_file, files=files)
+
+    #----------------------------------------------------
+    # Clear out old data.
+    #----------------------------------------------------
+
+    data_list_path = os.path.join(caseroot, "Buildconf", compname+".input_data_list")
+    if os.path.exists(data_list_path):
+        os.remove(data_list_path)
+
+    #----------------------------------------------------
+    # Loop over instances
+    #----------------------------------------------------
+    for inst_counter in range(1, ninst+1):
+        # determine instance string
+        inst_string = ""
+        if ninst > 1:
+            inst_string = '_' + "{:04d}".format(inst_counter)
+
+        # If multi-instance case does not have restart file, use
+        # single-case restart for each instance
+        rpointer = "rpointer." + compname
+        if (os.path.isfile(os.path.join(rundir,rpointer)) and
+            (not os.path.isfile(os.path.join(rundir,rpointer + inst_string)))):
+            safe_copy(os.path.join(rundir, rpointer),
+                      os.path.join(rundir, rpointer + inst_string))
+
+        inst_string_label = inst_string
+        if not inst_string_label:
+            inst_string_label = "\"\""
+
+        # create namelist output infile using user_nl_file as input
+        user_nl_file = os.path.join(caseroot, "user_nl_" + compname + inst_string)
+        expect(os.path.isfile(user_nl_file),
+               "Missing required user_nl_file {} ".format(user_nl_file))
+        infile = os.path.join(confdir, "namelist_infile")
+        create_namelist_infile(case, user_nl_file, infile)
+        namelist_infile = [infile]
+
+        # create namelist and xml stream file(s)
+        _create_namelists(case, confdir, inst_string, namelist_infile, nmlgen, data_list_path)
+
+        # copy namelist files and stream text files, to rundir
+        copy_inputs_to_rundir(caseroot, compname, confdir, rundir, inst_string)
+
+###############################################################################
+def get_user_nl_list(case):
+###############################################################################
+    """Returns a list of user_nl_dglc* files needed in this case
+    This function is called by CIME to stage the user_nl_dglc* files in the case
+    directory.
+    """
+    user_nl_list = ["user_nl_dglc", "user_nl_dglc_streams"]
+    return user_nl_list
+
+###############################################################################
+def _main_func():
+    # Build the component namelist and required stream xml files
+    caseroot = parse_input(sys.argv)
+    with Case(caseroot) as case:
+        buildnml(case, caseroot, "dglc")
+
+if __name__ == "__main__":
+    _main_func()
