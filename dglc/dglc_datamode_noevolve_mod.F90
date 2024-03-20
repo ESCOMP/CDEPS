@@ -14,6 +14,7 @@ module dglc_datamode_noevolve_mod
    use pio              , only : pio_openfile, pio_inq_varid, pio_inq_varndims, pio_inq_vardimid
    use pio              , only : pio_inq_dimlen, pio_initdecomp, pio_read_darray, pio_double
    use pio              , only : pio_closefile, pio_freedecomp, PIO_BCAST_ERROR, PIO_NOWRITE
+   use pio              , only : pio_seterrorhandling
 
    implicit none
    private ! except

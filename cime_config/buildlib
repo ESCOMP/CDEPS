@@ -184,7 +184,7 @@ def buildlib(bldroot, libroot, case):
             expect(False, nextline)
 
     # Link the CDEPS component directories to the location expected by cime
-    for comp in ("atm", "lnd", "ice", "ocn", "rof", "wav"):
+    for comp in ("atm", "glc", "lnd", "ice", "ocn", "rof", "wav"):
         compname = case.get_value("COMP_{}".format(comp.upper()))
         comppath = os.path.join(case.get_value("EXEROOT"), comp, "obj")
         if compname == "d" + comp:

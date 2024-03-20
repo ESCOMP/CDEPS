@@ -33,7 +33,9 @@ def buildlib(bldroot, libroot, case, compname=None):
         )
         compname = os.path.basename(os.path.abspath(os.path.join(bldroot, os.pardir)))
 
+    print("DEBUG: here3")
     _, o, e = run_cmd("make d{}".format(compname), from_dir=bldroot, verbose=True)
+    print("DEBUG: here4")
     libname = "lib{}.a".format(compname)
     dlibname = "libd{}.a".format(compname)
     dlibpath = os.path.join(bldroot, dlibname)
