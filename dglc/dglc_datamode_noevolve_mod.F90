@@ -10,10 +10,10 @@ module dglc_datamode_noevolve_mod
    use dshr_methods_mod , only : dshr_state_getfldptr, dshr_fldbun_getfldptr, chkerr
    use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
    use dshr_strdata_mod , only : shr_strdata_type
-   use pio              , only : file_desc_t, io_desc_t, var_desc_t, PIO_BCAST_ERROR, PIO_NOWRITE
+   use pio              , only : file_desc_t, io_desc_t, var_desc_t, iosystem_desc_t
    use pio              , only : pio_openfile, pio_inq_varid, pio_inq_varndims, pio_inq_vardimid
    use pio              , only : pio_inq_dimlen, pio_initdecomp, pio_read_darray, pio_double
-   use pio              , only : pio_closefile, pio_freedecomp, pio_subsystem_t
+   use pio              , only : pio_closefile, pio_freedecomp, PIO_BCAST_ERROR, PIO_NOWRITE
 
    implicit none
    private ! except
@@ -136,26 +136,26 @@ contains
    end subroutine dglc_datamode_noevolve_init_pointers
 
    !===============================================================================
-   subroutine dglc_datamode_noevolve_advance(ns, pio_subsystem, io_type, io_format, &
-        model_mesh, input_file, rc)
+   subroutine dglc_datamode_noevolve_advance(pio_subsystem, io_type, io_format, &
+        model_meshes, input_files, rc)
 
       ! Assume that the model mesh is the same as the input data mesh
 
       ! input/output variables
-      integer               , intent(in)  :: ns            ! ice sheet index
-      type(iosystem_desc_t) , pointer     :: pio_subsystem ! pio info
-      integer               , intent(in)  :: io_type       ! pio info
-      integer               , intent(in)  :: io_format     ! pio info
-      type(ESMF_Mesh)       , intent(in)  :: model_mesh    ! mesh read in from fileName_mesh
-      character(len=*)      , intent(in)  :: input_file    ! file name string
+      type(iosystem_desc_t) , pointer     :: pio_subsystem   ! pio info
+      integer               , intent(in)  :: io_type         ! pio info
+      integer               , intent(in)  :: io_format       ! pio info
+      type(ESMF_Mesh)       , intent(in)  :: model_meshes(:) ! ice sheets meshes
+      character(len=*)      , intent(in)  :: input_files(:)  ! input file names
       integer               , intent(out) :: rc
 
       ! local variables
       type(ESMF_FieldBundle) :: fldbun_noevolve
-      type(file_desc_t)      :: pioid
-      type(io_desc_t)        :: pio_iodesc
       type(ESMF_DistGrid)    :: distgrid
       type(ESMF_Field)       :: field_noevolve
+      type(file_desc_t)      :: pioid
+      type(io_desc_t)        :: pio_iodesc
+      integer                :: ns  ! ice sheet index
       integer                :: lsize
       integer, pointer       :: gindex(:) ! domain decomposition of data
       integer                :: ndims     ! number of dims
@@ -169,57 +169,66 @@ contains
 
       rc = ESMF_SUCCESS
 
-      ! Create module level field bundle
-      fldbun_noevolve = ESMF_FieldBundleCreate(rc=rc) ! input field bundle
+      do ns = 1,num_icesheets
 
-      ! "ice thickness" ;
-      field_noevolve = ESMF_FieldCreate(model_mesh, ESMF_TYPEKIND_R8, name='thk', meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
-      if (chkerr(rc,__LINE__,u_FILE_u)) return
-      call ESMF_FieldBundleAdd(fldbun_noevolve, (/field_noevolve/), rc=rc)
-      if (chkerr(rc,__LINE__,u_FILE_u)) return
+        ! Create module level field bundle
+        fldbun_noevolve = ESMF_FieldBundleCreate(rc=rc) ! input field bundle
 
-      ! "bed topography" ;
-      field_noevolve = ESMF_FieldCreate(model_mesh, ESMF_TYPEKIND_R8, name='topg', meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
-      if (chkerr(rc,__LINE__,u_FILE_u)) return
-      call ESMF_FieldBundleAdd(fldbun_noevolve, (/field_noevolve/), rc=rc)
-      if (chkerr(rc,__LINE__,u_FILE_u)) return
+        ! "ice thickness" ;
+        field_noevolve = ESMF_FieldCreate(model_meshes(ns), ESMF_TYPEKIND_R8, name='thk', meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
+        if (chkerr(rc,__LINE__,u_FILE_u)) return
+        call ESMF_FieldBundleAdd(fldbun_noevolve, (/field_noevolve/), rc=rc)
+        if (chkerr(rc,__LINE__,u_FILE_u)) return
 
-      ! Get mesh info
-      call ESMF_MeshGet(model_mesh, elementdistGrid=distGrid, rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
-      call ESMF_DistGridGet(distGrid, localDe=0, elementCount=lsize, rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
-      allocate(gindex(lsize))
-      call ESMF_DistGridGet(distGrid, localDe=0, seqIndexList=gindex, rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+        ! "bed topography" ;
+        field_noevolve = ESMF_FieldCreate(model_meshes(ns), ESMF_TYPEKIND_R8, name='topg', meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
+        if (chkerr(rc,__LINE__,u_FILE_u)) return
+        call ESMF_FieldBundleAdd(fldbun_noevolve, (/field_noevolve/), rc=rc)
+        if (chkerr(rc,__LINE__,u_FILE_u)) return
 
-      ! Create pioid and pio_iodesc at the module level
-      call pio_seterrorhandling(pioid, PIO_BCAST_ERROR)
-      rcode = pio_openfile(pio_subsystem, pioid, io_type, trim(input_file), pio_nowrite)
-      rcode = pio_inq_varid(pioid, 'thk', varid)
-      rcode = pio_inq_varndims(pioid, varid, ndims)
-      allocate(dimid(ndims))
-      rcode = pio_inq_vardimid(pioid, varid, dimid(1:ndims))
-      rcode = pio_inq_dimlen(pioid, dimid(1), nxg)
-      rcode = pio_inq_dimlen(pioid, dimid(2), nyg)
-      call pio_initdecomp(pio_subsystem, pio_double, (/nxg,nyg/), gindex, pio_iodesc)
-      deallocate(gindex)
+        ! Get mesh info
+        call ESMF_MeshGet(model_meshes(ns), elementdistGrid=distGrid, rc=rc)
+        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+        call ESMF_DistGridGet(distGrid, localDe=0, elementCount=lsize, rc=rc)
+        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+        allocate(gindex(lsize))
+        call ESMF_DistGridGet(distGrid, localDe=0, seqIndexList=gindex, rc=rc)
+        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-      ! Read in the data into the appropriate field bundle pointers
-      call dshr_fldbun_getFldPtr(fldbun_noevolve, 'thk', data, rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
-      rcode = pio_inq_varid(pioid, 'thk', varid)
-      call pio_read_darray(pioid, varid, pio_iodesc, data, rcode)
-      Sg_ice_covered(ns)%ptr(:) = data(:)
+        ! Create pioid and pio_iodesc at the module level
+        call pio_seterrorhandling(pioid, PIO_BCAST_ERROR)
+        rcode = pio_openfile(pio_subsystem, pioid, io_type, trim(input_files(ns)), pio_nowrite)
+        rcode = pio_inq_varid(pioid, 'thk', varid)
+        rcode = pio_inq_varndims(pioid, varid, ndims)
+        allocate(dimid(ndims))
+        rcode = pio_inq_vardimid(pioid, varid, dimid(1:ndims))
+        rcode = pio_inq_dimlen(pioid, dimid(1), nxg)
+        rcode = pio_inq_dimlen(pioid, dimid(2), nyg)
+        call pio_initdecomp(pio_subsystem, pio_double, (/nxg,nyg/), gindex, pio_iodesc)
+        deallocate(gindex)
 
-      call dshr_fldbun_getFldPtr(fldbun_noevolve, 'topg', data, rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
-      rcode = pio_inq_varid(pioid, 'topg', varid)
-      call pio_read_darray(pioid, varid, pio_iodesc, data, rcode)
-      Sg_topo(ns)%ptr(:) = data(:)
+        ! Read in the data into the appropriate field bundle pointers
+        ! Note that Sg_ice_covered(ns)%ptr points into the data for
+        ! the Sg_ice_covered field in NStateExp(ns)
+        ! Note that Sg_topo(ns)%ptr points into the data for
+        ! the Sg_topon NStateExp(ns)
 
-      call pio_closefile(pioid)
-      call pio_freedecomp(pio_subsystem, pio_iodesc)
+        call dshr_fldbun_getFldPtr(fldbun_noevolve, 'thk', data, rc=rc)
+        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+        rcode = pio_inq_varid(pioid, 'thk', varid)
+        call pio_read_darray(pioid, varid, pio_iodesc, data, rcode)
+        Sg_ice_covered(ns)%ptr(:) = data(:)
+
+        call dshr_fldbun_getFldPtr(fldbun_noevolve, 'topg', data, rc=rc)
+        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+        rcode = pio_inq_varid(pioid, 'topg', varid)
+        call pio_read_darray(pioid, varid, pio_iodesc, data, rcode)
+        Sg_topo(ns)%ptr(:) = data(:)
+
+        call pio_closefile(pioid)
+        call pio_freedecomp(pio_subsystem, pio_iodesc)
+
+      end do ! end loop over ice sheets
 
    end subroutine dglc_datamode_noevolve_advance
 

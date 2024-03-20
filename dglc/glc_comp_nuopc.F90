@@ -29,7 +29,7 @@ module cdeps_dglc_comp
   use shr_sys_mod      , only : shr_sys_abort
   use shr_cal_mod      , only : shr_cal_ymd2date
   use shr_log_mod      , only : shr_log_setLogUnit
-  use shr_string_mod   , only : shr_string_listgetnum
+  use shr_string_mod   , only : shr_string_listGetNum, shr_string_listGetName
   use shr_pio_mod      , only : shr_pio_getiosys, shr_pio_getiotype, shr_pio_getioformat
   use dshr_methods_mod , only : dshr_state_diagnose, chkerr, memcheck
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_advance, shr_strdata_init_from_config
@@ -58,33 +58,38 @@ module cdeps_dglc_comp
   ! Private module data
   !--------------------------------------------------------------------------
 
+  integer, parameter :: max_icesheets = 10 ! maximum number of ice sheets for namelist input
+  integer            :: num_icesheets = 0  ! actual number of ice sheets
+
+  ! namelist input
+  character(CS) :: icesheet_names(max_icesheets)
+  character(CL) :: model_meshfiles(max_icesheets)
+  character(CL) :: model_datafiles(max_icesheets)
+  integer       :: nx_global(max_icesheets)
+  integer       :: ny_global(max_icesheets)
+
   ! module variables for multiple ice sheets
   type(shr_strdata_type) , allocatable :: sdat(:)
   type(ESMF_State)       , allocatable :: NStateImp(:)
   type(ESMF_State)       , allocatable :: NStateExp(:)
   type(ESMF_Mesh)        , allocatable :: model_meshes(:)
-  character(CL)          , allocatable :: model_meshfiles(:)
-  character(CS)          , allocatable :: icesheet_names(:)
-  integer                , allocatable :: nx_global(:)
-  integer                , allocatable :: ny_global(:)
 
   ! module variables common to all data models
-  character(CS)                :: flds_scalar_name = ''
-  integer                      :: flds_scalar_num = 0
-  integer                      :: flds_scalar_index_nx = 0
-  integer                      :: flds_scalar_index_ny = 0
-  integer                      :: mpicom           ! mpi communicator
-  integer                      :: my_task          ! my task in mpi communicator mpicom
-  logical                      :: mainproc         ! true of my_task == main_task
-  character(len=16)            :: inst_suffix = "" ! char string associated with instance (ie. "_0001" or "")
-  integer                      :: logunit          ! logging unit number
-  logical                      :: restart_read     ! start from restart
-  character(CL)                :: case_name
-  character(*) , parameter     :: nullstr = 'null'
+  character(CS)            :: flds_scalar_name = ''
+  integer                  :: flds_scalar_num = 0
+  integer                  :: flds_scalar_index_nx = 0
+  integer                  :: flds_scalar_index_ny = 0
+  integer                  :: mpicom           ! mpi communicator
+  integer                  :: my_task          ! my task in mpi communicator mpicom
+  logical                  :: mainproc         ! true of my_task == main_task
+  character(len=16)        :: inst_suffix = "" ! char string associated with instance (ie. "_0001" or "")
+  integer                  :: logunit          ! logging unit number
+  logical                  :: restart_read     ! start from restart
+  character(CL)            :: case_name
+  character(*) , parameter :: nullstr = 'null'
 
   ! dglc_in namelist input
-  integer                    :: num_icesheets = 0
-  character(ESMF_MAXSTR)     :: model_meshfiles_list                    ! colon separated string containing model meshfiles
+
   character(CL)              :: streamfilename = nullstr                ! filename to obtain stream info from
   character(CL)              :: nlfilename = nullstr                    ! filename to obtain namelist info from
   character(CL)              :: datamode = nullstr                      ! flags physics options wrt input data
@@ -180,14 +185,18 @@ contains
     integer           :: bcasttmp(1)
     integer           :: ns, n
     character(len=CS) :: cnum
+    character(len=CL) :: icesheets_list
+    character(len=ESMF_MAXSTR) :: model_datafiles_list ! colon separated string containing input datafiles
+    character(len=ESMF_MAXSTR) :: model_meshfiles_list ! colon separated string containing model meshfiles
     character(len=*),parameter :: subname=trim(module_name)//':(InitializeAdvertise) '
     !-------------------------------------------------------------------------------
 
     !icesheet_names = "ais", "gris"
     !num_icesheets = 2
 
+    ! Note that the suffix '-list' refers to a colon delimited string of names
     namelist / dglc_nml / datamode, &
-         ice_sheet_names, model_meshfiles_list, nx_global, ny_global, &
+         icesheets_list, model_meshfiles_list, model_datafiles_list, nx_global, ny_global, &
          restfilm, skip_restart_read
 
     rc = ESMF_SUCCESS
@@ -206,36 +215,44 @@ contains
 
     ! Read dglc_nml from nlfilename
     if (my_task == main_task) then
-       nlfilename = "dglc_in"//trim(inst_suffix)
-       open (newunit=nu,file=trim(nlfilename),status="old",action="read")
-       call shr_nl_find_group_name(nu, 'dglc_nml', status=ierr)
-       read (nu,nml=dglc_nml,iostat=ierr)
-       close(nu)
-       if (ierr > 0) then
-          write(logunit,'(a,i8)') 'ERROR: reading input namelist, '//trim(nlfilename)//' iostat=',ierr
-          call shr_sys_abort(subName//': namelist read error '//trim(nlfilename))
-       end if
+      nlfilename = "dglc_in"//trim(inst_suffix)
+      open (newunit=nu,file=trim(nlfilename),status="old",action="read")
+      call shr_nl_find_group_name(nu, 'dglc_nml', status=ierr)
+      read (nu,nml=dglc_nml,iostat=ierr)
+      close(nu)
+      if (ierr > 0) then
+        write(logunit,'(a,i8)') 'ERROR: reading input namelist, '//trim(nlfilename)//' iostat=',ierr
+        call shr_sys_abort(subName//': namelist read error '//trim(nlfilename))
+      end if
 
-       ! write namelist input to standard out
-       write(logunit,'(a,a)')' case_name         = ',trim(case_name)
-       write(logunit,'(a,a)')' datamode          = ',trim(datamode)
+      ! Determine number of ice sheets
+      num_icesheets = shr_string_listGetNum(model_meshfiles_list)
 
-       num_icesheets = shr_string_listGetNum(model_meshfiles_list)
-       do ns = 1,num_icesheets
-          ! determine mesh filename
-          call shr_string_listGetName(model_meshfiles_list, ns, model_meshfile(ns))
-          write(logunit,'(a,i4 )')' ice_sheet index = ',ns
-          write(logunit,'(a,a  )')'   model_meshfile    = ',trim(model_meshfiles(ns))
-          write(logunit,'(a,i10)')'   nx_global         = ',nx_global(ns)
-          write(logunit,'(a,i10)')'   ny_global         = ',ny_global(ns)
-       end do
-       write(logunit,'(a,a )')' restfilm          = ',trim(restfilm)
-       write(logunit,'(a,l6)')' skip_restart_read = ',skip_restart_read
-       if (skip_restart_read) then
-          bcasttmp = 1
-       else
-          bcasttmp = 0
-       end if
+      ! Determine array of model meshfile(s) and model input datafile(s)
+      do ns = 1,num_icesheets
+        ! determine mesh filename(s)
+        call shr_string_listGetName(model_meshfiles_list, ns, model_meshfiles(ns))
+        ! determine input datafile name(s)
+        call shr_string_listGetName(model_datafiles_list, ns, model_datafiles(ns))
+      end do
+      if (skip_restart_read) then
+        bcasttmp = 1
+      else
+        bcasttmp = 0
+      end if
+
+      ! Write diagnostics
+      write(logunit,'(a,a)')' case_name         = ',trim(case_name)
+      write(logunit,'(a,a)')' datamode          = ',trim(datamode)
+      do ns = 1,num_icesheets
+        write(logunit,'(a,i4 )')' ice_sheet index = ',ns
+        write(logunit,'(a,a  )')'   model_meshfile    = ',trim(model_meshfiles(ns))
+        write(logunit,'(a,a  )')'   model_datafile    = ',trim(model_datafiles(ns))
+        write(logunit,'(a,i10)')'   nx_global         = ',nx_global(ns)
+        write(logunit,'(a,i10)')'   ny_global         = ',ny_global(ns)
+      end do
+      write(logunit,'(a,a )')' restfilm          = ',trim(restfilm)
+      write(logunit,'(a,l6)')' skip_restart_read = ',skip_restart_read
     endif
 
     ! Broadcast namelist input
@@ -246,52 +263,54 @@ contains
     call ESMF_VMBroadcast(vm, restfilm, CL, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     do ns = 1,num_icesheets
-       call ESMF_VMBroadcast(vm, model_meshfiles(ns), CL, main_task, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call ESMF_VMBroadcast(vm, nx_global(ns), 1, main_task, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call ESMF_VMBroadcast(vm, ny_global(ns), 1, main_task, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      call ESMF_VMBroadcast(vm, model_meshfiles(ns), CL, main_task, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      bcasttmp(1) = nx_global(ns)
+      call ESMF_VMBroadcast(vm, bcasttmp, 1, main_task, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      bcasttmp(1) = ny_global(ns)
+      call ESMF_VMBroadcast(vm, bcasttmp, 1, main_task, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end do
     call ESMF_VMBroadcast(vm, bcasttmp, 1, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Validate datamode
     if ( trim(datamode) == 'noevolve') then  ! read stream, no import data
-       ! do nothing
+      ! do nothing
     else
-       call shr_sys_abort(' ERROR illegal dglc datamode = '//trim(datamode))
+      call shr_sys_abort(' ERROR illegal dglc datamode = '//trim(datamode))
     endif
 
     ! Allocate module variables
+    allocate(sdat(num_icesheets))
     allocate(NStateImp(num_icesheets))
     allocate(NStateExp(num_icesheets))
-    allocate(sdat(num_icesheets))
     allocate(model_meshes(num_icesheets))
-    allocate(dfields_icesheets(num_icesheets))
 
     ! Create nested states
     do ns = 1,num_icesheets
-       write(cnum,'(i0)') ns
-       call NUOPC_AddNestedState(importState, CplSet="GLC"//trim(cnum), nestedState=NStateImp(ns), rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call NUOPC_AddNestedState(exportState, CplSet="GLC"//trim(cnum), nestedState=NStateExp(ns), rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      write(cnum,'(i0)') ns
+      call NUOPC_AddNestedState(importState, CplSet="GLC"//trim(cnum), nestedState=NStateImp(ns), rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      call NUOPC_AddNestedState(exportState, CplSet="GLC"//trim(cnum), nestedState=NStateExp(ns), rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end do
 
     ! Advertise dglc fields
     if (trim(datamode)=='noevolve') then
-       call dglc_datamode_noevolve_advertise(NStateExp, fldsexport, flds_scalar_name, rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      call dglc_datamode_noevolve_advertise(NStateExp, fldsexport, flds_scalar_name, rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
   end subroutine InitializeAdvertise
 
   !===============================================================================
-  subroutine InitializeRealize(gcomp, clock, rc)
+  subroutine InitializeRealize(gcomp, importState, exportState, clock, rc)
 
     ! input/output variables
     type(ESMF_GridComp)  :: gcomp
+    type(ESMF_State)     :: importState, exportState
     type(ESMF_Clock)     :: clock
     integer, intent(out) :: rc
 
@@ -337,59 +356,10 @@ contains
     call NUOPC_CompAttributeGet(gcomp, name='read_restart', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (isPresent .and. isSet) then
-       read(cvalue,*) read_restart
+      read(cvalue,*) read_restart
     else
-       call shr_sys_abort(subname//' ERROR: read restart flag must be present')
+      call shr_sys_abort(subname//' ERROR: read restart flag must be present')
     end if
-
-    ! Loop over ice sheets
-    do ns = 1,num_icesheets
-
-       write(cns,'(i0)') ns
-
-       ! Initialize pio subsystem
-#ifdef CESMCOUPLED
-       sdat(ns)%pio_subsystem => shr_pio_getiosys('GLC')
-       sdat(ns)%io_type       =  shr_pio_getiotype('GLC')
-       sdat(ns)%io_format     =  shr_pio_getioformat('GLC')
-#else
-       call dshr_pio_init(gcomp, sdat(ns), logunit, rc)
-#endif
-
-       ! Check that model_meshfile exists
-       if (my_task == main_task) then
-          inquire(file=trim(model_meshfiles(ns)), exist=exists)
-          if (.not.exists) then
-             write(logunit,'(a)')' ERROR: model_meshfile '//trim(model_meshfiles(ns))//' does not exist'
-             call shr_sys_abort(trim(subname)//' ERROR: model_meshfile '//trim(model_meshfiles(ns))//' does not exist')
-          end if
-       endif
-
-       ! Read in model mesh
-       model_meshes(ns) = ESMF_MeshCreate(trim(model_meshfiles(ns)), fileformat=ESMF_FILEFORMAT_ESMFMESH, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-       ! Initialize stream data type
-       if (trim(datamode) /= 'noevolve') then
-          call shr_strdata_init_from_config(sdat(ns), streamfilename, model_meshes(ns), clock, 'GLC', logunit, rc=rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       end if
-
-       call ESMF_TraceRegionExit('dglc_strdata_init')
-
-       ! Realize the actively coupled fields, now that a mesh is established and
-       ! NUOPC_Realize "realizes" a previously advertised field in the importState and exportState
-       ! by replacing the advertised fields with the newly created fields of the same name.
-
-       call dshr_fldlist_realize( NStateExp(ns), fldsExport, flds_scalar_name, flds_scalar_num, model_mesh(ns), &
-            subname//trim(modelname)//':Export', export_all, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-       call dshr_fldlist_realize( NStateImp(ns), fldsImport, flds_scalar_name, flds_scalar_num, model_mesh(ns), &
-            subname//trim(modelname)//':Import', .false., rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    end do ! loop over ice sheets
 
     ! Get the time to interpolate the stream data to
     call ESMF_ClockGet(clock, currTime=currTime, rc=rc)
@@ -398,24 +368,68 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_cal_ymd2date(current_year, current_mon, current_day, current_ymd)
 
-    ! loop over ice sheets
+    ! Loop over ice sheets
     do ns = 1,num_icesheets
-       ! Run dglc
-       call dglc_comp_run(clock, current_ymd, current_tod, restart_write=.false., rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      write(cns,'(i0)') ns
 
-       ! Add scalars to export state
-       call dshr_state_SetScalar(dble(nx_global(ns)),flds_scalar_index_nx, &
-            NStateExp(ns), flds_scalar_name, flds_scalar_num, rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call dshr_state_SetScalar(dble(ny_global(ns)),flds_scalar_index_ny,&
-            NStateExp(ns), flds_scalar_name, flds_scalar_num, rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      ! Initialize pio subsystem
+#ifdef CESMCOUPLED
+      sdat(ns)%pio_subsystem => shr_pio_getiosys('GLC')
+      sdat(ns)%io_type       =  shr_pio_getiotype('GLC')
+      sdat(ns)%io_format     =  shr_pio_getioformat('GLC')
+#else
+      call dshr_pio_init(gcomp, sdat(ns), logunit, rc)
+#endif
+
+      ! Check that model_meshfile exists
+      if (my_task == main_task) then
+        inquire(file=trim(model_meshfiles(ns)), exist=exists)
+        if (.not.exists) then
+          write(logunit,'(a)')' ERROR: model_meshfile '//trim(model_meshfiles(ns))//' does not exist'
+          call shr_sys_abort(trim(subname)//' ERROR: model_meshfile '//trim(model_meshfiles(ns))//' does not exist')
+        end if
+      endif
+
+      ! Read in model mesh for given ice sheet
+      model_meshes(ns) = ESMF_MeshCreate(trim(model_meshfiles(ns)), fileformat=ESMF_FILEFORMAT_ESMFMESH, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+      ! Initialize stream data type
+      if (trim(datamode) /= 'noevolve') then
+        call shr_strdata_init_from_config(sdat(ns), streamfilename, model_meshes(ns), clock, 'GLC', logunit, rc=rc)
+        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      end if
+
+      call ESMF_TraceRegionExit('dglc_strdata_init')
+
+      ! Realize the actively coupled fields, now that a mesh is established and
+      ! NUOPC_Realize "realizes" a previously advertised field in the importState and exportState
+      ! by replacing the advertised fields with the newly created fields of the same name.
+
+      call dshr_fldlist_realize( NStateExp(ns), fldsExport, flds_scalar_name, flds_scalar_num, model_meshes(ns), &
+           subname//trim(modelname)//':Export', export_all, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+      call dshr_fldlist_realize( NStateImp(ns), fldsImport, flds_scalar_name, flds_scalar_num, model_meshes(ns), &
+           subname//trim(modelname)//':Import', .false., rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+      ! Run dglc
+      call dglc_comp_run(clock, current_ymd, current_tod, restart_write=.false., rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+      ! Add scalars to export state
+      call dshr_state_SetScalar(dble(nx_global(ns)),flds_scalar_index_nx, &
+           NStateExp(ns), flds_scalar_name, flds_scalar_num, rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      call dshr_state_SetScalar(dble(ny_global(ns)),flds_scalar_index_ny,&
+           NStateExp(ns), flds_scalar_name, flds_scalar_num, rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end do
 
     call ESMF_VMLogMemInfo("Leaving "//trim(subname))
 
-   end subroutine InitializeRealize
+  end subroutine InitializeRealize
 
   !===============================================================================
   subroutine ModelAdvance(gcomp, rc)
@@ -490,95 +504,100 @@ contains
 
     call ESMF_TraceRegionEnter('DGLC_RUN')
 
-    ! Loop over ice sheets
-    do ns = 1,size(NStateExp)
+    !--------------------
+    ! First time initialization
+    !--------------------
 
-       !--------------------
-       ! First time initialization
-       !--------------------
+    if (first_time) then
+      ! Initialize dfields for all ice sheets
+      if (trim(datamode) /= 'noevolve') then
+        call dglc_init_dfields(rc=rc)
+        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      end if
 
-       if (first_time) then
-          ! Initialize dfields for given ice sheet
-          if (trim(datamode) /= 'noevolve') then
-             call dglc_init_dfields(ns, rc=rc)
-             if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          end if
+      ! Initialize datamode module ponters
+      select case (trim(datamode))
+      case('noevolve')
+        call dglc_datamode_copyall_init_pointers(NStateExp(ns), rc)
+        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      end select
 
-          ! Initialize datamode module ponters
-          select case (trim(datamode))
-          case('noevolve')
-             call dglc_datamode_copyall_init_pointers(NStateExp(ns), rc)
-             if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          end select
+      ! Read restart if needed
+      if (trim(datamode) /= 'noevolve') then
+        if (restart_read .and. .not. skip_restart_read) then
+          ! placeholder for future datamodes
+        end if
+      end if
 
-          ! Read restart if needed
-          if (trim(datamode) /= 'noevolve') then
-             if (restart_read .and. .not. skip_restart_read) then
-                ! placeholder for future datamodes
-             end if
-          end if
+      ! Reset first_time
+      first_time = .false.
+    end if
 
-          ! Reset first_time
-          first_time = .false.
-       end if
+    !--------------------
+    ! Update export (and possibly import data model states)
+    !--------------------
 
-       !--------------------
-       ! Update export (and possibly import data model states)
-       !--------------------
+    if (trim(datamode) /= 'noevolve') then
+      if (.not. allocated(dfields_icesheets)) then
+        allocate(dfields_icesheets(num_icesheets))
+      end if
 
-       if (trim(datamode) /= 'noevolve') then
-          ! Advance data model streams - time and spatially interpolate to model time and grid
-          call ESMF_TraceRegionEnter('dglc_strdata_advance')
-          call shr_strdata_advance(sdat(ns), target_ymd, target_tod, logunit, 'dglc', rc=rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          call ESMF_TraceRegionExit('dglc_strdata_advance')
+      ! Loop over ice sheets
+      do ns = 1,num_icesheets
+        ! Advance data model streams - time and spatially interpolate to model time and grid
+        ! Note that loop over ice sheets is done inside shr_strdata_advance
+        call ESMF_TraceRegionEnter('dglc_strdata_advance')
+        call shr_strdata_advance(sdat(ns), target_ymd, target_tod, logunit, 'dglc', rc=rc)
+        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+        call ESMF_TraceRegionExit('dglc_strdata_advance')
 
-          ! Copy all fields from streams to export state as default
-          ! This automatically will update the fields in the export state
-          call ESMF_TraceRegionEnter('dglc_dfield_copy')
-          call dshr_dfield_copy(dfields_icesheets(ns)%dfields, sdat(ns), rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          call ESMF_TraceRegionExit('dglc_dfield_copy')
-       end if
+        ! Copy all fields from streams to export state as default
+        ! This automatically will update the fields in the export state
+        call ESMF_TraceRegionEnter('dglc_dfield_copy')
+        call dshr_dfield_copy(dfields_icesheets(ns)%dfields, sdat(ns), rc)
+        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+        call ESMF_TraceRegionExit('dglc_dfield_copy')
+      end do
+    end if
 
-       ! Perform data mode specific calculations
-       select case (trim(datamode))
-       case('noevolve')
-          call  dglc_datamode_noevolve_advance(rc=rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       end select
+    ! Perform data mode specific calculations
+    select case (trim(datamode))
+    case('noevolve')
+      call dglc_datamode_noevolve_advance(sdat(1)%pio_subsystem, sdat(1)%io_type, sdat(1)%io_format, &
+           model_meshes, model_datafiles, rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    end select
 
-       ! Write restarts if needed
-       if (restart_write) then
-          if (trim(datamode) /= 'evolve') then
-             ! this is a place holder for future datamode
-          end if
-       end if
+    ! Write restarts if needed
+    if (restart_write) then
+      if (trim(datamode) /= 'evolve') then
+        ! this is a place holder for future datamode
+      end if
+    end if
 
-       ! Write diagnostics
-       if (diagnose_data) then
-          write(cnum,'(i0)') ns
-          call dshr_state_diagnose(NStateExp, flds_scalar_name, trim(subname)//':ES_'//trim(cnum), rc=rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       end if
-
-    end do ! end of loop over ice sheets
+    ! Write diagnostics
+    if (diagnose_data) then
+      do ns = 1,num_icesheets
+        write(cnum,'(i0)') ns
+        call dshr_state_diagnose(NStateExp(ns), flds_scalar_name, trim(subname)//':ES_'//trim(cnum), rc=rc)
+        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      end do
+    end if
 
     call ESMF_TraceRegionExit('DGLC_RUN')
 
   contains
 
-    subroutine dglc_init_dfields(ns, rc)
+    subroutine dglc_init_dfields(rc)
       ! -----------------------------
       ! Initialize dfields arrays
       ! -----------------------------
 
       ! input/output variables
-      integer          , intent(in)    :: ns          ! ice sheet index
-      integer          , intent(out)   :: rc
+      integer, intent(out) :: rc
 
       ! local variables
-      integer                         :: n
+      integer                         :: nf, ns
       integer                         :: fieldcount
       type(ESMF_Field)                :: lfield
       character(ESMF_MAXSTR) ,pointer :: lfieldnamelist(:)
@@ -587,21 +606,25 @@ contains
 
       rc = ESMF_SUCCESS
 
+      ! Loop over ice sheets
       ! Initialize dfields data type (to map streams to export state fields)
       ! Create dfields linked list - used for copying stream fields to export state fields
-      call ESMF_StateGet(NStateExp(ns), itemCount=fieldCount, rc=rc)
-      if (chkerr(rc,__LINE__,u_FILE_u)) return
-      allocate(lfieldnamelist(fieldCount))
-      call ESMF_StateGet(NStateExp(ns), itemNameList=lfieldnamelist, rc=rc)
-      if (chkerr(rc,__LINE__,u_FILE_u)) return
-      do n = 1, fieldCount
-         call ESMF_StateGet(NStateExp(ns), itemName=trim(lfieldNameList(n)), field=lfield, rc=rc)
-         if (chkerr(rc,__LINE__,u_FILE_u)) return
-         if (trim(lfieldnamelist(n)) /= flds_scalar_name) then
-            call dshr_dfield_add( dfields, sdat(ns), trim(lfieldnamelist(n)), trim(lfieldnamelist(n)), NStateExp(ns), &
-                 logunit, mainproc, rc)
+      do ns = 1,num_icesheets
+        call ESMF_StateGet(NStateExp(ns), itemCount=fieldCount, rc=rc)
+        if (chkerr(rc,__LINE__,u_FILE_u)) return
+        allocate(lfieldnamelist(fieldCount))
+        call ESMF_StateGet(NStateExp(ns), itemNameList=lfieldnamelist, rc=rc)
+        if (chkerr(rc,__LINE__,u_FILE_u)) return
+        do nf = 1, fieldCount
+          call ESMF_StateGet(NStateExp(ns), itemName=trim(lfieldNameList(nf)), field=lfield, rc=rc)
+          if (chkerr(rc,__LINE__,u_FILE_u)) return
+          if (trim(lfieldnamelist(nf)) /= flds_scalar_name) then
+            call dshr_dfield_add( dfields_icesheets(ns)%dfields, sdat(ns), &
+                 trim(lfieldnamelist(nf)), trim(lfieldnamelist(nf)), NStateExp(ns), logunit, mainproc, rc)
             if (chkerr(rc,__LINE__,u_FILE_u)) return
-         end if
+          end if
+        end do
+        deallocate(lfieldnamelist)
       end do
     end subroutine dglc_init_dfields
 
@@ -614,9 +637,9 @@ contains
     !-------------------------------------------------------------------------------
     rc = ESMF_SUCCESS
     if (my_task == main_task) then
-       write(logunit,*)
-       write(logunit,*) 'dglc : end of main integration loop'
-       write(logunit,*)
+      write(logunit,*)
+      write(logunit,*) 'dglc : end of main integration loop'
+      write(logunit,*)
     end if
   end subroutine ModelFinalize
 

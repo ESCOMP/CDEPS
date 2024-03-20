@@ -35,6 +35,22 @@
     </values>
   </entry>
 
+  <entry id="inputdata_files">
+    <type>char</type>
+    <category>streams</category>
+    <input_pathname>abs</input_pathname>
+    <group>dglc_nml</group>
+    <values>
+      <value glc_grid="ais8:gris4">$DIN_LOC_ROOT/glc/cism/Antarctica/ISMIP6_Antarctica_8km.init.c210908.nc:$DIN_LOC_ROOT/glc/cism/Greenland/greenland_4km_epsg3413_c171126.nc</value>
+      <value glc_grid="gris20">$DIN_LOC_ROOT/glc/cism/Greenland/gland20.input_c150415.nc</value>
+      <value glc_grid="gris4" >$DIN_LOC_ROOT/glc/cism/Greenland/greenland_4km_epsg3413_c171126.nc</value>
+      <value glc_grid="ais8"  >$DIN_LOC_ROOT/glc/cism/Antarctica/ISMIP6_Antarctica_8km.init.c210908.nc</value>
+    </values>
+    <desc>
+      colon deliminted string of inputdata files
+    </desc>
+  </entry>
+
   <entry id="model_meshfiles">
     <type>char</type>
     <category>streams</category>
@@ -44,7 +60,7 @@
       <value>$GLC_DOMAIN_MESH</value>
     </values>
     <desc>
-      file(s) specifying model mesh
+      colon deliminted string of file(s) specifying model mesh
       for more than one ice sheets this will contain an array of mesh file names
     </desc>
   </entry>
