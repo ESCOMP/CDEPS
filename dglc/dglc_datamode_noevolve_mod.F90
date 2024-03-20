@@ -128,8 +128,10 @@ contains
       do ns = 1,num_icesheets
          call dshr_state_getfldptr(NStateExp(ns), 'Sg_topo'        , fldptr1=Sg_topo(ns)%ptr        , rc=rc)
          if (chkerr(rc,__LINE__,u_FILE_u)) return
+
          call dshr_state_getfldptr(NStateExp(ns), 'Sg_ice_covered' , fldptr1=Sg_ice_covered(ns)%ptr , rc=rc)
          if (chkerr(rc,__LINE__,u_FILE_u)) return
+
          call dshr_state_getfldptr(NStateExp(ns), 'Sg_icemask'     , fldptr1=Sg_icemask(ns)%ptr     , rc=rc)
          if (chkerr(rc,__LINE__,u_FILE_u)) return
       end do
@@ -197,8 +199,8 @@ contains
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
         ! Create pioid and pio_iodesc at the module level
-        call pio_seterrorhandling(pioid, PIO_BCAST_ERROR)
         rcode = pio_openfile(pio_subsystem, pioid, io_type, trim(input_files(ns)), pio_nowrite)
+        call pio_seterrorhandling(pioid, PIO_BCAST_ERROR)
         rcode = pio_inq_varid(pioid, 'thk', varid)
         rcode = pio_inq_varndims(pioid, varid, ndims)
         allocate(dimid(ndims))

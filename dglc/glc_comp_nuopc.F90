@@ -355,9 +355,9 @@ contains
     call NUOPC_CompAttributeGet(gcomp, name='read_restart', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (isPresent .and. isSet) then
-      read(cvalue,*) read_restart
+       read(cvalue,*) read_restart
     else
-      call shr_sys_abort(subname//' ERROR: read restart flag must be present')
+       call shr_sys_abort(subname//' ERROR: read restart flag must be present')
     end if
 
     ! Get the time to interpolate the stream data to
@@ -369,61 +369,64 @@ contains
 
     ! Loop over ice sheets
     do ns = 1,num_icesheets
-      write(cns,'(i0)') ns
 
-      ! Initialize pio subsystem
+       write(cns,'(i0)') ns
+
+       ! Initialize pio subsystem
 #ifdef CESMCOUPLED
-      sdat(ns)%pio_subsystem => shr_pio_getiosys('GLC')
-      sdat(ns)%io_type       =  shr_pio_getiotype('GLC')
-      sdat(ns)%io_format     =  shr_pio_getioformat('GLC')
+       sdat(ns)%pio_subsystem => shr_pio_getiosys('GLC')
+       sdat(ns)%io_type       =  shr_pio_getiotype('GLC')
+       sdat(ns)%io_format     =  shr_pio_getioformat('GLC')
 #else
-      call dshr_pio_init(gcomp, sdat(ns), logunit, rc)
+       call dshr_pio_init(gcomp, sdat(ns), logunit, rc)
 #endif
 
-      ! Check that model_meshfile exists
-      if (my_task == main_task) then
-        inquire(file=trim(model_meshfiles(ns)), exist=exists)
-        if (.not.exists) then
-          write(logunit,'(a)')' ERROR: model_meshfile '//trim(model_meshfiles(ns))//' does not exist'
-          call shr_sys_abort(trim(subname)//' ERROR: model_meshfile '//trim(model_meshfiles(ns))//' does not exist')
-        end if
-      endif
+       ! Check that model_meshfile exists
+       if (my_task == main_task) then
+          inquire(file=trim(model_meshfiles(ns)), exist=exists)
+          if (.not.exists) then
+             write(logunit,'(a)')' ERROR: model_meshfile '//trim(model_meshfiles(ns))//' does not exist'
+             call shr_sys_abort(trim(subname)//' ERROR: model_meshfile '//trim(model_meshfiles(ns))//' does not exist')
+          end if
+       endif
 
-      ! Read in model mesh for given ice sheet
-      model_meshes(ns) = ESMF_MeshCreate(trim(model_meshfiles(ns)), fileformat=ESMF_FILEFORMAT_ESMFMESH, rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       ! Read in model mesh for given ice sheet
+       model_meshes(ns) = ESMF_MeshCreate(trim(model_meshfiles(ns)), fileformat=ESMF_FILEFORMAT_ESMFMESH, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-      ! Initialize stream data type
-      if (trim(datamode) /= 'noevolve') then
-        call shr_strdata_init_from_config(sdat(ns), streamfilename, model_meshes(ns), clock, 'GLC', logunit, rc=rc)
-        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-      end if
+       ! Initialize stream data type
+       if (trim(datamode) /= 'noevolve') then
+          call shr_strdata_init_from_config(sdat(ns), streamfilename, model_meshes(ns), clock, 'GLC', logunit, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       end if
 
-      ! Realize the actively coupled fields, now that a mesh is established and
-      ! NUOPC_Realize "realizes" a previously advertised field in the importState and exportState
-      ! by replacing the advertised fields with the newly created fields of the same name.
+       ! Realize the actively coupled fields, now that a mesh is established and
+       ! NUOPC_Realize "realizes" a previously advertised field in the importState and exportState
+       ! by replacing the advertised fields with the newly created fields of the same name.
 
-      call dshr_fldlist_realize( NStateExp(ns), fldsExport, flds_scalar_name, flds_scalar_num, model_meshes(ns), &
-           subname//trim(modelname)//':Export', export_all, rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call ESMF_LogWrite(subname//' calling dshr_fldlist_realize export for ice sheet '//trim(cns), ESMF_LOGMSG_INFO)
+       call dshr_fldlist_realize( NStateExp(ns), fldsExport, flds_scalar_name, flds_scalar_num, model_meshes(ns), &
+            subname//trim(modelname)//':Export', export_all, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-      call dshr_fldlist_realize( NStateImp(ns), fldsImport, flds_scalar_name, flds_scalar_num, model_meshes(ns), &
-           subname//trim(modelname)//':Import', .false., rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call ESMF_LogWrite(subname//' calling dshr_fldlist_realize importfor ice sheet '//trim(cns), ESMF_LOGMSG_INFO)
+       call dshr_fldlist_realize( NStateImp(ns), fldsImport, flds_scalar_name, flds_scalar_num, model_meshes(ns), &
+            subname//trim(modelname)//':Import', .false., rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-      ! Run dglc
-      call dglc_comp_run(clock, current_ymd, current_tod, restart_write=.false., rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-      ! Add scalars to export state
-      call dshr_state_SetScalar(dble(nx_global(ns)),flds_scalar_index_nx, &
-           NStateExp(ns), flds_scalar_name, flds_scalar_num, rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
-      call dshr_state_SetScalar(dble(ny_global(ns)),flds_scalar_index_ny,&
-           NStateExp(ns), flds_scalar_name, flds_scalar_num, rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       ! Add scalars to export state
+       call dshr_state_SetScalar(dble(nx_global(ns)),flds_scalar_index_nx, &
+            NStateExp(ns), flds_scalar_name, flds_scalar_num, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call dshr_state_SetScalar(dble(ny_global(ns)),flds_scalar_index_ny,&
+            NStateExp(ns), flds_scalar_name, flds_scalar_num, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     end do ! end loop over ice sheets
+
+    ! Run dglc
+    call dglc_comp_run(clock, current_ymd, current_tod, restart_write=.false., rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     call ESMF_TraceRegionExit('dglc_strdata_init')
     call ESMF_VMLogMemInfo("Leaving "//trim(subname))
