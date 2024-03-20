@@ -69,6 +69,7 @@ contains
       ! local variables
       integer :: ns
       logical :: isPresent, isSet
+      character(len=CS) :: cnum
       type(fldlist_type), pointer :: fldList
       !-------------------------------------------------------------------------------
 
@@ -86,18 +87,17 @@ contains
       call dshr_fldList_add(fldsExport, field_out_ice_covered)
       call dshr_fldList_add(fldsExport, field_out_topo)
       call dshr_fldList_add(fldsExport, field_out_icemask)
-      Call dshr_fldList_add(fldsExport, field_out_icemask_coupled_fluxes)
+      call dshr_fldList_add(fldsExport, field_out_icemask_coupled_fluxes)
 
       do ns = 1,num_icesheets
-         fldlist => fldsExport ! the head of the linked list
-         do while (associated(fldlist))
-            call NUOPC_Advertise(NStateExp(ns), standardName=fldlist%stdname, rc=rc)
-            if (ChkErr(rc,__LINE__,u_FILE_u)) return
-            if (ns == 1) then
-               call ESMF_LogWrite('(dglc_comp_advertise): Fr_glc'//trim(fldList%stdname), ESMF_LOGMSG_INFO)
-            end if
-            fldList => fldList%next
-         end do
+        write(cnum,'(i0)') ns
+        fldlist => fldsExport ! the head of the linked list
+        do while (associated(fldlist))
+          call NUOPC_Advertise(NStateExp(ns), standardName=fldlist%stdname, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          call ESMF_LogWrite('(dglc_comp_advertise): Fr_glc'//trim(cnum)//"_"//trim(fldList%stdname), ESMF_LOGMSG_INFO)
+          fldList => fldList%next
+        end do
       enddo
 
    end subroutine dglc_datamode_noevolve_advertise

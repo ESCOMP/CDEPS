@@ -19,7 +19,7 @@ module cdeps_dglc_comp
   use ESMF             , only : ESMF_MeshCreate, ESMF_FILEFORMAT_ESMFMESH
   use NUOPC            , only : NUOPC_CompDerive, NUOPC_CompSetEntryPoint, NUOPC_CompSpecialize
   use NUOPC            , only : NUOPC_Advertise, NUOPC_CompAttributeGet, NUOPC_CompAttributeSet
-  use NUOPC            , only : NUOPC_AddNestedState
+  use NUOPC            , only : NUOPC_AddNestedState, NUOPC_IsConnected
   use NUOPC_Model      , only : model_routine_SS        => SetServices
   use NUOPC_Model      , only : model_label_Advance     => label_Advance
   use NUOPC_Model      , only : model_label_SetRunClock => label_SetRunClock

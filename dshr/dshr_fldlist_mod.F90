@@ -77,8 +77,11 @@ contains
     fldList => fldLists ! note that fldlists is the head of the linked list
     do while (associated(fldList))
        stdname = fldList%stdname
+       write(6,*)'DEBUG: stdname is ',trim(stdname)
 
        if (NUOPC_IsConnected(state, fieldName=stdname) .or. export_all) then
+          write(6,*)'DEBUG: field '//trim(stdname)//' is connected '
+
           ! Check field name since linked list might have empty string
           if (trim(stdname) == '') then
              fldList => fldList%next
