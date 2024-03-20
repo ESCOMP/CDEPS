@@ -258,6 +258,8 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_VMBroadcast(vm, model_meshfiles, CL*max_icesheets, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, model_datafiles, CL*max_icesheets, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_VMBroadcast(vm, nx_global, max_icesheets, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_VMBroadcast(vm, ny_global, max_icesheets, main_task, rc=rc)

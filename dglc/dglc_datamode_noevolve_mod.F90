@@ -167,6 +167,7 @@ contains
       integer                :: rcode
       integer                :: nxg, nyg
       real(r8), pointer      :: data(:)
+      logical                :: exists
       character(len=*), parameter :: subname='(dglc_datamode_noevolve_advance): '
       !-------------------------------------------------------------------------------
 
@@ -199,6 +200,11 @@ contains
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
         ! Create pioid and pio_iodesc at the module level
+        inquire(file=trim(input_files(ns)), exist=exists)
+        if (.not.exists) then
+           write(6,'(a)')' ERROR: model input file '//trim(input_files(ns))//' does not exist'
+           call shr_sys_abort()
+        end if
         rcode = pio_openfile(pio_subsystem, pioid, io_type, trim(input_files(ns)), pio_nowrite)
         call pio_seterrorhandling(pioid, PIO_BCAST_ERROR)
         rcode = pio_inq_varid(pioid, 'thk', varid)
@@ -208,6 +214,7 @@ contains
         rcode = pio_inq_dimlen(pioid, dimid(1), nxg)
         rcode = pio_inq_dimlen(pioid, dimid(2), nyg)
         call pio_initdecomp(pio_subsystem, pio_double, (/nxg,nyg/), gindex, pio_iodesc)
+        deallocate(dimid)
         deallocate(gindex)
 
         ! Read in the data into the appropriate field bundle pointers
