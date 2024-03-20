@@ -39,9 +39,9 @@ module cdeps_dglc_comp
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_realize
 
   ! Datamode specialized modules
-  use dglc_datamode_noevolve_mod    , only : dglc_datamode_noevolve_advertise
-  use dglc_datamode_noevolve_mod    , only : dglc_datamode_noevolve_init_pointers
-  use dglc_datamode_noevolve_mod    , only : dglc_datamode_noevolve_advance
+  use dglc_datamode_noevolve_mod, only : dglc_datamode_noevolve_advertise
+  use dglc_datamode_noevolve_mod, only : dglc_datamode_noevolve_init_pointers
+  use dglc_datamode_noevolve_mod, only : dglc_datamode_noevolve_advance
 
   implicit none
   private ! except
@@ -58,15 +58,16 @@ module cdeps_dglc_comp
   ! Private module data
   !--------------------------------------------------------------------------
 
-  integer, parameter :: max_icesheets = 10 ! maximum number of ice sheets for namelist input
-  integer            :: num_icesheets = 0  ! actual number of ice sheets
+  character(*) , parameter :: nullstr = 'null'
+  integer      , parameter :: max_icesheets = 10 ! maximum number of ice sheets for namelist input
+  integer                  :: num_icesheets      ! actual number of ice sheets
 
   ! namelist input
-  character(CS) :: icesheet_names(max_icesheets)
-  character(CL) :: model_meshfiles(max_icesheets)
-  character(CL) :: model_datafiles(max_icesheets)
-  integer       :: nx_global(max_icesheets)
-  integer       :: ny_global(max_icesheets)
+  character(CS) :: icesheet_names(max_icesheets)  = nullstr
+  character(CL) :: model_meshfiles(max_icesheets) = nullstr
+  character(CL) :: model_datafiles(max_icesheets) = nullstr
+  integer       :: nx_global(max_icesheets) = 0
+  integer       :: ny_global(max_icesheets) = 0
 
   ! module variables for multiple ice sheets
   type(shr_strdata_type) , allocatable :: sdat(:)
@@ -75,27 +76,25 @@ module cdeps_dglc_comp
   type(ESMF_Mesh)        , allocatable :: model_meshes(:)
 
   ! module variables common to all data models
-  character(CS)            :: flds_scalar_name = ''
-  integer                  :: flds_scalar_num = 0
-  integer                  :: flds_scalar_index_nx = 0
-  integer                  :: flds_scalar_index_ny = 0
-  integer                  :: mpicom           ! mpi communicator
-  integer                  :: my_task          ! my task in mpi communicator mpicom
-  logical                  :: mainproc         ! true of my_task == main_task
-  character(len=16)        :: inst_suffix = "" ! char string associated with instance (ie. "_0001" or "")
-  integer                  :: logunit          ! logging unit number
-  logical                  :: restart_read     ! start from restart
-  character(CL)            :: case_name
-  character(*) , parameter :: nullstr = 'null'
+  character(CS)     :: flds_scalar_name = ''
+  integer           :: flds_scalar_num = 0
+  integer           :: flds_scalar_index_nx = 0
+  integer           :: flds_scalar_index_ny = 0
+  integer           :: mpicom           ! mpi communicator
+  integer           :: my_task          ! my task in mpi communicator mpicom
+  logical           :: mainproc         ! true of my_task == main_task
+  character(len=16) :: inst_suffix = "" ! char string associated with instance (ie. "_0001" or "")
+  integer           :: logunit          ! logging unit number
+  logical           :: restart_read     ! start from restart
+  character(CL)     :: case_name
 
   ! dglc_in namelist input
-
-  character(CL)              :: streamfilename = nullstr                ! filename to obtain stream info from
-  character(CL)              :: nlfilename = nullstr                    ! filename to obtain namelist info from
-  character(CL)              :: datamode = nullstr                      ! flags physics options wrt input data
-  character(CL)              :: restfilm = nullstr                      ! model restart file namelist
-  logical                    :: skip_restart_read = .false.             ! true => skip restart read in continuation run
-  logical                    :: export_all = .false.                    ! true => export all fields, do not check connected or not
+  character(CL) :: streamfilename = nullstr    ! filename to obtain stream info from
+  character(CL) :: nlfilename = nullstr        ! filename to obtain namelist info from
+  character(CL) :: datamode = nullstr          ! flags physics options wrt input data
+  character(CL) :: restfilm = nullstr          ! model restart file namelist
+  logical       :: skip_restart_read = .false. ! true => skip restart read in continuation run
+  logical       :: export_all = .false.        ! true => export all fields, do not check connected or not
 
   ! linked lists
   type(fldList_type) , pointer :: fldsImport => null()
@@ -191,9 +190,6 @@ contains
     character(len=*),parameter :: subname=trim(module_name)//':(InitializeAdvertise) '
     !-------------------------------------------------------------------------------
 
-    !icesheet_names = "ais", "gris"
-    !num_icesheets = 2
-
     ! Note that the suffix '-list' refers to a colon delimited string of names
     namelist / dglc_nml / datamode, &
          icesheets_list, model_meshfiles_list, model_datafiles_list, nx_global, ny_global, &
@@ -235,11 +231,6 @@ contains
         ! determine input datafile name(s)
         call shr_string_listGetName(model_datafiles_list, ns, model_datafiles(ns))
       end do
-      if (skip_restart_read) then
-        bcasttmp = 1
-      else
-        bcasttmp = 0
-      end if
 
       ! Write diagnostics
       write(logunit,'(a,a)')' case_name         = ',trim(case_name)
@@ -253,6 +244,9 @@ contains
       end do
       write(logunit,'(a,a )')' restfilm          = ',trim(restfilm)
       write(logunit,'(a,l6)')' skip_restart_read = ',skip_restart_read
+
+      bcasttmp(1) = 0
+      if(skip_restart_read) bcasttmp(1) = 1
     endif
 
     ! Broadcast namelist input
@@ -262,18 +256,23 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_VMBroadcast(vm, restfilm, CL, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    do ns = 1,num_icesheets
-      call ESMF_VMBroadcast(vm, model_meshfiles(ns), CL, main_task, rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
-      bcasttmp(1) = nx_global(ns)
-      call ESMF_VMBroadcast(vm, bcasttmp, 1, main_task, rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
-      bcasttmp(1) = ny_global(ns)
-      call ESMF_VMBroadcast(vm, bcasttmp, 1, main_task, rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    end do
+    call ESMF_VMBroadcast(vm, model_meshfiles, CL*max_icesheets, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, nx_global, max_icesheets, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, ny_global, max_icesheets, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    ! Set number of ice sheets for all mpi tasks
+    bcasttmp(1) = num_icesheets
     call ESMF_VMBroadcast(vm, bcasttmp, 1, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    num_icesheets = bcasttmp(1)
+
+    ! Determine if will skip restart read for all mpi tasks
+    call ESMF_VMBroadcast(vm, bcasttmp, 1, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    skip_restart_read = (bcasttmp(1) == 1)
 
     ! Validate datamode
     if ( trim(datamode) == 'noevolve') then  ! read stream, no import data
@@ -333,9 +332,9 @@ contains
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
-    call ESMF_VMLogMemInfo("Entering "//trim(subname))
 
     ! Initialize model mesh, restart flag, logunit, model_mask and model_frac
+    call ESMF_VMLogMemInfo("Entering "//trim(subname))
     call ESMF_TraceRegionEnter('dglc_strdata_init')
 
     ! Determine stream filename
@@ -400,8 +399,6 @@ contains
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
       end if
 
-      call ESMF_TraceRegionExit('dglc_strdata_init')
-
       ! Realize the actively coupled fields, now that a mesh is established and
       ! NUOPC_Realize "realizes" a previously advertised field in the importState and exportState
       ! by replacing the advertised fields with the newly created fields of the same name.
@@ -425,8 +422,10 @@ contains
       call dshr_state_SetScalar(dble(ny_global(ns)),flds_scalar_index_ny,&
            NStateExp(ns), flds_scalar_name, flds_scalar_num, rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    end do
 
+    end do ! end loop over ice sheets
+
+    call ESMF_TraceRegionExit('dglc_strdata_init')
     call ESMF_VMLogMemInfo("Leaving "//trim(subname))
 
   end subroutine InitializeRealize
@@ -518,7 +517,7 @@ contains
       ! Initialize datamode module ponters
       select case (trim(datamode))
       case('noevolve')
-        call dglc_datamode_copyall_init_pointers(NStateExp(ns), rc)
+        call dglc_datamode_noevolve_init_pointers(NStateExp, rc)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
       end select
 

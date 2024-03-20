@@ -35,7 +35,7 @@
     </values>
   </entry>
 
-  <entry id="inputdata_files">
+  <entry id="model_datafiles_list">
     <type>char</type>
     <category>streams</category>
     <input_pathname>abs</input_pathname>
@@ -51,7 +51,7 @@
     </desc>
   </entry>
 
-  <entry id="model_meshfiles">
+  <entry id="model_meshfiles_list">
     <type>char</type>
     <category>streams</category>
     <input_pathname>abs</input_pathname>
