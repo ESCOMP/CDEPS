@@ -4,9 +4,10 @@ module dglc_datamode_noevolve_mod
    use ESMF             , only : ESMF_Mesh, ESMF_DistGrid, ESMF_FieldBundle, ESMF_Field
    use ESMF             , only : ESMF_FieldBundleCreate, ESMF_FieldCreate, ESMF_MeshLoc_Element
    use ESMF             , only : ESMF_FieldBundleAdd, ESMF_MeshGet, ESMF_DistGridGet, ESMF_Typekind_R8
-   use NUOPC            , only : NUOPC_Advertise, NUOPC_AddNestedState
+   use NUOPC            , only : NUOPC_Advertise
    use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
    use shr_sys_mod      , only : shr_sys_abort
+   use shr_const_mod    , only : SHR_CONST_RHOICE, SHR_CONST_RHOSW
    use dshr_methods_mod , only : dshr_state_getfldptr, dshr_fldbun_getfldptr, chkerr
    use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
    use dshr_strdata_mod , only : shr_strdata_type
@@ -23,9 +24,10 @@ module dglc_datamode_noevolve_mod
    public  :: dglc_datamode_noevolve_init_pointers
    public  :: dglc_datamode_noevolve_advance
 
-   integer :: num_icesheets
+   integer  :: num_icesheets
+   real(r8) :: thk0 = 1._r8
 
-   ! export fields
+   ! Export fields
    type icesheet_ptr_t
       real(r8), pointer :: ptr(:) => null() ! pointer to array
    endtype icesheet_ptr_t
@@ -34,23 +36,20 @@ module dglc_datamode_noevolve_mod
    type(icesheet_ptr_t), allocatable :: Sg_ice_covered(:)
    type(icesheet_ptr_t), allocatable :: Sg_icemask(:)
 
+   ! Field names
    character(len=*), parameter :: field_in_tsrf                    = 'Sl_tsrf'
    character(len=*), parameter :: field_in_qice                    = 'Flgl_qice'
-
    character(len=*), parameter :: field_out_area                   = 'Sg_area'
    character(len=*), parameter :: field_out_ice_covered            = 'Sg_ice_covered'
    character(len=*), parameter :: field_out_topo                   = 'Sg_topo'
    character(len=*), parameter :: field_out_icemask                = 'Sg_icemask'
    character(len=*), parameter :: field_out_icemask_coupled_fluxes = 'Sg_icemask_coupled_fluxes'
-
    character(len=*), parameter :: field_out_hflx_to_lnd            = 'Flgg_hflx'
    character(len=*), parameter :: field_out_rofi_to_ice            = 'Figg_rofi'
    character(len=*), parameter :: field_out_rofi_to_ocn            = 'Fogg_rofi'
    character(len=*), parameter :: field_out_rofl_to_ocn            = 'Fogg_rofl'
 
-   character(*) , parameter :: nullstr = 'null'
    character(*) , parameter :: rpfile  = 'rpointer.glc'
-
    character(*) , parameter :: u_FILE_u = &
         __FILE__
 
@@ -87,7 +86,7 @@ contains
       call dshr_fldList_add(fldsExport, field_out_ice_covered)
       call dshr_fldList_add(fldsExport, field_out_topo)
       call dshr_fldList_add(fldsExport, field_out_icemask)
-      call dshr_fldList_add(fldsExport, field_out_icemask_coupled_fluxes)
+     !call dshr_fldList_add(fldsExport, field_out_icemask_coupled_fluxes)
 
       do ns = 1,num_icesheets
         write(cnum,'(i0)') ns
@@ -128,10 +127,8 @@ contains
       do ns = 1,num_icesheets
          call dshr_state_getfldptr(NStateExp(ns), 'Sg_topo'        , fldptr1=Sg_topo(ns)%ptr        , rc=rc)
          if (chkerr(rc,__LINE__,u_FILE_u)) return
-
          call dshr_state_getfldptr(NStateExp(ns), 'Sg_ice_covered' , fldptr1=Sg_ice_covered(ns)%ptr , rc=rc)
          if (chkerr(rc,__LINE__,u_FILE_u)) return
-
          call dshr_state_getfldptr(NStateExp(ns), 'Sg_icemask'     , fldptr1=Sg_icemask(ns)%ptr     , rc=rc)
          if (chkerr(rc,__LINE__,u_FILE_u)) return
       end do
@@ -159,6 +156,7 @@ contains
       type(file_desc_t)      :: pioid
       type(io_desc_t)        :: pio_iodesc
       integer                :: ns  ! ice sheet index
+      integer                :: ng  ! grid cell index
       integer                :: lsize
       integer, pointer       :: gindex(:) ! domain decomposition of data
       integer                :: ndims     ! number of dims
@@ -166,8 +164,14 @@ contains
       type(var_desc_t)       :: varid
       integer                :: rcode
       integer                :: nxg, nyg
-      real(r8), pointer      :: data(:)
+      real(r8), pointer      :: topog(:)
+      real(r8), pointer      :: thck(:)
       logical                :: exists
+      real(r8)               :: rhoi   ! density of ice ~ kg/m^3
+      real(r8)               :: rhoo   ! density of sea water ~ kg/m^3
+      real(r8)               :: eus    ! eustatic sea level
+      real(r8), allocatable  :: lsrf(:)
+      real(r8), allocatable  :: usrf(:)
       character(len=*), parameter :: subname='(dglc_datamode_noevolve_advance): '
       !-------------------------------------------------------------------------------
 
@@ -222,18 +226,58 @@ contains
         ! the Sg_ice_covered field in NStateExp(ns)
         ! Note that Sg_topo(ns)%ptr points into the data for
         ! the Sg_topon NStateExp(ns)
+        ! Note that topog is bedrock topography
 
-        call dshr_fldbun_getFldPtr(fldbun_noevolve, 'thk', data, rc=rc)
-        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-        rcode = pio_inq_varid(pioid, 'thk', varid)
-        call pio_read_darray(pioid, varid, pio_iodesc, data, rcode)
-        Sg_ice_covered(ns)%ptr(:) = data(:)
-
-        call dshr_fldbun_getFldPtr(fldbun_noevolve, 'topg', data, rc=rc)
+        call dshr_fldbun_getFldPtr(fldbun_noevolve, 'topg', topog, rc=rc)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
         rcode = pio_inq_varid(pioid, 'topg', varid)
-        call pio_read_darray(pioid, varid, pio_iodesc, data, rcode)
-        Sg_topo(ns)%ptr(:) = data(:)
+        call pio_read_darray(pioid, varid, pio_iodesc, topog, rcode)
+
+        call dshr_fldbun_getFldPtr(fldbun_noevolve, 'thk', thck, rc=rc)
+        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+        rcode = pio_inq_varid(pioid, 'thk', varid)
+        call pio_read_darray(pioid, varid, pio_iodesc, thck,  rcode)
+
+        allocate(lsrf(lsize))
+        allocate(usrf(lsize))
+
+        rhoi = SHR_CONST_RHOICE   ! 0.917e3
+        rhoo = SHR_CONST_RHOSW    ! 1.026e3
+        eus = 0
+        do ng = 1,lsize
+           if (topog(ng) - eus < (-rhoi/rhoo) * thck(ng)) then
+              lsrf(ng) = (-rhoi/rhoo) * thck(ng)
+           else
+              lsrf(ng) = topog(ng)
+           end if
+           usrf(ng) = max(0.d0, thck(ng) + lsrf(ng))
+        end do
+
+        !Sg_ice_covered(ns)%ptr(:) = thk(:)
+        do ng = 1,lsize
+           if (is_in_active_grid(usrf(ng))) then
+              Sg_icemask(ns)%ptr(ng) = 1.d0
+              if (is_ice_covered(thck(ng))) then
+                 Sg_ice_covered(ns)%ptr(ng) = 1.d0
+              else
+                 Sg_ice_covered(ns)%ptr(ng) = 0.d0
+              end if
+              ! Note that we use the same method for computing topo whether this point is
+              ! ice-covered or ice-free. This is in contrast to the method for computing
+              ! ice-free topo in glint_upscaling_gcm.
+              Sg_topo(ns)%ptr(ng) = thk0 * usrf(ng)
+           else
+              ! Note that this logic implies that if (in theory) we had an ice-covered
+              ! point outside the "active grid", it will get classified as ice-free for
+              ! these purposes. This mimics the logic currently in glint_upscaling_gcm.
+              Sg_icemask(ns)%ptr(ng) = 0.d0
+              Sg_ice_covered(ns)%ptr(ng) = 0.d0
+              Sg_topo(ns)%ptr(ng) = 0.d0
+           end if
+        end do
+
+        deallocate(lsrf)
+        deallocate(usrf)
 
         call pio_closefile(pioid)
         call pio_freedecomp(pio_subsystem, pio_iodesc)
@@ -241,5 +285,35 @@ contains
       end do ! end loop over ice sheets
 
    end subroutine dglc_datamode_noevolve_advance
+
+   !===============================================================================
+   logical function is_in_active_grid(usrf)
+      ! Return true if the given point is inside the "active grid". The active grid includes
+      ! any point that can receive a positive surface mass balance, which includes any
+      ! point classified as land or ice sheet.
+
+      real(r8), intent(in) :: usrf  ! surface elevation (m)
+
+      if (thk0 * usrf > 0.d0) then
+         ! points not at sea level are assumed to be land or ice sheet
+         is_in_active_grid = .true.
+      else
+         is_in_active_grid = .false.
+      end if
+   end function is_in_active_grid
+
+   !===============================================================================
+   logical function is_ice_covered(thck)
+      ! Return true if the given point is ice-covered
+
+      real(r8), intent(in) :: thck     ! ice thickness (m)
+      real(r8), parameter :: min_thck = 0.d0
+
+      if (thk0 * thck > min_thck) then
+         is_ice_covered = .true.
+      else
+         is_ice_covered = .false.
+      end if
+   end function is_ice_covered
 
 end module dglc_datamode_noevolve_mod
