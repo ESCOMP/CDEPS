@@ -300,7 +300,7 @@ contains
 
     ! Advertise dglc fields
     if (trim(datamode)=='noevolve') then
-      call dglc_datamode_noevolve_advertise(NStateExp, fldsexport, flds_scalar_name, rc)
+      call dglc_datamode_noevolve_advertise(NStateExp, fldsexport, NStateImp, fldsimport, flds_scalar_name, rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
@@ -522,7 +522,7 @@ contains
       ! Initialize datamode module ponters
       select case (trim(datamode))
       case('noevolve')
-        call dglc_datamode_noevolve_init_pointers(NStateExp, rc)
+        call dglc_datamode_noevolve_init_pointers(NStateExp, NStateImp, rc)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
       end select
 

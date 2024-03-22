@@ -4,7 +4,7 @@ module dglc_datamode_noevolve_mod
    use ESMF             , only : ESMF_Mesh, ESMF_DistGrid, ESMF_FieldBundle, ESMF_Field
    use ESMF             , only : ESMF_FieldBundleCreate, ESMF_FieldCreate, ESMF_MeshLoc_Element
    use ESMF             , only : ESMF_FieldBundleAdd, ESMF_MeshGet, ESMF_DistGridGet, ESMF_Typekind_R8
-   use NUOPC            , only : NUOPC_Advertise
+   use NUOPC            , only : NUOPC_Advertise, NUOPC_IsConnected
    use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
    use shr_sys_mod      , only : shr_sys_abort
    use shr_const_mod    , only : SHR_CONST_RHOICE, SHR_CONST_RHOSW
@@ -24,30 +24,36 @@ module dglc_datamode_noevolve_mod
    public  :: dglc_datamode_noevolve_init_pointers
    public  :: dglc_datamode_noevolve_advance
 
+   logical  :: initialized_noevolve = .false.
    integer  :: num_icesheets
    real(r8) :: thk0 = 1._r8
 
-   ! Export fields
+   ! Data structure to enable multiple ice sheets
    type icesheet_ptr_t
       real(r8), pointer :: ptr(:) => null() ! pointer to array
    endtype icesheet_ptr_t
+
+   ! Export fields
    type(icesheet_ptr_t), allocatable :: Sg_area(:)
    type(icesheet_ptr_t), allocatable :: Sg_topo(:)
    type(icesheet_ptr_t), allocatable :: Sg_ice_covered(:)
    type(icesheet_ptr_t), allocatable :: Sg_icemask(:)
+   type(icesheet_ptr_t), allocatable :: Sg_icemask_coupled_fluxes(:)
 
-   ! Field names
-   character(len=*), parameter :: field_in_tsrf                    = 'Sl_tsrf'
-   character(len=*), parameter :: field_in_qice                    = 'Flgl_qice'
+   ! Import fields
+   type(icesheet_ptr_t), allocatable :: Sl_tsrf(:)
+   type(icesheet_ptr_t), allocatable :: Flgl_qice(:)
+
+   ! Export Field names
    character(len=*), parameter :: field_out_area                   = 'Sg_area'
-   character(len=*), parameter :: field_out_ice_covered            = 'Sg_ice_covered'
    character(len=*), parameter :: field_out_topo                   = 'Sg_topo'
+   character(len=*), parameter :: field_out_ice_covered            = 'Sg_ice_covered'
    character(len=*), parameter :: field_out_icemask                = 'Sg_icemask'
    character(len=*), parameter :: field_out_icemask_coupled_fluxes = 'Sg_icemask_coupled_fluxes'
-   character(len=*), parameter :: field_out_hflx_to_lnd            = 'Flgg_hflx'
-   character(len=*), parameter :: field_out_rofi_to_ice            = 'Figg_rofi'
-   character(len=*), parameter :: field_out_rofi_to_ocn            = 'Fogg_rofi'
-   character(len=*), parameter :: field_out_rofl_to_ocn            = 'Fogg_rofl'
+
+   ! Import Field names
+   character(len=*), parameter :: field_in_tsrf                    = 'Sl_tsrf'
+   character(len=*), parameter :: field_in_qice                    = 'Flgl_qice'
 
    character(*) , parameter :: rpfile  = 'rpointer.glc'
    character(*) , parameter :: u_FILE_u = &
@@ -57,18 +63,20 @@ module dglc_datamode_noevolve_mod
 contains
 !===============================================================================
 
-   subroutine dglc_datamode_noevolve_advertise(NStateExp, fldsexport, flds_scalar_name, rc)
+   subroutine dglc_datamode_noevolve_advertise(NStateExp, fldsexport, NStateImp, fldsimport, flds_scalar_name, rc)
 
       ! input/output variables
-      type(ESMF_State)   , intent(inout) :: NStateExp(:)
-      type(fldlist_type) , pointer       :: fldsexport
-      character(len=*)   , intent(in)    :: flds_scalar_name
-      integer            , intent(out)   :: rc
+      type(ESMF_State)  , intent(inout) :: NStateExp(:)
+      type(fldlist_type), pointer       :: fldsexport
+      type(ESMF_State)  , intent(inout) :: NStateImp(:)
+      type(fldlist_type), pointer       :: fldsimport
+      character(len=*)  , intent(in)    :: flds_scalar_name
+      integer           , intent(out)   :: rc
 
       ! local variables
-      integer :: ns
-      logical :: isPresent, isSet
-      character(len=CS) :: cnum
+      integer                     :: ns
+      logical                     :: isPresent, isSet
+      character(len=CS)           :: cnum
       type(fldlist_type), pointer :: fldList
       !-------------------------------------------------------------------------------
 
@@ -83,10 +91,11 @@ contains
 
       ! Advertise export fields
       call dshr_fldList_add(fldsExport, trim(flds_scalar_name))
+      call dshr_fldList_add(fldsExport, field_out_area)
       call dshr_fldList_add(fldsExport, field_out_ice_covered)
       call dshr_fldList_add(fldsExport, field_out_topo)
       call dshr_fldList_add(fldsExport, field_out_icemask)
-     !call dshr_fldList_add(fldsExport, field_out_icemask_coupled_fluxes)
+      call dshr_fldList_add(fldsExport, field_out_icemask_coupled_fluxes)
 
       do ns = 1,num_icesheets
         write(cnum,'(i0)') ns
@@ -99,13 +108,30 @@ contains
         end do
       enddo
 
+      ! Advertise import fields
+      call dshr_fldList_add(fldsImport, trim(flds_scalar_name))
+      call dshr_fldList_add(fldsImport, field_in_tsrf)
+      call dshr_fldList_add(fldsImport, field_in_qice)
+
+      do ns = 1,num_icesheets
+         write(cnum,'(i0)') ns
+         fldlist => fldsImport ! the head of the linked list
+         do while (associated(fldlist))
+            call NUOPC_Advertise(NStateImp(ns), standardName=fldlist%stdname, rc=rc)
+            if (ChkErr(rc,__LINE__,u_FILE_u)) return
+            call ESMF_LogWrite('(dglc_comp_advertise): To_glc'//trim(cnum)//"_"//trim(fldList%stdname), ESMF_LOGMSG_INFO)
+            fldList => fldList%next
+         end do
+      enddo
+
    end subroutine dglc_datamode_noevolve_advertise
 
    !===============================================================================
-   subroutine dglc_datamode_noevolve_init_pointers(NStateExp, rc)
+   subroutine dglc_datamode_noevolve_init_pointers(NStateExp, NstateImp, rc)
 
       ! input/output variables
       type(ESMF_State) , intent(inout) :: NStateExp(:)
+      type(ESMF_State) , intent(inout) :: NStateImp(:)
       integer          , intent(out)   :: rc
 
       ! local variables
@@ -123,14 +149,34 @@ contains
       allocate(Sg_topo(num_icesheets))
       allocate(Sg_ice_covered(num_icesheets))
       allocate(Sg_icemask(num_icesheets))
+      allocate(Sg_icemask_coupled_fluxes(num_icesheets))
 
       do ns = 1,num_icesheets
-         call dshr_state_getfldptr(NStateExp(ns), 'Sg_topo'        , fldptr1=Sg_topo(ns)%ptr        , rc=rc)
+         call dshr_state_getfldptr(NStateExp(ns), field_out_topo, fldptr1=Sg_topo(ns)%ptr, rc=rc)
          if (chkerr(rc,__LINE__,u_FILE_u)) return
-         call dshr_state_getfldptr(NStateExp(ns), 'Sg_ice_covered' , fldptr1=Sg_ice_covered(ns)%ptr , rc=rc)
+         call dshr_state_getfldptr(NStateExp(ns), field_out_ice_covered, fldptr1=Sg_ice_covered(ns)%ptr, rc=rc)
          if (chkerr(rc,__LINE__,u_FILE_u)) return
-         call dshr_state_getfldptr(NStateExp(ns), 'Sg_icemask'     , fldptr1=Sg_icemask(ns)%ptr     , rc=rc)
+         call dshr_state_getfldptr(NStateExp(ns), field_out_icemask, fldptr1=Sg_icemask(ns)%ptr, rc=rc)
          if (chkerr(rc,__LINE__,u_FILE_u)) return
+         call dshr_state_getfldptr(NStateExp(ns), field_out_icemask_coupled_fluxes, fldptr1=Sg_icemask_coupled_fluxes(ns)%ptr, rc=rc)
+         if (chkerr(rc,__LINE__,u_FILE_u)) return
+      end do
+
+      ! initialize pointers to import fields
+      allocate(Sl_tsrf(num_icesheets))
+      allocate(Flgl_qice(num_icesheets))
+
+      do ns = 1,num_icesheets
+         ! NOTE: the field is connected ONLY if the MED->GLC entry is in the nuopc.runconfig file
+         ! This restriction occurs even if the field was advertised
+         if (NUOPC_IsConnected(NStateImp(ns), fieldName=field_in_tsrf)) then
+            call dshr_state_getfldptr(NStateImp(ns), field_in_tsrf, fldptr1=Sl_tsrf(ns)%ptr, rc=rc)
+            if (chkerr(rc,__LINE__,u_FILE_u)) return
+         end if
+         if (NUOPC_IsConnected(NStateImp(ns), fieldName=field_in_qice)) then
+            call dshr_state_getfldptr(NStateImp(ns), field_in_qice, fldptr1=Flgl_qice(ns)%ptr, rc=rc)
+            if (chkerr(rc,__LINE__,u_FILE_u)) return
+         end if
       end do
 
    end subroutine dglc_datamode_noevolve_init_pointers
@@ -176,6 +222,17 @@ contains
       !-------------------------------------------------------------------------------
 
       rc = ESMF_SUCCESS
+
+      if (initialized_noevolve) then
+         RETURN
+      end if
+
+      real(r8), allocatable :: glc_areas(:,:)
+      glc_areas(:,:) = get_dns(params%instances(instance_index)%model) * &
+                       get_dew(params%instances(instance_index)%model)
+      call get_areas(ice_sheet, instance_index = ns, areas=glc_areas)
+      glc_areas(:,:) = glc_areas(:,:)/(radius*radius) ! convert from m^2 to radians^2
+
 
       do ns = 1,num_icesheets
 
@@ -251,12 +308,10 @@ contains
               lsrf(ng) = topog(ng)
            end if
            usrf(ng) = max(0.d0, thck(ng) + lsrf(ng))
-        end do
 
-        !Sg_ice_covered(ns)%ptr(:) = thk(:)
-        do ng = 1,lsize
            if (is_in_active_grid(usrf(ng))) then
               Sg_icemask(ns)%ptr(ng) = 1.d0
+              Sg_icemask_coupled_fluxes(ns)%ptr(ng) = 1.d0
               if (is_ice_covered(thck(ng))) then
                  Sg_ice_covered(ns)%ptr(ng) = 1.d0
               else
@@ -271,6 +326,7 @@ contains
               ! point outside the "active grid", it will get classified as ice-free for
               ! these purposes. This mimics the logic currently in glint_upscaling_gcm.
               Sg_icemask(ns)%ptr(ng) = 0.d0
+              Sg_icemask_coupled_fluxes(ns)%ptr(ng) = 0.d0
               Sg_ice_covered(ns)%ptr(ng) = 0.d0
               Sg_topo(ns)%ptr(ng) = 0.d0
            end if
@@ -283,6 +339,8 @@ contains
         call pio_freedecomp(pio_subsystem, pio_iodesc)
 
       end do ! end loop over ice sheets
+
+      initialized_noevolve = .true.
 
    end subroutine dglc_datamode_noevolve_advance
 
