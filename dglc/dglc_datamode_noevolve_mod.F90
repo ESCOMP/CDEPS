@@ -152,6 +152,8 @@ contains
       allocate(Sg_icemask_coupled_fluxes(num_icesheets))
 
       do ns = 1,num_icesheets
+         call dshr_state_getfldptr(NStateExp(ns), field_out_area, fldptr1=Sg_area(ns)%ptr, rc=rc)
+         if (chkerr(rc,__LINE__,u_FILE_u)) return
          call dshr_state_getfldptr(NStateExp(ns), field_out_topo, fldptr1=Sg_topo(ns)%ptr, rc=rc)
          if (chkerr(rc,__LINE__,u_FILE_u)) return
          call dshr_state_getfldptr(NStateExp(ns), field_out_ice_covered, fldptr1=Sg_ice_covered(ns)%ptr, rc=rc)
@@ -218,6 +220,8 @@ contains
       real(r8)               :: eus    ! eustatic sea level
       real(r8), allocatable  :: lsrf(:)
       real(r8), allocatable  :: usrf(:)
+      ! TODO: make this a namelist variable
+      real(r8)               :: glc_areas(num_icesheets) ! internal ice sheet area radians**2
       character(len=*), parameter :: subname='(dglc_datamode_noevolve_advance): '
       !-------------------------------------------------------------------------------
 
@@ -227,14 +231,21 @@ contains
          RETURN
       end if
 
-      real(r8), allocatable :: glc_areas(:,:)
-      glc_areas(:,:) = get_dns(params%instances(instance_index)%model) * &
-                       get_dew(params%instances(instance_index)%model)
-      call get_areas(ice_sheet, instance_index = ns, areas=glc_areas)
-      glc_areas(:,:) = glc_areas(:,:)/(radius*radius) ! convert from m^2 to radians^2
+      ! real(r8), allocatable :: glc_areas(:,:)
+      ! glc_areas(:,:) = get_dns(params%instances(instance_index)%model) * &
+      !                  get_dew(params%instances(instance_index)%model)
+      ! call get_areas(ice_sheet, instance_index = ns, areas=glc_areas)
+      ! glc_areas(:,:) = glc_areas(:,:)/(radius*radius) ! convert from m^2 to radians^2
+      ! glc_areas(:,:) =
 
+      glc_areas(1) = 3.94162024004361e-07
 
       do ns = 1,num_icesheets
+
+        ! "area" ;
+        do ng = 1,lsize
+           Sg_area(ns)%ptr(ng) = glc_areas(ns)
+        end do
 
         ! Create module level field bundle
         fldbun_noevolve = ESMF_FieldBundleCreate(rc=rc) ! input field bundle
