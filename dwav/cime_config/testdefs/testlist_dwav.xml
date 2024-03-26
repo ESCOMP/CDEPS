@@ -3,7 +3,7 @@
 
   <test compset="2000_SATM_SLND_SICE_SOCN_SROF_SGLC_DWAV%CLIMO" grid="ww3a" name="SMS_Vnuopc_Ld2">
     <machines>
-      <machine name="cheyenne" compiler="intel" category="aux_cdeps"/>
+      <machine name="derecho"compiler="intel" category="aux_cdeps"/>
     </machines>
     <options>
       <option name="wallclock"> 00:10:00 </option>

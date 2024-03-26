@@ -3,7 +3,7 @@
 
   <test compset="2000_DATM%QIA_SLND_SICE_DOCN%DOM_SROF_SGLC_SWAV" grid="f19_f19_mg17" name="SMS_Vnuopc_Ln5">
     <machines>
-      <machine name="cheyenne" compiler="intel" category="aux_cdeps"/>
+      <machine name="derecho"compiler="intel" category="aux_cdeps"/>
     </machines>
     <options>
       <option name="wallclock"> 00:10:00 </option>
@@ -11,7 +11,7 @@
   </test>
   <test compset="HIST_DATM%QIA_SLND_SICE_DOCN%DOM_SROF_SGLC_SWAV" grid="f19_f19_mg17" name="SMS_Vnuopc_Ln5">
     <machines>
-      <machine name="cheyenne" compiler="intel" category="aux_cdeps"/>
+      <machine name="derecho"compiler="intel" category="aux_cdeps"/>
     </machines>
     <options>
       <option name="wallclock"> 00:10:00 </option>
@@ -19,7 +19,7 @@
   </test>
   <test compset="2000_DATM%QIA_SLND_SICE_DOCN%SOMAQP_SROF_SGLC_SWAV" grid="f19_f19_mg17" name="SMS_Vnuopc_Ln5">
     <machines>
-      <machine name="cheyenne" compiler="intel" category="aux_cdeps"/>
+      <machine name="derecho"compiler="intel" category="aux_cdeps"/>
     </machines>
     <options>
       <option name="wallclock"> 00:10:00 </option>
