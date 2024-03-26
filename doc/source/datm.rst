@@ -60,7 +60,7 @@ ERA5 (``datm_datamode_era5_mod.F90``)
 
 .. note::
   Due to the high temporal and spatial resoultion of ERA5 dataset, only 2019
-  data is staged on NCAR's Cheyenne platform under
+  data is staged on NCAR's Derecho platform under
   `$CESMDATAROOT/inputdata/atm/datm7/ERA5`
 
 .. note::
