@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <testlist version="2.0">
 
-  <test compset="2000_SATM_SLND_SICE_SOCN_DROF%NYF_SGLC_SWAV" grid="f19_g17_rx1" name="SMS_Vnuopc_Ld3">
+  <test compset="2000_SATM_SLND_SICE_SOCN_DROF%NYF_SGLC_SWAV" grid="f19_g17_rx1" name="SMS_Ld3">
     <machines>
       <machine name="derecho"compiler="intel" category="aux_cdeps"/>
     </machines>
