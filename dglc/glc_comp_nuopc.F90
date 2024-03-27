@@ -186,7 +186,6 @@ contains
     integer           :: bcasttmp(3)
     integer           :: ns, n
     character(len=CS) :: cnum
-    character(len=CL) :: icesheets_list
     character(len=ESMF_MAXSTR) :: model_datafiles_list ! colon separated string containing input datafiles
     character(len=ESMF_MAXSTR) :: model_meshfiles_list ! colon separated string containing model meshfiles
     character(len=*),parameter :: subname=trim(module_name)//':(InitializeAdvertise) '
@@ -194,7 +193,7 @@ contains
 
     ! Note that the suffix '-list' refers to a colon delimited string of names
     namelist / dglc_nml / datamode, &
-         icesheets_list, model_meshfiles_list, model_datafiles_list, model_areas, nx_global, ny_global, &
+         model_meshfiles_list, model_datafiles_list, model_areas, nx_global, ny_global, &
          get_import_data, restfilm, skip_restart_read
 
     rc = ESMF_SUCCESS
