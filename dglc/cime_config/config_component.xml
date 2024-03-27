@@ -40,6 +40,47 @@
     </desc>
   </entry>
 
+  <entry id="DGLC_GET_IMPORT_DATA">
+    <type>logical</type>
+    <default_value>FALSE</default_value>
+    <group>run_component_dglc</group>
+    <file>env_run.xml</file>
+    <desc>
+      If true, have the mediator calculate import values that are sent back to
+      GLC even in GLC is in NOEVOLVE mode
+    </desc>
+  </entry>
+
+  <entry id="DGLC_USE_GREENLAND">
+    <type>logical</type>
+    <default_value>FALSE</default_value>
+    <group>run_component_dglc</group>
+    <file>env_run.xml</file>
+    <values>
+      <value grid="g%.*gris.*">TRUE</value>
+    </values>
+    <desc>Whether to include the Greenland Ice Sheet in this DGLC simulation
+    This should generally be set at create_newcase time (via the compset). In principle it
+    can be changed later, but great care is needed to change a number of other variables
+    to be consistent (GLC_GRID, GLC_DOMAIN_MESH and possibly others).
+    </desc>
+  </entry>
+
+  <entry id="DGLC_USE_ANTARCTICA">
+    <type>logical</type>
+    <default_value>FALSE</default_value>
+    <group>run_component_dglc</group>
+    <file>env_run.xml</file>
+    <values>
+      <value grid="g%.*ais.*">TRUE</value>
+    </values>
+    <desc>Whether to include the Antarctica Ice Sheet in this DGLC simulation
+    This should generally be set at create_newcase time (via the compset). In principle it
+    can be changed later, but great care is needed to change a number of other variables
+    to be consistent (GLC_GRID, GLC_DOMAIN_MESH and possibly others).
+    </desc>
+  </entry>
+
   <entry id="DGLC_SKIP_RESTART_READ">
     <type>logical</type>
     <valid_values>TRUE,FALSE</valid_values>

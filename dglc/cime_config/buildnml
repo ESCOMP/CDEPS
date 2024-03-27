@@ -51,15 +51,6 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     expect(glc_grid != "null",
            "DGLC_GRID cannot be null")
 
-    # Log some settings.
-    logger.debug("DGLC mode is {}".format(dglc_mode))
-
-    # Initialize namelist defaults
-    # Note: always use model mesh file to set mask for drof
-    config = {}
-    config['dglc_mode'] = dglc_mode
-    config['glc_grid'] = glc_grid
-
     # Do not allow single column mode for dglc
     if case.get_value('PTS_LON'):
         scol_lon = float(case.get_value('PTS_LON'))
@@ -72,6 +63,14 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     if (scol_lon > -999. and scol_lat > 999.):
         expect(False,
                "single column mode for DGLC is not currently allowed")
+
+    # Log some settings.
+    logger.debug("DGLC mode is {}".format(dglc_mode))
+
+    # Initialize namelist defaults
+    config = {}
+    config['dglc_mode'] = dglc_mode
+    config['glc_grid'] = glc_grid
 
     # Initialize nmlgen
     nmlgen.init_defaults(infile, config)

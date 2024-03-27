@@ -65,6 +65,21 @@
     </desc>
   </entry>
 
+  <entry id="model_areas">
+    <type>real(20)</type>
+    <category>streams</category>
+    <group>dglc_nml</group>
+    <values>
+      <value glc_grid="ais8:gris4">3.94162024004361e-07,1.57664809601744e-06</value>
+      <value glc_grid="gris20">1.</value>
+      <value glc_grid="gris4" >3.94162024004361e-07</value>
+      <value glc_grid="ais8"  >1.57664809601744e-06</value>
+    </values>
+    <desc>
+      colon deliminted string of inputdata files
+    </desc>
+  </entry>
+
   <entry id="nx_global">
     <type>integer(20)</type>
     <category>streams</category>
@@ -106,6 +121,21 @@
     </desc>
     <values>
       <value>null</value>
+    </values>
+  </entry>
+
+  <entry id="get_import_data" modify_via_xml="DGLC_GET_IMPORT_DATA">
+    <type>logical</type>
+    <category>dglc</category>
+    <group>dglc_nml</group>
+    <desc>
+      If set to true, than dglc will advertise and realize import
+      fields even if it does not do anything with them.  This
+      capability is used, for example, in generating coupler history
+      data for GLC spinup runs.
+    </desc>
+    <values>
+      <value>$DGLC_GET_IMPORT_DATA</value>
     </values>
   </entry>
 

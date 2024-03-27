@@ -27,6 +27,7 @@ module dglc_datamode_noevolve_mod
    logical  :: initialized_noevolve = .false.
    integer  :: num_icesheets
    real(r8) :: thk0 = 1._r8
+   logical  :: get_import_data
 
    ! Data structure to enable multiple ice sheets
    type icesheet_ptr_t
@@ -63,12 +64,14 @@ module dglc_datamode_noevolve_mod
 contains
 !===============================================================================
 
-   subroutine dglc_datamode_noevolve_advertise(NStateExp, fldsexport, NStateImp, fldsimport, flds_scalar_name, rc)
+   subroutine dglc_datamode_noevolve_advertise(NStateExp, fldsexport, NStateImp, fldsimport, &
+        get_import_data_in, flds_scalar_name, rc)
 
       ! input/output variables
       type(ESMF_State)  , intent(inout) :: NStateExp(:)
       type(fldlist_type), pointer       :: fldsexport
       type(ESMF_State)  , intent(inout) :: NStateImp(:)
+      logical           , intent(in)    :: get_import_data_in
       type(fldlist_type), pointer       :: fldsimport
       character(len=*)  , intent(in)    :: flds_scalar_name
       integer           , intent(out)   :: rc
@@ -81,6 +84,9 @@ contains
       !-------------------------------------------------------------------------------
 
       rc = ESMF_SUCCESS
+
+      ! Set module vraiable
+      get_import_data = get_import_data_in
 
       !--------------------------------
       ! Create nested state for active ice sheets only
@@ -108,21 +114,23 @@ contains
         end do
       enddo
 
-      ! Advertise import fields
-      call dshr_fldList_add(fldsImport, trim(flds_scalar_name))
-      call dshr_fldList_add(fldsImport, field_in_tsrf)
-      call dshr_fldList_add(fldsImport, field_in_qice)
+      ! Advertise import fields if appropriate
+      if (get_import_data) then
+         call dshr_fldList_add(fldsImport, trim(flds_scalar_name))
+         call dshr_fldList_add(fldsImport, field_in_tsrf)
+         call dshr_fldList_add(fldsImport, field_in_qice)
 
-      do ns = 1,num_icesheets
-         write(cnum,'(i0)') ns
-         fldlist => fldsImport ! the head of the linked list
-         do while (associated(fldlist))
-            call NUOPC_Advertise(NStateImp(ns), standardName=fldlist%stdname, rc=rc)
-            if (ChkErr(rc,__LINE__,u_FILE_u)) return
-            call ESMF_LogWrite('(dglc_comp_advertise): To_glc'//trim(cnum)//"_"//trim(fldList%stdname), ESMF_LOGMSG_INFO)
-            fldList => fldList%next
-         end do
-      enddo
+         do ns = 1,num_icesheets
+            write(cnum,'(i0)') ns
+            fldlist => fldsImport ! the head of the linked list
+            do while (associated(fldlist))
+               call NUOPC_Advertise(NStateImp(ns), standardName=fldlist%stdname, rc=rc)
+               if (ChkErr(rc,__LINE__,u_FILE_u)) return
+               call ESMF_LogWrite('(dglc_comp_advertise): To_glc'//trim(cnum)//"_"//trim(fldList%stdname), ESMF_LOGMSG_INFO)
+               fldList => fldList%next
+            end do
+         enddo
+      end if
 
    end subroutine dglc_datamode_noevolve_advertise
 
@@ -164,28 +172,30 @@ contains
          if (chkerr(rc,__LINE__,u_FILE_u)) return
       end do
 
-      ! initialize pointers to import fields
-      allocate(Sl_tsrf(num_icesheets))
-      allocate(Flgl_qice(num_icesheets))
+      ! initialize pointers to import fields if appropriate
+      if (get_import_data) then
+         allocate(Sl_tsrf(num_icesheets))
+         allocate(Flgl_qice(num_icesheets))
 
-      do ns = 1,num_icesheets
-         ! NOTE: the field is connected ONLY if the MED->GLC entry is in the nuopc.runconfig file
-         ! This restriction occurs even if the field was advertised
-         if (NUOPC_IsConnected(NStateImp(ns), fieldName=field_in_tsrf)) then
-            call dshr_state_getfldptr(NStateImp(ns), field_in_tsrf, fldptr1=Sl_tsrf(ns)%ptr, rc=rc)
-            if (chkerr(rc,__LINE__,u_FILE_u)) return
-         end if
-         if (NUOPC_IsConnected(NStateImp(ns), fieldName=field_in_qice)) then
-            call dshr_state_getfldptr(NStateImp(ns), field_in_qice, fldptr1=Flgl_qice(ns)%ptr, rc=rc)
-            if (chkerr(rc,__LINE__,u_FILE_u)) return
-         end if
-      end do
+         do ns = 1,num_icesheets
+            ! NOTE: the field is connected ONLY if the MED->GLC entry is in the nuopc.runconfig file
+            ! This restriction occurs even if the field was advertised
+            if (NUOPC_IsConnected(NStateImp(ns), fieldName=field_in_tsrf)) then
+               call dshr_state_getfldptr(NStateImp(ns), field_in_tsrf, fldptr1=Sl_tsrf(ns)%ptr, rc=rc)
+               if (chkerr(rc,__LINE__,u_FILE_u)) return
+            end if
+            if (NUOPC_IsConnected(NStateImp(ns), fieldName=field_in_qice)) then
+               call dshr_state_getfldptr(NStateImp(ns), field_in_qice, fldptr1=Flgl_qice(ns)%ptr, rc=rc)
+               if (chkerr(rc,__LINE__,u_FILE_u)) return
+            end if
+         end do
+      end if
 
    end subroutine dglc_datamode_noevolve_init_pointers
 
    !===============================================================================
    subroutine dglc_datamode_noevolve_advance(pio_subsystem, io_type, io_format, &
-        model_meshes, input_files, rc)
+        model_meshes, model_areas, input_files, rc)
 
       ! Assume that the model mesh is the same as the input data mesh
 
@@ -194,6 +204,7 @@ contains
       integer               , intent(in)  :: io_type         ! pio info
       integer               , intent(in)  :: io_format       ! pio info
       type(ESMF_Mesh)       , intent(in)  :: model_meshes(:) ! ice sheets meshes
+      real(r8)              , intent(in)  :: model_areas(:)  ! internal model ice sheets areas (radians**2)
       character(len=*)      , intent(in)  :: input_files(:)  ! input file names
       integer               , intent(out) :: rc
 
@@ -220,8 +231,6 @@ contains
       real(r8)               :: eus    ! eustatic sea level
       real(r8), allocatable  :: lsrf(:)
       real(r8), allocatable  :: usrf(:)
-      ! TODO: make this a namelist variable
-      real(r8)               :: glc_areas(num_icesheets) ! internal ice sheet area radians**2
       character(len=*), parameter :: subname='(dglc_datamode_noevolve_advance): '
       !-------------------------------------------------------------------------------
 
@@ -231,20 +240,20 @@ contains
          RETURN
       end if
 
-      ! real(r8), allocatable :: glc_areas(:,:)
-      ! glc_areas(:,:) = get_dns(params%instances(instance_index)%model) * &
-      !                  get_dew(params%instances(instance_index)%model)
-      ! call get_areas(ice_sheet, instance_index = ns, areas=glc_areas)
-      ! glc_areas(:,:) = glc_areas(:,:)/(radius*radius) ! convert from m^2 to radians^2
-      ! glc_areas(:,:) =
-
-      glc_areas(1) = 3.94162024004361e-07
-
       do ns = 1,num_icesheets
 
-        ! "area" ;
+        ! Get mesh info
+        call ESMF_MeshGet(model_meshes(ns), elementdistGrid=distGrid, rc=rc)
+        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+        call ESMF_DistGridGet(distGrid, localDe=0, elementCount=lsize, rc=rc)
+        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+        allocate(gindex(lsize))
+        call ESMF_DistGridGet(distGrid, localDe=0, seqIndexList=gindex, rc=rc)
+        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+        ! Determine "glc_area" ;
         do ng = 1,lsize
-           Sg_area(ns)%ptr(ng) = glc_areas(ns)
+           Sg_area(ns)%ptr(ng) = model_areas(ns)
         end do
 
         ! Create module level field bundle
@@ -261,15 +270,6 @@ contains
         if (chkerr(rc,__LINE__,u_FILE_u)) return
         call ESMF_FieldBundleAdd(fldbun_noevolve, (/field_noevolve/), rc=rc)
         if (chkerr(rc,__LINE__,u_FILE_u)) return
-
-        ! Get mesh info
-        call ESMF_MeshGet(model_meshes(ns), elementdistGrid=distGrid, rc=rc)
-        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-        call ESMF_DistGridGet(distGrid, localDe=0, elementCount=lsize, rc=rc)
-        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-        allocate(gindex(lsize))
-        call ESMF_DistGridGet(distGrid, localDe=0, seqIndexList=gindex, rc=rc)
-        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
         ! Create pioid and pio_iodesc at the module level
         inquire(file=trim(input_files(ns)), exist=exists)
@@ -322,7 +322,7 @@ contains
 
            if (is_in_active_grid(usrf(ng))) then
               Sg_icemask(ns)%ptr(ng) = 1.d0
-              Sg_icemask_coupled_fluxes(ns)%ptr(ng) = 1.d0
+              Sg_icemask_coupled_fluxes(ns)%ptr(ng) = 0.d0
               if (is_ice_covered(thck(ng))) then
                  Sg_ice_covered(ns)%ptr(ng) = 1.d0
               else
