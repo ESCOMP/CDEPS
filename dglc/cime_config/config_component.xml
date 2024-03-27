@@ -27,16 +27,19 @@
 
   <entry id="DGLC_MODE">
     <type>char</type>
-    <valid_values>NOEVOLVE</valid_values>
-    <default_value>NOEVOLVE</default_value>
+    <valid_values>noevolve</valid_values>
+    <default_value>noevolve</default_value>
     <values match="last">
-      <value compset="DGLC%NOVOLVE">noevolve</value>
+      <value compset="DGLC%NOEVOLVE">noevolve</value>
     </values>
     <group>run_component_dglc</group>
     <file>env_run.xml</file>
-    <desc>
-      model mode.
-      TODO: fill in what noevolve mode does
+    <desc> 
+      NOEVOLVE mode is used in CESM as follows.
+      In typical runs, CISM is not evolving; CLM computes the surface mass
+      balance (SMB) and sends it to CISM, but CISM’s ice sheet geometry
+      remains fixed over the course of the run. In these runs, CISM serves
+      two roles in the system:
     </desc>
   </entry>
 

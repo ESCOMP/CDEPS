@@ -1,6 +1,6 @@
 .. _dglc:
 
-Data Ocean (DGLC)
+Data Land-Ice (DGLC)
 =================
 
 DGLC is normally used as a substitute for CESM/CISM running in NOEVOLVE mode.
@@ -11,34 +11,55 @@ In typical runs, CISM is not evolving; CLM computes the surface mass
 balance (SMB) and sends it to CISM, but CISM’s ice sheet geometry
 remains fixed over the course of the run. In these runs, CISM serves
 two roles in the system:
- - Over the CISM domain (typically Greenland in
-   CESM2), CISM dictates glacier areas and topographic elevations,
-   overriding the values on CLM’s surface dataset. CISM also dictates the
-   elevation of non-glacier land units in its domain, and only in this
-   domain are atmospheric fields downscaled to non-glacier land
-   units. (So if you run with a stub glacier model - SGLC - then glacier
-   areas and elevations will be taken entirely from CLM’s surface
-   dataset, and no downscaling will be done over non-glacier land units.)
- - CISM provides the grid onto which SMB is downscaled. (If you run with
-   SGLC then SMB will still be computed in CLM, but it won’t be
-   downscaled to a high-resolution ice sheet grid.)
+
+  - Over the CISM domain (typically Greenland in
+    CESM2), CISM dictates glacier areas and topographic elevations,
+    overriding the values on CLM’s surface dataset. CISM also dictates the
+    elevation of non-glacier land units in its domain, and only in this
+    domain are atmospheric fields downscaled to non-glacier land
+    units. (So if you run with a stub glacier model - SGLC - then glacier
+    areas and elevations will be taken entirely from CLM’s surface
+    dataset, and no downscaling will be done over non-glacier land units.)
+
+  - CISM provides the grid onto which SMB is downscaled. (If you run with
+    SGLC then SMB will still be computed in CLM, but it won’t be
+    downscaled to a high-resolution ice sheet grid.)
+
+--------------------
+Supported Data Modes
+--------------------
 
 DGLC has the capability of supporting multiple ice sheets (as is the
 case with CISM/CMEPS coupling). This is configured via the following
-namelist settings:
+``dglc_in`` namelist settings:
 
   - ``model_meshfiles_list`` is a colon separated string containing  model
     meshfiles describing the different ice sheets.
 
   - ``model_datafiles_list`` is colon separated string containing
-    input datafiles that are used by CISM. Each datafile corresponds to a different
-    ice sheet mesh and should have the same order as those in the ``model_meshfiles_list``.
+    input datafiles that specify are used to obtain data for bedrock
+    topography and the ice thickness. 
 
-.. _dglc-datamodes:
+  - ``model_areas`` is an array that is the size of the number of ice
+    sheets and that specifies the gridcell areas that corresponds to
+    what internal gridcell areas the prognostic land-ice component
+    uses internally (in this case CISM).  Specifying this at the
+    namelist level eliminates the need to duplicate the code that is
+    used in CISM to derive this quantity. 
 
---------------------
-Supported Data Modes
---------------------
+  - ``nx_global`` is an array that is the size of the number of ice
+    sheets and that specifies the global longitude dimension of the
+    each ice sheet.
+
+  - ``ny_global`` is an array that is the size of the number of ice
+    sheets and that specifies the global latitude dimension of the
+    each ice sheet. 
+
+.. note::
+   Each element of ``model_data_filelist``, ``model_areas``,
+   ``nx_global`` and ``ny_global`` corresponds to a different ice
+   sheet mesh and should have the **same order** as those in the
+   ``model_meshfiles_list``.
 
 DGLC has its own set of supported ``datamode`` values that appears in
 the ``dglc_in`` namelist input. The datamode specifies what additional
@@ -70,44 +91,31 @@ The following list describes the valid values of ``DGLC_MODE``
 relate to the associated input streams and the ``datamode`` namelist
 variable.
 
-DGLC%DOM
-   - SST data provided by a file
-   - dglc_mode: prescribed
-   - streams: prescribed
-   - datamode: sstdata
+DGLC%NOEVOLVE
+   - fields sent to mediator are created analytically without stream
+     input
+   - dglc_mode: NOEVOLVE
+   - streams: none
+   - datamode: noevolve
 
-DGLC%IAF
-   - SST data provided by a file
-   - dglc_mode: interannual
-   - streams: interannual
-   - datamode: iaf
+In addition, the following DGLC specific CIME-CCS xml variables will appear in ``$CASEROOT/env_run.xml``:
 
-DGLC%SOM
-   - Slab Ocean Model is used to calculate sea surface temperature.
-   - dglc_mode: som
-   - streams: som
-   - datamode: som
+DGLC_GET_IMPORT_DATA
+   - If true, have the mediator calculate import values that are sent back to
+     GLC even in GLC is in NOEVOLVE mode. The default value is FALSE.
 
-DGLC%SOMAQP
-   - Slab Ocean Model is used to calculate sea surface temperature.
-   - dglc_mode: som_aquap
-   - streams: N/A
-   - datamode: som_aquap
+DGLC_USE_GREENLAND
+   - Whether to include the Greenland Ice Sheet in this DGLC simulation
+     This should generally be set at create_newcase time (via the compset). In principle it
+     can be changed later, but great care is needed to change a number of other variables
+     to be consistent (GLC_GRID, GLC_DOMAIN_MESH and possibly others).
 
-DGLC%AQP[1-10]
-   - Lattitude varying analytical sea surface data
-   - dglc_mode: sst_aquap[1-10]
-   - streams: N/A
-   - datamode: sst_aquap[1-10]
+DGLC_USE_ANTARCTICA
+   - Whether to include the Antarctic Ice Sheet in this DGLC simulation
+     This should generally be set at create_newcase time (via the compset). In principle it
+     can be changed later, but great care is needed to change a number of other variables
+     to be consistent (GLC_GRID, GLC_DOMAIN_MESH and possibly others).
 
-DGLC%AQPFILE
-   - SST data provided by a file
-   - dglc_mode: sst_aquap_file
-   - streams: aquapfile
-   - datamode: sst_aquapfile
+DGLC_SKIP_RESTART_READ
+   - If set to true, than dglc restarts will not be read on a continuation run.
 
-DGLC%AQPCONST
-   - Constant sea surface data from aquaplanet
-   - dglc_mode: sst_aquap_constant
-   - streams: N/A
-   - datamode: sst_aquap_constant
