@@ -78,7 +78,6 @@ contains
 
       ! local variables
       integer                     :: ns
-      logical                     :: isPresent, isSet
       character(len=CS)           :: cnum
       type(fldlist_type), pointer :: fldList
       !-------------------------------------------------------------------------------
