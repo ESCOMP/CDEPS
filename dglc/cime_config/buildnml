@@ -81,6 +81,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
 
     # Generate dglc.streams.xml
     print("dglc_mode is {}".format(dglc_mode))
+
     if 'noevolve' in dglc_mode:
         generate_stream_file = False
     else:
