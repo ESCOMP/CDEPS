@@ -29,7 +29,7 @@ module cdeps_datm_comp
   use shr_const_mod    , only : shr_const_cday
   use shr_sys_mod      , only : shr_sys_abort
   use shr_cal_mod      , only : shr_cal_ymd2date
-  use shr_log_mod     , only : shr_log_setLogUnit
+  use shr_log_mod      , only : shr_log_setLogUnit
   use dshr_methods_mod , only : dshr_state_diagnose, chkerr, memcheck
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_init_from_config, shr_strdata_advance
   use dshr_strdata_mod , only : shr_strdata_get_stream_pointer, shr_strdata_setOrbs
