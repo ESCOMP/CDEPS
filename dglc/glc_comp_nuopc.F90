@@ -66,7 +66,6 @@ module cdeps_dglc_comp
   logical                  :: get_import_data = .false.
 
   ! namelist input
-  character(CS) :: icesheet_names(max_icesheets)  = nullstr
   character(CL) :: model_meshfiles(max_icesheets) = nullstr
   character(CL) :: model_datafiles(max_icesheets) = nullstr
   integer       :: nx_global(max_icesheets) = 0
@@ -186,7 +185,7 @@ contains
     integer           :: nu                 ! unit number
     integer           :: ierr               ! error code
     integer           :: bcasttmp(3)
-    integer           :: ns, n
+    integer           :: ns
     character(len=CS) :: cnum
     character(len=ESMF_MAXSTR) :: model_datafiles_list ! colon separated string containing input datafiles
     character(len=ESMF_MAXSTR) :: model_meshfiles_list ! colon separated string containing model meshfiles
@@ -328,8 +327,7 @@ contains
     integer         :: current_mon  ! model month
     integer         :: current_day  ! model day
     integer         :: current_tod  ! model sec into model date
-    integer         :: localpet
-    integer         :: n, ns
+    integer         :: ns
     character(CL)   :: cvalue
     character(CS)   :: cns
     logical         :: ispresent, isset
