@@ -34,23 +34,12 @@
     </values>
     <group>run_component_dglc</group>
     <file>env_run.xml</file>
-    <desc> 
+    <desc>
       NOEVOLVE mode is used in CESM as follows.
       In typical runs, CISM is not evolving; CLM computes the surface mass
       balance (SMB) and sends it to CISM, but CISM’s ice sheet geometry
       remains fixed over the course of the run. In these runs, CISM serves
       two roles in the system:
-    </desc>
-  </entry>
-
-  <entry id="DGLC_GET_IMPORT_DATA">
-    <type>logical</type>
-    <default_value>FALSE</default_value>
-    <group>run_component_dglc</group>
-    <file>env_run.xml</file>
-    <desc>
-      If true, have the mediator calculate import values that are sent back to
-      GLC even in GLC is in NOEVOLVE mode
     </desc>
   </entry>
 

@@ -63,14 +63,13 @@ module cdeps_dglc_comp
   character(*) , parameter :: nullstr = 'null'
   integer      , parameter :: max_icesheets = 10 ! maximum number of ice sheets for namelist input
   integer                  :: num_icesheets      ! actual number of ice sheets
-  logical                  :: get_import_data = .false.
 
   ! namelist input
   character(CL) :: model_meshfiles(max_icesheets) = nullstr
   character(CL) :: model_datafiles(max_icesheets) = nullstr
   integer       :: nx_global(max_icesheets) = 0
   integer       :: ny_global(max_icesheets) = 0
-  real(r8)      :: model_areas(max_icesheets) = 1.e36
+  real(r8)      :: model_internal_gridsize(max_icesheets) = 1.e36
 
   ! module variables for multiple ice sheets
   type(shr_strdata_type) , allocatable :: sdat(:)
@@ -184,7 +183,7 @@ contains
     integer           :: inst_index         ! number of current instance (ie. 1)
     integer           :: nu                 ! unit number
     integer           :: ierr               ! error code
-    integer           :: bcasttmp(3)
+    integer           :: bcasttmp(2)
     integer           :: ns
     character(len=CS) :: cnum
     character(len=ESMF_MAXSTR) :: model_datafiles_list ! colon separated string containing input datafiles
@@ -194,8 +193,8 @@ contains
 
     ! Note that the suffix '-list' refers to a colon delimited string of names
     namelist / dglc_nml / datamode, &
-         model_meshfiles_list, model_datafiles_list, model_areas, nx_global, ny_global, &
-         get_import_data, restfilm, skip_restart_read
+         model_meshfiles_list, model_datafiles_list, model_internal_gridsize, nx_global, ny_global, &
+         restfilm, skip_restart_read
 
     rc = ESMF_SUCCESS
 
@@ -238,22 +237,19 @@ contains
       write(logunit,'(a,a)')' case_name         = ',trim(case_name)
       write(logunit,'(a,a)')' datamode          = ',trim(datamode)
       do ns = 1,num_icesheets
-        write(logunit,'(a,i4 )')  ' ice_sheet index = ',ns
-        write(logunit,'(a,a  )')  '   model_meshfile = ',trim(model_meshfiles(ns))
-        write(logunit,'(a,a  )')  '   model_datafile = ',trim(model_datafiles(ns))
-        write(logunit,'(a,i10)')  '   nx_global      = ',nx_global(ns)
-        write(logunit,'(a,i10)')  '   ny_global      = ',ny_global(ns)
-        write(logunit,'(a,d13.5)')'   model_areas    = ',model_areas(ns)
+        write(logunit,'(a,i4 )')  ' ice_sheet index           = ',ns
+        write(logunit,'(a,a  )')  '   model_meshfile          = ',trim(model_meshfiles(ns))
+        write(logunit,'(a,a  )')  '   model_datafile          = ',trim(model_datafiles(ns))
+        write(logunit,'(a,d13.5)')'   model_internal_gridsize = ',model_internal_gridsize(ns)
+        write(logunit,'(a,i10)')  '   nx_global               = ',nx_global(ns)
+        write(logunit,'(a,i10)')  '   ny_global               = ',ny_global(ns)
       end do
       write(logunit,'(a,a )')' restfilm          = ',trim(restfilm)
-      write(logunit,'(a,l6)')' get_import_data   = ',get_import_data
       write(logunit,'(a,l6)')' skip_restart_read = ',skip_restart_read
 
       bcasttmp(1) = 0
       if(skip_restart_read) bcasttmp(1) = 1
-      bcasttmp(2) = 0
-      if(get_import_data) bcasttmp(2) = 1
-      bcasttmp(3) = num_icesheets
+      bcasttmp(2) = num_icesheets
     endif
 
     ! Broadcast namelist input
@@ -267,17 +263,16 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_VMBroadcast(vm, model_datafiles, CL*max_icesheets, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, model_internal_gridsize, max_icesheets, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_VMBroadcast(vm, nx_global, max_icesheets, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_VMBroadcast(vm, ny_global, max_icesheets, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_VMBroadcast(vm, model_areas, max_icesheets, main_task, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_VMBroadcast(vm, bcasttmp, 3, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     skip_restart_read = (bcasttmp(1) == 1)
-    get_import_data = (bcasttmp(2) == 1)
-    num_icesheets = bcasttmp(3)
+    num_icesheets = bcasttmp(2)
 
     ! Validate datamode
     if ( trim(datamode) == 'noevolve') then  ! read stream, no import data
@@ -304,7 +299,7 @@ contains
     ! Advertise dglc fields
     if (trim(datamode)=='noevolve') then
        call dglc_datamode_noevolve_advertise(NStateExp, fldsexport, NStateImp, fldsimport, &
-            get_import_data, flds_scalar_name, rc)
+            flds_scalar_name, rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
@@ -571,7 +566,7 @@ contains
     select case (trim(datamode))
     case('noevolve')
       call dglc_datamode_noevolve_advance(sdat(1)%pio_subsystem, sdat(1)%io_type, sdat(1)%io_format, &
-           model_meshes, model_areas, model_datafiles, rc)
+           model_meshes, model_internal_gridsize, model_datafiles, rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end select
 

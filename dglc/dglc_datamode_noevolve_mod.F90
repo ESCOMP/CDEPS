@@ -7,7 +7,7 @@ module dglc_datamode_noevolve_mod
    use NUOPC            , only : NUOPC_Advertise, NUOPC_IsConnected
    use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
    use shr_sys_mod      , only : shr_sys_abort
-   use shr_const_mod    , only : SHR_CONST_RHOICE, SHR_CONST_RHOSW
+   use shr_const_mod    , only : SHR_CONST_RHOICE, SHR_CONST_RHOSW, SHR_CONST_REARTH
    use dshr_methods_mod , only : dshr_state_getfldptr, dshr_fldbun_getfldptr, chkerr
    use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
    use dshr_strdata_mod , only : shr_strdata_type
@@ -27,7 +27,6 @@ module dglc_datamode_noevolve_mod
    logical  :: initialized_noevolve = .false.
    integer  :: num_icesheets
    real(r8) :: thk0 = 1._r8
-   logical  :: get_import_data
 
    ! Data structure to enable multiple ice sheets
    type icesheet_ptr_t
@@ -65,13 +64,12 @@ contains
 !===============================================================================
 
    subroutine dglc_datamode_noevolve_advertise(NStateExp, fldsexport, NStateImp, fldsimport, &
-        get_import_data_in, flds_scalar_name, rc)
+        flds_scalar_name, rc)
 
       ! input/output variables
       type(ESMF_State)  , intent(inout) :: NStateExp(:)
       type(fldlist_type), pointer       :: fldsexport
       type(ESMF_State)  , intent(inout) :: NStateImp(:)
-      logical           , intent(in)    :: get_import_data_in
       type(fldlist_type), pointer       :: fldsimport
       character(len=*)  , intent(in)    :: flds_scalar_name
       integer           , intent(out)   :: rc
@@ -83,9 +81,6 @@ contains
       !-------------------------------------------------------------------------------
 
       rc = ESMF_SUCCESS
-
-      ! Set module vraiable
-      get_import_data = get_import_data_in
 
       !--------------------------------
       ! Create nested state for active ice sheets only
@@ -114,22 +109,20 @@ contains
       enddo
 
       ! Advertise import fields if appropriate
-      if (get_import_data) then
-         call dshr_fldList_add(fldsImport, trim(flds_scalar_name))
-         call dshr_fldList_add(fldsImport, field_in_tsrf)
-         call dshr_fldList_add(fldsImport, field_in_qice)
+      call dshr_fldList_add(fldsImport, trim(flds_scalar_name))
+      call dshr_fldList_add(fldsImport, field_in_tsrf)
+      call dshr_fldList_add(fldsImport, field_in_qice)
 
-         do ns = 1,num_icesheets
-            write(cnum,'(i0)') ns
-            fldlist => fldsImport ! the head of the linked list
-            do while (associated(fldlist))
-               call NUOPC_Advertise(NStateImp(ns), standardName=fldlist%stdname, rc=rc)
-               if (ChkErr(rc,__LINE__,u_FILE_u)) return
-               call ESMF_LogWrite('(dglc_comp_advertise): To_glc'//trim(cnum)//"_"//trim(fldList%stdname), ESMF_LOGMSG_INFO)
-               fldList => fldList%next
-            end do
-         enddo
-      end if
+      do ns = 1,num_icesheets
+         write(cnum,'(i0)') ns
+         fldlist => fldsImport ! the head of the linked list
+         do while (associated(fldlist))
+            call NUOPC_Advertise(NStateImp(ns), standardName=fldlist%stdname, rc=rc)
+            if (ChkErr(rc,__LINE__,u_FILE_u)) return
+            call ESMF_LogWrite('(dglc_comp_advertise): To_glc'//trim(cnum)//"_"//trim(fldList%stdname), ESMF_LOGMSG_INFO)
+            fldList => fldList%next
+         end do
+      enddo
 
    end subroutine dglc_datamode_noevolve_advertise
 
@@ -172,39 +165,37 @@ contains
       end do
 
       ! initialize pointers to import fields if appropriate
-      if (get_import_data) then
-         allocate(Sl_tsrf(num_icesheets))
-         allocate(Flgl_qice(num_icesheets))
+      allocate(Sl_tsrf(num_icesheets))
+      allocate(Flgl_qice(num_icesheets))
 
-         do ns = 1,num_icesheets
-            ! NOTE: the field is connected ONLY if the MED->GLC entry is in the nuopc.runconfig file
-            ! This restriction occurs even if the field was advertised
-            if (NUOPC_IsConnected(NStateImp(ns), fieldName=field_in_tsrf)) then
-               call dshr_state_getfldptr(NStateImp(ns), field_in_tsrf, fldptr1=Sl_tsrf(ns)%ptr, rc=rc)
-               if (chkerr(rc,__LINE__,u_FILE_u)) return
-            end if
-            if (NUOPC_IsConnected(NStateImp(ns), fieldName=field_in_qice)) then
-               call dshr_state_getfldptr(NStateImp(ns), field_in_qice, fldptr1=Flgl_qice(ns)%ptr, rc=rc)
-               if (chkerr(rc,__LINE__,u_FILE_u)) return
-            end if
-         end do
-      end if
+      do ns = 1,num_icesheets
+         ! NOTE: the field is connected ONLY if the MED->GLC entry is in the nuopc.runconfig file
+         ! This restriction occurs even if the field was advertised
+         if (NUOPC_IsConnected(NStateImp(ns), fieldName=field_in_tsrf)) then
+            call dshr_state_getfldptr(NStateImp(ns), field_in_tsrf, fldptr1=Sl_tsrf(ns)%ptr, rc=rc)
+            if (chkerr(rc,__LINE__,u_FILE_u)) return
+         end if
+         if (NUOPC_IsConnected(NStateImp(ns), fieldName=field_in_qice)) then
+            call dshr_state_getfldptr(NStateImp(ns), field_in_qice, fldptr1=Flgl_qice(ns)%ptr, rc=rc)
+            if (chkerr(rc,__LINE__,u_FILE_u)) return
+         end if
+      end do
 
    end subroutine dglc_datamode_noevolve_init_pointers
 
    !===============================================================================
    subroutine dglc_datamode_noevolve_advance(pio_subsystem, io_type, io_format, &
-        model_meshes, model_areas, input_files, rc)
+        model_meshes, model_internal_gridsize, model_datafiles, rc)
 
       ! Assume that the model mesh is the same as the input data mesh
 
       ! input/output variables
-      type(iosystem_desc_t) , pointer     :: pio_subsystem   ! pio info
-      integer               , intent(in)  :: io_type         ! pio info
-      integer               , intent(in)  :: io_format       ! pio info
-      type(ESMF_Mesh)       , intent(in)  :: model_meshes(:) ! ice sheets meshes
-      real(r8)              , intent(in)  :: model_areas(:)  ! internal model ice sheets areas (radians**2)
-      character(len=*)      , intent(in)  :: input_files(:)  ! input file names
+      type(iosystem_desc_t) , pointer     :: pio_subsystem              ! pio info
+      integer               , intent(in)  :: io_type                    ! pio info
+      integer               , intent(in)  :: io_format                  ! pio info
+      type(ESMF_Mesh)       , intent(in)  :: model_meshes(:)            ! ice sheets meshes
+      real(r8)              , intent(in)  :: model_internal_gridsize(:) ! internal model gridsizes (m)
+      character(len=*)      , intent(in)  :: model_datafiles(:)         ! input file names
       integer               , intent(out) :: rc
 
       ! local variables
@@ -251,8 +242,11 @@ contains
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
         ! Determine "glc_area" ;
+        ! Sg_areas is in radians
+        ! SHR_CONST_REARTH is the radius of earth in m
+        ! model_internal_gridsize is the internal model gridsize in m
         do ng = 1,lsize
-           Sg_area(ns)%ptr(ng) = model_areas(ns)
+           Sg_area(ns)%ptr(ng) = (model_internal_gridsize(ns)/SHR_CONST_REARTH)**2
         end do
 
         ! Create module level field bundle
@@ -271,12 +265,12 @@ contains
         if (chkerr(rc,__LINE__,u_FILE_u)) return
 
         ! Create pioid and pio_iodesc at the module level
-        inquire(file=trim(input_files(ns)), exist=exists)
+        inquire(file=trim(model_datafiles(ns)), exist=exists)
         if (.not.exists) then
-           write(6,'(a)')' ERROR: model input file '//trim(input_files(ns))//' does not exist'
+           write(6,'(a)')' ERROR: model input file '//trim(model_datafiles(ns))//' does not exist'
            call shr_sys_abort()
         end if
-        rcode = pio_openfile(pio_subsystem, pioid, io_type, trim(input_files(ns)), pio_nowrite)
+        rcode = pio_openfile(pio_subsystem, pioid, io_type, trim(model_datafiles(ns)), pio_nowrite)
         call pio_seterrorhandling(pioid, PIO_BCAST_ERROR)
         rcode = pio_inq_varid(pioid, 'thk', varid)
         rcode = pio_inq_varndims(pioid, varid, ndims)
