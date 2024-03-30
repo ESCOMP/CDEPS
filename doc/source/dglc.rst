@@ -38,14 +38,15 @@ case with CISM/CMEPS coupling). This is configured via the following
 
   - ``model_datafiles_list`` is colon separated string containing
     input datafiles that specify are used to obtain data for bedrock
-    topography and the ice thickness. 
+    topography and the ice thickness.
 
-  - ``model_areas`` is an array that is the size of the number of ice
-    sheets and that specifies the gridcell areas that corresponds to
+  - ``model_internal_gridsize`` is an array that is the size of the number of ice
+    sheets and that specifies the internal gridcell size that corresponds
     what internal gridcell areas the prognostic land-ice component
-    uses internally (in this case CISM).  Specifying this at the
-    namelist level eliminates the need to duplicate the code that is
-    used in CISM to derive this quantity. 
+    uses internally (in this case CISM). From this value the internal grid areas in
+    radians squared are given by (model_internal_gridsize/radius_earth)**2.
+    Both model_internal_gridsize and radius_earth have units of meters.
+
 
   - ``nx_global`` is an array that is the size of the number of ice
     sheets and that specifies the global longitude dimension of the
@@ -53,7 +54,7 @@ case with CISM/CMEPS coupling). This is configured via the following
 
   - ``ny_global`` is an array that is the size of the number of ice
     sheets and that specifies the global latitude dimension of the
-    each ice sheet. 
+    each ice sheet.
 
 .. note::
    Each element of ``model_data_filelist``, ``model_areas``,
@@ -100,10 +101,6 @@ DGLC%NOEVOLVE
 
 In addition, the following DGLC specific CIME-CCS xml variables will appear in ``$CASEROOT/env_run.xml``:
 
-DGLC_GET_IMPORT_DATA
-   - If true, have the mediator calculate import values that are sent back to
-     GLC even in GLC is in NOEVOLVE mode. The default value is FALSE.
-
 DGLC_USE_GREENLAND
    - Whether to include the Greenland Ice Sheet in this DGLC simulation
      This should generally be set at create_newcase time (via the compset). In principle it
@@ -118,4 +115,3 @@ DGLC_USE_ANTARCTICA
 
 DGLC_SKIP_RESTART_READ
    - If set to true, than dglc restarts will not be read on a continuation run.
-
