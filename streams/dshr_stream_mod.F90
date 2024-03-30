@@ -15,7 +15,7 @@ module dshr_stream_mod
   ! containing those dates.
   ! -------------------------------------------------------------------------------
 
-  use shr_kind_mod     , only : r8=>shr_kind_r8, cs=>shr_kind_cs, cl=>shr_kind_cl, cxx=>shr_kind_cxx
+  use shr_kind_mod     , only : r8=>shr_kind_r8, cs=>shr_kind_cs, cl=>shr_kind_cl, cxx=>shr_kind_cxx, cx=>shr_kind_cx
   use shr_sys_mod      , only : shr_sys_abort
   use shr_const_mod    , only : shr_const_cday
   use shr_string_mod   , only : shr_string_leftalign_and_convert_tabs, shr_string_parseCFtunit
@@ -85,7 +85,7 @@ module dshr_stream_mod
 
   ! a useful derived type to use inside shr_streamType ---
   type shr_stream_file_type
-     character(CL)         :: name = shr_stream_file_null ! the file name (full pathname)
+     character(CX)         :: name = shr_stream_file_null ! the file name (full pathname)
      logical               :: haveData = .false.          ! has t-coord data been read in?
      integer               :: nt = 0                      ! size of time dimension
      integer  ,allocatable :: date(:)                     ! t-coord date: yyyymmdd
@@ -125,7 +125,7 @@ module dshr_stream_mod
      integer           :: n_gvd        = -1                     ! file/sample of greatest valid date
      logical           :: found_gvd    = .false.                ! T <=> k_gvd,n_gvd have been set
      logical           :: fileopen     = .false.                ! is current file open
-     character(CL)     :: currfile     = ' '                    ! current filename
+     character(CX)     :: currfile     = ' '                    ! current filename
      integer           :: nvars                                 ! number of stream variables
      character(CL)     :: stream_vectors = 'null'               ! stream vectors names
      type(file_desc_t) :: currpioid                             ! current pio file desc
@@ -379,7 +379,7 @@ contains
           allocate(streamdat(i)%varlist(streamdat(i)%nvars))
        endif
        do n=1,streamdat(i)%nfiles
-          call ESMF_VMBroadCast(vm, streamdat(i)%file(n)%name, CL, 0, rc=rc)
+          call ESMF_VMBroadCast(vm, streamdat(i)%file(n)%name, CX, 0, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        enddo
        do n=1,streamdat(i)%nvars
@@ -1219,7 +1219,7 @@ contains
     integer,optional            ,intent(out)   :: rc   ! return code
 
     ! local variables
-    character(CL)          :: fileName    ! filename to read
+    character(CX)          :: fileName    ! filename to read
     integer                :: nt
     integer                :: num,n
     integer                :: din,dout
@@ -1513,7 +1513,7 @@ contains
     type(ESMF_VM)          :: vm
     integer                :: myid
     integer                :: vid, n
-    character(CL)          :: fileName
+    character(CX)          :: fileName
     character(CL)          :: lcal
     integer(PIO_OFFSET_KIND) :: attlen
     integer                :: old_handle
@@ -1745,13 +1745,13 @@ contains
     integer              :: maxnt = 0
     integer, allocatable :: tmp(:)
     integer              :: logunit
-    character(len=CL)    :: fname, rfname, rsfname
+    character(len=CX)    :: fname, rfname, rsfname
 
     !-------------------------------------------------------------------------------
 
     if (mode .eq. 'define') then
 
-       rcode = pio_def_dim(pioid, 'strlen',   CL, dimid_str)
+       rcode = pio_def_dim(pioid, 'strlen',   CX, dimid_str)
        do k=1,size(streams)
           ! maxnfiles is the maximum number of files across all streams
           logunit = streams(k)%logunit

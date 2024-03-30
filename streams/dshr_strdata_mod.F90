@@ -21,7 +21,7 @@ module dshr_strdata_mod
   use ESMF             , only : ESMF_REGION_TOTAL, ESMF_FieldGet, ESMF_TraceRegionExit, ESMF_TraceRegionEnter
   use ESMF             , only : ESMF_LOGMSG_INFO, ESMF_LogWrite
   use shr_kind_mod     , only : r8=>shr_kind_r8, r4=>shr_kind_r4, i2=>shr_kind_I2
-  use shr_kind_mod     , only : cs=>shr_kind_cs, cl=>shr_kind_cl, cxx=>shr_kind_cxx
+  use shr_kind_mod     , only : cs=>shr_kind_cs, cl=>shr_kind_cl, cxx=>shr_kind_cxx, cx=>shr_kind_cx
   use shr_sys_mod      , only : shr_sys_abort
   use shr_const_mod    , only : shr_const_pi, shr_const_cDay, shr_const_spval
   use shr_cal_mod      , only : shr_cal_calendarname, shr_cal_timeSet
@@ -389,7 +389,7 @@ contains
     character(CS)                :: calendar        ! calendar name
     integer                      :: ns              ! stream index
     integer                      :: m               ! generic index
-    character(CL)                :: fileName        ! generic file name
+    character(CX)                :: fileName        ! generic file name
     integer                      :: nfld            ! loop stream field index
     type(ESMF_Field)             :: lfield          ! temporary
     type(ESMF_Field)             :: lfield_dst      ! temporary
@@ -677,7 +677,7 @@ contains
     type(ESMF_VM)           :: vm
     type(file_desc_t)       :: pioid
     integer                 :: rcode
-    character(CL)           :: filename
+    character(CX)           :: filename
     integer                 :: dimid
     integer                 :: stream_nlev
     character(*), parameter :: subname = '(shr_strdata_set_stream_domain) '
@@ -694,7 +694,7 @@ contains
        if (sdat%mainproc) then
           call shr_stream_getData(sdat%stream(stream_index), 1, filename)
        end if
-       call ESMF_VMBroadCast(vm, filename, CL, 0, rc=rc)
+       call ESMF_VMBroadCast(vm, filename, CX, 0, rc=rc)
        rcode = pio_openfile(sdat%pio_subsystem, pioid, sdat%io_type, trim(filename), pio_nowrite)
        rcode = pio_inq_dimid(pioid, trim(sdat%stream(stream_index)%lev_dimname), dimid)
        rcode = pio_inq_dimlen(pioid, dimid, stream_nlev)
@@ -726,7 +726,7 @@ contains
     type(var_desc_t)        :: varid
     type(file_desc_t)       :: pioid
     integer                 :: rcode
-    character(CL)           :: filename
+    character(CX)           :: filename
     type(io_desc_t)         :: pio_iodesc
     real(r4), allocatable   :: data_real(:)
     real(r8), allocatable   :: data_double(:)
@@ -743,7 +743,7 @@ contains
     if (sdat%mainproc) then
        call shr_stream_getData(sdat%stream(stream_index), 1, filename)
     end if
-    call ESMF_VMBroadCast(vm, filename, CL, 0, rc=rc)
+    call ESMF_VMBroadCast(vm, filename, CX, 0, rc=rc)
 
     ! Open the file
     rcode = pio_openfile(sdat%pio_subsystem, pioid, sdat%io_type, trim(filename), pio_nowrite)
@@ -1305,10 +1305,10 @@ contains
     real(r8)                             :: rDateM,rDateLB,rDateUB  ! model,LB,UB dates with fractional days
     integer                              :: n_lb, n_ub
     integer                              :: i
-    character(CL)                        :: filename_lb
-    character(CL)                        :: filename_ub
-    character(CL)                        :: filename_next
-    character(CL)                        :: filename_prev
+    character(CX)                        :: filename_lb
+    character(CX)                        :: filename_ub
+    character(CX)                        :: filename_next
+    character(CX)                        :: filename_prev
     logical                              :: find_bounds
     character(*), parameter              :: subname = '(shr_strdata_readLBUB) '
     character(*), parameter              :: F00   = "('(shr_strdata_readLBUB) ',8a)"
@@ -1432,7 +1432,7 @@ contains
     ! local variables
     integer                  :: stream_nlev
     type(ESMF_Field)         :: field_dst, field_vector_dst
-    character(CL)            :: currfile
+    character(CX)            :: currfile
     logical                  :: fileexists
     logical                  :: fileopen
     type(file_desc_t)        :: pioid
