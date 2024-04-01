@@ -15,7 +15,7 @@ module nuopc_shr_methods
   use ESMF         , only : ESMF_ClockPrint, ESMF_ClockAdvance
   use ESMF         , only : ESMF_Alarm, ESMF_AlarmCreate, ESMF_AlarmGet, ESMF_AlarmSet
   use ESMF         , only : ESMF_Calendar, ESMF_CALKIND_NOLEAP, ESMF_CALKIND_GREGORIAN
-  use ESMF         , only : ESMF_Time, ESMF_TimeGet, ESMF_TimeSet
+  use ESMF         , only : ESMF_Time, ESMF_TimeGet, ESMF_TimeSet, ESMF_ClockGetAlarm
   use ESMF         , only : ESMF_TimeInterval, ESMF_TimeIntervalSet, ESMF_TimeIntervalGet
   use ESMF         , only : ESMF_VM, ESMF_VMGet, ESMF_VMBroadcast, ESMF_VMGetCurrent
   use NUOPC        , only : NUOPC_CompAttributeGet
@@ -568,8 +568,10 @@ contains
     case (optNONE, optNever, optEnd)
        call ESMF_TimeIntervalSet(AlarmInterval, yy=9999, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
-       call ESMF_TimeSet( NextAlarm, yy=9999, mm=12, dd=1, s=0, calendar=cal, rc=rc )
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
+       call ESMF_ClockGetAlarm(clock, "alarm_stop", alarm, rc=rc) 
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call ESMF_AlarmGet(alarm, ringTime=NextAlarm, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
        update_nextalarm  = .false.
 
     case (optDate)
