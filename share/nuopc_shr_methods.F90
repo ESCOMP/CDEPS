@@ -743,6 +743,8 @@ contains
 !===============================================================================
 
   integer function get_minimum_timestep(gcomp, rc)
+    ! Get the minimum timestep interval in seconds based on the nuopc.config variables *_cpl_dt,
+    ! if none of these variables are defined this routine will throw an error
     type(ESMF_GridComp), intent(in) :: gcomp
     integer, intent(out)            :: rc
 
@@ -754,42 +756,98 @@ contains
     integer                 :: glc_cpl_dt          ! Glc coupling interval
     integer                 :: rof_cpl_dt          ! Runoff coupling interval
     integer                 :: wav_cpl_dt          ! Wav coupling interval
-
-    !    integer                 :: esp_cpl_dt          ! Esp coupling interval
+    logical                 :: is_present, is_set  ! determine if these variables are used
+    integer                 :: esp_cpl_dt          ! Esp coupling interval
 
     !---------------------------------------------------------------------------
     ! Determine driver clock timestep
     !---------------------------------------------------------------------------
+    get_minimum_timestep = huge(1)
     
-    call NUOPC_CompAttributeGet(gcomp, name="atm_cpl_dt", value=cvalue, rc=rc)
+    call NUOPC_CompAttributeGet(gcomp, name="atm_cpl_dt", isPresent=is_present, isSet=is_set, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    read(cvalue,*) atm_cpl_dt
 
-    call NUOPC_CompAttributeGet(gcomp, name="lnd_cpl_dt", value=cvalue, rc=rc)
+    if (is_present .and. is_set) then
+       call NUOPC_CompAttributeGet(gcomp, name="atm_cpl_dt", value=cvalue, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       read(cvalue,*) atm_cpl_dt
+       get_minimum_timestep = min(atm_cpl_dt, get_minimum_timestep)
+    endif
+
+    call NUOPC_CompAttributeGet(gcomp, name="lnd_cpl_dt", isPresent=is_present, isSet=is_set, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    read(cvalue,*) lnd_cpl_dt
 
-    call NUOPC_CompAttributeGet(gcomp, name="ice_cpl_dt", value=cvalue, rc=rc)
+    if (is_present .and. is_set) then
+       call NUOPC_CompAttributeGet(gcomp, name="lnd_cpl_dt", value=cvalue, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       read(cvalue,*) lnd_cpl_dt
+       get_minimum_timestep = min(lnd_cpl_dt, get_minimum_timestep)
+    endif
+
+    call NUOPC_CompAttributeGet(gcomp, name="ice_cpl_dt", isPresent=is_present, isSet=is_set, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    read(cvalue,*) ice_cpl_dt
 
-    call NUOPC_CompAttributeGet(gcomp, name="ocn_cpl_dt", value=cvalue, rc=rc)
+    if (is_present .and. is_set) then
+       call NUOPC_CompAttributeGet(gcomp, name="ice_cpl_dt", value=cvalue, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       read(cvalue,*) ice_cpl_dt
+       get_minimum_timestep = min(ice_cpl_dt, get_minimum_timestep)
+    endif
+
+    call NUOPC_CompAttributeGet(gcomp, name="ocn_cpl_dt", isPresent=is_present, isSet=is_set, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    read(cvalue,*) ocn_cpl_dt
 
-    call NUOPC_CompAttributeGet(gcomp, name="glc_cpl_dt", value=cvalue, rc=rc)
+    if (is_present .and. is_set) then
+       call NUOPC_CompAttributeGet(gcomp, name="ocn_cpl_dt", value=cvalue, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       read(cvalue,*) ocn_cpl_dt
+       get_minimum_timestep = min(ocn_cpl_dt, get_minimum_timestep)
+    endif
+
+    call NUOPC_CompAttributeGet(gcomp, name="glc_cpl_dt", isPresent=is_present, isSet=is_set, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    read(cvalue,*) glc_cpl_dt
 
-    call NUOPC_CompAttributeGet(gcomp, name="rof_cpl_dt", value=cvalue, rc=rc)
+    if (is_present .and. is_set) then
+       call NUOPC_CompAttributeGet(gcomp, name="glc_cpl_dt", value=cvalue, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       read(cvalue,*) glc_cpl_dt
+       get_minimum_timestep = min(glc_cpl_dt, get_minimum_timestep)
+    endif
+
+    call NUOPC_CompAttributeGet(gcomp, name="rof_cpl_dt", isPresent=is_present, isSet=is_set, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    read(cvalue,*) rof_cpl_dt
 
-    call NUOPC_CompAttributeGet(gcomp, name="wav_cpl_dt", value=cvalue, rc=rc)
+    if (is_present .and. is_set) then
+       call NUOPC_CompAttributeGet(gcomp, name="rof_cpl_dt", value=cvalue, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       read(cvalue,*) rof_cpl_dt
+       get_minimum_timestep = min(rof_cpl_dt, get_minimum_timestep)
+    endif
+
+    call NUOPC_CompAttributeGet(gcomp, name="wav_cpl_dt", isPresent=is_present, isSet=is_set, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    read(cvalue,*) wav_cpl_dt
 
-    get_minimum_timestep = minval((/atm_cpl_dt, lnd_cpl_dt, ocn_cpl_dt, ice_cpl_dt, glc_cpl_dt, rof_cpl_dt, wav_cpl_dt/))
+    if (is_present .and. is_set) then
+       call NUOPC_CompAttributeGet(gcomp, name="wav_cpl_dt", value=cvalue, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       read(cvalue,*) wav_cpl_dt
+       get_minimum_timestep = min(wav_cpl_dt, get_minimum_timestep)
+    endif
+
+    call NUOPC_CompAttributeGet(gcomp, name="esp_cpl_dt", isPresent=is_present, isSet=is_set, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    if (is_present .and. is_set) then
+       call NUOPC_CompAttributeGet(gcomp, name="esp_cpl_dt", value=cvalue, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       read(cvalue,*) esp_cpl_dt
+       get_minimum_timestep = min(esp_cpl_dt, get_minimum_timestep)
+    endif
+    if(get_minimum_timestep == huge(1)) then
+       call ESMF_LogWrite('minimum_timestep_error: this option is not supported ', ESMF_LOGMSG_ERROR)
+       rc = ESMF_FAILURE
+       return
+    endif
     if(get_minimum_timestep <= 0) then
        print *,__FILE__,__LINE__,atm_cpl_dt, lnd_cpl_dt, ocn_cpl_dt, ice_cpl_dt, glc_cpl_dt, rof_cpl_dt, wav_cpl_dt
        call ESMF_LogWrite('minimum_timestep_error ERROR ', ESMF_LOGMSG_ERROR)
