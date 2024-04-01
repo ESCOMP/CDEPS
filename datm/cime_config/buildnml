@@ -58,11 +58,15 @@ def _get_neon_data_availability(case, neonsite):
     neonatm = None
     dataversion = case.get_value("NEONVERSION")
     if dataversion == "latest":
-        dataversions = ["v2", "v1"]
+        dataversions = ["v3", "v2", "v1"]
     else:
         dataversions = [dataversion]
 
     for version in dataversions:
+        # Once a date range for a version has been determined for any version, the loop is complete.
+        # Eg, if data is available for v3, the loop will not continue to v2;
+        # however, if data is not available for v3, it will check for v2.
+        # Thus, it is important for dataversions to be listed from newest to oldest.
         if not newestdate:
             with open(fullpath, "r") as fd:
                 for line in fd.readlines():
@@ -106,6 +110,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     datm_presaero = case.get_value("DATM_PRESAERO")
     datm_presndep = case.get_value("DATM_PRESNDEP")
     datm_preso3 = case.get_value("DATM_PRESO3")
+    clm_usrdat_name = case.get_value("CLM_USRDAT_NAME")
     datm_co2_tseries = case.get_value("DATM_CO2_TSERIES")
     atm_grid = case.get_value("ATM_GRID")
     model_grid = case.get_value("GRID")
@@ -129,6 +134,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     logger.debug("DATM presndep mode is {}".format(datm_presndep))
     logger.debug("DATM preso3 mode is {}".format(datm_preso3))
     logger.debug("DATM topo mode is {}".format(datm_topo))
+    logger.debug("CLM_USRDAT_NAME is {}".format(clm_usrdat_name))
 
     # Initialize namelist defaults
     config = {}
@@ -148,6 +154,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     config['datm_presaero'] = datm_presaero
     config['datm_presndep'] = datm_presndep
     config['datm_preso3'] = datm_preso3
+    config['clm_usrdat_name'] = clm_usrdat_name
 
     if case.get_value('PTS_LON'):
         scol_lon = float(case.get_value('PTS_LON'))
@@ -167,13 +174,12 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
 
     # Generate datm_in
     namelist_file = os.path.join(confdir, "datm_in")
-    nmlgen.write_output_file(namelist_file, data_list_path, groups=['datm_nml'])
+    nmlgen.write_output_file(namelist_file, data_list_path, groups=['datm_nml','const_forcing_nml'])
 
     # Determine streams
     streamlist = nmlgen.get_streams()
     if type(streamlist) == type(str()):
         streamlist = []
-
     if datm_presaero != "none":
         streamlist.append("presaero.{}".format(datm_presaero))
     if datm_presndep != "none":
@@ -184,6 +190,10 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
         streamlist.append("topo.{}".format(datm_topo))
     if datm_co2_tseries != "none":
         streamlist.append("co2tseries.{}".format(datm_co2_tseries))
+    if  clm_usrdat_name == 'NEON.PRISM':
+        streamlist.append(clm_usrdat_name+"_PRECIP."+neonsite)
+    if  clm_usrdat_name == 'NEON':
+        streamlist.append(clm_usrdat_name+".NEON_PRECIP."+neonsite)   
 
     bias_correct = nmlgen.get_value("bias_correct")
     if bias_correct is not None:
@@ -210,7 +220,7 @@ def _create_drv_flds_in(case, confdir):
     # for now we are hard-coding this file name and values because we only need it for ozone
     if datm_preso3 != "none":
         
-	# Generate drv_flds_in file
+        # Generate drv_flds_in file
         outfile = os.path.join(confdir, "drv_flds_in")
         ozone_nl_name = "&ozone_coupling_nl"
         ozone_freq_par = "atm_ozone_frequency"

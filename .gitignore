@@ -31,5 +31,9 @@
 *.out
 *.app
 
+# Externals
+fox
+share/genf90
+
 # ignore pycache
 __pycache__

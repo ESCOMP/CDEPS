@@ -1346,7 +1346,7 @@ contains
     integer           :: orb_year ! orbital year for current orbital computation
     character(len=CL) :: msgstr   ! temporary
     logical           :: lprint
-    logical           :: first_time = .true.
+    logical, save     :: first_time = .true.
     character(len=*) , parameter :: subname = "(dshr_orbital_update)"
     !-------------------------------------------
 
