@@ -40,6 +40,8 @@ module datm_datamode_core2_mod
   ! export state pointers
   real(r8), pointer :: Sa_u(:)       => null()
   real(r8), pointer :: Sa_v(:)       => null()
+  real(r8), pointer :: Sa_u10m(:)    => null()
+  real(r8), pointer :: Sa_v10m(:)    => null()
   real(r8), pointer :: Sa_z(:)       => null()
   real(r8), pointer :: Sa_tbot(:)    => null()
   real(r8), pointer :: Sa_ptem(:)    => null()
@@ -115,6 +117,8 @@ contains
     call dshr_fldList_add(fldsExport, 'Sa_z'       )
     call dshr_fldList_add(fldsExport, 'Sa_u'       )
     call dshr_fldList_add(fldsExport, 'Sa_v'       )
+    call dshr_fldList_add(fldsExport, 'Sa_u10m'    )
+    call dshr_fldList_add(fldsExport, 'Sa_v10m'    )
     call dshr_fldList_add(fldsExport, 'Sa_ptem'    )
     call dshr_fldList_add(fldsExport, 'Sa_dens'    )
     call dshr_fldList_add(fldsExport, 'Sa_pslv'    )
@@ -219,6 +223,10 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Sa_v'       , fldptr1=Sa_v       , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call dshr_state_getfldptr(exportState, 'Sa_u10m'    , fldptr1=Sa_u10m    , rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call dshr_state_getfldptr(exportState, 'Sa_v10m'    , fldptr1=Sa_v10m    , rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Sa_tbot'    , fldptr1=Sa_tbot    , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Sa_pbot'    , fldptr1=Sa_pbot    , rc=rc)
@@ -314,6 +322,10 @@ contains
        vprime = Sa_v(n)*windFactor(n)
        Sa_u(n) = uprime*cos(winddFactor(n)*degtorad) - vprime*sin(winddFactor(n)*degtorad)
        Sa_v(n) = uprime*sin(winddFactor(n)*degtorad) + vprime*cos(winddFactor(n)*degtorad)
+
+       ! Set Sa_u10m and Sa_v10m to Sa_u and Sa_v
+       Sa_u10m(n) = Sa_u(n)
+       Sa_v10m(n) = Sa_v(n)
 
        !--- density and pslv taken directly from input stream, set pbot ---
        Sa_pbot(n) = Sa_pslv(n)
