@@ -2,7 +2,7 @@ module nuopc_shr_methods
 
   use ESMF         , only : operator(<), operator(/=), operator(+)
   use ESMF         , only : operator(-), operator(*) , operator(>=)
-  use ESMF         , only : operator(<=), operator(>), operator(==)
+  use ESMF         , only : operator(<=), operator(>), operator(==), MOD
   use ESMF         , only : ESMF_LOGERR_PASSTHRU, ESMF_LogFoundError, ESMF_LOGMSG_ERROR, ESMF_MAXSTR
   use ESMF         , only : ESMF_SUCCESS, ESMF_LogWrite, ESMF_LOGMSG_INFO, ESMF_FAILURE
   use ESMF         , only : ESMF_State, ESMF_StateGet
@@ -499,7 +499,7 @@ contains
 !===============================================================================
 
   subroutine alarmInit( clock, alarm, option, &
-       opt_n, opt_ymd, opt_tod, RefTime, alarmname, rc)
+       opt_n, opt_ymd, opt_tod, RefTime, alarmname, advance_clock, rc)
 
     ! Setup an alarm in a clock
     ! Notes: The ringtime sent to AlarmCreate MUST be the next alarm
@@ -521,6 +521,7 @@ contains
     integer          , optional , intent(in)    :: opt_tod   ! alarm tod (sec)
     type(ESMF_Time)  , optional , intent(in)    :: RefTime   ! ref time
     character(len=*) , optional , intent(in)    :: alarmname ! alarm name
+    logical          , optional , intent(in)    :: advance_clock ! advance clock to trigger alarm
     integer                     , intent(inout) :: rc        ! Return code
 
     ! local variables
@@ -533,8 +534,9 @@ contains
     type(ESMF_Time)         :: CurrTime         ! Current Time
     type(ESMF_Time)         :: NextAlarm        ! Next restart alarm time
     type(ESMF_TimeInterval) :: AlarmInterval    ! Alarm interval
+    type(ESMF_TimeInterval) :: TimeStepInterval ! Component timestep interval
     integer                 :: sec
-    character(len=*), parameter :: subname = '(set_alarmInit): '
+    character(len=*), parameter :: subname = '(alarmInit): '
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -562,126 +564,134 @@ contains
     ! Determine calendar
     call ESMF_ClockGet(clock, calendar=cal)
 
+    ! Error checks
+    if (trim(option) == optdate) then
+       if (.not. present(opt_ymd)) then
+          call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_ymd', ESMF_LOGMSG_ERROR)
+          rc = ESMF_FAILURE
+          return
+       end if
+       if (lymd < 0 .or. ltod < 0) then
+          call ESMF_LogWrite(subname//trim(option)//'opt_ymd, opt_tod invalid', ESMF_LOGMSG_ERROR)
+          rc = ESMF_FAILURE
+          return
+       end if
+    else if (&
+         trim(option) == optNSteps   .or. trim(option) == trim(optNSteps)//'s'   .or. &
+         trim(option) == optNSeconds .or. trim(option) == trim(optNSeconds)//'s' .or. &
+         trim(option) == optNMinutes .or. trim(option) == trim(optNMinutes)//'s' .or. &
+         trim(option) == optNHours   .or. trim(option) == trim(optNHours)//'s'   .or. &
+         trim(option) == optNDays    .or. trim(option) == trim(optNDays)//'s'    .or. &
+         trim(option) == optNMonths  .or. trim(option) == trim(optNMonths)//'s'  .or. &
+         trim(option) == optNYears   .or. trim(option) == trim(optNYears)//'s' ) then
+       if (.not.present(opt_n)) then
+          call ESMF_LogWrite(subname//trim(option)//' requires opt_n', ESMF_LOGMSG_ERROR)
+          rc = ESMF_FAILURE
+          return
+       end if
+       if (opt_n <= 0) then
+          call ESMF_LogWrite(subname//trim(option)//' invalid opt_n', ESMF_LOGMSG_ERROR)
+          rc = ESMF_FAILURE
+          return
+       end if
+    end if
     ! Determine inputs for call to create alarm
     selectcase (trim(option))
 
-    case (optNONE, optNever, optEnd)
+    case (optNONE)
        call ESMF_TimeIntervalSet(AlarmInterval, yy=9999, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
-       call ESMF_ClockGetAlarm(clock, "alarm_stop", alarm, rc=rc) 
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call ESMF_AlarmGet(alarm, ringTime=NextAlarm, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call ESMF_TimeSet( NextAlarm, yy=9999, mm=12, dd=1, s=0, calendar=cal, rc=rc )
+       if (chkerr(rc,__LINE__,u_FILE_u)) return
        update_nextalarm  = .false.
 
+    case (optNever)
+       call ESMF_TimeIntervalSet(AlarmInterval, yy=9999, rc=rc)
+       if (chkerr(rc,__LINE__,u_FILE_u)) return
+       call ESMF_TimeSet( NextAlarm, yy=9999, mm=12, dd=1, s=0, calendar=cal, rc=rc )
+       if (chkerr(rc,__LINE__,u_FILE_u)) return
+       update_nextalarm  = .false.
+
+!    case (optEnd)
+!       call ESMF_TimeIntervalSet(AlarmInterval, yy=9999, rc=rc)
+!       if (chkerr(rc,__LINE__,u_FILE_u)) return
+!       call ESMF_TimeSet( NextAlarm, yy=9999, mm=12, dd=1, s=0, calendar=cal, rc=rc )
+!       if (chkerr(rc,__LINE__,u_FILE_u)) return
+!       update_nextalarm  = .false.
+
     case (optDate)
-       if (.not. present(opt_ymd)) then
-          call shr_sys_abort(subname//trim(option)//' requires opt_ymd')
-       end if
-       if (lymd < 0 .or. ltod < 0) then
-          call shr_sys_abort(subname//trim(option)//'opt_ymd, opt_tod invalid')
-       end if
        call ESMF_TimeIntervalSet(AlarmInterval, yy=9999, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
        call timeInit(NextAlarm, lymd, cal, ltod, rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
        update_nextalarm  = .false.
 
-    case (optNSteps, trim(optNSteps)//'s')
-       if (.not.present(opt_n)) call shr_sys_abort(subname//trim(option)//' requires opt_n')
-       if (opt_n <= 0)  call shr_sys_abort(subname//trim(option)//' invalid opt_n')
-       ! variable dtime_drv is the smallest component timestep, set in esm_time_mod.F90
-       call ESMF_TimeIntervalSet(AlarmInterval, s=dtime_drv, rc=rc )
-       AlarmInterval = AlarmInterval * opt_n 
-       update_nextalarm  = .true.
+   case (optNSteps,trim(optNSteps)//'s')
+      call ESMF_ClockGet(clock, TimeStep=TimestepInterval, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      call ESMF_TimeIntervalSet(AlarmInterval, s=dtime_drv, rc=rc )
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      AlarmInterval = AlarmInterval * opt_n
+      ! timestepinterval*0 is 0 of kind ESMF_TimeStepInterval
+      if (mod(AlarmInterval, TimestepInterval) /= (timestepinterval*0)) then
+         call ESMF_LogWrite(subname//'illegal Alarm setting for '//trim(alarmname), ESMF_LOGMSG_ERROR)
+         rc = ESMF_FAILURE
+         return
+      endif
+      update_nextalarm  = .true.
 
-    case (optNSeconds, trim(optNSeconds)//'s')
-       if (.not.present(opt_n)) then
-          call shr_sys_abort(subname//trim(option)//' requires opt_n')
-       end if
-       if (opt_n <= 0) then
-          call shr_sys_abort(subname//trim(option)//' invalid opt_n')
-       end if
-       call ESMF_TimeIntervalSet(AlarmInterval, s=1, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       AlarmInterval = AlarmInterval * opt_n
-       update_nextalarm  = .true.
+   case (optNSeconds,trim(optNSeconds)//'s')
+      call ESMF_TimeIntervalSet(AlarmInterval, s=1, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      AlarmInterval = AlarmInterval * opt_n
+      update_nextalarm  = .true.
 
-    case (optNMinutes, trim(optNMinutes)//'s')
-       call ESMF_TimeIntervalSet(AlarmInterval, s=60, rc=rc)
-       if (.not.present(opt_n)) then
-          call shr_sys_abort(subname//trim(option)//' requires opt_n')
-       end if
-       if (opt_n <= 0) then
-          call shr_sys_abort(subname//trim(option)//' invalid opt_n')
-       end if
-       AlarmInterval = AlarmInterval * opt_n
-       update_nextalarm  = .true.
+   case (optNMinutes,trim(optNMinutes)//'s')
+      call ESMF_TimeIntervalSet(AlarmInterval, s=60, rc=rc)
+      AlarmInterval = AlarmInterval * opt_n
+      update_nextalarm  = .true.
 
-    case (optNHours, trim(optNHours)//'s')
-       if (.not.present(opt_n)) then
-          call shr_sys_abort(subname//trim(option)//' requires opt_n')
-       end if
-       if (opt_n <= 0) then
-          call shr_sys_abort(subname//trim(option)//' invalid opt_n')
-       end if
-       call ESMF_TimeIntervalSet(AlarmInterval, s=3600, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       AlarmInterval = AlarmInterval * opt_n
-       update_nextalarm  = .true.
+   case (optNHours,trim(optNHours)//'s')
+      call ESMF_TimeIntervalSet(AlarmInterval, s=3600, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      AlarmInterval = AlarmInterval * opt_n
+      update_nextalarm  = .true.
 
-    case (optNDays, trim(optNDays)//'s')
-       if (.not.present(opt_n)) then
-          call shr_sys_abort(subname//trim(option)//' requires opt_n')
-       end if
-       if (opt_n <= 0) then
-          call shr_sys_abort(subname//trim(option)//' invalid opt_n')
-       end if
-       call ESMF_TimeIntervalSet(AlarmInterval, d=1, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       AlarmInterval = AlarmInterval * opt_n
-       update_nextalarm  = .true.
+   case (optNDays,trim(optNDays)//'s')
+      call ESMF_TimeIntervalSet(AlarmInterval, d=1, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      AlarmInterval = AlarmInterval * opt_n
+      update_nextalarm  = .true.
 
-    case (optNMonths, trim(optNMonths)//'s')
-       if (.not.present(opt_n)) then
-          call shr_sys_abort(subname//trim(option)//' requires opt_n')
-       end if
-       if (opt_n <= 0) then
-          call shr_sys_abort(subname//trim(option)//' invalid opt_n')
-       end if
-       call ESMF_TimeIntervalSet(AlarmInterval, mm=1, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       AlarmInterval = AlarmInterval * opt_n
-       update_nextalarm  = .true.
+   case (optNMonths,trim(optNMonths)//'s')
+      call ESMF_TimeIntervalSet(AlarmInterval, mm=1, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      AlarmInterval = AlarmInterval * opt_n
+      update_nextalarm  = .true.
 
     case (optMonthly)
        call ESMF_TimeIntervalSet(AlarmInterval, mm=1, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call ESMF_TimeSet( NextAlarm, yy=cyy, mm=cmm, dd=1, s=0, calendar=cal, rc=rc )
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
        update_nextalarm  = .true.
 
     case (optNYears, trim(optNYears)//'s')
-       if (.not.present(opt_n)) then
-          call shr_sys_abort(subname//trim(option)//' requires opt_n')
-       end if
-       if (opt_n <= 0) then
-          call shr_sys_abort(subname//trim(option)//' invalid opt_n')
-       end if
        call ESMF_TimeIntervalSet(AlarmInterval, yy=1, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
        AlarmInterval = AlarmInterval * opt_n
        update_nextalarm  = .true.
 
     case (optYearly)
        call ESMF_TimeIntervalSet(AlarmInterval, yy=1, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call ESMF_TimeSet( NextAlarm, yy=cyy, mm=1, dd=1, s=0, calendar=cal, rc=rc )
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
        update_nextalarm  = .true.
-       
     case default
-       call shr_sys_abort(subname//'unknown option '//trim(option))
+       call ESMF_LogWrite(subname//'unknown option '//trim(option), ESMF_LOGMSG_ERROR)
+       rc = ESMF_FAILURE
+       return
 
     end select
 
@@ -701,6 +711,20 @@ contains
     alarm = ESMF_AlarmCreate( name=lalarmname, clock=clock, ringTime=NextAlarm, &
          ringInterval=AlarmInterval, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
+
+    ! Advance model clock to trigger alarm then reset model clock back to currtime
+    if (present(advance_clock)) then
+       if (advance_clock) then
+          call ESMF_AlarmSet(alarm, clock=clock, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          call ESMF_ClockGet(clock, currTime=CurrTime, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          call ESMF_ClockAdvance(clock,rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          call ESMF_ClockSet(clock, currTime=currtime, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       end if
+    end if
 
   end subroutine alarmInit
 
