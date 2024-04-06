@@ -9,7 +9,7 @@ module nuopc_shr_methods
   use ESMF         , only : ESMF_Field, ESMF_FieldGet
   use ESMF         , only : ESMF_GridComp, ESMF_GridCompGet, ESMF_GridCompSet
   use ESMF         , only : ESMF_GeomType_Flag, ESMF_FieldStatus_Flag
-  use ESMF         , only : ESMF_Mesh, ESMF_MeshGet
+  use ESMF         , only : ESMF_Mesh, ESMF_MeshGet, ESMF_AlarmSet
   use ESMF         , only : ESMF_GEOMTYPE_MESH, ESMF_GEOMTYPE_GRID, ESMF_FIELDSTATUS_COMPLETE
   use ESMF         , only : ESMF_Clock, ESMF_ClockCreate, ESMF_ClockGet, ESMF_ClockSet
   use ESMF         , only : ESMF_ClockPrint, ESMF_ClockAdvance
@@ -61,7 +61,7 @@ module nuopc_shr_methods
        optDate           = "date"    , &
        optEnd            = "end"       , &
        optGLCCouplingPeriod = "glc_coupling_period"
-  
+
   integer, public :: dtime_drv ! initialized in esm_time_mod.F90
 
   integer, parameter :: SecPerDay = 86400 ! Seconds per day
@@ -500,7 +500,7 @@ contains
 
   subroutine alarmInit( clock, alarm, option, &
        opt_n, opt_ymd, opt_tod, RefTime, alarmname, advance_clock, rc)
-
+    use ESMF, only : ESMF_AlarmPrint
     ! Setup an alarm in a clock
     ! Notes: The ringtime sent to AlarmCreate MUST be the next alarm
     ! time.  If you send an arbitrary but proper ringtime from the
@@ -560,7 +560,7 @@ contains
     else
        NextAlarm = CurrTime
     endif
-
+    
     ! Determine calendar
     call ESMF_ClockGet(clock, calendar=cal)
 
@@ -595,6 +595,7 @@ contains
           return
        end if
     end if
+
     ! Determine inputs for call to create alarm
     selectcase (trim(option))
 
@@ -611,13 +612,6 @@ contains
        call ESMF_TimeSet( NextAlarm, yy=9999, mm=12, dd=1, s=0, calendar=cal, rc=rc )
        if (chkerr(rc,__LINE__,u_FILE_u)) return
        update_nextalarm  = .false.
-
-!    case (optEnd)
-!       call ESMF_TimeIntervalSet(AlarmInterval, yy=9999, rc=rc)
-!       if (chkerr(rc,__LINE__,u_FILE_u)) return
-!       call ESMF_TimeSet( NextAlarm, yy=9999, mm=12, dd=1, s=0, calendar=cal, rc=rc )
-!       if (chkerr(rc,__LINE__,u_FILE_u)) return
-!       update_nextalarm  = .false.
 
     case (optDate)
        call ESMF_TimeIntervalSet(AlarmInterval, yy=9999, rc=rc)
@@ -711,7 +705,7 @@ contains
     alarm = ESMF_AlarmCreate( name=lalarmname, clock=clock, ringTime=NextAlarm, &
          ringInterval=AlarmInterval, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
-
+    
     ! Advance model clock to trigger alarm then reset model clock back to currtime
     if (present(advance_clock)) then
        if (advance_clock) then
