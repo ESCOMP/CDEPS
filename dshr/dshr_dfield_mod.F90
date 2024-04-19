@@ -438,6 +438,7 @@ contains
     type(ESMF_field)           :: lfield
     type(dfield_type), pointer :: dfield
     real(r8), pointer          :: data1d(:)
+    real(r8), pointer          :: data2d(:,:)
     integer                    :: nf
     integer                    :: fldbun_index
     integer                    :: stream_index
@@ -464,13 +465,13 @@ contains
           do nf = 1,size(dfield%stream_indices)
              stream_index = dfield%stream_indices(nf)
              fldbun_index = dfield%fldbun_indices(nf)
-             if(stream_index > 0) then
+             if (stream_index > 0) then
                 fldbun_model = shr_strdata_get_stream_fieldbundle(sdat, stream_index, 'model')
                 call dshr_fldbun_getfieldn(fldbun_model, fldbun_index, lfield, rc=rc)
                 if (chkerr(rc,__LINE__,u_FILE_u)) return
-                call dshr_field_getfldptr(lfield, fldptr1=data1d, rc=rc)
+                call dshr_field_getfldptr(lfield, fldptr2=data2d, rc=rc)
                 if (chkerr(rc,__LINE__,u_FILE_u)) return
-                dfield%state_data2d(nf,:) = data1d(:)
+                dfield%state_data2d(:,:) = data2d(:,:)
              endif
           end do
        end if
