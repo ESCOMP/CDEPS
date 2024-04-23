@@ -94,6 +94,7 @@ module dshr_strdata_mod
      character(CL), allocatable          :: fldlist_stream(:)               ! names of stream file fields
      character(CL), allocatable          :: fldlist_model(:)                ! names of stream model fields
      integer                             :: stream_nlev                     ! number of vertical levels in stream
+     real(r8), allocatable               :: stream_vlevs(:)                 ! values of vertical levels in stream
      integer                             :: stream_lb                       ! index of the Lowerbound (LB) in fldlist_stream
      integer                             :: stream_ub                       ! index of the Upperbound (UB) in fldlist_stream
      type(ESMF_Field)                    :: field_stream                    ! a field on the stream data domain
@@ -679,6 +680,7 @@ contains
     integer                 :: rcode
     character(CX)           :: filename
     integer                 :: dimid
+    type(var_desc_t)        :: varid
     integer                 :: stream_nlev
     character(*), parameter :: subname = '(shr_strdata_set_stream_domain) '
     ! ----------------------------------------------
@@ -698,10 +700,17 @@ contains
        rcode = pio_openfile(sdat%pio_subsystem, pioid, sdat%io_type, trim(filename), pio_nowrite)
        rcode = pio_inq_dimid(pioid, trim(sdat%stream(stream_index)%lev_dimname), dimid)
        rcode = pio_inq_dimlen(pioid, dimid, stream_nlev)
+       allocate(sdat%pstrm(stream_index)%stream_vlevs(stream_nlev))
+       rcode = pio_inq_varid(pioid, trim(sdat%stream(stream_index)%lev_dimname), varid)
+       rcode = pio_get_var(pioid, varid, sdat%pstrm(stream_index)%stream_vlevs)
+       ! DEBUG: input is in cm
+       sdat%pstrm(stream_index)%stream_vlevs(:) = sdat%pstrm(stream_index)%stream_vlevs(:) / 100.
+       ! DEBUG
        call pio_closefile(pioid)
     end if
     if (sdat%mainproc) then
        write(sdat%stream(1)%logunit,*) trim(subname)//' stream_nlev = ',stream_nlev
+       write(sdat%stream(1)%logunit,*)' stream vertical levels = ',sdat%pstrm(stream_index)%stream_vlevs
     end if
 
     ! Set stream_nlev in the per-stream sdat info
