@@ -51,7 +51,7 @@ module dshr_strdata_mod
   use pio              , only : pio_inquire, pio_inq_varid, pio_inq_varndims, pio_inq_vardimid
   use pio              , only : pio_inq_dimlen, pio_inq_vartype, pio_inq_dimname, pio_inq_dimid
   use pio              , only : pio_double, pio_real, pio_int, pio_offset_kind, pio_get_var
-  use pio              , only : pio_read_darray, pio_setframe, pio_fill_double, pio_get_att
+  use pio              , only : pio_read_darray, pio_setframe, pio_fill_double, pio_get_att, pio_inq_att
   use pio              , only : PIO_BCAST_ERROR, PIO_RETURN_ERROR, PIO_NOERR, PIO_INTERNAL_ERROR, PIO_SHORT
 
   implicit none
@@ -682,6 +682,8 @@ contains
     integer                 :: dimid
     type(var_desc_t)        :: varid
     integer                 :: stream_nlev
+    integer                 :: old_handle    ! previous setting of pio error handling
+    character(CS)           :: units
     character(*), parameter :: subname = '(shr_strdata_set_stream_domain) '
     ! ----------------------------------------------
 
@@ -703,9 +705,17 @@ contains
        allocate(sdat%pstrm(stream_index)%stream_vlevs(stream_nlev))
        rcode = pio_inq_varid(pioid, trim(sdat%stream(stream_index)%lev_dimname), varid)
        rcode = pio_get_var(pioid, varid, sdat%pstrm(stream_index)%stream_vlevs)
-       ! DEBUG: input is in cm
-       sdat%pstrm(stream_index)%stream_vlevs(:) = sdat%pstrm(stream_index)%stream_vlevs(:) / 100.
-       ! DEBUG
+
+       ! Determine vertical coordinates units - assume that default is m
+       call pio_seterrorhandling(pioid, PIO_BCAST_ERROR, old_handle)
+       rcode = pio_inq_att(pioid, varid, 'units')
+       call pio_seterrorhandling(pioid, old_handle)
+       if (rcode == PIO_NOERR) then
+          rcode = pio_get_att(pioid, varid, 'units', units)
+          if (trim(units) == 'centimeters' .or. trim(units) == 'cm') then
+             sdat%pstrm(stream_index)%stream_vlevs(:) = sdat%pstrm(stream_index)%stream_vlevs(:) / 100.
+          end if
+       end if
        call pio_closefile(pioid)
     end if
     if (sdat%mainproc) then

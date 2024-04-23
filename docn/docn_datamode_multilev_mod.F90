@@ -142,7 +142,8 @@ contains
 
     nlev_stream = sdat%pstrm(stream_index)%stream_nlev
     allocate(stream_vlevs(nlev_stream))
-    stream_vlevs(:) = sdat%pstrm(stream_index)%stream_vlevs(:)
+    ! TODO: for now hard-wired input in cm
+    stream_vlevs(:) = sdat%pstrm(stream_index)%stream_vlevs(:) / 100.
 
     do ko = 1,nlev_export
        level_found = .false.
