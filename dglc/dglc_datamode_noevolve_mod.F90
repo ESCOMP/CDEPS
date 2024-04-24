@@ -30,7 +30,8 @@ module dglc_datamode_noevolve_mod
 
    ! Data structure to enable multiple ice sheets
    type icesheet_ptr_t
-      real(r8), pointer :: ptr(:) => null() ! pointer to array
+      real(r8), pointer :: ptr(:) => null()     ! pointer to array
+      real(r8), pointer :: ptr2d(:,:) => null() ! pointer to 2d array
    endtype icesheet_ptr_t
 
    ! Export fields
@@ -42,8 +43,11 @@ module dglc_datamode_noevolve_mod
    type(icesheet_ptr_t), allocatable :: Fogg_rofi(:)
 
    ! Import fields
+   integer, parameter :: nlev_import = 30
    type(icesheet_ptr_t), allocatable :: Sl_tsrf(:)
    type(icesheet_ptr_t), allocatable :: Flgl_qice(:)
+   type(icesheet_ptr_t), allocatable :: So_t(:)
+   type(icesheet_ptr_t), allocatable :: So_q(:)
 
    ! Export Field names
    character(len=*), parameter :: field_out_area                   = 'Sg_area'
@@ -56,6 +60,8 @@ module dglc_datamode_noevolve_mod
    ! Import Field names
    character(len=*), parameter :: field_in_tsrf                    = 'Sl_tsrf'
    character(len=*), parameter :: field_in_qice                    = 'Flgl_qice'
+   character(len=*), parameter :: field_in_so_t_depth              = 'So_t_depth'
+   character(len=*), parameter :: field_in_so_s_depth              = 'So_s_depth'
 
    character(*) , parameter :: rpfile  = 'rpointer.glc'
    character(*) , parameter :: u_FILE_u = &
@@ -115,6 +121,9 @@ contains
       call dshr_fldList_add(fldsImport, trim(flds_scalar_name))
       call dshr_fldList_add(fldsImport, field_in_tsrf)
       call dshr_fldList_add(fldsImport, field_in_qice)
+      ! TODO: Add namelist for this
+      call dshr_fldList_add(fldsImport, field_in_so_t_depth, ungridded_lbound=1, ungridded_ubound=nlev_import)
+      call dshr_fldList_add(fldsImport, field_in_so_s_depth, ungridded_lbound=1, ungridded_ubound=nlev_import)
 
       do ns = 1,num_icesheets
          write(cnum,'(i0)') ns

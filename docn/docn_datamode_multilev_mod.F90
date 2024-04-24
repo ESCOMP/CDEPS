@@ -142,8 +142,7 @@ contains
 
     nlev_stream = sdat%pstrm(stream_index)%stream_nlev
     allocate(stream_vlevs(nlev_stream))
-    ! TODO: for now hard-wired input in cm
-    stream_vlevs(:) = sdat%pstrm(stream_index)%stream_vlevs(:) / 100.
+    stream_vlevs(:) = sdat%pstrm(stream_index)%stream_vlevs(:)
 
     do ko = 1,nlev_export
        level_found = .false.
@@ -157,15 +156,16 @@ contains
              level_found = .true.
              do i = 1,size(So_omask)
                 if (So_omask(i) == 0.) then
-                   So_t_depth(ko,i) = 1.e30
-                   So_s_depth(ko,i) = 1.e30
+                   So_t_depth(ko,i) = shr_const_spval
+                   So_s_depth(ko,i) = shr_const_spval
                 else
                    if (stream_So_t_depth(ki+1,i) == shr_const_spval) then
-                      So_t_depth(ko,i) = stream_So_t_depth(ki,i)
+                      So_t_depth(ko,i) = stream_So_t_depth(ki,i) + shr_const_tkfrz
                       So_s_depth(ko,i) = stream_So_s_depth(ki,i)
                    else
                       factor = (stream_So_t_depth(ki+1,i)-stream_So_t_depth(ki,i))/(stream_vlevs(ki+1)-stream_vlevs(ki))
                       So_t_depth(ko,i) = stream_So_t_depth(ki,i) + (vertical_levels(ko)-stream_vlevs(ki))*factor
+                      So_t_depth(ko,i) = So_t_depth(ko,i) + shr_const_tkfrz
 
                       factor = (stream_So_s_depth(ki+1,i)-stream_So_s_depth(ki,i))/(stream_vlevs(ki+1)-stream_vlevs(ki))
                       So_s_depth(ko,i) = stream_So_s_depth(ki,i) + (vertical_levels(ko)-stream_vlevs(ki))*factor
