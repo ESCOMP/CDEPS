@@ -159,6 +159,7 @@ contains
                    So_t_depth(ko,i) = shr_const_spval
                    So_s_depth(ko,i) = shr_const_spval
                 else
+                   ! Assume input T forcing is in degrees C
                    if (stream_So_t_depth(ki+1,i) == shr_const_spval) then
                       So_t_depth(ko,i) = stream_So_t_depth(ki,i) + shr_const_tkfrz
                       So_s_depth(ko,i) = stream_So_s_depth(ki,i)
