@@ -99,7 +99,7 @@ endif()
 target_include_directories(dshr PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/streams>
                                        $<INSTALL_INTERFACE:mod>)
 
-foreach(COMP datm dice dlnd docn drof dwav)
+foreach(COMP datm dice dglc dlnd docn drof dwav)
   add_subdirectory("${COMP}")
   if(BLD_STANDALONE)
     target_include_directories(${COMP} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/share>

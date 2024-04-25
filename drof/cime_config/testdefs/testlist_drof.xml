@@ -1,9 +1,10 @@
 <?xml version="1.0"?>
 <testlist version="2.0">
 
-  <test compset="2000_SATM_SLND_SICE_SOCN_DROF%NYF_SGLC_SWAV" grid="f19_g17_rx1" name="SMS_Vnuopc_Ld3">
+  <test compset="2000_SATM_SLND_SICE_SOCN_DROF%NYF_SGLC_SWAV" grid="f19_g17_rx1" name="SMS_Ld3">
     <machines>
       <machine name="cheyenne" compiler="intel" category="aux_cdeps"/>
+      <machine name="betzy" compiler="intel" category="aux_cdeps_noresm"/>
     </machines>
     <options>
       <option name="wallclock"> 00:10:00 </option>
