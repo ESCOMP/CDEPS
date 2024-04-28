@@ -204,9 +204,6 @@ class StreamCDEPS(GenericXML):
             data_year_first, data_year_last = self._get_stream_first_and_last_dates(
                 self.stream_nodes, case
             )
-            # If this is a test we don't need the full extent of the data
-            if case.get_value("TEST"):
-                data_year_first = max(data_year_last-2, data_year_first)
 
             # now write the data model streams xml file
             stream_vars = {}
