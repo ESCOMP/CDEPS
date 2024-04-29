@@ -1,7 +1,7 @@
 module dshr_dfield_mod
 
   use ESMF             , only : ESMF_State, ESMF_FieldBundle, ESMF_MAXSTR, ESMF_SUCCESS
-  use ESMF             , only : ESMF_FieldBundleGet, ESMF_ITEMORDER_ADDORDER, ESMF_Field
+  use ESMF             , only : ESMF_FieldBundleGet, ESMF_ITEMORDER_ADDORDER, ESMF_Field, ESMF_FieldGet
   use shr_kind_mod     , only : r8=>shr_kind_r8, cs=>shr_kind_cs, cl=>shr_kind_cl, cxx=>shr_kind_cxx
   use shr_sys_mod      , only : shr_sys_abort
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_get_stream_count, shr_strdata_get_stream_fieldbundle
@@ -442,6 +442,8 @@ contains
     integer                    :: nf
     integer                    :: fldbun_index
     integer                    :: stream_index
+    integer                    :: ungriddedUBound_output(1)
+    integer                    :: ungriddedCount
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -469,9 +471,18 @@ contains
                 fldbun_model = shr_strdata_get_stream_fieldbundle(sdat, stream_index, 'model')
                 call dshr_fldbun_getfieldn(fldbun_model, fldbun_index, lfield, rc=rc)
                 if (chkerr(rc,__LINE__,u_FILE_u)) return
-                call dshr_field_getfldptr(lfield, fldptr2=data2d, rc=rc)
+                call ESMF_FieldGet(lfield, ungriddedUBound=ungriddedUBound_output, rc=rc)
                 if (chkerr(rc,__LINE__,u_FILE_u)) return
-                dfield%state_data2d(:,:) = data2d(:,:)
+                ungriddedCount = ungriddedUBound_output(1)
+                if (ungriddedCount > 0) then
+                   call dshr_field_getfldptr(lfield, fldptr2=data2d, rc=rc)
+                   if (chkerr(rc,__LINE__,u_FILE_u)) return
+                   dfield%state_data2d(:,:) = data2d(:,:)
+                else
+                   call dshr_field_getfldptr(lfield, fldptr1=data1d, rc=rc)
+                   if (chkerr(rc,__LINE__,u_FILE_u)) return
+                   dfield%state_data2d(nf,:) = data1d(:)
+                end if
              endif
           end do
        end if
