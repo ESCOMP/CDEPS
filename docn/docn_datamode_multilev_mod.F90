@@ -29,10 +29,8 @@ module docn_datamode_multilev_mod
 
   integer, parameter :: nlev_export = 30
   real(r8) :: vertical_levels(nlev_export) = (/  &
-       60.  , 120. , 180. , 240. , 300. , 360. , &
-       420. , 480. , 540. , 600. , 660. , 720. , &
-       780. , 840. , 900. , 960. , 1020., 1080., &
-       1140., 1200., 1260., 1320., 1380., 1440., &
+       60.  , 120. , 180. , 240. , 300. , 360. , 420. , 480. , 540. , 600. , 660. , 720. , &
+       780. , 840. , 900. , 960. , 1020., 1080., 1140., 1200., 1260., 1320., 1380., 1440., &
        1500., 1560., 1620., 1680., 1740., 1800. /)
 
   ! constants
@@ -160,9 +158,14 @@ contains
                    So_s_depth(ko,i) = shr_const_spval
                 else
                    ! Assume input T forcing is in degrees C
-                   if (stream_So_t_depth(ki+1,i) == shr_const_spval) then
-                      So_t_depth(ko,i) = stream_So_t_depth(ki,i) + shr_const_tkfrz
-                      So_s_depth(ko,i) = stream_So_s_depth(ki,i)
+                   if (stream_So_t_depth(ki+1,i) > 1.e10) then
+                      if (stream_So_t_depth(ki,i) > 1.e10) then
+                         So_t_depth(ko,i) = shr_const_spval
+                         So_s_depth(ko,i) = shr_const_spval
+                      else
+                         So_t_depth(ko,i) = stream_So_t_depth(ki,i) + shr_const_tkfrz
+                         So_s_depth(ko,i) = stream_So_s_depth(ki,i)
+                      end if
                    else
                       factor = (stream_So_t_depth(ki+1,i)-stream_So_t_depth(ki,i))/(stream_vlevs(ki+1)-stream_vlevs(ki))
                       So_t_depth(ko,i) = stream_So_t_depth(ki,i) + (vertical_levels(ko)-stream_vlevs(ki))*factor
