@@ -76,6 +76,7 @@ class StreamCDEPS(GenericXML):
         data_list_file,
         user_mods_file,
         available_neon_data=None,
+        available_plumber_data=None
     ):
         """
         Create the stream xml file and append the required stream input data to the input data list file
@@ -245,10 +246,16 @@ class StreamCDEPS(GenericXML):
                             and ("PRISM" not in stream_name)
                         ):
                             rundir = case.get_value("RUNDIR")
-                            #TODO: may need to add a similar PLUMBER line
                             for neon in available_neon_data:
                                 stream_datafiles += (
                                     os.path.join(rundir, "inputdata", "atm", neon)
+                                    + "\n"
+                                )
+                        elif available_plumber_data and stream_name.startswith("PLUMBER"):
+                            rundir = case.get_value("RUNDIR")
+                            for plumber in available_plumber_data:
+                                stream_datafiles += (
+                                    os.path.join(rundir, "inputdata", "atm", plumber)
                                     + "\n"
                                 )
                         else:
