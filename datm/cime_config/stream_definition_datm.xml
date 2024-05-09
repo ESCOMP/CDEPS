@@ -3578,7 +3578,7 @@
       <meshfile>none</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_globalSSP3-7.0__simyr_2014-2501_CMIP6_c190506.nc</file>
+      <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_globalSSP3-7.0_simyr_1750-2501_CMIP6_c201101.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>CO2   Sa_co2diag</var>
@@ -4001,7 +4001,7 @@
       <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file>$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/aero/aerodep_clm_SSP370_b.e21.BWSSP370cmip6.f09_g17.CMIP6-SSP3-7.0-WACCM.001_2014-2101_monthly_0.9x1.25_c190402.nc</file>
+      <file>$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/aero/aerodep_clm_SSP370_b.e21.BWSSP370cmip6.f09_g17.CMIP6-SSP3-7.0-WACCM.001_1849-2101_monthly_0.9x1.25_c201103.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>BCDEPWET   Faxa_bcphiwet</var>
