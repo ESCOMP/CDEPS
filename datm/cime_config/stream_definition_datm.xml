@@ -350,7 +350,7 @@
     <stream_meshfile>
       <meshfile>none</meshfile>
     </stream_meshfile>
-    <stream_datafiles>  #TODO: also include data files form here? https://github.com/ESCOMP/CTSM/pull/2155/files#diff-1f787dc228c6e41e2e3e2a82101d6ea4980ee2535ecbcb06e5d6e5d6bda8f167
+    <stream_datafiles>
       <file first_year="$DATM_YR_START" last_year="$DATM_YR_END">$DIN_LOC_ROOT/atm/cdeps/PLUMBER2/${PLUMBER2SITE}_%y.nc</file>
     </stream_datafiles>
     <stream_datavars>
@@ -370,7 +370,7 @@
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
     <stream_year_first>$DATM_YR_START</stream_year_first>
-    <stream_year_last>$DATM_YR_END</stream_year_last>  # TODO: not sure if we need month info, etc here?
+    <stream_year_last>$DATM_YR_END</stream_year_last>
     <stream_offset>0</stream_offset>
     <stream_tintalgo>
       <tintalgo>linear</tintalgo>
@@ -4080,6 +4080,7 @@
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
+      <dtlimit> CLM_USRDAT_NAME=="PLUMBER" 30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -4619,6 +4620,7 @@
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
+      <dtlimit>CLM_USRDAT_NAME="PLUMBER" 30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
