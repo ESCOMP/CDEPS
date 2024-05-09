@@ -208,7 +208,7 @@
   topo.cplhist
 
   ========================
-  optional streams anonomly forcing (turned on and set my datm_nml variable anomoly_forcing
+  optional streams anonomly forcing (turned on and set my datm_nml variable anomaly_forcing
   ========================
   Anomaly.Forcing.Humidity
   Anomaly.Forcing.Longwave
