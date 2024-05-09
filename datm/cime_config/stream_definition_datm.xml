@@ -350,11 +350,18 @@
     <stream_meshfile>
       <meshfile>none</meshfile>
     </stream_meshfile>
-    <stream_datafiles>
+    <stream_datafiles>  #TODO: also include data files form here? https://github.com/ESCOMP/CTSM/pull/2155/files#diff-1f787dc228c6e41e2e3e2a82101d6ea4980ee2535ecbcb06e5d6e5d6bda8f167
       <file first_year="$DATM_YR_START" last_year="$DATM_YR_END">$DIN_LOC_ROOT/atm/cdeps/PLUMBER2/${PLUMBER2SITE}_%y.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>PRECIP   Faxa_precn</var> # this will probably need updating
+      <var>ZBOT   Sa_z</var>
+      <var>TBOT   Sa_tbot</var>
+      <var>QBOT   Sa_shum</var>
+      <var>WIND   Sa_wind</var>
+      <var>PRECTmms   Faxa_precn</var>
+      <var>FSDS   Faxa_swdn</var>
+      <var>PSRF   Sa_pbot</var>
+      <var>FLDS   Faxa_lwdn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -363,7 +370,7 @@
     <stream_vectors>null</stream_vectors>
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
     <stream_year_first>$DATM_YR_START</stream_year_first>
-    <stream_year_last>$DATM_YR_END</stream_year_last>
+    <stream_year_last>$DATM_YR_END</stream_year_last>  # TODO: not sure if we need month info, etc here?
     <stream_offset>0</stream_offset>
     <stream_tintalgo>
       <tintalgo>linear</tintalgo>
