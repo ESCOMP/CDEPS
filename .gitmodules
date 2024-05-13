@@ -10,7 +10,7 @@ fxDONOTUSEurl = https://github.com/ESMCI/fox.git
 
 [submodule "genf90"]
 path = share/genf90
-url = https://github.com/PARALLELIO/genf9
+url = https://github.com/PARALLELIO/genf90
 fxtag = 4816965
 fxrequired = AlwaysRequired
-fxDONOTUSEurl = https://github.com/PARALLELIO/genf9
+fxDONOTUSEurl = https://github.com/PARALLELIO/genf90
