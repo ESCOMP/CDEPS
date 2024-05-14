@@ -51,7 +51,7 @@ module dshr_strdata_mod
   use pio              , only : pio_inquire, pio_inq_varid, pio_inq_varndims, pio_inq_vardimid
   use pio              , only : pio_inq_dimlen, pio_inq_vartype, pio_inq_dimname, pio_inq_dimid
   use pio              , only : pio_double, pio_real, pio_int, pio_offset_kind, pio_get_var
-  use pio              , only : pio_read_darray, pio_setframe, pio_fill_double, pio_get_att
+  use pio              , only : pio_read_darray, pio_setframe, pio_fill_double, pio_get_att, pio_inq_att
   use pio              , only : PIO_BCAST_ERROR, PIO_RETURN_ERROR, PIO_NOERR, PIO_INTERNAL_ERROR, PIO_SHORT
 
   implicit none
@@ -94,6 +94,7 @@ module dshr_strdata_mod
      character(CL), allocatable          :: fldlist_stream(:)               ! names of stream file fields
      character(CL), allocatable          :: fldlist_model(:)                ! names of stream model fields
      integer                             :: stream_nlev                     ! number of vertical levels in stream
+     real(r8), allocatable               :: stream_vlevs(:)                 ! values of vertical levels in stream
      integer                             :: stream_lb                       ! index of the Lowerbound (LB) in fldlist_stream
      integer                             :: stream_ub                       ! index of the Upperbound (UB) in fldlist_stream
      type(ESMF_Field)                    :: field_stream                    ! a field on the stream data domain
@@ -679,7 +680,10 @@ contains
     integer                 :: rcode
     character(CX)           :: filename
     integer                 :: dimid
+    type(var_desc_t)        :: varid
     integer                 :: stream_nlev
+    integer                 :: old_handle    ! previous setting of pio error handling
+    character(CS)           :: units
     character(*), parameter :: subname = '(shr_strdata_set_stream_domain) '
     ! ----------------------------------------------
 
@@ -698,10 +702,25 @@ contains
        rcode = pio_openfile(sdat%pio_subsystem, pioid, sdat%io_type, trim(filename), pio_nowrite)
        rcode = pio_inq_dimid(pioid, trim(sdat%stream(stream_index)%lev_dimname), dimid)
        rcode = pio_inq_dimlen(pioid, dimid, stream_nlev)
+       allocate(sdat%pstrm(stream_index)%stream_vlevs(stream_nlev))
+       rcode = pio_inq_varid(pioid, trim(sdat%stream(stream_index)%lev_dimname), varid)
+       rcode = pio_get_var(pioid, varid, sdat%pstrm(stream_index)%stream_vlevs)
+
+       ! Determine vertical coordinates units - assume that default is m
+       call pio_seterrorhandling(pioid, PIO_BCAST_ERROR, old_handle)
+       rcode = pio_inq_att(pioid, varid, 'units')
+       call pio_seterrorhandling(pioid, old_handle)
+       if (rcode == PIO_NOERR) then
+          rcode = pio_get_att(pioid, varid, 'units', units)
+          if (trim(units) == 'centimeters' .or. trim(units) == 'cm') then
+             sdat%pstrm(stream_index)%stream_vlevs(:) = sdat%pstrm(stream_index)%stream_vlevs(:) / 100.
+          end if
+       end if
        call pio_closefile(pioid)
     end if
     if (sdat%mainproc) then
        write(sdat%stream(1)%logunit,*) trim(subname)//' stream_nlev = ',stream_nlev
+       write(sdat%stream(1)%logunit,*)' stream vertical levels = ',sdat%pstrm(stream_index)%stream_vlevs
     end if
 
     ! Set stream_nlev in the per-stream sdat info

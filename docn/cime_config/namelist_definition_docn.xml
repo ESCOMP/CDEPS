@@ -32,7 +32,7 @@
       <value docn_mode="sst_aquap8">''</value>
       <value docn_mode="sst_aquap9">''</value>
       <value docn_mode="sst_aquap10">''</value>
-      <value docn_mode="multilev">sst_depth,salinity_depth</value>
+      <value docn_mode="multilev">sst_salinity_depth_blom</value>
     </values>
   </entry>
 

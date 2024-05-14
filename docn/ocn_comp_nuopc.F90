@@ -184,6 +184,7 @@ contains
   !===============================================================================
   subroutine InitializeAdvertise(gcomp, importState, exportState, clock, rc)
     use shr_nl_mod, only:  shr_nl_find_group_name
+
     ! input/output variables
     type(ESMF_GridComp)  :: gcomp
     type(ESMF_State)     :: importState, exportState
@@ -198,7 +199,6 @@ contains
     integer           :: bcasttmp(4)
     real(r8)          :: rtmp(1)
     type(ESMF_VM)     :: vm
-    integer           :: nlev = 60  !DEBUG - remove this and put into namelist
     character(len=*),parameter :: subname=trim(module_name)//':(InitializeAdvertise) '
     character(*)    ,parameter :: F00 = "('(" // trim(module_name) // ") ',8a)"
     character(*)    ,parameter :: F01 = "('(" // trim(module_name) // ") ',a,2x,i8)"
@@ -331,7 +331,7 @@ contains
        call docn_datamode_cplhist_advertise(exportState, fldsExport, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     else if (trim(datamode) == 'multilev') then
-       call docn_datamode_multilev_advertise(exportState, fldsExport, flds_scalar_name, nlev, rc)
+       call docn_datamode_multilev_advertise(exportState, fldsExport, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
@@ -561,7 +561,7 @@ contains
           call docn_datamode_cplhist_init_pointers(exportState, model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('multilev')
-          call docn_datamode_multilev_init_pointers(exportState, model_frac, rc)
+          call docn_datamode_multilev_init_pointers(exportState, sdat,  model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end select
 
@@ -621,7 +621,7 @@ contains
        call  docn_datamode_cplhist_advance(rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('multilev')
-       call  docn_datamode_multilev_advance(rc=rc)
+       call  docn_datamode_multilev_advance(sdat, logunit, mainproc, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end select
 
