@@ -46,8 +46,8 @@ module dglc_datamode_noevolve_mod
    integer, parameter :: nlev_import = 30
    type(icesheet_ptr_t), allocatable :: Sl_tsrf(:)
    type(icesheet_ptr_t), allocatable :: Flgl_qice(:)
-   type(icesheet_ptr_t), allocatable :: So_t(:)
-   type(icesheet_ptr_t), allocatable :: So_q(:)
+!   type(icesheet_ptr_t), allocatable :: So_t(:)
+!   type(icesheet_ptr_t), allocatable :: So_q(:)
 
    ! Export Field names
    character(len=*), parameter :: field_out_area                   = 'Sg_area'
