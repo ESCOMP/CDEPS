@@ -454,7 +454,6 @@ contains
     integer                 :: yr            ! year
     integer                 :: mon           ! month
     integer                 :: day           ! day in month
-    integer                 :: tod           ! seconds in day
     logical                 :: restart_write
     type(ESMF_Alarm)        :: valid_alarm
     logical                 :: valid_inputs ! if true, inputs from mediator are valid
@@ -680,7 +679,6 @@ contains
     integer                  :: stop_n         ! Number until stop interval
     integer                  :: stop_ymd       ! Stop date (YYYYMMDD)
     type(ESMF_ALARM)         :: stop_alarm
-    character(len=128)       :: name
     integer                  :: alarmcount
     character(len=CS)        :: glc_avg_period ! averaging period in mediator
     type(ESMF_ALARM)         :: valid_alarm    ! model alarm
