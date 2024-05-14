@@ -43,7 +43,7 @@
     </desc>
   </entry>
 
-  <entry id="DGLC_USE_GREENLAND">
+  <entry id="GLC_USE_GREENLAND">
     <type>logical</type>
     <default_value>FALSE</default_value>
     <group>run_component_dglc</group>
@@ -58,7 +58,7 @@
     </desc>
   </entry>
 
-  <entry id="DGLC_USE_ANTARCTICA">
+  <entry id="GLC_USE_ANTARCTICA">
     <type>logical</type>
     <default_value>FALSE</default_value>
     <group>run_component_dglc</group>
