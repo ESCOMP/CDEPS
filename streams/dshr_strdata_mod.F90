@@ -720,7 +720,9 @@ contains
     end if
     if (sdat%mainproc) then
        write(sdat%stream(1)%logunit,*) trim(subname)//' stream_nlev = ',stream_nlev
-       write(sdat%stream(1)%logunit,*)' stream vertical levels = ',sdat%pstrm(stream_index)%stream_vlevs
+       if (stream_nlev /= 1) then
+          write(sdat%stream(1)%logunit,*)' stream vertical levels = ',sdat%pstrm(stream_index)%stream_vlevs
+       end if
     end if
 
     ! Set stream_nlev in the per-stream sdat info
