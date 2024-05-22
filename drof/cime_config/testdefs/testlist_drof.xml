@@ -3,7 +3,7 @@
 
   <test compset="2000_SATM_SLND_SICE_SOCN_DROF%NYF_SGLC_SWAV" grid="f19_g17_rx1" name="SMS_Ld3">
     <machines>
-      <machine name="cheyenne" compiler="intel" category="aux_cdeps"/>
+      <machine name="derecho" compiler="intel" category="aux_cdeps"/>
       <machine name="betzy" compiler="intel" category="aux_cdeps_noresm"/>
     </machines>
     <options>
