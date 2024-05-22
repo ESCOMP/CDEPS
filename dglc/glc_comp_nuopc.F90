@@ -9,11 +9,13 @@ module cdeps_dglc_comp
   !----------------------------------------------------------------------------
   use ESMF             , only : ESMF_VM, ESMF_VmGet, ESMF_VMBroadcast, ESMF_GridCompGet
   use ESMF             , only : ESMF_Mesh, ESMF_GridComp, ESMF_State, ESMF_Clock, ESMF_Time
-  use ESMF             , only : ESMF_SUCCESS, ESMF_LogWrite, ESMF_LOGMSG_INFO, ESMF_METHOD_INITIALIZE
-  use ESMF             , only : ESMF_TraceRegionEnter, ESMF_TraceRegionExit, ESMF_ClockGet
-  use ESMF             , only : ESMF_TimeGet, ESMF_TimeInterval, ESMF_Field, ESMF_MAXSTR
-  use ESMF             , only : ESMF_Alarm, ESMF_MethodRemove, ESMF_MethodAdd
-  use ESMF             , only : ESMF_GridCompSetEntryPoint, ESMF_ClockGetAlarm, ESMF_AlarmIsRinging
+  use ESMF             , only : ESMF_SUCCESS, ESMF_FAILURE, ESMF_LogWrite, ESMF_LOGMSG_INFO, ESMF_METHOD_INITIALIZE
+  use ESMF             , only : ESMF_TraceRegionEnter, ESMF_TraceRegionExit
+  use ESMF             , only : ESMF_TimeGet, ESMF_TimeInterval, ESMF_TimeIntervalGet, ESMF_Field, ESMF_MAXSTR
+  use ESMF             , only : ESMF_MethodRemove, ESMF_MethodAdd
+  use ESMF             , only : ESMF_GridCompSetEntryPoint
+  use ESMF             , only : ESMF_Alarm, ESMF_AlarmSet, ESMF_AlarmIsRinging, ESMF_ALARMLIST_ALL
+  use ESMF             , only : ESMF_ClockGet, ESMF_ClockSet, ESMF_ClockAdvance, ESMF_ClockGetAlarm, ESMF_ClockGetAlarmList
   use ESMF             , only : ESMF_StateGet, operator(+), ESMF_AlarmRingerOff, ESMF_LogWrite
   use ESMF             , only : ESMF_Field, ESMF_FieldGet, ESMF_VmLogMemInfo
   use ESMF             , only : ESMF_MeshCreate, ESMF_FILEFORMAT_ESMFMESH
@@ -35,7 +37,7 @@ module cdeps_dglc_comp
 #endif
   use dshr_methods_mod , only : dshr_state_diagnose, chkerr, memcheck
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_advance, shr_strdata_init_from_config
-  use dshr_mod         , only : dshr_model_initphase, dshr_init, dshr_mesh_init
+  use dshr_mod         , only : dshr_model_initphase, dshr_init, dshr_mesh_init, dshr_alarm_init
   use dshr_mod         , only : dshr_state_setscalar, dshr_set_runclock, dshr_check_restart_alarm
   use dshr_dfield_mod  , only : dfield_type, dshr_dfield_add, dshr_dfield_copy
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_realize
@@ -52,6 +54,7 @@ module cdeps_dglc_comp
   public  :: SetVM
   private :: InitializeAdvertise
   private :: InitializeRealize
+  private :: ModelSetRunClock
   private :: ModelAdvance
   private :: dglc_comp_run
   private :: ModelFinalize
@@ -157,7 +160,9 @@ contains
 
     call ESMF_MethodRemove(gcomp, label=model_label_SetRunClock, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call NUOPC_CompSpecialize(gcomp, specLabel=model_label_SetRunClock, specRoutine=dshr_set_runclock, rc=rc)
+    ! The following specialization does not use dshr_set_runclock since we also need to add an alarm
+    ! to determine if the model inputs are valid
+    call NUOPC_CompSpecialize(gcomp, specLabel=model_label_SetRunClock, specRoutine=ModelSetRunClock, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     call NUOPC_CompSpecialize(gcomp, specLabel=model_label_Finalize, specRoutine=ModelFinalize, rc=rc)
@@ -425,7 +430,7 @@ contains
     end do ! end loop over ice sheets
 
     ! Run dglc
-    call dglc_comp_run(clock, current_ymd, current_tod, restart_write=.false., rc=rc)
+    call dglc_comp_run(clock, current_ymd, current_tod, restart_write=.false., valid_inputs=.true., rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     call ESMF_TraceRegionExit('dglc_strdata_init')
@@ -450,9 +455,11 @@ contains
     integer                 :: mon           ! month
     integer                 :: day           ! day in month
     logical                 :: restart_write
+    type(ESMF_Alarm)        :: valid_alarm
+    logical                 :: valid_inputs ! if true, inputs from mediator are valid
+    character(len=CS)       :: timestring
     character(len=*),parameter :: subname=trim(module_name)//':(ModelAdvance) '
     !-------------------------------------------------------------------------------
-
 
     rc = ESMF_SUCCESS
     call shr_log_setLogUnit(logunit)
@@ -463,7 +470,17 @@ contains
     call NUOPC_ModelGet(gcomp, modelClock=clock, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    ! For nuopc - the component clock is advanced at the end of the time interval
+    ! Determine if inputs from mediator are valid
+    call ESMF_ClockGetAlarm(clock, alarmname='alarm_valid_inputs', alarm=valid_alarm, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (ESMF_AlarmIsRinging(valid_alarm, rc=rc)) then
+       valid_inputs = .true.
+       call ESMF_AlarmRingerOff( valid_alarm, rc=rc )
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    else
+       valid_inputs = .false.
+    endif
+
     ! Need to advance nuopc one timestep ahead for shr_strdata time interpolation
     call ESMF_ClockGet( clock, currTime=currTime, timeStep=timeStep, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -471,18 +488,23 @@ contains
     call ESMF_TimeGet( nextTime, yy=yr, mm=mon, dd=day, s=next_tod, rc=rc )
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_cal_ymd2date(yr, mon, day, next_ymd)
+    if (my_task == main_task) then
+       call ESMF_TimeGet(currTime, timestring=timestring, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       write(logunit,'(a,l)') trim(timestring)//': valid_input for dglc is ',valid_inputs
+    end if
 
     ! determine if will write restart
     restart_write = dshr_check_restart_alarm(clock, rc=rc)
 
     ! run dglc
-    call dglc_comp_run(clock, next_ymd, next_tod, restart_write, rc=rc)
+    call dglc_comp_run(clock, next_ymd, next_tod, restart_write, valid_inputs, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine ModelAdvance
 
   !===============================================================================
-  subroutine dglc_comp_run(clock, target_ymd, target_tod, restart_write, rc)
+  subroutine dglc_comp_run(clock, target_ymd, target_tod, restart_write, valid_inputs, rc)
 
     ! --------------------------
     ! advance dglc
@@ -493,6 +515,7 @@ contains
     integer          , intent(in)    :: target_ymd       ! model date
     integer          , intent(in)    :: target_tod       ! model sec into model date
     logical          , intent(in)    :: restart_write
+    logical          , intent(in)    :: valid_inputs
     integer          , intent(out)   :: rc
 
     ! local variables
@@ -565,9 +588,11 @@ contains
     ! Perform data mode specific calculations
     select case (trim(datamode))
     case('noevolve')
-      call dglc_datamode_noevolve_advance(sdat(1)%pio_subsystem, sdat(1)%io_type, sdat(1)%io_format, &
-           model_meshes, model_internal_gridsize, model_datafiles, rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      if (valid_inputs) then
+         call dglc_datamode_noevolve_advance(sdat(1)%pio_subsystem, sdat(1)%io_type, sdat(1)%io_format, &
+              model_meshes, model_internal_gridsize, model_datafiles, rc)
+         if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      end if
     end select
 
     ! Write restarts if needed
@@ -631,6 +656,150 @@ contains
     end subroutine dglc_init_dfields
 
   end subroutine dglc_comp_run
+
+  !===============================================================================
+
+  subroutine ModelSetRunClock(gcomp, rc)
+
+    ! input/output variables
+    type(ESMF_GridComp)  :: gcomp
+    integer, intent(out) :: rc
+
+    ! local variables
+    type(ESMF_Clock)         :: mclock, dclock
+    type(ESMF_Time)          :: mcurrtime, dcurrtime
+    type(ESMF_Time)          :: mstoptime
+    type(ESMF_TimeInterval)  :: mtimestep, dtimestep
+    character(len=256)       :: cvalue
+    character(len=256)       :: restart_option ! Restart option units
+    integer                  :: restart_n      ! Number until restart interval
+    integer                  :: restart_ymd    ! Restart date (YYYYMMDD)
+    type(ESMF_ALARM)         :: restart_alarm
+    character(len=256)       :: stop_option    ! Stop option units
+    integer                  :: stop_n         ! Number until stop interval
+    integer                  :: stop_ymd       ! Stop date (YYYYMMDD)
+    type(ESMF_ALARM)         :: stop_alarm
+    integer                  :: alarmcount
+    character(len=CS)        :: glc_avg_period ! averaging period in mediator
+    type(ESMF_ALARM)         :: valid_alarm    ! model alarm
+    integer                  :: dtime
+    character(len=*),parameter :: subname='glc_comp_nuopc:(dglc_set_runclock) '
+    !-------------------------------------------------------------------------------
+
+    rc = ESMF_SUCCESS
+
+    ! query the Component for its clocks
+    call NUOPC_ModelGet(gcomp, driverClock=dclock, modelClock=mclock, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    call ESMF_ClockGet(dclock, currTime=dcurrtime, timeStep=dtimestep, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_ClockGet(mclock, currTime=mcurrtime, timeStep=mtimestep, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    ! force model clock currtime and timestep to match driver and set stoptime
+    mstoptime = mcurrtime + dtimestep
+    call ESMF_ClockSet(mclock, currTime=dcurrtime, timeStep=dtimestep, stopTime=mstoptime, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    ! determine number of alarms
+    call ESMF_ClockGetAlarmList(mclock, alarmlistflag=ESMF_ALARMLIST_ALL, alarmCount=alarmCount, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    if (alarmCount == 0) then
+
+       !----------------
+       ! glc valid input alarm
+       !----------------
+       call NUOPC_CompAttributeGet(gcomp, name="glc_avg_period", value=glc_avg_period, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+       if (trim(glc_avg_period) == 'hour') then
+          call dshr_alarm_init(mclock, valid_alarm, 'nhours', opt_n=1, alarmname='alarm_valid_inputs', rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       else if (trim(glc_avg_period) == 'day') then
+          call dshr_alarm_init(mclock, valid_alarm, 'ndays' , opt_n=1, alarmname='alarm_valid_inputs', rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       else if (trim(glc_avg_period) == 'yearly') then
+          call dshr_alarm_init(mclock, valid_alarm, 'yearly', alarmname='alarm_valid_inputs', rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       else if (trim(glc_avg_period) == 'glc_coupling_period') then
+          call ESMF_TimeIntervalGet(mtimestep, s=dtime, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          call dshr_alarm_init(mclock, valid_alarm, 'nseconds', opt_n=dtime, alarmname='alarm_valid_inputs', rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       else
+          call ESMF_LogWrite(trim(subname)// ": ERROR glc_avg_period = "//trim(glc_avg_period)//" not supported", &
+               ESMF_LOGMSG_INFO, rc=rc)
+          rc = ESMF_FAILURE
+          RETURN
+       end if
+
+       call ESMF_AlarmSet(valid_alarm, clock=mclock, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+       !----------------
+       ! Restart alarm
+       !----------------
+       call ESMF_LogWrite(subname//'setting restart alarm for dglc' , ESMF_LOGMSG_INFO)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+       call NUOPC_CompAttributeGet(gcomp, name="restart_option", value=restart_option, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+       call NUOPC_CompAttributeGet(gcomp, name="restart_n", value=cvalue, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       read(cvalue,*) restart_n
+
+       call NUOPC_CompAttributeGet(gcomp, name="restart_ymd", value=cvalue, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       read(cvalue,*) restart_ymd
+
+       call dshr_alarm_init(mclock, restart_alarm, restart_option, &
+            opt_n   = restart_n,           &
+            opt_ymd = restart_ymd,         &
+            RefTime = mcurrTime,           &
+            alarmname = 'alarm_restart', rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+       call ESMF_AlarmSet(restart_alarm, clock=mclock, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+       !----------------
+       ! Stop alarm
+       !----------------
+       call ESMF_LogWrite(subname//'setting stop alarm for dglc' , ESMF_LOGMSG_INFO)
+       call NUOPC_CompAttributeGet(gcomp, name="stop_option", value=stop_option, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+       call NUOPC_CompAttributeGet(gcomp, name="stop_n", value=cvalue, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       read(cvalue,*) stop_n
+
+       call NUOPC_CompAttributeGet(gcomp, name="stop_ymd", value=cvalue, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       read(cvalue,*) stop_ymd
+
+       call dshr_alarm_init(mclock, stop_alarm, stop_option, &
+            opt_n   = stop_n,           &
+            opt_ymd = stop_ymd,         &
+            RefTime = mcurrTime,           &
+            alarmname = 'alarm_stop', rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+       call ESMF_AlarmSet(stop_alarm, clock=mclock, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    end if
+
+    ! Advance model clock to trigger alarms then reset model clock back to currtime
+    call ESMF_ClockAdvance(mclock,rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    call ESMF_ClockSet(mclock, currTime=dcurrtime, timeStep=dtimestep, stopTime=mstoptime, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+  end subroutine ModelSetRunClock
 
   !===============================================================================
   subroutine ModelFinalize(gcomp, rc)

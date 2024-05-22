@@ -26,7 +26,7 @@ module cdeps_docn_comp
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_sys_mod      , only : shr_sys_abort
   use shr_cal_mod      , only : shr_cal_ymd2date
-  use shr_log_mod     , only : shr_log_setLogUnit
+  use shr_log_mod      , only : shr_log_setLogUnit
   use dshr_methods_mod , only : dshr_state_diagnose, chkerr, memcheck
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_advance, shr_strdata_init_from_config
   use dshr_mod         , only : dshr_model_initphase, dshr_init, dshr_mesh_init
@@ -58,6 +58,11 @@ module cdeps_docn_comp
   use docn_datamode_cplhist_mod    , only : docn_datamode_cplhist_advance
   use docn_datamode_cplhist_mod    , only : docn_datamode_cplhist_restart_read
   use docn_datamode_cplhist_mod    , only : docn_datamode_cplhist_restart_write
+  use docn_datamode_multilev_mod   , only : docn_datamode_multilev_advertise
+  use docn_datamode_multilev_mod   , only : docn_datamode_multilev_init_pointers
+  use docn_datamode_multilev_mod   , only : docn_datamode_multilev_advance
+  use docn_datamode_multilev_mod   , only : docn_datamode_multilev_restart_read
+  use docn_datamode_multilev_mod   , only : docn_datamode_multilev_restart_write
   use docn_import_data_mod         , only : docn_import_data_advertise
 
   implicit none
@@ -179,6 +184,7 @@ contains
   !===============================================================================
   subroutine InitializeAdvertise(gcomp, importState, exportState, clock, rc)
     use shr_nl_mod, only:  shr_nl_find_group_name
+
     ! input/output variables
     type(ESMF_GridComp)  :: gcomp
     type(ESMF_State)     :: importState, exportState
@@ -300,7 +306,8 @@ contains
          trim(datamode) == 'som_aquap'          .or. & ! read stream, needs import data
          trim(datamode) == 'cplhist'            .or. & ! read stream, needs import data
          trim(datamode) == 'sst_aquap_analytic' .or. & ! analytic, no streams, import or export data
-         trim(datamode) == 'sst_aquap_constant' ) then ! analytic, no streams, import or export data
+         trim(datamode) == 'sst_aquap_constant' .or. & ! analytic, no streams, import or export data
+         trim(datamode) == 'multilev') then            ! multilevel ocean input
        ! success do nothing
     else
        call shr_sys_abort(' ERROR illegal docn datamode = '//trim(datamode))
@@ -322,6 +329,9 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     else if (trim(datamode) == 'cplhist') then
        call docn_datamode_cplhist_advertise(exportState, fldsExport, flds_scalar_name, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    else if (trim(datamode) == 'multilev') then
+       call docn_datamode_multilev_advertise(exportState, fldsExport, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
@@ -550,6 +560,9 @@ contains
        case('cplhist')
           call docn_datamode_cplhist_init_pointers(exportState, model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       case('multilev')
+          call docn_datamode_multilev_init_pointers(exportState, sdat,  model_frac, rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end select
 
        ! Read restart if needed
@@ -607,6 +620,9 @@ contains
     case('cplhist')
        call  docn_datamode_cplhist_advance(rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    case('multilev')
+       call  docn_datamode_multilev_advance(sdat, logunit, mainproc, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end select
 
     ! Write restarts if needed (no restarts for aquaplanet analytic or aquaplanet input file)
@@ -650,8 +666,10 @@ contains
       ! local variables
       integer                         :: n
       integer                         :: fieldcount
+      integer                         :: dimcount
       type(ESMF_Field)                :: lfield
       character(ESMF_MAXSTR) ,pointer :: lfieldnamelist(:)
+      character(ESMF_MAXSTR)          :: fieldname(1)
       character(*), parameter   :: subName = "(docn_init_dfields) "
       !-------------------------------------------------------------------------------
 
@@ -668,9 +686,18 @@ contains
          call ESMF_StateGet(exportState, itemName=trim(lfieldNameList(n)), field=lfield, rc=rc)
          if (chkerr(rc,__LINE__,u_FILE_u)) return
          if (trim(lfieldnamelist(n)) /= flds_scalar_name) then
-            call dshr_dfield_add( dfields, sdat, trim(lfieldnamelist(n)), trim(lfieldnamelist(n)), exportState, &
-                 logunit, mainproc, rc)
+            call ESMF_FieldGet(lfield, dimcount=dimCount, rc=rc)
             if (chkerr(rc,__LINE__,u_FILE_u)) return
+            if (dimcount == 2) then
+               fieldname(1) = trim(lfieldnamelist(n))
+               call dshr_dfield_add( dfields, sdat, trim(lfieldnamelist(n)), fieldname, exportState, &
+                    logunit, mainproc, rc)
+               if (chkerr(rc,__LINE__,u_FILE_u)) return
+            else
+               call dshr_dfield_add( dfields, sdat, trim(lfieldnamelist(n)), trim(lfieldnamelist(n)), exportState, &
+                    logunit, mainproc, rc)
+               if (chkerr(rc,__LINE__,u_FILE_u)) return
+            endif
          end if
       end do
     end subroutine docn_init_dfields

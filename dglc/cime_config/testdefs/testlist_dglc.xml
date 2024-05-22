@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <testlist version="2.0">
 
-  <test compset="2000_SATM_SLND_SICE_SGLC_SROF_DGLC%NOEVOLVE_SWAV" grid="f10_f10_ais8gris4_mg37" name="SMS_Ln5">
+  <test compset="2000_SATM_SLND_SICE_SGLC_SROF_DGLC%NOEVOLVE_SWAV" grid="f10_f10_ais8gris4_mg37" name="SMS_Ly3">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_cdeps"/>
       <machine name="betzy" compiler="intel" category="aux_cdeps_noresm"/>
@@ -10,7 +10,7 @@
       <option name="wallclock"> 00:10:00 </option>
     </options>
   </test>
-  <test compset="2000_SATM_SLND_SICE_SGLC_SROF_DGLC%NOEVOLVE_SWAV" grid="f10_f10_ais8_mg37" name="SMS_Ln5">
+  <test compset="2000_SATM_SLND_SICE_SGLC_SROF_DGLC%NOEVOLVE_SWAV" grid="f10_f10_ais8_mg37" name="SMS_Ly3">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_cdeps"/>
       <machine name="betzy" compiler="intel" category="aux_cdeps_noresm"/>
@@ -19,7 +19,7 @@
       <option name="wallclock"> 00:10:00 </option>
     </options>
   </test>
-  <test compset="2000_SATM_SLND_SICE_SGLC_SROF_DGLC%NOEVOLVE_SWAV" grid="f19_g17_gris4" name="SMS_Ln5">
+  <test compset="2000_SATM_SLND_SICE_SGLC_SROF_DGLC%NOEVOLVE_SWAV" grid="f19_g17_gris4" name="SMS_Ly3">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_cdeps"/>
       <machine name="betzy" compiler="intel" category="aux_cdeps_noresm"/>
