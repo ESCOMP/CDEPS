@@ -1,6 +1,7 @@
 project(dice Fortran)
 set(SRCFILES ice_comp_nuopc.F90
              dice_datamode_ssmi_mod.F90
+             dice_datamode_cplhist_mod.F90
 	     dice_flux_atmice_mod.F90)
 
 foreach(FILE ${SRCFILES})
