@@ -1,0 +1,92 @@
+<?xml version="1.0"?>
+
+<?xml-stylesheet type="text/xsl" href="entry_id.xsl" ?>
+
+<entry_id version="3.0">
+  <!-- modifier_mode allowed values are
+       '*' 0 or more modifiers (default)
+       '1' exactly 1 modifier
+       '?' 0 or 1 modifiers
+       '+' 1 or more modifiers
+
+       This file may have glc desc entries.
+  -->
+  <description modifier_mode="1">
+    <desc glc="DGLC[%NOEVOLVE]">Data glc model (DGLC) </desc>
+    <desc option="NOEVOLVE">no evolve mode </desc>
+  </description>
+
+  <entry id="COMP_GLC">
+    <type>char</type>
+    <valid_values>dglc</valid_values>
+    <default_value>dglc</default_value>
+    <group>case_comp</group>
+    <file>env_case.xml</file>
+    <desc>Name of land component</desc>
+  </entry>
+
+  <entry id="DGLC_MODE">
+    <type>char</type>
+    <valid_values>noevolve</valid_values>
+    <default_value>noevolve</default_value>
+    <values match="last">
+      <value compset="DGLC%NOEVOLVE">noevolve</value>
+    </values>
+    <group>run_component_dglc</group>
+    <file>env_run.xml</file>
+    <desc>
+      NOEVOLVE mode is used in CESM as follows.
+      In typical runs, CISM is not evolving; CLM computes the surface mass
+      balance (SMB) and sends it to CISM, but CISM’s ice sheet geometry
+      remains fixed over the course of the run. In these runs, CISM serves
+      two roles in the system:
+    </desc>
+  </entry>
+
+  <entry id="GLC_USE_GREENLAND">
+    <type>logical</type>
+    <default_value>FALSE</default_value>
+    <group>run_component_dglc</group>
+    <file>env_run.xml</file>
+    <values>
+      <value grid="g%.*gris.*">TRUE</value>
+    </values>
+    <desc>Whether to include the Greenland Ice Sheet in this DGLC simulation
+    This should generally be set at create_newcase time (via the compset). In principle it
+    can be changed later, but great care is needed to change a number of other variables
+    to be consistent (GLC_GRID, GLC_DOMAIN_MESH and possibly others).
+    </desc>
+  </entry>
+
+  <entry id="GLC_USE_ANTARCTICA">
+    <type>logical</type>
+    <default_value>FALSE</default_value>
+    <group>run_component_dglc</group>
+    <file>env_run.xml</file>
+    <values>
+      <value grid="g%.*ais.*">TRUE</value>
+    </values>
+    <desc>Whether to include the Antarctica Ice Sheet in this DGLC simulation
+    This should generally be set at create_newcase time (via the compset). In principle it
+    can be changed later, but great care is needed to change a number of other variables
+    to be consistent (GLC_GRID, GLC_DOMAIN_MESH and possibly others).
+    </desc>
+  </entry>
+
+  <entry id="DGLC_SKIP_RESTART_READ">
+    <type>logical</type>
+    <valid_values>TRUE,FALSE</valid_values>
+    <default_value>FALSE</default_value>
+    <group>run_component_dglc</group>
+    <file>env_run.xml</file>
+    <desc> If set to true, than dglc restarts will not be read on a continuation run.
+    </desc>
+  </entry>
+
+  <help>
+    =========================================
+    DGLC naming conventions
+    =========================================
+  </help>
+
+</entry_id>

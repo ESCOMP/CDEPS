@@ -1,0 +1,16 @@
+# This is a git-fleximod adapted .gitmodules file.  Any field with a name starting in fx is a git-fleximod
+# specific field.  See https://github.com/ESMCI/git-fleximod for details.
+
+[submodule "fox"]
+path = fox
+url = https://github.com/ESMCI/fox.git
+fxtag = 4.1.2.1
+fxrequired = AlwaysRequired
+fxDONOTUSEurl = https://github.com/ESMCI/fox.git
+
+[submodule "genf90"]
+path = share/genf90
+url = https://github.com/PARALLELIO/genf90
+fxtag = 4816965
+fxrequired = AlwaysRequired
+fxDONOTUSEurl = https://github.com/PARALLELIO/genf90

@@ -59,6 +59,7 @@ cime_config      CIME Case Control System
 cmake            Build (can be used with or without CIME)
 datm             Data atmosphere component
 dice	         Data sea-ice component
+dglc	         Data land-ice component
 dlnd	         Data land component
 docn	         Data ocean component
 drof	         Data river component
@@ -132,7 +133,7 @@ CDEPS and CIME Control System (CCS)
 
 If the CDEPS data models are used in conjunction with the CIME Case Control System (CCS) then the following will also hold:
 Each data model has an xml variable in ``env_run.xml`` that specifies the data model mode.
-These are: ``DATM_MODE``, ``DICE_MODE``, ``DLND_MODE``, ``DOCN_MODE``, ``DROF_MODE``, ``DWAV_MODE``.
+These are: ``DATM_MODE``, ``DICE_MODE``, ``DGLC_MODE``, ``DLND_MODE``, ``DOCN_MODE``, ``DROF_MODE``, ``DWAV_MODE``.
 Each data model mode specifies the streams that are associated with that data model.
 
 More details of the data model design are covered in :ref:`design details<design-details>`.
