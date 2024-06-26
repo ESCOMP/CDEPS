@@ -7,7 +7,7 @@ module dglc_datamode_noevolve_mod
    use NUOPC            , only : NUOPC_Advertise, NUOPC_IsConnected
    use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
    use shr_sys_mod      , only : shr_sys_abort
-   use shr_const_mod    , only : SHR_CONST_RHOICE, SHR_CONST_RHOSW, SHR_CONST_REARTH
+   use shr_const_mod    , only : SHR_CONST_RHOICE, SHR_CONST_RHOSW, SHR_CONST_REARTH, SHR_CONST_TKFRZ
    use dshr_methods_mod , only : dshr_state_getfldptr, dshr_fldbun_getfldptr, chkerr
    use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
    use dshr_strdata_mod , only : shr_strdata_type
@@ -46,8 +46,8 @@ module dglc_datamode_noevolve_mod
    integer, parameter :: nlev_import = 30
    type(icesheet_ptr_t), allocatable :: Sl_tsrf(:)
    type(icesheet_ptr_t), allocatable :: Flgl_qice(:)
-!   type(icesheet_ptr_t), allocatable :: So_t(:)
-!   type(icesheet_ptr_t), allocatable :: So_q(:)
+   ! type(icesheet_ptr_t), allocatable :: So_t(:)
+   ! type(icesheet_ptr_t), allocatable :: So_q(:)
 
    ! Export Field names
    character(len=*), parameter :: field_out_area                   = 'Sg_area'
@@ -177,6 +177,8 @@ contains
          if (chkerr(rc,__LINE__,u_FILE_u)) return
          call dshr_state_getfldptr(NStateExp(ns), field_out_rofi, fldptr1=Fogg_rofi(ns)%ptr, rc=rc)
          if (chkerr(rc,__LINE__,u_FILE_u)) return
+
+         Fogg_rofi(ns)%ptr(:) = 0._r8
       end do
 
       ! initialize pointers to import fields if appropriate
@@ -193,6 +195,9 @@ contains
          if (chkerr(rc,__LINE__,u_FILE_u)) return
          call dshr_state_getfldptr(NStateImp(ns), field_in_qice, fldptr1=Flgl_qice(ns)%ptr, rc=rc)
          if (chkerr(rc,__LINE__,u_FILE_u)) return
+
+         Sl_tsrf(ns)%ptr(:) = SHR_CONST_TKFRZ
+         Flgl_qice(ns)%ptr(:) = 0._r8
       end do
 
    end subroutine dglc_datamode_noevolve_init_pointers
@@ -368,7 +373,7 @@ contains
          ! Compute Fogg_rofi
          do ns = 1,num_icesheets
             do ng = 1,size(Fogg_rofi(ns)%ptr)
-               Fogg_rofi(ns)%ptr(ng) = Flgl_qice(ns)%ptr(ng)
+              Fogg_rofi(ns)%ptr(ng) = Flgl_qice(ns)%ptr(ng)
             end do
          end do
       end if
