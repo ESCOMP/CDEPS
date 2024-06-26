@@ -71,23 +71,18 @@ add_subdirectory(streams)
 add_subdirectory(dshr)
 
 if(NOT DISABLE_FoX)
-  if(IS_DIRECTORY "${FOX_ROOT}")
-    message(STATUS "FoX library is already checked out!")
-    message(STATUS "FoX source dir: ${FOX_ROOT}")
-  else()
-    FetchContent_Declare(fox
-      GIT_REPOSITORY https://github.com/ESMCI/fox.git
-      GIT_TAG 4.1.2.1
-      SOURCE_DIR ${FOX_ROOT}
-      BINARY_DIR ${FOX_ROOT}/..
-    )
-    FetchContent_GetProperties(fox)
-    if(NOT fox_POPULATED)
-      FetchContent_Populate(fox)
-      message(STATUS "FoX source dir: ${fox_SOURCE_DIR}")
-      message(STATUS "FoX binary dir: ${fox_BINARY_DIR}")
-    endif()
-  endif()
+   FetchContent_Declare(fox
+     GIT_REPOSITORY https://github.com/ESMCI/fox.git
+     GIT_TAG 4.1.2.1
+     SOURCE_DIR ${FOX_ROOT}
+     BINARY_DIR ${FOX_ROOT}/..
+   )
+   FetchContent_GetProperties(fox)
+   if(NOT fox_POPULATED)
+     FetchContent_Populate(fox)
+     message(STATUS "FoX source dir: ${fox_SOURCE_DIR}")
+     message(STATUS "FoX binary dir: ${fox_BINARY_DIR}")
+   endif()
   add_subdirectory(fox)
 
   target_include_directories(streams PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/fox/include>
