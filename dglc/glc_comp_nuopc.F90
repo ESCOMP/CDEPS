@@ -491,7 +491,7 @@ contains
     if (my_task == main_task) then
        call ESMF_TimeGet(currTime, timestring=timestring, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       write(logunit,'(a,l)') trim(timestring)//': valid_input for dglc is ',valid_inputs
+       write(logunit,'(a,l6)') trim(timestring)//': valid_input for dglc is ',valid_inputs
     end if
 
     ! determine if will write restart
