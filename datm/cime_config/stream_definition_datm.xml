@@ -4080,7 +4080,7 @@
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit $CLM_USRDAT_NAME=="PLUMBER">30</dtlimit>
+      <dtlimit $CLM_USRDAT_NAME=="PLUMBER2">30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -4620,7 +4620,7 @@
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
-      <dtlimit $CLM_USRDAT_NAME=="PLUMBER">30</dtlimit>
+      <dtlimit $CLM_USRDAT_NAME=="PLUMBER2">30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
