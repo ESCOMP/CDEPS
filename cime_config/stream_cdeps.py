@@ -76,6 +76,7 @@ class StreamCDEPS(GenericXML):
         data_list_file,
         user_mods_file,
         available_neon_data=None,
+        available_plumber_data=None
     ):
         """
         Create the stream xml file and append the required stream input data to the input data list file
@@ -187,6 +188,12 @@ class StreamCDEPS(GenericXML):
                     {"name": "NEON.NEON_PRECIP.$NEONSITE"},
                     err_msg="No stream_entry {} found".format(stream_name),
                 )
+            elif stream_name.startswith("PLUMBER"):
+                self.stream_nodes = super(StreamCDEPS, self).get_child(
+                    "stream_entry",
+                    {"name": "PLUMBER.$PLUMBER2SITE"},
+                    err_msg="No stream_entry {} found".format(stream_name),
+                )
             elif stream_name.startswith("CLM_USRDAT."):
                 self.stream_nodes = super(StreamCDEPS, self).get_child(
                     "stream_entry",
@@ -242,6 +249,13 @@ class StreamCDEPS(GenericXML):
                             for neon in available_neon_data:
                                 stream_datafiles += (
                                     os.path.join(rundir, "inputdata", "atm", neon)
+                                    + "\n"
+                                )
+                        elif available_plumber_data and stream_name.startswith("PLUMBER"):
+                            rundir = case.get_value("RUNDIR")
+                            for plumber in available_plumber_data:
+                                stream_datafiles += (
+                                    os.path.join(rundir, "inputdata", "atm", plumber)
                                     + "\n"
                                 )
                         else:
