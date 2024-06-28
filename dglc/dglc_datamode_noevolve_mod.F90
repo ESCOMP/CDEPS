@@ -178,7 +178,7 @@ contains
          call dshr_state_getfldptr(NStateExp(ns), field_out_rofi, fldptr1=Fgrg_rofi(ns)%ptr, rc=rc)
          if (chkerr(rc,__LINE__,u_FILE_u)) return
 
-         Fogg_rofi(ns)%ptr(:) = 0._r8
+         Fgrg_rofi(ns)%ptr(:) = 0._r8
       end do
 
       ! initialize pointers to import fields if appropriate
