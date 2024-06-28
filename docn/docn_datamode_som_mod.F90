@@ -34,6 +34,7 @@ module docn_datamode_som_mod
   real(r8), pointer :: So_v(:)      => null()
   real(r8), pointer :: So_dhdx(:)   => null()
   real(r8), pointer :: So_dhdy(:)   => null()
+  real(r8), pointer :: So_bldepth(:)   => null()
   real(r8), pointer :: Fioo_q(:)    => null()
   real(r8), pointer :: So_fswpen(:) => null()
 
@@ -98,6 +99,7 @@ contains
     call dshr_fldList_add(fldsExport, 'So_v'                )
     call dshr_fldList_add(fldsExport, 'So_dhdx'             )
     call dshr_fldList_add(fldsExport, 'So_dhdy'             )
+    call dshr_fldList_add(fldsExport, 'So_bldepth'          )
     call dshr_fldList_add(fldsExport, 'Fioo_q'              )
     call dshr_fldList_add(fldsExport, 'So_fswpen'           )
 
@@ -188,6 +190,8 @@ contains
     call dshr_state_getfldptr(exportState, 'So_dhdx'    , fldptr1=So_dhdx    , rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'So_dhdy'    , fldptr1=So_dhdy    , rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    call dshr_state_getfldptr(exportState, 'So_bldepth' , fldptr1=So_bldepth , rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Fioo_q'     , fldptr1=Fioo_q     , rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -289,6 +293,7 @@ contains
 
              ! save somtp to restart file
              somtp(n) = So_t(n)
+             So_bldepth(n) = strm_h(n)
           endif
        end do
        deallocate(tfreeze)
