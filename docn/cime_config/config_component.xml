@@ -13,7 +13,7 @@
        This file may have ocn desc entries.
   -->
   <description modifier_mode="1">
-    <desc ocn="DOCN[%DOM][%SOM][%SOMAQP][%IAF][%SST_AQUAP][%AQP1][%AQP2][%AQP3][%AQP4][%AQP5][%AQP6][%AQP7][%AQP8][%AQP9][%AQP10][%AQPFILE][%AQPCONST][%CPLHIST][%MULTILEV]">DOCN </desc>
+    <desc ocn="DOCN[%DOM][%SOM][%SOMAQP][%IAF][%SST_AQUAP][%AQP1][%AQP2][%AQP3][%AQP4][%AQP5][%AQP6][%AQP7][%AQP8][%AQP9][%AQP10][%AQPFILE][%AQPCONST][%CPLHIST][%MULTILEV][%MULTILEV-DOM]">DOCN </desc>
     <desc option="DOM">  prescribed ocean mode</desc>
     <desc option="SOM">  slab ocean mode</desc>
     <desc option="SOMAQP">  aquaplanet slab ocean mode</desc>
@@ -33,6 +33,7 @@
     <desc option="AQPCONST">  globally constant SST for idealized experiments, such as RCE </desc>
     <desc option="CPLHIST"> mediator history output for ocean fields imported to mediator </desc>
     <desc option="MULTILEV"> input stream files have multi level data</desc>
+    <desc option="MULTILEV-DOM"> input stream files have multi level data and prescribed ocean SST</desc>
   </description>
 
   <entry id="COMP_OCN">
@@ -46,7 +47,7 @@
 
   <entry id="DOCN_MODE">
     <type>char</type>
-    <valid_values>prescribed,sst_aquap1,sst_aquap2,sst_aquap3,sst_aquap4,sst_aquap5,sst_aquap6,sst_aquap7,sst_aquap8,sst_aquap9,sst_aquap10,sst_aquapfile,som,som_aquap,sst_aquap_constant,interannual,cplhist,multilev</valid_values>
+    <valid_values>prescribed,sst_aquap1,sst_aquap2,sst_aquap3,sst_aquap4,sst_aquap5,sst_aquap6,sst_aquap7,sst_aquap8,sst_aquap9,sst_aquap10,sst_aquapfile,som,som_aquap,sst_aquap_constant,interannual,cplhist,multilev,multilev_dom</valid_values>
     <default_value>prescribed</default_value>
     <values match="last">
       <value compset="_DOCN%DOM_" >prescribed</value>
@@ -67,6 +68,7 @@
       <value compset="_DOCN%AQPCONST_">sst_aquap_constant</value>
       <value compset="_DOCN%CPLHIST">cplhist</value>
       <value compset="_DOCN%MULTILEV">multilev</value>
+      <value compset="_DOCN%MULTILEV-DOM">multilev_dom</value>
     </values>
     <group>run_component_docn</group>
     <file>env_run.xml</file>
