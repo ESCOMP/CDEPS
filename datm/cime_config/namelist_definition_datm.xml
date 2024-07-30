@@ -41,7 +41,7 @@
         NEON.$NEONSITE
       </value>
       <value datm_mode="1PT" model_grid="CLM_USRDAT" neon="True">
-        PLUMBER.$PLUMBER2SITE
+        PLUMBER2.$PLUMBER2SITE
       </value>
       <value datm_mode="1PT" model_grid="CLM_USRDAT">
         CLM_USRDAT.$CLM_USRDAT_NAME
