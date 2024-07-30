@@ -188,10 +188,10 @@ class StreamCDEPS(GenericXML):
                     {"name": "NEON.NEON_PRECIP.$NEONSITE"},
                     err_msg="No stream_entry {} found".format(stream_name),
                 )
-            elif stream_name.startswith("PLUMBER"):
+            elif stream_name.startswith("PLUMBER2"):
                 self.stream_nodes = super(StreamCDEPS, self).get_child(
                     "stream_entry",
-                    {"name": "PLUMBER.$PLUMBER2SITE"},
+                    {"name": "PLUMBER2.$PLUMBER2SITE"},
                     err_msg="No stream_entry {} found".format(stream_name),
                 )
             elif stream_name.startswith("CLM_USRDAT."):
@@ -251,7 +251,7 @@ class StreamCDEPS(GenericXML):
                                     os.path.join(rundir, "inputdata", "atm", neon)
                                     + "\n"
                                 )
-                        elif available_plumber_data and stream_name.startswith("PLUMBER"):
+                        elif available_plumber_data and stream_name.startswith("PLUMBER2"):
                             rundir = case.get_value("RUNDIR")
                             for plumber in available_plumber_data:
                                 stream_datafiles += (
