@@ -343,10 +343,10 @@
 
 
   <!-- ===================================  -->
-  <!-- datm_mode PLUMBER.$PLUMBER2SITE      -->
+  <!-- datm_mode PLUMBER2.$PLUMBER2SITE      -->
   <!-- ===================================  -->
 
-  <stream_entry name="PLUMBER.$PLUMBER2SITE">
+  <stream_entry name="PLUMBER2.$PLUMBER2SITE">
     <stream_meshfile>
       <meshfile>none</meshfile>
     </stream_meshfile>
