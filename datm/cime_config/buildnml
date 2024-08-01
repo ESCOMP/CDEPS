@@ -147,9 +147,8 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
                 config['neon'] = "True"
                 # download and use the listing.csv file to determine data availablity
                 available_neon_data = _get_neon_data_availability(case, neonsite)
-        if 'PLUMBER' in clm_usrdat_name:
-            # TODO: not recognizing PLUBMER2SITE var in buildnml
-            plumber2site = case.get_value("PLUMBER2SITE")
+        if 'PLUMBER2' in clm_usrdat_name:
+            plumber2site = case.get_value('CASEROOT').split('/')[-1]
             if plumber2site:
                 config['plumber'] = "True"
     else:
