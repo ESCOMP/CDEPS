@@ -195,7 +195,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     if  clm_usrdat_name == 'NEON':
         streamlist.append(clm_usrdat_name+".NEON_PRECIP."+neonsite)   
     if clm_usrdat_name == 'PLUMBER2':
-        streamlist.append(clm_usrdat_name+plumber2site)
+        streamlist.append(clm_usrdat_name+"."+plumber2site)
 
     bias_correct = nmlgen.get_value("bias_correct")
     if bias_correct is not None:
