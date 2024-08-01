@@ -172,7 +172,7 @@ def buildlib(bldroot, libroot, case):
         else:
             # The dwav_lib is the last file built in cdeps, wait for it to be built
             dwav_lib = os.path.join(bldroot, "dwav", "libdwav.a")
-            time_to_wait = 300
+            time_to_wait = 600
             time_counter = 0
             while not os.path.exists(dwav_lib):
                 time.sleep(1)
