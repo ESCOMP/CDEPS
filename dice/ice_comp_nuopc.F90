@@ -575,16 +575,13 @@ contains
     end select
 
     ! Write restarts if needed
-    ! TODO - no rc returned
     if (restart_write) then
        select case (trim(datamode))
        case('ssmi', 'ssmi_iaf')
           call dice_datamode_ssmi_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
                logunit, my_task, sdat)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case ('cplhist')
           call dice_datamode_cplhist_restart_write(case_name, inst_suffix, target_ymd, target_tod, logunit, my_task, sdat)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end select
     end if
 
