@@ -353,7 +353,7 @@
       <meshfile>none</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file first_year="$DATM_YR_START" last_year="$DATM_YR_END">$DIN_LOC_ROOT/atm/cdeps/PLUMBER2/${PLUMBER2SITE}_%y.nc</file>
+      <file first_year="$DATM_YR_START" last_year="$DATM_YR_END">$DIN_LOC_ROOT/atm/datm7/CLM1PT_data/PLUMBER2/${PLUMBER2SITE}/CLM1PT_data/CTSM_DATM_${PLUMBER2SITE}_2010-${DATM_YR_END}.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>ZBOT   Sa_z</var>
