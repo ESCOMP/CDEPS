@@ -195,6 +195,8 @@ class StreamCDEPS(GenericXML):
                     err_msg="No stream_entry {} found".format(stream_name),
                 )
             elif stream_name.startswith("CLM_USRDAT."):
+                if 'PLUMBER2' in stream_name:
+                    continue
                 self.stream_nodes = super(StreamCDEPS, self).get_child(
                     "stream_entry",
                     {"name": "CLM_USRDAT.$CLM_USRDAT_NAME"},
