@@ -40,6 +40,9 @@
       <value datm_mode="1PT" model_grid="CLM_USRDAT" neon="True">
         NEON.$NEONSITE
       </value>
+      <value datm_mode="1PT" model_grid="CLM_USRDAT" neon="True">
+        PLUMBER2.$PLUMBER2SITE
+      </value>
       <value datm_mode="1PT" model_grid="CLM_USRDAT">
         CLM_USRDAT.$CLM_USRDAT_NAME
       </value>
