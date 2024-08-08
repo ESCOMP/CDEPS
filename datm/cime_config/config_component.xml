@@ -296,6 +296,15 @@
     <desc>starting year to loop data over</desc>
   </entry>
 
+  <entry id="DATM_YR_START_FILENAME">
+    <type>integer</type>
+    <valid_values></valid_values>
+    <default_value>UNSET</default_value>
+    <group>run_component_datm</group>
+    <file>env_run.xml</file>
+    <desc>Start year listed in PLUMBER2 filenames. Leave unset for other cases.</desc>
+  </entry>
+
   <entry id="DATM_YR_END">
     <type>integer</type>
     <valid_values></valid_values>
