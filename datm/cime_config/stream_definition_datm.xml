@@ -1175,7 +1175,7 @@
   
     <stream_entry name="Anomaly.Forcing.cmip5.rcp45">
     <stream_meshfile>
-      <meshfile>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/domain.permafrostRCN_P2.c2013.nc</meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
       <file>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/af.allvars.ccsm4.rcp45.2006-2300.nc</file>
@@ -1213,7 +1213,7 @@
 
   <stream_entry name="Anomaly.Forcing.Precip">
     <stream_meshfile>
-      <meshfile>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/domain.permafrostRCN_P2.c2013.nc</meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
       <file>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/af.pr.ccsm4.rcp45.2006-2300.nc</file>
@@ -1244,7 +1244,7 @@
 
   <stream_entry name="Anomaly.Forcing.Temperature">
     <stream_meshfile>
-      <meshfile>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/domain.permafrostRCN_P2.c2013.nc</meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
       <file>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/af.tas.ccsm4.rcp45.2006-2300.nc</file>
@@ -1275,7 +1275,7 @@
 
   <stream_entry name="Anomaly.Forcing.Pressure">
     <stream_meshfile>
-      <meshfile>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/domain.permafrostRCN_P2.c2013.nc</meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
       <file>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/af.ps.ccsm4.rcp45.2006-2300.nc</file>
@@ -1306,7 +1306,7 @@
 
   <stream_entry name="Anomaly.Forcing.Humidity">
     <stream_meshfile>
-      <meshfile>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/domain.permafrostRCN_P2.c2013.nc</meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
       <file>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/af.huss.ccsm4.rcp45.2006-2300.nc</file>
@@ -1337,7 +1337,7 @@
 
   <stream_entry name="Anomaly.Forcing.Uwind">
     <stream_meshfile>
-      <meshfile>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/domain.permafrostRCN_P2.c2013.nc</meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
       <file>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/af.uas.ccsm4.rcp45.2006-2300.nc</file>
@@ -1368,7 +1368,7 @@
 
   <stream_entry name="Anomaly.Forcing.Vwind">
     <stream_meshfile>
-      <meshfile>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/domain.permafrostRCN_P2.c2013.nc</meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
       <file>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/af.vas.ccsm4.rcp45.2006-2300.nc</file>
@@ -1399,7 +1399,7 @@
 
   <stream_entry name="Anomaly.Forcing.Shortwave">
     <stream_meshfile>
-      <meshfile>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/domain.permafrostRCN_P2.c2013.nc</meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
       <file>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/af.rsds.ccsm4.rcp45.2006-2300.nc</file>
@@ -1430,7 +1430,7 @@
 
   <stream_entry name="Anomaly.Forcing.Longwave">
     <stream_meshfile>
-      <meshfile>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/domain.permafrostRCN_P2.c2013.nc</meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
       <file>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/af.rlds.ccsm4.rcp45.2006-2300.nc</file>
