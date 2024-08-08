@@ -1170,7 +1170,7 @@
   </stream_entry>
 
   <!-- ===================      -->
-  <!-- anomoly forcing streams  -->
+  <!-- anomaly forcing streams  -->
   <!-- ===================      -->
   
     <stream_entry name="Anomaly.Forcing.cmip5.rcp45">
