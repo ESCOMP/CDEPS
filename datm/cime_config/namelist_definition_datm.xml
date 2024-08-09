@@ -221,7 +221,7 @@
     <type>char(10)</type>
     <category>datm</category>
     <group>datm_nml</group>
-    <valid_values>Anomaly.Forcing.cmip5.rcp45,Anomaly.Forcing.cmip6.ssp126,Anomaly.Forcing.Precip,Anomaly.Forcing.Temperature,Anomaly.Forcing.Pressure,Anomaly.Forcing.Humidity,Anomaly.Forcing.Uwind,Anomaly.Forcing.Vwind,Anomaly.Forcing.Shortwave,Anomaly.Forcing.Longwave</valid_values>
+    <valid_values>Anomaly.Forcing.cmip5.rcp45,Anomaly.Forcing.cmip6.ssp126,Anomaly.Forcing.cmip6.ssp245,Anomaly.Forcing.cmip6.ssp370,Anomaly.Forcing.cmip6.ssp585,Anomaly.Forcing.Precip,Anomaly.Forcing.Temperature,Anomaly.Forcing.Pressure,Anomaly.Forcing.Humidity,Anomaly.Forcing.Uwind,Anomaly.Forcing.Vwind,Anomaly.Forcing.Shortwave,Anomaly.Forcing.Longwave</valid_values>
     <desc>
       If set, include anomaly forcing streams in namelist.
     </desc>

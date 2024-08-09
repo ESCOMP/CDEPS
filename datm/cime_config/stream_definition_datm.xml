@@ -1249,6 +1249,120 @@
     <stream_readmode>single</stream_readmode>
   </stream_entry>
 
+    <stream_entry name="Anomaly.Forcing.cmip6.ssp245">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/CMIP6-SSP2-4.5/af.allvars.CESM.SSP2-4.5.2015-2100_c20220628.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>huss  Sa_shum_af</var>
+      <var>pr    Faxa_prec_af</var>
+      <var>ps    Sa_pbot_af</var>
+      <var>rlds  Faxa_lwdn_af</var>
+      <var>rsds  Faxa_swdn_af</var>
+      <var>tas   Sa_tbot_af</var>
+      <var>uas   Sa_u_af</var>
+      <var>vas   Sa_v_af</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>2015</stream_year_align>
+    <stream_year_first>2015</stream_year_first>
+    <stream_year_last>2100</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>nearest</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+    <stream_entry name="Anomaly.Forcing.cmip6.ssp370">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/CMIP6-SSP3-7.0/af.allvars.CESM.SSP3-7.0.2015-2100_c20220628.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>huss  Sa_shum_af</var>
+      <var>pr    Faxa_prec_af</var>
+      <var>ps    Sa_pbot_af</var>
+      <var>rlds  Faxa_lwdn_af</var>
+      <var>rsds  Faxa_swdn_af</var>
+      <var>tas   Sa_tbot_af</var>
+      <var>uas   Sa_u_af</var>
+      <var>vas   Sa_v_af</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>2015</stream_year_align>
+    <stream_year_first>2015</stream_year_first>
+    <stream_year_last>2100</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>nearest</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+    <stream_entry name="Anomaly.Forcing.cmip6.ssp585">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/CMIP6-SSP5-8.5/af.allvars.CESM.SSP5-8.5.2015-2100_c20220628.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>huss  Sa_shum_af</var>
+      <var>pr    Faxa_prec_af</var>
+      <var>ps    Sa_pbot_af</var>
+      <var>rlds  Faxa_lwdn_af</var>
+      <var>rsds  Faxa_swdn_af</var>
+      <var>tas   Sa_tbot_af</var>
+      <var>uas   Sa_u_af</var>
+      <var>vas   Sa_v_af</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>2015</stream_year_align>
+    <stream_year_first>2015</stream_year_first>
+    <stream_year_last>2100</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>nearest</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
   <stream_entry name="Anomaly.Forcing.Precip">
     <stream_meshfile>
       <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
