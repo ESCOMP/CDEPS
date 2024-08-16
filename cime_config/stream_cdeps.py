@@ -196,6 +196,8 @@ class StreamCDEPS(GenericXML):
                 )
             elif stream_name.startswith("CLM_USRDAT."):
                 if 'PLUMBER2' in stream_name:
+                    # if PLUMBER2 is in the stream name
+                    # we want to use PLUMBER2.PLUMBER2SITE instead of CLM_USRDAT.PLUMBER2
                     continue
                 self.stream_nodes = super(StreamCDEPS, self).get_child(
                     "stream_entry",
