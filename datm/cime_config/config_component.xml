@@ -299,10 +299,10 @@
   <entry id="DATM_YR_START_FILENAME">
     <type>integer</type>
     <valid_values></valid_values>
-    <default_value>-9999</default_value>
+    <default_value>9999</default_value>
     <group>run_component_datm</group>
     <file>env_run.xml</file>
-    <desc>Start year listed in PLUMBER2 filenames. Only used in PLUMBER2; leave as -9999 for other cases.</desc>
+    <desc>Start year listed in PLUMBER2 filenames for certain datm_modes. Currently only used in PLUMBER2; leave as the default value (9999) for other cases.</desc>
   </entry>
 
   <entry id="DATM_YR_END">
