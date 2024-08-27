@@ -24,6 +24,7 @@
       <value drof_mode="RYF8485_JRA"          >rof.ryf8485_jra</value>
       <value drof_mode="RYF9091_JRA"          >rof.ryf9091_jra</value>
       <value drof_mode="RYF0304_JRA"          >rof.ryf0304_jra</value>
+      <value drof_mode="GLOFAS"               >rof.glofas</value>
     </values>
   </entry>
 
@@ -44,7 +45,7 @@
     </values>
   </entry>
 
-  <entry id="model_meshfile"> 
+  <entry id="model_meshfile">
     <type>char</type>
     <category>streams</category>
     <input_pathname>abs</input_pathname>
