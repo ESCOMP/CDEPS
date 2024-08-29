@@ -49,8 +49,6 @@ module dglc_datamode_noevolve_mod
    ! type(icesheet_ptr_t), allocatable :: So_t(:)
    ! type(icesheet_ptr_t), allocatable :: So_q(:)
 
-   real(r8), allocatable  :: usrf(:) ! upper surface elevation (m) on ice grid
-
    ! Export Field names
    character(len=*), parameter :: field_out_area                   = 'Sg_area'
    character(len=*), parameter :: field_out_topo                   = 'Sg_topo'
@@ -206,7 +204,7 @@ contains
 
    !===============================================================================
    subroutine dglc_datamode_noevolve_advance(pio_subsystem, io_type, io_format, &
-        model_meshes, model_internal_gridsize, model_datafiles, rc)
+        logunit, model_meshes, model_internal_gridsize, model_datafiles, rc)
 
       ! Assume that the model mesh is the same as the input data mesh
 
@@ -214,6 +212,7 @@ contains
       type(iosystem_desc_t) , pointer     :: pio_subsystem              ! pio info
       integer               , intent(in)  :: io_type                    ! pio info
       integer               , intent(in)  :: io_format                  ! pio info
+      integer               , intent(in)  :: logunit                    ! For writing logs
       type(ESMF_Mesh)       , intent(in)  :: model_meshes(:)            ! ice sheets meshes
       real(r8)              , intent(in)  :: model_internal_gridsize(:) ! internal model gridsizes (m)
       character(len=*)      , intent(in)  :: model_datafiles(:)         ! input file names
@@ -240,7 +239,11 @@ contains
       real(r8)               :: rhoi   ! density of ice ~ kg/m^3
       real(r8)               :: rhoo   ! density of sea water ~ kg/m^3
       real(r8)               :: eus    ! eustatic sea level
+      real(r8), allocatable  :: Tot_smb(:) ! Sum smb on each ice sheet to reduce neg fluxes
+      real(r8)               :: num_Tot ! Number of active grid cells in total calculation
+      real(r8)               :: ice_out ! Scaled value of ice mass balance sent to rof
       real(r8), allocatable  :: lsrf(:) ! lower surface elevation (m) on ice grid
+      real(r8), allocatable  :: usrf(:) ! upper surface elevation (m) on ice grid
       character(len=*), parameter :: subname='(dglc_datamode_noevolve_advance): '
       !-------------------------------------------------------------------------------
 
@@ -361,7 +364,7 @@ contains
             end do
 
             deallocate(lsrf)
-
+            deallocate(usrf)
             call pio_closefile(pioid)
             call pio_freedecomp(pio_subsystem, pio_iodesc)
 
@@ -369,22 +372,57 @@ contains
 
       end if
 
+      ! Set initialized flag
+      initialized_noevolve = .true.
+      
       if (initialized_noevolve) then
+
          ! Compute Fgrg_rofi
          do ns = 1,num_icesheets
-            lsize = size(Fgrg_rofi(ns)%ptr)
+
+            ! Get mesh info
+            call ESMF_MeshGet(model_meshes(ns), elementdistGrid=distGrid, rc=rc)
+            if (ChkErr(rc,__LINE__,u_FILE_u)) return
+            call ESMF_DistGridGet(distGrid, localDe=0, elementCount=lsize, rc=rc)
+            if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+            allocate(Tot_smb(lsize))
+            Tot_smb(:) = 0.d0
+            num_Tot = 0.d0
+            ice_out = 0.d0
+
+            ! For No Evolve to reduce negative ice fluxes from DGLC, we will
+            ! Sum over all smb (Flgl_qice) for each ice sheet (not globally).
+            ! The output to the river model will be an equal division of the
+            ! final total (pos+Neg).
             do ng = 1,lsize
-               if (is_in_active_grid(usrf(ng))) then
-                  Fgrg_rofi(ns)%ptr(ng) = Flgl_qice(ns)%ptr(ng)
+               if (Sg_icemask_coupled_fluxes(ns)%ptr(ng).gt.0.d0) then
+                  Tot_smb(ns) = Tot_smb(ns)+Flgl_qice(ns)%ptr(ng)
+                  num_Tot = num_Tot+1.d0
+               end if
+            end do
+            ! Now redistribute the scaled values
+            if (num_Tot.gt.0.d0) then
+               ice_out = Tot_smb(ns)/num_Tot
+            else
+               ice_out = 0.d0
+            end if
+            do ng = 1,lsize
+               if (Sg_icemask_coupled_fluxes(ns)%ptr(ng).gt.0.d0) then
+                  Fgrg_rofi(ns)%ptr(ng) = ice_out
                else
                   Fgrg_rofi(ns)%ptr(ng) = 0._r8
                end if
             end do
+
+            deallocate(Tot_smb)
+               !if (is_in_active_grid(usrf(ng))) then
+               !   Fgrg_rofi(ns)%ptr(ng) = Flgl_qice(ns)%ptr(ng)
+               !else
+               !   Fgrg_rofi(ns)%ptr(ng) = 0._r8
+               !end if
          end do
       end if
-
-      ! Set initialized flag
-      initialized_noevolve = .true.
 
    end subroutine dglc_datamode_noevolve_advance
 
