@@ -49,6 +49,8 @@ module dglc_datamode_noevolve_mod
    ! type(icesheet_ptr_t), allocatable :: So_t(:)
    ! type(icesheet_ptr_t), allocatable :: So_q(:)
 
+   real(r8), allocatable  :: usrf(:) ! upper surface elevation (m) on ice grid
+
    ! Export Field names
    character(len=*), parameter :: field_out_area                   = 'Sg_area'
    character(len=*), parameter :: field_out_topo                   = 'Sg_topo'
@@ -238,8 +240,7 @@ contains
       real(r8)               :: rhoi   ! density of ice ~ kg/m^3
       real(r8)               :: rhoo   ! density of sea water ~ kg/m^3
       real(r8)               :: eus    ! eustatic sea level
-      real(r8), allocatable  :: lsrf(:)
-      real(r8), allocatable  :: usrf(:)
+      real(r8), allocatable  :: lsrf(:) ! lower surface elevation (m) on ice grid
       character(len=*), parameter :: subname='(dglc_datamode_noevolve_advance): '
       !-------------------------------------------------------------------------------
 
@@ -316,8 +317,8 @@ contains
             rcode = pio_inq_varid(pioid, 'thk', varid)
             call pio_read_darray(pioid, varid, pio_iodesc, thck,  rcode)
 
-            allocate(lsrf(lsize))
             allocate(usrf(lsize))
+            allocate(lsrf(lsize))
 
             rhoi = SHR_CONST_RHOICE   ! 0.917e3
             rhoo = SHR_CONST_RHOSW    ! 1.026e3
@@ -360,7 +361,6 @@ contains
             end do
 
             deallocate(lsrf)
-            deallocate(usrf)
 
             call pio_closefile(pioid)
             call pio_freedecomp(pio_subsystem, pio_iodesc)
@@ -372,8 +372,13 @@ contains
       if (initialized_noevolve) then
          ! Compute Fgrg_rofi
          do ns = 1,num_icesheets
-            do ng = 1,size(Fgrg_rofi(ns)%ptr)
-              Fgrg_rofi(ns)%ptr(ng) = Flgl_qice(ns)%ptr(ng)
+            lsize = size(Fgrg_rofi(ns)%ptr)
+            do ng = 1,lsize
+               if (is_in_active_grid(usrf(ng))) then
+                  Fgrg_rofi(ns)%ptr(ng) = Flgl_qice(ns)%ptr(ng)
+               else
+                  Fgrg_rofi(ns)%ptr(ng) = 0._r8
+               end if
             end do
          end do
       end if
