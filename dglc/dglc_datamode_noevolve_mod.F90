@@ -239,9 +239,11 @@ contains
       real(r8)               :: rhoi   ! density of ice ~ kg/m^3
       real(r8)               :: rhoo   ! density of sea water ~ kg/m^3
       real(r8)               :: eus    ! eustatic sea level
-      real(r8), allocatable  :: Tot_smb(:) ! Sum smb on each ice sheet to reduce neg fluxes
+      real(r8)               :: Tot_pos_smb ! Sum of positive smb values on each ice sheet for hole-filling
+      real(r8)               :: Tot_neg_smb ! Sum of negative smb values on each ice sheet for hole-filling
       real(r8)               :: num_Tot ! Number of active grid cells in total calculation
-      real(r8)               :: ice_out ! Scaled value of ice mass balance sent to rof
+      real(r8)               :: rat     ! Ratio of hole-filling flux to apply
+      real(r8), allocatable  :: ice_runoff_out(:) ! Scaled ice runoff output after holes filled
       real(r8), allocatable  :: lsrf(:) ! lower surface elevation (m) on ice grid
       real(r8), allocatable  :: usrf(:) ! upper surface elevation (m) on ice grid
       character(len=*), parameter :: subname='(dglc_datamode_noevolve_advance): '
@@ -386,41 +388,67 @@ contains
             call ESMF_DistGridGet(distGrid, localDe=0, elementCount=lsize, rc=rc)
             if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-            allocate(Tot_smb(lsize))
-            Tot_smb(:) = 0.d0
+            allocate(ice_runoff_out(lsize))
+            ice_runoff_out(:) = 0.d0
+            Tot_pos_smb = 0.d0
+            Tot_neg_smb = 0.d0
             num_Tot = 0.d0
-            ice_out = 0.d0
+            rat = 0.d0
 
             ! For No Evolve to reduce negative ice fluxes from DGLC, we will
-            ! Sum over all smb (Flgl_qice) for each ice sheet (not globally).
-            ! The output to the river model will be an equal division of the
-            ! final total (pos+Neg).
+            ! Calculate the total positive and total negative fluxes on each
+            ! processor for each ice sheet.
             do ng = 1,lsize
                if (Sg_icemask_coupled_fluxes(ns)%ptr(ng).gt.0.d0) then
-                  Tot_smb(ns) = Tot_smb(ns)+Flgl_qice(ns)%ptr(ng)
-                  num_Tot = num_Tot+1.d0
+                  if(Flgl_qice(ns)%ptr(ng) > 0.d0) then
+                     Tot_pos_smb = Tot_pos_smb+Flgl_qice(ns)%ptr(ng)
+                  end if
+                  ! Ignore places that are exactly 0.d0
+                  if(Flgl_qice(ns)%ptr(ng) < 0.d0) then
+                     Tot_neg_smb = Tot_neg_smb+Flgl_qice(ns)%ptr(ng)
+                  end if
                end if
             end do
-            ! Now redistribute the scaled values
-            if (num_Tot.gt.0.d0) then
-               ice_out = Tot_smb(ns)/num_Tot
+            ! If there's more positive than negative, then set all
+            ! negative to zero and destribute the negative flux amount
+            ! across the positive values, scaled by the size of the
+            ! positive value. This section also applies to any chunks
+            ! where there is no negative smb. In that case the ice
+            ! runoff is exactly equal to the input smb.
+            if(abs(Tot_pos_smb) >= abs(Tot_neg_smb)) then
+               do ng = 1,lsize             
+                  if (Sg_icemask_coupled_fluxes(ns)%ptr(ng).gt.0.d0) then
+                     if(Flgl_qice(ns)%ptr(ng) > 0.d0) then
+                        rat = Flgl_qice(ns)%ptr(ng)/Tot_pos_smb
+                        Fgrg_rofi(ns)%ptr(ng) = Flgl_qice(ns)%ptr(ng) + rat*Tot_neg_smb
+                     else if (Flgl_qice(ns)%ptr(ng) < 0.d0) then
+                        Fgrg_rofi(ns)%ptr(ng) = 0.d0
+                     end if
+                  else
+                     Fgrg_rofi(ns)%ptr(ng) = 0._r8
+                  end if
+               end do
             else
-               ice_out = 0.d0
-            end if
-            do ng = 1,lsize
-               if (Sg_icemask_coupled_fluxes(ns)%ptr(ng).gt.0.d0) then
-                  Fgrg_rofi(ns)%ptr(ng) = ice_out
-               else
-                  Fgrg_rofi(ns)%ptr(ng) = 0._r8
-               end if
-            end do
+               ! If there's more negative than positive, set the positive to zero
+               ! and distribute the positive amount to the negative spaces to
+               ! reduce their negativity a bit. This shouldn't happen often.
+               ! This section of code also applies if Tot_pos_smb is zero.
+               do ng = 1,lsize
+                  if (Sg_icemask_coupled_fluxes(ns)%ptr(ng).gt.0.d0) then
+                     if(Flgl_qice(ns)%ptr(ng) < 0.d0) then
+                        rat = Flgl_qice(ns)%ptr(ng)/Tot_neg_smb
+                        Fgrg_rofi(ns)%ptr(ng) = Flgl_qice(ns)%ptr(ng) + rat*Tot_pos_smb
+                     else if (Flgl_qice(ns)%ptr(ng) > 0.d0) then
+                        Fgrg_rofi(ns)%ptr(ng) = 0.d0
+                     end if
+                  else
+                     Fgrg_rofi(ns)%ptr(ng) = 0._r8
+                  end if
+               end do
+                  
+            end if ! More neg or pos smb
 
-            deallocate(Tot_smb)
-               !if (is_in_active_grid(usrf(ng))) then
-               !   Fgrg_rofi(ns)%ptr(ng) = Flgl_qice(ns)%ptr(ng)
-               !else
-               !   Fgrg_rofi(ns)%ptr(ng) = 0._r8
-               !end if
+            deallocate(ice_runoff_out)
          end do
       end if
 
