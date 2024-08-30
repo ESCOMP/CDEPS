@@ -430,7 +430,7 @@ contains
     end do ! end loop over ice sheets
 
     ! Run dglc
-    call dglc_comp_run(clock, current_ymd, current_tod, restart_write=.false., valid_inputs=.true., rc=rc)
+    call dglc_comp_run(gcomp, clock, current_ymd, current_tod, restart_write=.false., valid_inputs=.true., rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     call ESMF_TraceRegionExit('dglc_strdata_init')
@@ -498,19 +498,20 @@ contains
     restart_write = dshr_check_restart_alarm(clock, rc=rc)
 
     ! run dglc
-    call dglc_comp_run(clock, next_ymd, next_tod, restart_write, valid_inputs, rc=rc)
+    call dglc_comp_run(gcomp, clock, next_ymd, next_tod, restart_write, valid_inputs, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine ModelAdvance
 
   !===============================================================================
-  subroutine dglc_comp_run(clock, target_ymd, target_tod, restart_write, valid_inputs, rc)
+  subroutine dglc_comp_run(gcomp, clock, target_ymd, target_tod, restart_write, valid_inputs, rc)
 
     ! --------------------------
     ! advance dglc
     ! --------------------------
 
     ! input/output variables:
+    type(ESMF_GridComp)              :: gcomp
     type(ESMF_Clock) , intent(in)    :: clock
     integer          , intent(in)    :: target_ymd       ! model date
     integer          , intent(in)    :: target_tod       ! model sec into model date
@@ -589,7 +590,7 @@ contains
     select case (trim(datamode))
     case('noevolve')
       if (valid_inputs) then
-         call dglc_datamode_noevolve_advance(sdat(1)%pio_subsystem, sdat(1)%io_type, sdat(1)%io_format, &
+         call dglc_datamode_noevolve_advance(gcomp, sdat(1)%pio_subsystem, sdat(1)%io_type, sdat(1)%io_format, &
               logunit, model_meshes, model_internal_gridsize, model_datafiles, rc)
          if (ChkErr(rc,__LINE__,u_FILE_u)) return
       end if

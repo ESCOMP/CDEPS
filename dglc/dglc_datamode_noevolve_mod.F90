@@ -4,6 +4,8 @@ module dglc_datamode_noevolve_mod
    use ESMF             , only : ESMF_Mesh, ESMF_DistGrid, ESMF_FieldBundle, ESMF_Field
    use ESMF             , only : ESMF_FieldBundleCreate, ESMF_FieldCreate, ESMF_MeshLoc_Element
    use ESMF             , only : ESMF_FieldBundleAdd, ESMF_MeshGet, ESMF_DistGridGet, ESMF_Typekind_R8
+   use ESMF             , only : ESMF_GridComp, ESMF_GridCompGet
+   use ESMF             , only : ESMF_VM, ESMF_VMAllreduce, ESMF_REDUCE_SUM
    use NUOPC            , only : NUOPC_Advertise, NUOPC_IsConnected
    use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
    use shr_sys_mod      , only : shr_sys_abort
@@ -203,12 +205,13 @@ contains
    end subroutine dglc_datamode_noevolve_init_pointers
 
    !===============================================================================
-   subroutine dglc_datamode_noevolve_advance(pio_subsystem, io_type, io_format, &
+   subroutine dglc_datamode_noevolve_advance(gcomp, pio_subsystem, io_type, io_format, &
         logunit, model_meshes, model_internal_gridsize, model_datafiles, rc)
 
       ! Assume that the model mesh is the same as the input data mesh
 
-      ! input/output variables
+     ! input/output variables
+      type(ESMF_GridComp)                 :: gcomp
       type(iosystem_desc_t) , pointer     :: pio_subsystem              ! pio info
       integer               , intent(in)  :: io_type                    ! pio info
       integer               , intent(in)  :: io_format                  ! pio info
@@ -222,6 +225,7 @@ contains
       type(ESMF_FieldBundle) :: fldbun_noevolve
       type(ESMF_DistGrid)    :: distgrid
       type(ESMF_Field)       :: field_noevolve
+      type(ESMF_VM)          :: vm
       type(file_desc_t)      :: pioid
       type(io_desc_t)        :: pio_iodesc
       integer                :: ns  ! ice sheet index
@@ -239,8 +243,8 @@ contains
       real(r8)               :: rhoi   ! density of ice ~ kg/m^3
       real(r8)               :: rhoo   ! density of sea water ~ kg/m^3
       real(r8)               :: eus    ! eustatic sea level
-      real(r8)               :: Tot_pos_smb ! Sum of positive smb values on each ice sheet for hole-filling
-      real(r8)               :: Tot_neg_smb ! Sum of negative smb values on each ice sheet for hole-filling
+      real(r8)               :: loc_pos_smb(1), Tot_pos_smb(1) ! Sum of positive smb values on each ice sheet for hole-filling
+      real(r8)               :: loc_neg_smb(1), Tot_neg_smb(1) ! Sum of negative smb values on each ice sheet for hole-filling
       real(r8)               :: num_Tot ! Number of active grid cells in total calculation
       real(r8)               :: rat     ! Ratio of hole-filling flux to apply
       real(r8), allocatable  :: ice_runoff_out(:) ! Scaled ice runoff output after holes filled
@@ -390,42 +394,55 @@ contains
 
             allocate(ice_runoff_out(lsize))
             ice_runoff_out(:) = 0.d0
-            Tot_pos_smb = 0.d0
-            Tot_neg_smb = 0.d0
+            loc_pos_smb(1) = 0.d0
+            Tot_pos_smb(1) = 0.d0
+            loc_neg_smb(1) = 0.d0
+            Tot_neg_smb(1) = 0.d0
             num_Tot = 0.d0
             rat = 0.d0
 
             ! For No Evolve to reduce negative ice fluxes from DGLC, we will
             ! Calculate the total positive and total negative fluxes on each
-            ! processor for each ice sheet.
+            ! processor first (local totals).
             do ng = 1,lsize
                if (Sg_icemask_coupled_fluxes(ns)%ptr(ng).gt.0.d0) then
                   if(Flgl_qice(ns)%ptr(ng) > 0.d0) then
-                     Tot_pos_smb = Tot_pos_smb+Flgl_qice(ns)%ptr(ng)
+                     loc_pos_smb(1) = loc_pos_smb(1)+Flgl_qice(ns)%ptr(ng)*Sg_area(ns)%ptr(ng)
                   end if
                   ! Ignore places that are exactly 0.d0
                   if(Flgl_qice(ns)%ptr(ng) < 0.d0) then
-                     Tot_neg_smb = Tot_neg_smb+Flgl_qice(ns)%ptr(ng)
+                     loc_neg_smb(1) = loc_neg_smb(1)+Flgl_qice(ns)%ptr(ng)*Sg_area(ns)%ptr(ng)
                   end if
                end if
             end do
+            ! Now do two global sums to get the ice sheet total positive
+            ! and negative ice fluxes
+            call ESMF_GridCompGet(gcomp, vm=vm, rc=rc)
+            if (ChkErr(rc,__LINE__,u_FILE_u)) return
+            call ESMF_VMAllreduce(vm, senddata=loc_pos_smb, recvdata=Tot_pos_smb, count=1, &
+                 reduceflag=ESMF_REDUCE_SUM, rc=rc)
+            if (ChkErr(rc,__LINE__,u_FILE_u)) return
+            call ESMF_VMAllreduce(vm, senddata=loc_neg_smb, recvdata=Tot_neg_smb, count=1, &
+                 reduceflag=ESMF_REDUCE_SUM, rc=rc)
+            if (ChkErr(rc,__LINE__,u_FILE_u)) return
+            
             ! If there's more positive than negative, then set all
             ! negative to zero and destribute the negative flux amount
             ! across the positive values, scaled by the size of the
             ! positive value. This section also applies to any chunks
             ! where there is no negative smb. In that case the ice
             ! runoff is exactly equal to the input smb.
-            if(abs(Tot_pos_smb) >= abs(Tot_neg_smb)) then
+            if(abs(Tot_pos_smb(1)) >= abs(Tot_neg_smb(1))) then
                do ng = 1,lsize             
                   if (Sg_icemask_coupled_fluxes(ns)%ptr(ng).gt.0.d0) then
                      if(Flgl_qice(ns)%ptr(ng) > 0.d0) then
-                        rat = Flgl_qice(ns)%ptr(ng)/Tot_pos_smb
-                        Fgrg_rofi(ns)%ptr(ng) = Flgl_qice(ns)%ptr(ng) + rat*Tot_neg_smb
+                        rat = Flgl_qice(ns)%ptr(ng)/Tot_pos_smb(1)
+                        Fgrg_rofi(ns)%ptr(ng) = Flgl_qice(ns)%ptr(ng) + rat*Tot_neg_smb(1)/Sg_area(ns)%ptr(ng)
                      else if (Flgl_qice(ns)%ptr(ng) < 0.d0) then
                         Fgrg_rofi(ns)%ptr(ng) = 0.d0
                      end if
                   else
-                     Fgrg_rofi(ns)%ptr(ng) = 0._r8
+                     Fgrg_rofi(ns)%ptr(ng) = 0.d0
                   end if
                end do
             else
@@ -436,13 +453,13 @@ contains
                do ng = 1,lsize
                   if (Sg_icemask_coupled_fluxes(ns)%ptr(ng).gt.0.d0) then
                      if(Flgl_qice(ns)%ptr(ng) < 0.d0) then
-                        rat = Flgl_qice(ns)%ptr(ng)/Tot_neg_smb
-                        Fgrg_rofi(ns)%ptr(ng) = Flgl_qice(ns)%ptr(ng) + rat*Tot_pos_smb
+                        rat = Flgl_qice(ns)%ptr(ng)/Tot_neg_smb(1)
+                        Fgrg_rofi(ns)%ptr(ng) = Flgl_qice(ns)%ptr(ng) + rat*Tot_pos_smb(1)/Sg_area(ns)%ptr(ng)
                      else if (Flgl_qice(ns)%ptr(ng) > 0.d0) then
                         Fgrg_rofi(ns)%ptr(ng) = 0.d0
                      end if
                   else
-                     Fgrg_rofi(ns)%ptr(ng) = 0._r8
+                     Fgrg_rofi(ns)%ptr(ng) = 0.d0
                   end if
                end do
                   
