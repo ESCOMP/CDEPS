@@ -1,7 +1,7 @@
 module datm_datamode_jra_mod
 
   use ESMF             , only : ESMF_State, ESMF_StateGet, ESMF_SUCCESS, ESMF_LogWrite, ESMF_LOGMSG_INFO
-  use ESMF             , only : ESMF_MeshGet
+  use ESMF             , only : ESMF_MeshGet, ESMF_GridComp
   use ESMF             , only : ESMF_StateItem_Flag, ESMF_STATEITEM_NOTFOUND, operator(/=)
   use NUOPC            , only : NUOPC_Advertise
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
@@ -323,18 +323,18 @@ contains
   end subroutine datm_datamode_jra_restart_write
 
   !===============================================================================
-  subroutine datm_datamode_jra_restart_read(rest_filem, inst_suffix, logunit, my_task, mpicom, sdat)
+  subroutine datm_datamode_jra_restart_read(gcomp, rest_filem, logunit, my_task, mpicom, sdat)
 
     ! input/output arguments
+    type(ESMF_GridComp)         , intent(in)    :: gcomp
     character(len=*)            , intent(inout) :: rest_filem
-    character(len=*)            , intent(in)    :: inst_suffix
     integer                     , intent(in)    :: logunit
     integer                     , intent(in)    :: my_task
     integer                     , intent(in)    :: mpicom
     type(shr_strdata_type)      , intent(inout) :: sdat
     !-------------------------------------------------------------------------------
 
-    call dshr_restart_read(rest_filem, rpfile, inst_suffix, nullstr, logunit, my_task, mpicom, sdat)
+    call dshr_restart_read(gcomp, rest_filem, 'atm', nullstr, logunit, my_task, mpicom, sdat)
 
   end subroutine datm_datamode_jra_restart_read
 

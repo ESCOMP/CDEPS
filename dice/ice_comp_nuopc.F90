@@ -450,7 +450,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Run dice
-    call dice_comp_run(importState, exportState, next_ymd, next_tod, cosarg, restart_write, rc)
+    call dice_comp_run(gcomp, importState, exportState, next_ymd, next_tod, cosarg, restart_write, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     call ESMF_TraceRegionExit(subname)
@@ -458,13 +458,14 @@ contains
   end subroutine ModelAdvance
 
   !===============================================================================
-  subroutine dice_comp_run(importstate, exportstate, target_ymd, target_tod, cosarg, restart_write, rc)
+  subroutine dice_comp_run(gcomp, importstate, exportstate, target_ymd, target_tod, cosarg, restart_write, rc)
 
     ! --------------------------
     ! advance dice
     ! --------------------------
 
     ! input/output variables:
+    type(ESMF_GridComp), intent(in)  :: gcomp
     type(ESMF_State) , intent(inout) :: exportState
     type(ESMF_State) , intent(inout) :: importState
     integer          , intent(in)    :: target_ymd ! model date
@@ -504,7 +505,7 @@ contains
        if (restart_read) then
           select case (trim(datamode))
           case('ssmi', 'ssmi_iaf')
-             call dice_datamode_ssmi_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
+             call dice_datamode_ssmi_restart_read(gcomp, restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
           end select
        end if
 

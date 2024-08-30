@@ -2,7 +2,7 @@ module dice_datamode_ssmi_mod
 
   use ESMF                 , only : ESMF_State, ESMF_LogWrite, ESMF_Array, ESMF_MeshGet
   use ESMF                 , only : ESMF_SUCCESS, ESMF_LOGMSG_INFO, ESMF_DistGrid
-  use ESMF                 , only : ESMF_ArrayCreate, ESMF_ArrayDestroy
+  use ESMF                 , only : ESMF_ArrayCreate, ESMF_ArrayDestroy, ESMF_GridComp
   use NUOPC                , only : NUOPC_Advertise
   use shr_kind_mod         , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_sys_mod          , only : shr_sys_abort
@@ -586,9 +586,10 @@ contains
   end subroutine dice_datamode_ssmi_restart_write
 
   !===============================================================================
-  subroutine dice_datamode_ssmi_restart_read(rest_filem, inst_suffix, logunit, my_task, mpicom, sdat)
-
+  subroutine dice_datamode_ssmi_restart_read(gcomp, rest_filem, inst_suffix, logunit, my_task, mpicom, sdat)
+    use nuopc_shr_methods, only : shr_get_rpointer_name
     ! input/output arguments
+    type(ESMF_GridComp)         , intent(in)    :: gcomp
     character(len=*)            , intent(inout) :: rest_filem
     character(len=*)            , intent(in)    :: inst_suffix
     integer                     , intent(in)    :: logunit
@@ -601,7 +602,7 @@ contains
     allocate(water(sdat%model_lsize))
 
     ! read restart
-    call dshr_restart_read(rest_filem, rpfile, inst_suffix, nullstr, logunit, my_task, mpicom, sdat, &
+    call dshr_restart_read(gcomp, rest_filem, 'ice', nullstr, logunit, my_task, mpicom, sdat, &
          fld=water, fldname='water')
 
   end subroutine dice_datamode_ssmi_restart_read

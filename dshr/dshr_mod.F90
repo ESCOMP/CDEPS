@@ -950,17 +950,19 @@ contains
   end subroutine dshr_time_init
 
   !===============================================================================
-  subroutine dshr_restart_read(rest_filem, rpfile, inst_suffix, nullstr, &
+  subroutine dshr_restart_read(gcomp, rest_filem, compname, nullstr, &
        logunit, my_task, mpicom, sdat, fld, fldname)
 
     ! Read restart file
 
     use dshr_stream_mod, only : shr_stream_restIO
     use ESMF, only : ESMF_VMGetCurrent
+    use nuopc_shr_methods, only: shr_get_rpointer_name
+    
     ! input/output arguments
+    type(ESMF_GridComp)         , intent(in)    :: gcomp
     character(len=*)            , intent(inout) :: rest_filem
-    character(len=*)            , intent(in)    :: rpfile
-    character(len=*)            , intent(in)    :: inst_suffix
+    character(len=*)            , intent(in)    :: compname
     character(len=*)            , intent(in)    :: nullstr
     integer                     , intent(in)    :: logunit
     integer                     , intent(in)    :: my_task
@@ -970,6 +972,7 @@ contains
     character(len=*) , optional , intent(in)    :: fldname
 
     ! local variables
+    character(len=ESMF_MAXSTR)   :: rpfile
     type(ESMF_VM)     :: vm
     integer           :: nu
     logical           :: exists  ! file existance
@@ -990,13 +993,11 @@ contains
     exists = .false.
     if (trim(rest_filem) == trim(nullstr)) then
        if (my_task == main_task) then
+          call shr_get_rpointer_name(gcomp, compname, rpfile, 'read', rc)
+          
           write(logunit,F00) ' restart filename from rpointer'
-          inquire(file=trim(rpfile)//trim(inst_suffix), exist=exists)
-          if (.not.exists) then
-             write(logunit, F00) ' ERROR: rpointer file does not exist'
-             call shr_sys_abort(trim(subname)//' ERROR: rpointer file missing')
-          endif
-          open(newunit=nu, file=trim(rpfile)//trim(inst_suffix), form='formatted')
+
+          open(newunit=nu, file=trim(rpfile), form='formatted')
           read(nu, '(a)') rest_filem
           close(nu)
           inquire(file=trim(rest_filem), exist=exists)

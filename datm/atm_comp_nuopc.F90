@@ -479,7 +479,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Run datm
-    call datm_comp_run(importstate, exportstate, current_ymd, current_tod, current_mon, &
+    call datm_comp_run(gcomp, importstate, exportstate, current_ymd, current_tod, current_mon, &
          orbEccen, orbMvelpp, orbLambm0, orbObliqr, restart_write=.false., rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
@@ -561,7 +561,7 @@ contains
 
     ! Run datm
     call ESMF_TraceRegionEnter('datm_run')
-    call datm_comp_run(importstate, exportstate, next_ymd, next_tod, mon, &
+    call datm_comp_run(gcomp, importstate, exportstate, next_ymd, next_tod, mon, &
          orbEccen, orbMvelpp, orbLambm0, orbObliqr, restart_write,  rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_TraceRegionExit('datm_run')
@@ -579,7 +579,7 @@ contains
   end subroutine ModelAdvance
 
   !===============================================================================
-  subroutine datm_comp_run(importState, exportState, target_ymd, target_tod, target_mon, &
+  subroutine datm_comp_run(gcomp, importState, exportState, target_ymd, target_tod, target_mon, &
        orbEccen, orbMvelpp, orbLambm0, orbObliqr, restart_write, rc)
 
     ! ----------------------------------
@@ -587,6 +587,7 @@ contains
     ! ----------------------------------
 
     ! input/output variables
+    type(ESMF_GridComp)    , intent(in)    :: gcomp
     type(ESMF_State)       , intent(inout) :: importState
     type(ESMF_State)       , intent(inout) :: exportState
     integer                , intent(in)    :: target_ymd       ! model date
@@ -650,21 +651,21 @@ contains
        if (restart_read .and. .not. skip_restart_read) then
           select case (trim(datamode))
           case('CORE2_NYF','CORE2_IAF')
-             call datm_datamode_core2_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
+             call datm_datamode_core2_restart_read(gcomp, restfilm, logunit, my_task, mpicom, sdat)
           case('CORE_IAF_JRA')
-             call datm_datamode_jra_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
+             call datm_datamode_jra_restart_read(gcomp, restfilm, logunit, my_task, mpicom, sdat)
           case('CLMNCEP')
-             call datm_datamode_clmncep_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
+             call datm_datamode_clmncep_restart_read(gcomp, restfilm, logunit, my_task, mpicom, sdat)
           case('CPLHIST')
-             call datm_datamode_cplhist_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
+             call datm_datamode_cplhist_restart_read(gcomp, restfilm, logunit, my_task, mpicom, sdat)
           case('ERA5')
-             call datm_datamode_era5_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
+             call datm_datamode_era5_restart_read(gcomp, restfilm, logunit, my_task, mpicom, sdat)
           case('GEFS')
-             call datm_datamode_gefs_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
+             call datm_datamode_gefs_restart_read(gcomp, restfilm, logunit, my_task, mpicom, sdat)
           case('CFSR')
-             call datm_datamode_cfsr_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
+             call datm_datamode_cfsr_restart_read(gcomp, restfilm, logunit, my_task, mpicom, sdat)
           case('SIMPLE')
-             call datm_datamode_simple_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
+             call datm_datamode_simple_restart_read(gcomp, restfilm, logunit, my_task, mpicom, sdat)
           end select
        end if
 
