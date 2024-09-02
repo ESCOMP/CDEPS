@@ -332,7 +332,6 @@ contains
     character(CL)   :: cvalue
     character(CS)   :: cns
     logical         :: ispresent, isset
-    logical         :: read_restart
     logical         :: exists
     character(len=*), parameter :: subname=trim(module_name)//':(InitializeRealize) '
     !-------------------------------------------------------------------------------
@@ -357,11 +356,11 @@ contains
     mainproc = (my_task == main_task)
     call shr_log_setLogUnit(logunit)
 
-    ! Set restart flag
+    ! Set restart flag (sets module variable restart_read)
     call NUOPC_CompAttributeGet(gcomp, name='read_restart', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (isPresent .and. isSet) then
-       read(cvalue,*) read_restart
+       read(cvalue,*) restart_read
     else
        call shr_sys_abort(subname//' ERROR: read restart flag must be present')
     end if
@@ -557,12 +556,11 @@ contains
 
       ! Read restart if needed
       if (restart_read .and. .not. skip_restart_read) then
-        if (restart_read) then
-           call dglc_datamode_noevolve_restart_read(model_meshes, restfilm, &
-                inst_suffix, logunit, my_task, main_task, mpicom, &
-                sdat(1)%pio_subsystem, sdat(1)%io_type, nx_global, ny_global, rc)
-           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-        end if
+         write(logunit,'(a)')' DEBUG: calling dglc_datamode_noevolve_restart_read'
+         call dglc_datamode_noevolve_restart_read(model_meshes, restfilm, &
+              inst_suffix, logunit, my_task, main_task, mpicom, &
+              sdat(1)%pio_subsystem, sdat(1)%io_type, nx_global, ny_global, rc)
+         if (ChkErr(rc,__LINE__,u_FILE_u)) return
       end if
 
       ! Reset first_time

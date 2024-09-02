@@ -33,8 +33,6 @@ module dglc_datamode_noevolve_mod
 
    logical  :: initialized_noevolve = .false.
    integer  :: num_icesheets
-   integer, allocatable :: lsize(:) ! local size for ice sheet
-   integer, allocatable :: gsize(:) ! global size for ice sheet
    real(r8) :: thk0 = 1._r8
 
    ! Data structure to enable multiple ice sheets
@@ -175,17 +173,23 @@ contains
       allocate(Fgrg_rofi(num_icesheets))
 
       do ns = 1,num_icesheets
-         call dshr_state_getfldptr(NStateExp(ns), field_out_area, fldptr1=Sg_area(ns)%ptr, rc=rc)
+         call dshr_state_getfldptr(NStateExp(ns), field_out_area, &
+              fldptr1=Sg_area(ns)%ptr, rc=rc)
          if (chkerr(rc,__LINE__,u_FILE_u)) return
-         call dshr_state_getfldptr(NStateExp(ns), field_out_topo, fldptr1=Sg_topo(ns)%ptr, rc=rc)
+         call dshr_state_getfldptr(NStateExp(ns), field_out_topo, &
+              fldptr1=Sg_topo(ns)%ptr, rc=rc)
          if (chkerr(rc,__LINE__,u_FILE_u)) return
-         call dshr_state_getfldptr(NStateExp(ns), field_out_ice_covered, fldptr1=Sg_ice_covered(ns)%ptr, rc=rc)
+         call dshr_state_getfldptr(NStateExp(ns), field_out_ice_covered, &
+              fldptr1=Sg_ice_covered(ns)%ptr, rc=rc)
          if (chkerr(rc,__LINE__,u_FILE_u)) return
-         call dshr_state_getfldptr(NStateExp(ns), field_out_icemask, fldptr1=Sg_icemask(ns)%ptr, rc=rc)
+         call dshr_state_getfldptr(NStateExp(ns), field_out_icemask, &
+              fldptr1=Sg_icemask(ns)%ptr, rc=rc)
          if (chkerr(rc,__LINE__,u_FILE_u)) return
-         call dshr_state_getfldptr(NStateExp(ns), field_out_icemask_coupled_fluxes, fldptr1=Sg_icemask_coupled_fluxes(ns)%ptr, rc=rc)
+         call dshr_state_getfldptr(NStateExp(ns), field_out_icemask_coupled_fluxes, &
+              fldptr1=Sg_icemask_coupled_fluxes(ns)%ptr, rc=rc)
          if (chkerr(rc,__LINE__,u_FILE_u)) return
-         call dshr_state_getfldptr(NStateExp(ns), field_out_rofi, fldptr1=Fgrg_rofi(ns)%ptr, rc=rc)
+         call dshr_state_getfldptr(NStateExp(ns), field_out_rofi, &
+              fldptr1=Fgrg_rofi(ns)%ptr, rc=rc)
          if (chkerr(rc,__LINE__,u_FILE_u)) return
 
          Fgrg_rofi(ns)%ptr(:) = 0._r8
@@ -236,6 +240,7 @@ contains
       integer                :: ns        ! ice sheet index
       integer                :: ng        ! grid cell index
       integer                :: nelem     ! element counter
+      integer                :: lsize     ! local size
       integer, pointer       :: gindex(:) ! domain decomposition of data
       integer                :: ndims     ! number of dims
       integer, allocatable   :: dimid(:)
@@ -248,10 +253,8 @@ contains
       real(r8)               :: rhoi      ! density of ice ~ kg/m^3
       real(r8)               :: rhoo      ! density of sea water ~ kg/m^3
       real(r8)               :: eus       ! eustatic sea level
-      real(r8), allocatable  :: lsrf(:)   ! lower surface elevation (m) on ice grid
-      real(r8), allocatable  :: usrf(:)   ! upper surface elevation (m) on ice grid
-      integer                :: tileCount
-      integer, allocatable   :: elementCountPTile(:)
+      real(r8)               :: lsrf      ! lower surface elevation (m) on ice grid
+      real(r8)               :: usrf      ! upper surface elevation (m) on ice grid
       character(len=*), parameter :: subname='(dglc_datamode_noevolve_advance): '
       !-------------------------------------------------------------------------------
 
@@ -259,39 +262,23 @@ contains
 
       if (.not. initialized_noevolve) then
 
-         ! Allocate module variables
-         allocate(gsize(num_icesheets))
-         allocate(lsize(num_icesheets))
-
          ! Loop over ice sheets
          do ns = 1,num_icesheets
 
-            ! Determine lsize(ns) and gindex
+            ! Determine lsize and gindex
             call ESMF_MeshGet(model_meshes(ns), elementdistGrid=distGrid, rc=rc)
             if (ChkErr(rc,__LINE__,u_FILE_u)) return
-            call ESMF_DistGridGet(distGrid, localDe=0, elementCount=lsize(ns), rc=rc)
+            call ESMF_DistGridGet(distGrid, localDe=0, elementCount=lsize, rc=rc)
             if (ChkErr(rc,__LINE__,u_FILE_u)) return
-            allocate(gindex(lsize(ns)))
+            allocate(gindex(lsize))
             call ESMF_DistGridGet(distGrid, localDe=0, seqIndexList=gindex, rc=rc)
             if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-            ! Determine gsize(ns)
-            call ESMF_DistGridGet(distGrid, tileCount=tileCount, rc=rc)
-            if (ChkErr(rc,__LINE__,u_FILE_u)) return
-            allocate(elementCountPTile(tileCount))
-            call ESMF_distGridGet(distGrid, elementCountPTile=elementCountPTile, rc=rc)
-            if (ChkErr(rc,__LINE__,u_FILE_u)) return
-            gsize(ns) = 0
-            do nelem = 1,size(elementCountPTile)
-               gsize(ns) = gsize(ns) + elementCountPTile(nelem)
-            end do
-            deallocate(elementCountPTile)
 
             ! Determine "glc_area" ;
             ! Sg_areas is in radians
             ! SHR_CONST_REARTH is the radius of earth in m
             ! model_internal_gridsize is the internal model gridsize in m
-            do ng = 1,lsize(ns)
+            do ng = 1,lsize
                Sg_area(ns)%ptr(ng) = (model_internal_gridsize(ns)/SHR_CONST_REARTH)**2
             end do
 
@@ -346,19 +333,16 @@ contains
             rcode = pio_inq_varid(pioid, 'thk', varid)
             call pio_read_darray(pioid, varid, pio_iodesc, thck,  rcode)
 
-            allocate(usrf(lsize(ns)))
-            allocate(lsrf(lsize(ns)))
-
             rhoi = SHR_CONST_RHOICE   ! 0.917e3
             rhoo = SHR_CONST_RHOSW    ! 1.026e3
             eus = 0
-            do ng = 1,lsize(ns)
+            do ng = 1,lsize
                if (topog(ng) - eus < (-rhoi/rhoo) * thck(ng)) then
-                  lsrf(ng) = (-rhoi/rhoo) * thck(ng)
+                  lsrf = (-rhoi/rhoo) * thck(ng)
                else
-                  lsrf(ng) = topog(ng)
+                  lsrf = topog(ng)
                end if
-               usrf(ng) = max(0.d0, thck(ng) + lsrf(ng))
+               usrf = max(0.d0, thck(ng) + lsrf)
 
                ! The export field 'ice_mask_coupled_fluxes' determines who is handling the
                ! runoff associated with the surface mass balance
@@ -366,7 +350,7 @@ contains
                ! Since we want dglc to handle it no evolve mode - then
                ! ice_mask_coupled_fluxes to be identical to the mask
 
-               if (is_in_active_grid(usrf(ng))) then
+               if (is_in_active_grid(usrf)) then
                   Sg_icemask(ns)%ptr(ng) = 1.d0
                   Sg_icemask_coupled_fluxes(ns)%ptr(ng) = 1.d0
                   if (is_ice_covered(thck(ng))) then
@@ -377,7 +361,7 @@ contains
                   ! Note that we use the same method for computing topo whether this point is
                   ! ice-covered or ice-free. This is in contrast to the method for computing
                   ! ice-free topo in glint_upscaling_gcm.
-                  Sg_topo(ns)%ptr(ng) = thk0 * usrf(ng)
+                  Sg_topo(ns)%ptr(ng) = thk0 * usrf
                else
                   ! Note that this logic implies that if (in theory) we had an ice-covered
                   ! point outside the "active grid", it will get classified as ice-free for
@@ -389,8 +373,6 @@ contains
                end if
             end do
 
-            deallocate(lsrf)
-            deallocate(usrf)
             call pio_closefile(pioid)
             call pio_freedecomp(pio_subsystem, pio_iodesc)
 
@@ -401,7 +383,11 @@ contains
       if (initialized_noevolve) then
          ! Compute Fgrg_rofi
          do ns = 1,num_icesheets
-            do ng = 1,lsize(ns)
+            call ESMF_MeshGet(model_meshes(ns), elementdistGrid=distGrid, rc=rc)
+            if (ChkErr(rc,__LINE__,u_FILE_u)) return
+            call ESMF_DistGridGet(distGrid, localDe=0, elementCount=lsize, rc=rc)
+            if (ChkErr(rc,__LINE__,u_FILE_u)) return
+            do ng = 1,lsize
                if (Sg_icemask_coupled_fluxes(ns)%ptr(ng) > 0.d0) then
                   Fgrg_rofi(ns)%ptr(ng) = Flgl_qice(ns)%ptr(ng)
                else
@@ -470,6 +456,7 @@ contains
     type(ESMF_DistGrid) :: distgrid
     integer             :: ns
     character(len=CS)   :: cnum
+    integer             :: lsize
     integer, pointer    :: gindex(:) ! domain decomposition of data
     integer             :: nu
     character(len=CL)   :: rest_file_model
@@ -489,7 +476,9 @@ contains
        ! Determine gindex for this ice sheet
        call ESMF_MeshGet(model_meshes(ns), elementdistGrid=distGrid, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       allocate(gindex(lsize(ns)))
+       call ESMF_DistGridGet(distGrid, localDe=0, elementCount=lsize, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       allocate(gindex(lsize))
        call ESMF_DistGridGet(distGrid, localDe=0, seqIndexList=gindex, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
@@ -550,6 +539,7 @@ contains
     type(ESMF_DistGrid) :: distgrid
     integer             :: ns
     character(len=CS)   :: cnum
+    integer             :: lsize
     integer, pointer    :: gindex(:) ! domain decomposition of data
     type(ESMF_VM)       :: vm
     integer             :: nu
@@ -571,7 +561,9 @@ contains
        ! Determine gindex for this ice sheet
        call ESMF_MeshGet(model_meshes(ns), elementdistGrid=distGrid, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       allocate(gindex(lsize(ns)))
+       call ESMF_DistGridGet(distGrid, localDe=0, elementCount=lsize, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       allocate(gindex(lsize))
        call ESMF_DistGridGet(distGrid, localDe=0, seqIndexList=gindex, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
@@ -624,6 +616,9 @@ contains
              write(logunit, '(a)') trim(subname)//' file not found, skipping '//trim(restfilem)
           end if
        endif
+
+       ! Deallocate gindex
+       deallocate(gindex)
 
     end do ! loop over ice sheets
 
