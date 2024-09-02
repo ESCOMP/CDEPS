@@ -46,6 +46,8 @@ module cdeps_dglc_comp
   use dglc_datamode_noevolve_mod, only : dglc_datamode_noevolve_advertise
   use dglc_datamode_noevolve_mod, only : dglc_datamode_noevolve_init_pointers
   use dglc_datamode_noevolve_mod, only : dglc_datamode_noevolve_advance
+  use dglc_datamode_noevolve_mod, only : dglc_datamode_noevolve_restart_read
+  use dglc_datamode_noevolve_mod, only : dglc_datamode_noevolve_restart_write
 
   implicit none
   private ! except
@@ -251,7 +253,6 @@ contains
       end do
       write(logunit,'(a,a )')' restfilm          = ',trim(restfilm)
       write(logunit,'(a,l6)')' skip_restart_read = ',skip_restart_read
-
       bcasttmp(1) = 0
       if(skip_restart_read) bcasttmp(1) = 1
       bcasttmp(2) = num_icesheets
@@ -464,6 +465,7 @@ contains
     rc = ESMF_SUCCESS
     call shr_log_setLogUnit(logunit)
 
+    call ESMF_TraceRegionEnter(subname)
     call memcheck(subname, 5, my_task == main_task)
 
     ! query the Component for its clock
@@ -496,10 +498,16 @@ contains
 
     ! determine if will write restart
     restart_write = dshr_check_restart_alarm(clock, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (my_task == main_task) then
+       write(logunit,'(a,l6)') trim(timestring)//': restart write is ',restart_write
+    end if
 
     ! run dglc
     call dglc_comp_run(clock, next_ymd, next_tod, restart_write, valid_inputs, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    call ESMF_TraceRegionExit(subname)
 
   end subroutine ModelAdvance
 
@@ -548,9 +556,12 @@ contains
       end select
 
       ! Read restart if needed
-      if (trim(datamode) /= 'noevolve') then
-        if (restart_read .and. .not. skip_restart_read) then
-          ! placeholder for future datamodes
+      if (restart_read .and. .not. skip_restart_read) then
+        if (restart_read) then
+           call dglc_datamode_noevolve_restart_read(model_meshes, restfilm, &
+                inst_suffix, logunit, my_task, main_task, mpicom, &
+                sdat(1)%pio_subsystem, sdat(1)%io_type, nx_global, ny_global, rc)
+           if (ChkErr(rc,__LINE__,u_FILE_u)) return
         end if
       end if
 
@@ -596,9 +607,16 @@ contains
     end select
 
     ! Write restarts if needed
+
     if (restart_write) then
-      if (trim(datamode) /= 'evolve') then
-        ! this is a place holder for future datamode
+      if (trim(datamode) == 'noevolve') then
+         if (my_task == main_task) then
+            write(logunit,'(a)') 'calling dglc_datamode_noevolve_restart_write'
+         end if
+         call dglc_datamode_noevolve_restart_write(model_meshes, case_name, &
+              inst_suffix, target_ymd, target_tod, logunit, my_task, main_task, &
+              sdat(1)%pio_subsystem, sdat(1)%io_type, nx_global, ny_global, rc)
+         if (ChkErr(rc,__LINE__,u_FILE_u)) return
       end if
     end if
 
