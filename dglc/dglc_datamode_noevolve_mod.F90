@@ -436,9 +436,9 @@ contains
                do ng = 1,lsize             
                   if (Sg_icemask_coupled_fluxes(ns)%ptr(ng).gt.0.d0) then
                      if(Flgl_qice(ns)%ptr(ng) > 0.d0) then
-                        rat = Flgl_qice(ns)%ptr(ng)*Sg_area(ns)%ptr(ng)/Tot_pos_smb(1)
+                        rat = Flgl_qice(ns)%ptr(ng)/Tot_pos_smb(1)
                         Fgrg_rofi(ns)%ptr(ng) = Flgl_qice(ns)%ptr(ng) + rat*Tot_neg_smb(1)
-                     else if (Flgl_qice(ns)%ptr(ng) < 0.d0) then
+                     else
                         Fgrg_rofi(ns)%ptr(ng) = 0.d0
                      end if
                   else
@@ -453,9 +453,9 @@ contains
                do ng = 1,lsize
                   if (Sg_icemask_coupled_fluxes(ns)%ptr(ng).gt.0.d0) then
                      if(Flgl_qice(ns)%ptr(ng) < 0.d0) then
-                        rat = Flgl_qice(ns)%ptr(ng)*Sg_area(ns)%ptr(ng)/Tot_neg_smb(1)
+                        rat = Flgl_qice(ns)%ptr(ng)/Tot_neg_smb(1)
                         Fgrg_rofi(ns)%ptr(ng) = Flgl_qice(ns)%ptr(ng) + rat*Tot_pos_smb(1)
-                     else if (Flgl_qice(ns)%ptr(ng) > 0.d0) then
+                     else
                         Fgrg_rofi(ns)%ptr(ng) = 0.d0
                      end if
                   else
