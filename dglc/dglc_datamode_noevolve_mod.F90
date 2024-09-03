@@ -239,7 +239,6 @@ contains
       type(io_desc_t)        :: pio_iodesc
       integer                :: ns        ! ice sheet index
       integer                :: ng        ! grid cell index
-      integer                :: nelem     ! element counter
       integer                :: lsize     ! local size
       integer, pointer       :: gindex(:) ! domain decomposition of data
       integer                :: ndims     ! number of dims
@@ -462,7 +461,6 @@ contains
     character(len=CL)   :: rest_file_model
     character(len=CS)   :: date_str
     type(file_desc_t)   :: pioid
-    integer             :: dimid_fld
     integer             :: dimid2(2)
     type(var_desc_t)    :: varid
     type(io_desc_t)     :: pio_iodesc
