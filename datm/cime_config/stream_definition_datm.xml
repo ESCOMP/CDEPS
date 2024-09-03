@@ -41,6 +41,8 @@
   CORE_RYF9091_JRA      = JRA55 repeat year forcing, v1.3, 1990-1991 (for forcing POP and CICE)
   CORE_RYF0304_JRA      = JRA55 repeat year forcing, v1.3, 2003-2004 (for forcing POP and CICE)
   ERA5                  = ERA5 intra-annual year forcing
+  NEON                  = Run with forcing from NEON tower data
+  PLUMBER2              = Run with forcing from PLUMBER2 tower data
   SIMPLE                = Namelist-configurable, constant datm forcing for simple experiments
   CPLHIST               = Streams for lnd or ocn/ice forcing used for spinup
 
@@ -318,6 +320,50 @@
     </stream_datafiles>
     <stream_datavars>
       <var>PRECTmms   Faxa_precn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>none</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_YR_START</stream_year_first>
+    <stream_year_last>$DATM_YR_END</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode               >cycle</taxmode>
+      <taxmode compset="HIST">limit</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+
+  <!-- ===================================  -->
+  <!-- datm_mode PLUMBER2.$PLUMBER2SITE      -->
+  <!-- ===================================  -->
+
+  <stream_entry name="PLUMBER2.$PLUMBER2SITE">
+    <stream_meshfile>
+      <meshfile>none</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="$DATM_YR_START" last_year="$DATM_YR_END">$DIN_LOC_ROOT/atm/datm7/CLM1PT_data/PLUMBER2/${PLUMBER2SITE}/CLM1PT_data/CTSM_DATM_${PLUMBER2SITE}_${DATM_YR_START_FILENAME}-${DATM_YR_END}.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>ZBOT   Sa_z</var>
+      <var>TBOT   Sa_tbot</var>
+      <var>QBOT   Sa_shum</var>
+      <var>WIND   Sa_wind</var>
+      <var>PRECTmms   Faxa_precn</var>
+      <var>FSDS   Faxa_swdn</var>
+      <var>PSRF   Sa_pbot</var>
+      <var>FLDS   Faxa_lwdn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -3578,7 +3624,7 @@
       <meshfile>none</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_globalSSP3-7.0__simyr_2014-2501_CMIP6_c190506.nc</file>
+      <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_globalSSP3-7.0_simyr_1750-2501_CMIP6_c201101.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>CO2   Sa_co2diag</var>
@@ -4001,7 +4047,7 @@
       <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file>$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/aero/aerodep_clm_SSP370_b.e21.BWSSP370cmip6.f09_g17.CMIP6-SSP3-7.0-WACCM.001_2014-2101_monthly_0.9x1.25_c190402.nc</file>
+      <file>$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/aero/aerodep_clm_SSP370_b.e21.BWSSP370cmip6.f09_g17.CMIP6-SSP3-7.0-WACCM.001_1849-2101_monthly_0.9x1.25_c201103.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>BCDEPWET   Faxa_bcphiwet</var>
@@ -4036,6 +4082,7 @@
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
+      <dtlimit CLM_USRDAT_NAME="PLUMBER2">30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
@@ -4575,6 +4622,7 @@
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.5</dtlimit>
+      <dtlimit CLM_USRDAT_NAME="PLUMBER2">30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>

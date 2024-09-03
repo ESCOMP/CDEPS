@@ -568,7 +568,7 @@ contains
         if (chkerr(rc,__LINE__,u_FILE_u)) return
         if (ungriddedUBound(1) > 0) then
            if (.not.present(fldptr2)) then
-              call ESMF_LogWrite(trim(subname)//": ERROR missing rank=2 array ", &
+              call ESMF_LogWrite(trim(subname)//": ERROR missing rank=2 array for "//trim(name), &
                    ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
               rc = ESMF_FAILURE
               return
@@ -578,7 +578,7 @@ contains
            lrank = 2
         else
            if (.not.present(fldptr1)) then
-              call ESMF_LogWrite(trim(subname)//": ERROR missing rank=1 array ", &
+              call ESMF_LogWrite(trim(subname)//": ERROR missing rank=1 array for "//trim(name), &
                    ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
               rc = ESMF_FAILURE
               return
