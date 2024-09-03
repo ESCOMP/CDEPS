@@ -76,6 +76,7 @@ class StreamCDEPS(GenericXML):
         data_list_file,
         user_mods_file,
         available_neon_data=None,
+        available_plumber_data=None
     ):
         """
         Create the stream xml file and append the required stream input data to the input data list file
@@ -187,7 +188,17 @@ class StreamCDEPS(GenericXML):
                     {"name": "NEON.NEON_PRECIP.$NEONSITE"},
                     err_msg="No stream_entry {} found".format(stream_name),
                 )
+            elif stream_name.startswith("PLUMBER2"):
+                self.stream_nodes = super(StreamCDEPS, self).get_child(
+                    "stream_entry",
+                    {"name": "PLUMBER2.$PLUMBER2SITE"},
+                    err_msg="No stream_entry {} found".format(stream_name),
+                )
             elif stream_name.startswith("CLM_USRDAT."):
+                if 'PLUMBER2' in stream_name:
+                    # if PLUMBER2 is in the stream name
+                    # we want to use PLUMBER2.PLUMBER2SITE instead of CLM_USRDAT.PLUMBER2
+                    continue
                 self.stream_nodes = super(StreamCDEPS, self).get_child(
                     "stream_entry",
                     {"name": "CLM_USRDAT.$CLM_USRDAT_NAME"},
@@ -242,6 +253,13 @@ class StreamCDEPS(GenericXML):
                             for neon in available_neon_data:
                                 stream_datafiles += (
                                     os.path.join(rundir, "inputdata", "atm", neon)
+                                    + "\n"
+                                )
+                        elif available_plumber_data and stream_name.startswith("PLUMBER2"):
+                            rundir = case.get_value("RUNDIR")
+                            for plumber in available_plumber_data:
+                                stream_datafiles += (
+                                    os.path.join(rundir, "inputdata", "atm", plumber)
                                     + "\n"
                                 )
                         else:
