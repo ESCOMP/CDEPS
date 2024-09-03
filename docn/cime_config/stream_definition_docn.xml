@@ -206,6 +206,104 @@
     <stream_dtlimit>
       <dtlimit>1.e30</dtlimit>
     </stream_dtlimit>
-    <stream_readmode>single</stream_readmode></stream_entry>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="sst_depth_omip">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/gx1v7_151008_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>/glade/collections/cmip/CMIP6/OMIP/NCAR/CESM2/omip2/r1i1p1f1/Omon/thetao/gn/v20190802/thetao_Omon_CESM2_omip2_r1i1p1f1_gn_024501-030512.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>thetao  So_t_depth</var>
+    </stream_datavars>
+    <stream_lev_dimname>lev</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>245</stream_year_first>
+    <stream_year_last>245</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="salinity_depth">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/gx1v7_151008_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>/glade/collections/cmip/CMIP6/OMIP/NCAR/CESM2/omip2/r1i1p1f1/Omon/so/gn/v20190802/so_Omon_CESM2_omip2_r1i1p1f1_gn_024501-030512.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>so  So_s_depth</var>
+    </stream_datavars>
+    <stream_lev_dimname>lev</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>245</stream_year_first>
+    <stream_year_last>245</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="sst_salinity_depth_blom">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/tnx1v4_20170601_cdf5_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/ocn/docn7/MULTILEV/N1850frc2G_f09_tn14_gl4_SMB1_celo.blom.hm.2300.nc</file>
+      <file>$DIN_LOC_ROOT/ocn/docn7/MULTILEV/N1850frc2G_f09_tn14_gl4_SMB1_celo.blom.hm.2301.nc</file>
+      <file>$DIN_LOC_ROOT/ocn/docn7/MULTILEV/N1850frc2G_f09_tn14_gl4_SMB1_celo.blom.hm.2302.nc</file>
+      <file>$DIN_LOC_ROOT/ocn/docn7/MULTILEV/N1850frc2G_f09_tn14_gl4_SMB1_celo.blom.hm.2303.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>templvl  So_t_depth</var>
+      <var>salnlvl  So_s_depth</var>
+    </stream_datavars>
+    <stream_lev_dimname>depth</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>2300</stream_year_first>
+    <stream_year_last>2303</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
 
 </stream_data>

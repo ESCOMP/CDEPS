@@ -19,11 +19,11 @@ jobs:
       CPPFLAGS: "-I/usr/include -I/usr/local/include "
       LDFLAGS: "-L/usr/lib/x86_64-linux-gnu "
       # Versions of all dependencies can be updated here - these match tag names in the github repo
-      ESMF_VERSION: v8.5.0
-      ParallelIO_VERSION: pio2_6_0
+      ESMF_VERSION: v8.6.1
+      ParallelIO_VERSION: pio2_6_2
     steps:
       - id: checkout-CDEPS
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
       - id: load-env
@@ -37,7 +37,7 @@ jobs:
           sudo apt-get install autotools-dev autoconf
       - name: Cache PARALLELIO
         id: cache-PARALLELIO
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${GITHUB_WORKSPACE}/pio
           key: ${{ runner.os }}-${{ env.ParallelIO_VERSION }}-parallelio2

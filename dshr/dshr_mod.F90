@@ -60,9 +60,9 @@ module dshr_mod
   public  :: dshr_state_setscalar
   public  :: dshr_orbital_update
   public  :: dshr_orbital_init
+  public  :: dshr_alarm_init       ! initialize alarms
 
   private :: dshr_mesh_create_scol ! create mesh for single column mode
-  private :: dshr_alarm_init       ! initialize alarms
   private :: dshr_time_init        ! initialize time
 
   ! Note that gridTofieldMap = 2, therefore the ungridded dimension is innermost

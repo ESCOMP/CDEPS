@@ -32,6 +32,8 @@
       <value docn_mode="sst_aquap8">''</value>
       <value docn_mode="sst_aquap9">''</value>
       <value docn_mode="sst_aquap10">''</value>
+      <value docn_mode="multilev_dom">sst_salinity_depth_blom,prescribed</value>
+      <value docn_mode="multilev">sst_salinity_depth_blom</value>
     </values>
   </entry>
 
@@ -39,7 +41,7 @@
     <type>char</type>
     <category>docn</category>
     <group>docn_nml</group>
-    <valid_values>sstdata,sst_aquap1,sst_aquap2,sst_aquap3,sst_aquap4,sst_aquap5,sst_aquap6,sst_aquap7,sst_aquap8,sst_aquap9,sst_aquap10,sst_aquapfile,sst_aquap_constant,som,som_aquap,iaf,cplhist</valid_values>
+    <valid_values>sstdata,sst_aquap1,sst_aquap2,sst_aquap3,sst_aquap4,sst_aquap5,sst_aquap6,sst_aquap7,sst_aquap8,sst_aquap9,sst_aquap10,sst_aquapfile,sst_aquap_constant,som,som_aquap,iaf,cplhist,multilev,multilev_dom</valid_values>
     <desc>
       General method that operates on the data for a given docn_mode.
       ==> dataMode = "sstdata"
@@ -107,6 +109,8 @@
       <value docn_mode="sst_aquapfile$">sst_aquap_file</value>
       <value docn_mode="sst_aquap_constant$">sst_aquap_constant</value>
       <value docn_mode="cplhist">cplhist</value>
+      <value docn_mode="multilev_dom">multilev_dom</value>
+      <value docn_mode="multilev">multilev</value>
     </values>
   </entry>
 
