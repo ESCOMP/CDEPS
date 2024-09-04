@@ -994,6 +994,7 @@ contains
     if (trim(rest_filem) == trim(nullstr)) then
        if (my_task == main_task) then
           call shr_get_rpointer_name(gcomp, compname, rpfile, 'read', rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
           
           write(logunit,F00) ' restart filename from rpointer'
 

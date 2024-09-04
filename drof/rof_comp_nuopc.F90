@@ -310,7 +310,7 @@ contains
     call shr_cal_ymd2date(current_year, current_mon, current_day, current_ymd)
 
     ! Run drof
-    call drof_comp_run(exportstate, current_ymd, current_tod, restart_write=.false., rc=rc)
+    call drof_comp_run(gcomp, exportstate, current_ymd, current_tod, restart_write=.false., rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Add scalars to export state
@@ -365,19 +365,20 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! run drof
-    call drof_comp_run(exportState, next_ymd, next_tod, restart_write, rc=rc)
+    call drof_comp_run(gcomp, exportState, next_ymd, next_tod, restart_write, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine ModelAdvance
 
   !===============================================================================
-  subroutine drof_comp_run(exportState, target_ymd, target_tod, restart_write, rc)
+  subroutine drof_comp_run(gcomp, exportState, target_ymd, target_tod, restart_write, rc)
 
     ! --------------------------
     ! advance drof
     ! --------------------------
 
     ! input/output variables:
+    type(ESMF_GridComp), intent(in)  :: gcomp
     type(ESMF_State) , intent(inout) :: exportState
     integer          , intent(in)    :: target_ymd       ! model date
     integer          , intent(in)    :: target_tod       ! model sec into model date
@@ -411,7 +412,7 @@ contains
 
        ! Read restart if needed
        if (restart_read .and. .not. skip_restart_read) then
-          call dshr_restart_read(restfilm, rpfile, inst_suffix, nullstr, logunit, my_task, mpicom, sdat)
+          call dshr_restart_read(gcomp, restfilm, 'rof', nullstr, logunit, my_task, mpicom, sdat)
        end if
 
        first_time = .false.

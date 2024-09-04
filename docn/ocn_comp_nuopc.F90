@@ -453,7 +453,7 @@ contains
     call shr_cal_ymd2date(current_year, current_mon, current_day, current_ymd)
 
     ! Run docn
-    call docn_comp_run(importState, exportState, clock, current_ymd, current_tod, restart_write=.false., rc=rc)
+    call docn_comp_run(gcomp, importState, exportState, clock, current_ymd, current_tod, restart_write=.false., rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Add scalars to export state
@@ -512,19 +512,20 @@ contains
     restart_write = dshr_check_restart_alarm(clock, rc=rc)
 
     ! run docn
-    call docn_comp_run(importState, exportState, clock, next_ymd, next_tod, restart_write, rc=rc)
+    call docn_comp_run(gcomp, importState, exportState, clock, next_ymd, next_tod, restart_write, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine ModelAdvance
 
   !===============================================================================
-  subroutine docn_comp_run(importState, exportState, clock, target_ymd, target_tod, restart_write, rc)
+  subroutine docn_comp_run(gcomp, importState, exportState, clock, target_ymd, target_tod, restart_write, rc)
 
     ! --------------------------
     ! advance docn
     ! --------------------------
 
     ! input/output variables:
+    type(ESMF_GridComp) , intent(in) :: gcomp
     type(ESMF_Clock) , intent(in)    :: clock
     type(ESMF_State) , intent(inout) :: importState
     type(ESMF_State) , intent(inout) :: exportState
@@ -581,11 +582,11 @@ contains
        if (restart_read .and. .not. skip_restart_read) then
           select case (trim(datamode))
           case('sstdata', 'sst_aquap_file')
-             call docn_datamode_copyall_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
+             call docn_datamode_copyall_restart_read(gcomp, restfilm, logunit, my_task, mpicom, sdat)
           case('iaf')
-             call docn_datamode_iaf_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
+             call docn_datamode_iaf_restart_read(gcomp, restfilm, logunit, my_task, mpicom, sdat)
           case('som', 'som_aquap')
-             call docn_datamode_som_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
+             call docn_datamode_som_restart_read(gcomp, restfilm, logunit, my_task, mpicom, sdat)
           end select
        end if
 

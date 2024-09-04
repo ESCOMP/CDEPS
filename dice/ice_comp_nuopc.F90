@@ -382,7 +382,7 @@ contains
     cosArg = 2.0_R8*shr_const_pi*(jday - jday0)/365.0_R8
 
     ! Run dice
-    call dice_comp_run(importState, exportState, current_ymd, current_tod, cosarg, restart_write=.false., rc=rc)
+    call dice_comp_run(gcomp, importState, exportState, current_ymd, current_tod, cosarg, restart_write=.false., rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Add scalars to export state

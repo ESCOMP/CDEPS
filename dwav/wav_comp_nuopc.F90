@@ -290,7 +290,7 @@ contains
 
     ! Read restart if necessary
     if (restart_read .and. .not. skip_restart_read) then
-       call dshr_restart_read(restfilm, rpfile, inst_suffix, nullstr, logunit, my_task, mpicom, sdat)
+       call dshr_restart_read(gcomp, restfilm, 'wav', nullstr, logunit, my_task, mpicom, sdat)
     end if
 
     ! Get the time to interpolate the stream data to

@@ -4,7 +4,7 @@ module dglc_datamode_noevolve_mod
    use ESMF             , only : ESMF_Mesh, ESMF_DistGrid, ESMF_FieldBundle, ESMF_Field
    use ESMF             , only : ESMF_FieldBundleCreate, ESMF_FieldCreate, ESMF_MeshLoc_Element
    use ESMF             , only : ESMF_FieldBundleAdd, ESMF_MeshGet, ESMF_DistGridGet, ESMF_Typekind_R8
-   use ESMF             , only : ESMF_VMGetCurrent, ESMF_VMBroadCast, ESMF_VM
+   use ESMF             , only : ESMF_VMGetCurrent, ESMF_VMBroadCast, ESMF_VM, ESMF_GridComp
    use NUOPC            , only : NUOPC_Advertise, NUOPC_IsConnected
    use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
    use shr_sys_mod      , only : shr_sys_abort
@@ -515,14 +515,14 @@ contains
  end subroutine dglc_datamode_noevolve_restart_write
 
   !===============================================================================
-  subroutine dglc_datamode_noevolve_restart_read(model_meshes, restfilem, &
-       inst_suffix, logunit, my_task, main_task, mpicom, &
+  subroutine dglc_datamode_noevolve_restart_read(gcomp, model_meshes, restfilem, &
+       logunit, my_task, main_task, mpicom, &
        pio_subsystem, io_type, nx_global, ny_global, rc)
-
+    use nuopc_shr_methods, only : shr_get_rpointer_name
     ! input/output arguments
+    type(ESMF_GridComp)    , intent(in)    :: gcomp
     type(ESMF_Mesh)        , intent(in)    :: model_meshes(:) ! ice sheets meshes
     character(len=*)       , intent(inout) :: restfilem
-    character(len=*)       , intent(in)    :: inst_suffix
     integer                , intent(in)    :: logunit
     integer                , intent(in)    :: my_task
     integer                , intent(in)    :: main_task
@@ -537,6 +537,7 @@ contains
     type(ESMF_DistGrid) :: distgrid
     integer             :: ns
     character(len=CS)   :: cnum
+    character(len=CS)   :: rpfile
     integer             :: lsize
     integer, pointer    :: gindex(:) ! domain decomposition of data
     type(ESMF_VM)       :: vm
@@ -551,6 +552,41 @@ contains
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
+    ! Determine restart file
+    exists = .false.
+    if (trim(restfilem) == trim(nullstr)) then
+       if (my_task == main_task) then
+          call shr_get_rpointer_name(gcomp, 'glc', rpfile, 'read', rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          
+          write(logunit,'(a)') trim(subname)//' restart filename from rpointer'
+          open(newunit=nu, file=trim(rpfile), form='formatted')
+          read(nu,'(a)') restfilem
+          close(nu)
+          inquire(file=trim(restfilem), exist=exists)
+       endif
+       call ESMF_VMBroadCast(vm, restfilem, CL, main_task, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    else
+       ! use namelist already read
+       if (my_task == main_task) then
+          write(logunit, '(a)') trim(subname)//' restart filenames from namelist '
+          inquire(file=trim(restfilem), exist=exists)
+       endif
+    endif
+    call ESMF_VMGetCurrent(vm, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    tmp = 0
+    if(exists) tmp=1
+    call ESMF_VMBroadCast(vm, tmp, 1, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    exists = (tmp(1) == 1)
+    if (.not. exists .and. my_task == main_task) then
+       write(logunit, '(a)') trim(subname)//' file not found, skipping '//trim(restfilem)
+       ! Should we return here or just abort?
+       return
+    end if
+
 
     do ns = 1,num_icesheets
 
@@ -565,55 +601,17 @@ contains
        call ESMF_DistGridGet(distGrid, localDe=0, seqIndexList=gindex, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-       call ESMF_VMGetCurrent(vm, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-       ! Determine restart file
-       exists = .false.
-       if (trim(restfilem) == trim(nullstr)) then
-          if (my_task == main_task) then
-             write(logunit,'(a)') trim(subname)//' restart filename from rpointer'
-             inquire(file=trim(rpfile)//trim(inst_suffix), exist=exists)
-             if (.not.exists) then
-                write(logunit, '(a)') trim(subname)//' ERROR: rpointer file does not exist'
-                call shr_sys_abort(trim(subname)//' ERROR: rpointer file missing')
-             endif
-             open(newunit=nu, file=trim(rpfile)//trim(inst_suffix), form='formatted')
-             read(nu,'(a)') restfilem
-             close(nu)
-             inquire(file=trim(restfilem), exist=exists)
-          endif
-          call ESMF_VMBroadCast(vm, restfilem, CL, main_task, rc=rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       else
-          ! use namelist already read
-          if (my_task == main_task) then
-             write(logunit, '(a)') trim(subname)//' restart filenames from namelist '
-             inquire(file=trim(restfilem), exist=exists)
-          endif
-       endif
-       tmp = 0
-       if(exists) tmp=1
-       call ESMF_VMBroadCast(vm, tmp, 1, main_task, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       exists = (tmp(1) == 1)
 
        ! Read restart file
-       if (exists) then
-          if (my_task == main_task) then
-             write(logunit, '(a)') trim(subname)//' reading data model restart '//trim(restfilem)
-          end if
-          rcode = pio_openfile(pio_subsystem, pioid, io_type, trim(restfilem), pio_nowrite)
-          call pio_initdecomp(pio_subsystem, pio_double, (/nx_global(ns),ny_global(ns)/), gindex, pio_iodesc)
-          rcode = pio_inq_varid(pioid, 'flgl_rofi'//cnum, varid)
-          call pio_read_darray(pioid, varid, pio_iodesc, Fgrg_rofi(ns)%ptr, rcode)
-          call pio_closefile(pioid)
-          call pio_freedecomp(pio_subsystem, pio_iodesc)
-       else
-          if (my_task == main_task) then
-             write(logunit, '(a)') trim(subname)//' file not found, skipping '//trim(restfilem)
-          end if
-       endif
+       if (my_task == main_task) then
+          write(logunit, '(a)') trim(subname)//' reading data model restart '//trim(restfilem)
+       end if
+       rcode = pio_openfile(pio_subsystem, pioid, io_type, trim(restfilem), pio_nowrite)
+       call pio_initdecomp(pio_subsystem, pio_double, (/nx_global(ns),ny_global(ns)/), gindex, pio_iodesc)
+       rcode = pio_inq_varid(pioid, 'flgl_rofi'//cnum, varid)
+       call pio_read_darray(pioid, varid, pio_iodesc, Fgrg_rofi(ns)%ptr, rcode)
+       call pio_closefile(pioid)
+       call pio_freedecomp(pio_subsystem, pio_iodesc)
 
        ! Deallocate gindex
        deallocate(gindex)

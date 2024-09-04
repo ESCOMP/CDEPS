@@ -430,7 +430,7 @@ contains
     end do ! end loop over ice sheets
 
     ! Run dglc
-    call dglc_comp_run(clock, current_ymd, current_tod, restart_write=.false., valid_inputs=.true., rc=rc)
+    call dglc_comp_run(gcomp, clock, current_ymd, current_tod, restart_write=.false., valid_inputs=.true., rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     call ESMF_TraceRegionExit('dglc_strdata_init')
@@ -503,7 +503,7 @@ contains
     end if
 
     ! run dglc
-    call dglc_comp_run(clock, next_ymd, next_tod, restart_write, valid_inputs, rc=rc)
+    call dglc_comp_run(gcomp, clock, next_ymd, next_tod, restart_write, valid_inputs, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     call ESMF_TraceRegionExit(subname)
@@ -511,13 +511,14 @@ contains
   end subroutine ModelAdvance
 
   !===============================================================================
-  subroutine dglc_comp_run(clock, target_ymd, target_tod, restart_write, valid_inputs, rc)
+  subroutine dglc_comp_run(gcomp, clock, target_ymd, target_tod, restart_write, valid_inputs, rc)
 
     ! --------------------------
     ! advance dglc
     ! --------------------------
 
     ! input/output variables:
+    type(ESMF_GridComp) ,intent(in)  :: gcomp
     type(ESMF_Clock) , intent(in)    :: clock
     integer          , intent(in)    :: target_ymd       ! model date
     integer          , intent(in)    :: target_tod       ! model sec into model date
@@ -557,8 +558,8 @@ contains
       ! Read restart if needed
       if (restart_read .and. .not. skip_restart_read) then
          write(logunit,'(a)')' DEBUG: calling dglc_datamode_noevolve_restart_read'
-         call dglc_datamode_noevolve_restart_read(model_meshes, restfilm, &
-              inst_suffix, logunit, my_task, main_task, mpicom, &
+         call dglc_datamode_noevolve_restart_read(gcomp, model_meshes, restfilm, &
+              logunit, my_task, main_task, mpicom, &
               sdat(1)%pio_subsystem, sdat(1)%io_type, nx_global, ny_global, rc)
          if (ChkErr(rc,__LINE__,u_FILE_u)) return
       end if
