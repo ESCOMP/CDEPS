@@ -950,19 +950,17 @@ contains
   end subroutine dshr_time_init
 
   !===============================================================================
-  subroutine dshr_restart_read(gcomp, rest_filem, compname, nullstr, &
-       logunit, my_task, mpicom, sdat, rc, fld, fldname)
+  subroutine dshr_restart_read(rest_filem, rpfile, inst_suffix, nullstr, &
+       logunit, my_task, mpicom, sdat, fld, fldname)
 
     ! Read restart file
 
     use dshr_stream_mod, only : shr_stream_restIO
     use ESMF, only : ESMF_VMGetCurrent
-    use nuopc_shr_methods, only: shr_get_rpointer_name
-    
     ! input/output arguments
-    type(ESMF_GridComp)         , intent(in)    :: gcomp
     character(len=*)            , intent(inout) :: rest_filem
-    character(len=*)            , intent(in)    :: compname
+    character(len=*)            , intent(in)    :: rpfile
+    character(len=*)            , intent(in)    :: inst_suffix
     character(len=*)            , intent(in)    :: nullstr
     integer                     , intent(in)    :: logunit
     integer                     , intent(in)    :: my_task
@@ -970,10 +968,8 @@ contains
     type(shr_strdata_type)      , intent(inout) :: sdat
     real(r8)         , optional , pointer       :: fld(:)
     character(len=*) , optional , intent(in)    :: fldname
-    integer                     , intent(out)   :: rc
-    
+
     ! local variables
-    character(len=ESMF_MAXSTR)   :: rpfile
     type(ESMF_VM)     :: vm
     integer           :: nu
     logical           :: exists  ! file existance
@@ -981,11 +977,12 @@ contains
     type(var_desc_t)  :: varid
     type(io_desc_t)   :: pio_iodesc
     integer           :: rcode
+    integer           :: rc
     integer           :: tmp(1)
     character(*), parameter :: F00   = "('(dshr_restart_read) ',8a)"
     character(*), parameter :: subName = "(dshr_restart_read) "
     !-------------------------------------------------------------------------------
-    
+
     ! no streams means no restart file is read.
     if(shr_strdata_get_stream_count(sdat) <= 0) return
     call ESMF_VMGetCurrent(vm, rc=rc)
@@ -993,12 +990,13 @@ contains
     exists = .false.
     if (trim(rest_filem) == trim(nullstr)) then
        if (my_task == main_task) then
-          call shr_get_rpointer_name(gcomp, compname, rpfile, 'read', rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          
-          write(logunit,F00) ' restart filename from rpointer '//trim(rpfile)
-
-          open(newunit=nu, file=trim(rpfile), form='formatted')
+          write(logunit,F00) ' restart filename from rpointer'
+          inquire(file=trim(rpfile)//trim(inst_suffix), exist=exists)
+          if (.not.exists) then
+             write(logunit, F00) ' ERROR: rpointer file does not exist'
+             call shr_sys_abort(trim(subname)//' ERROR: rpointer file missing')
+          endif
+          open(newunit=nu, file=trim(rpfile)//trim(inst_suffix), form='formatted')
           read(nu, '(a)') rest_filem
           close(nu)
           inquire(file=trim(rest_filem), exist=exists)
