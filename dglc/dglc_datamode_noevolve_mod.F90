@@ -463,7 +463,7 @@ contains
     type(file_desc_t)   :: pioid
     integer             :: dimid2(2)
     type(var_desc_t), allocatable    :: varid(:)
-    type(io_desc_t)     :: pio_iodesc
+    type(io_desc_t), allocatable     :: pio_iodesc(:)
     integer             :: oldmode
     integer             :: rcode
     !-------------------------------------------------------------------------------
@@ -494,7 +494,7 @@ contains
        rcode = pio_put_att(pioid, pio_global, "version", "nuopc_data_models_v0")
     enddo
     rcode = pio_enddef(pioid)
-
+    allocate(pio_iodesc(num_icesheets))
     do ns = 1,num_icesheets
 
        ! Determine gindex for this ice sheet
@@ -505,16 +505,18 @@ contains
        allocate(gindex(lsize))
        call ESMF_DistGridGet(distGrid, localDe=0, seqIndexList=gindex, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call pio_initdecomp(pio_subsystem, pio_double, (/nx_global(ns),ny_global(ns)/), gindex, pio_iodesc(ns))
+       call pio_write_darray(pioid, varid(ns), pio_iodesc(ns), Fgrg_rofi(ns)%ptr, rcode, fillval=shr_const_spval)
        
-       call pio_initdecomp(pio_subsystem, pio_double, (/nx_global(ns),ny_global(ns)/), gindex, pio_iodesc)
-       call pio_write_darray(pioid, varid(ns), pio_iodesc, Fgrg_rofi(ns)%ptr, rcode, fillval=shr_const_spval)
-       call pio_freedecomp(pio_subsystem, pio_iodesc)
-
        ! Deallocate gindex
        deallocate (gindex)
     end do
     call pio_closefile(pioid)
- end subroutine dglc_datamode_noevolve_restart_write
+    do ns = 1,num_icesheets
+       call pio_freedecomp(pio_subsystem, pio_iodesc(ns))
+    enddo
+
+  end subroutine dglc_datamode_noevolve_restart_write
 
   !===============================================================================
   subroutine dglc_datamode_noevolve_restart_read(model_meshes, restfilem, &
