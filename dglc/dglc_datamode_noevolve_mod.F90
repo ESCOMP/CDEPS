@@ -6,17 +6,22 @@ module dglc_datamode_noevolve_mod
    use ESMF             , only : ESMF_FieldBundleAdd, ESMF_MeshGet, ESMF_DistGridGet, ESMF_Typekind_R8
    use ESMF             , only : ESMF_GridComp, ESMF_GridCompGet
    use ESMF             , only : ESMF_VM, ESMF_VMAllreduce, ESMF_REDUCE_SUM
+   use ESMF             , only : ESMF_VMGetCurrent, ESMF_VMBroadCast
    use NUOPC            , only : NUOPC_Advertise, NUOPC_IsConnected
    use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
    use shr_sys_mod      , only : shr_sys_abort
    use shr_const_mod    , only : SHR_CONST_RHOICE, SHR_CONST_RHOSW, SHR_CONST_REARTH, SHR_CONST_TKFRZ
+   use shr_const_mod    , only : SHR_CONST_SPVAL
+   use shr_cal_mod      , only : shr_cal_datetod2string
    use dshr_methods_mod , only : dshr_state_getfldptr, dshr_fldbun_getfldptr, chkerr
    use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
    use dshr_strdata_mod , only : shr_strdata_type
    use pio              , only : file_desc_t, io_desc_t, var_desc_t, iosystem_desc_t
    use pio              , only : pio_openfile, pio_inq_varid, pio_inq_varndims, pio_inq_vardimid
    use pio              , only : pio_inq_dimlen, pio_initdecomp, pio_read_darray, pio_double
-   use pio              , only : pio_closefile, pio_freedecomp, PIO_BCAST_ERROR, PIO_NOWRITE
+   use pio              , only : pio_closefile, pio_freedecomp, PIO_BCAST_ERROR, PIO_NOWRITE, PIO_CLOBBER
+   use pio              , only : pio_createfile, pio_def_dim, pio_def_var, pio_put_att, pio_fill
+   use pio              , only : pio_set_fill, pio_put_att, pio_enddef, pio_write_darray, PIO_GLOBAL
    use pio              , only : pio_seterrorhandling
 
    implicit none
@@ -25,6 +30,8 @@ module dglc_datamode_noevolve_mod
    public  :: dglc_datamode_noevolve_advertise
    public  :: dglc_datamode_noevolve_init_pointers
    public  :: dglc_datamode_noevolve_advance
+   public  :: dglc_datamode_noevolve_restart_write
+   public  :: dglc_datamode_noevolve_restart_read
 
    logical  :: initialized_noevolve = .false.
    integer  :: num_icesheets
@@ -65,6 +72,7 @@ module dglc_datamode_noevolve_mod
    character(len=*), parameter :: field_in_so_t_depth              = 'So_t_depth'
    character(len=*), parameter :: field_in_so_s_depth              = 'So_s_depth'
 
+   character(*) , parameter :: nullstr = 'null'
    character(*) , parameter :: rpfile  = 'rpointer.glc'
    character(*) , parameter :: u_FILE_u = &
         __FILE__
@@ -167,17 +175,23 @@ contains
       allocate(Fgrg_rofi(num_icesheets))
 
       do ns = 1,num_icesheets
-         call dshr_state_getfldptr(NStateExp(ns), field_out_area, fldptr1=Sg_area(ns)%ptr, rc=rc)
+         call dshr_state_getfldptr(NStateExp(ns), field_out_area, &
+              fldptr1=Sg_area(ns)%ptr, rc=rc)
          if (chkerr(rc,__LINE__,u_FILE_u)) return
-         call dshr_state_getfldptr(NStateExp(ns), field_out_topo, fldptr1=Sg_topo(ns)%ptr, rc=rc)
+         call dshr_state_getfldptr(NStateExp(ns), field_out_topo, &
+              fldptr1=Sg_topo(ns)%ptr, rc=rc)
          if (chkerr(rc,__LINE__,u_FILE_u)) return
-         call dshr_state_getfldptr(NStateExp(ns), field_out_ice_covered, fldptr1=Sg_ice_covered(ns)%ptr, rc=rc)
+         call dshr_state_getfldptr(NStateExp(ns), field_out_ice_covered, &
+              fldptr1=Sg_ice_covered(ns)%ptr, rc=rc)
          if (chkerr(rc,__LINE__,u_FILE_u)) return
-         call dshr_state_getfldptr(NStateExp(ns), field_out_icemask, fldptr1=Sg_icemask(ns)%ptr, rc=rc)
+         call dshr_state_getfldptr(NStateExp(ns), field_out_icemask, &
+              fldptr1=Sg_icemask(ns)%ptr, rc=rc)
          if (chkerr(rc,__LINE__,u_FILE_u)) return
-         call dshr_state_getfldptr(NStateExp(ns), field_out_icemask_coupled_fluxes, fldptr1=Sg_icemask_coupled_fluxes(ns)%ptr, rc=rc)
+         call dshr_state_getfldptr(NStateExp(ns), field_out_icemask_coupled_fluxes, &
+              fldptr1=Sg_icemask_coupled_fluxes(ns)%ptr, rc=rc)
          if (chkerr(rc,__LINE__,u_FILE_u)) return
-         call dshr_state_getfldptr(NStateExp(ns), field_out_rofi, fldptr1=Fgrg_rofi(ns)%ptr, rc=rc)
+         call dshr_state_getfldptr(NStateExp(ns), field_out_rofi, &
+              fldptr1=Fgrg_rofi(ns)%ptr, rc=rc)
          if (chkerr(rc,__LINE__,u_FILE_u)) return
 
          Fgrg_rofi(ns)%ptr(:) = 0._r8
@@ -228,9 +242,9 @@ contains
       type(ESMF_VM)          :: vm
       type(file_desc_t)      :: pioid
       type(io_desc_t)        :: pio_iodesc
-      integer                :: ns  ! ice sheet index
-      integer                :: ng  ! grid cell index
-      integer                :: lsize
+      integer                :: ns        ! ice sheet index
+      integer                :: ng        ! grid cell index
+      integer                :: lsize     ! local size
       integer, pointer       :: gindex(:) ! domain decomposition of data
       integer                :: ndims     ! number of dims
       integer, allocatable   :: dimid(:)
@@ -240,16 +254,17 @@ contains
       real(r8), pointer      :: topog(:)
       real(r8), pointer      :: thck(:)
       logical                :: exists
-      real(r8)               :: rhoi   ! density of ice ~ kg/m^3
-      real(r8)               :: rhoo   ! density of sea water ~ kg/m^3
-      real(r8)               :: eus    ! eustatic sea level
+      real(r8)               :: rhoi      ! density of ice ~ kg/m^3
+      real(r8)               :: rhoo      ! density of sea water ~ kg/m^3
+      real(r8)               :: eus       ! eustatic sea level
+      real(r8)               :: lsrf      ! lower surface elevation (m) on ice grid
+      real(r8)               :: usrf      ! upper surface elevation (m) on ice grid
       real(r8)               :: loc_pos_smb(1), Tot_pos_smb(1) ! Sum of positive smb values on each ice sheet for hole-filling
       real(r8)               :: loc_neg_smb(1), Tot_neg_smb(1) ! Sum of negative smb values on each ice sheet for hole-filling
       real(r8)               :: num_Tot ! Number of active grid cells in total calculation
       real(r8)               :: rat     ! Ratio of hole-filling flux to apply
       real(r8), allocatable  :: ice_runoff_out(:) ! Scaled ice runoff output after holes filled
-      real(r8), allocatable  :: lsrf(:) ! lower surface elevation (m) on ice grid
-      real(r8), allocatable  :: usrf(:) ! upper surface elevation (m) on ice grid
+
       character(len=*), parameter :: subname='(dglc_datamode_noevolve_advance): '
       !-------------------------------------------------------------------------------
 
@@ -257,9 +272,10 @@ contains
 
       if (.not. initialized_noevolve) then
 
+         ! Loop over ice sheets
          do ns = 1,num_icesheets
 
-            ! Get mesh info
+            ! Determine lsize and gindex
             call ESMF_MeshGet(model_meshes(ns), elementdistGrid=distGrid, rc=rc)
             if (ChkErr(rc,__LINE__,u_FILE_u)) return
             call ESMF_DistGridGet(distGrid, localDe=0, elementCount=lsize, rc=rc)
@@ -280,13 +296,15 @@ contains
             fldbun_noevolve = ESMF_FieldBundleCreate(rc=rc) ! input field bundle
 
             ! "ice thickness" ;
-            field_noevolve = ESMF_FieldCreate(model_meshes(ns), ESMF_TYPEKIND_R8, name='thk', meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
+            field_noevolve = ESMF_FieldCreate(model_meshes(ns), ESMF_TYPEKIND_R8, &
+                 name='thk', meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
             if (chkerr(rc,__LINE__,u_FILE_u)) return
             call ESMF_FieldBundleAdd(fldbun_noevolve, (/field_noevolve/), rc=rc)
             if (chkerr(rc,__LINE__,u_FILE_u)) return
 
             ! "bed topography" ;
-            field_noevolve = ESMF_FieldCreate(model_meshes(ns), ESMF_TYPEKIND_R8, name='topg', meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
+            field_noevolve = ESMF_FieldCreate(model_meshes(ns), ESMF_TYPEKIND_R8, &
+                 name='topg', meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
             if (chkerr(rc,__LINE__,u_FILE_u)) return
             call ESMF_FieldBundleAdd(fldbun_noevolve, (/field_noevolve/), rc=rc)
             if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -307,7 +325,6 @@ contains
             rcode = pio_inq_dimlen(pioid, dimid(2), nyg)
             call pio_initdecomp(pio_subsystem, pio_double, (/nxg,nyg/), gindex, pio_iodesc)
             deallocate(dimid)
-            deallocate(gindex)
 
             ! Read in the data into the appropriate field bundle pointers
             ! Note that Sg_ice_covered(ns)%ptr points into the data for
@@ -326,19 +343,16 @@ contains
             rcode = pio_inq_varid(pioid, 'thk', varid)
             call pio_read_darray(pioid, varid, pio_iodesc, thck,  rcode)
 
-            allocate(usrf(lsize))
-            allocate(lsrf(lsize))
-
             rhoi = SHR_CONST_RHOICE   ! 0.917e3
             rhoo = SHR_CONST_RHOSW    ! 1.026e3
             eus = 0
             do ng = 1,lsize
                if (topog(ng) - eus < (-rhoi/rhoo) * thck(ng)) then
-                  lsrf(ng) = (-rhoi/rhoo) * thck(ng)
+                  lsrf = (-rhoi/rhoo) * thck(ng)
                else
-                  lsrf(ng) = topog(ng)
+                  lsrf = topog(ng)
                end if
-               usrf(ng) = max(0.d0, thck(ng) + lsrf(ng))
+               usrf = max(0.d0, thck(ng) + lsrf)
 
                ! The export field 'ice_mask_coupled_fluxes' determines who is handling the
                ! runoff associated with the surface mass balance
@@ -346,7 +360,7 @@ contains
                ! Since we want dglc to handle it no evolve mode - then
                ! ice_mask_coupled_fluxes to be identical to the mask
 
-               if (is_in_active_grid(usrf(ng))) then
+               if (is_in_active_grid(usrf)) then
                   Sg_icemask(ns)%ptr(ng) = 1.d0
                   Sg_icemask_coupled_fluxes(ns)%ptr(ng) = 1.d0
                   if (is_ice_covered(thck(ng))) then
@@ -357,7 +371,7 @@ contains
                   ! Note that we use the same method for computing topo whether this point is
                   ! ice-covered or ice-free. This is in contrast to the method for computing
                   ! ice-free topo in glint_upscaling_gcm.
-                  Sg_topo(ns)%ptr(ng) = thk0 * usrf(ng)
+                  Sg_topo(ns)%ptr(ng) = thk0 * usrf
                else
                   ! Note that this logic implies that if (in theory) we had an ice-covered
                   ! point outside the "active grid", it will get classified as ice-free for
@@ -369,8 +383,6 @@ contains
                end if
             end do
 
-            deallocate(lsrf)
-            deallocate(usrf)
             call pio_closefile(pioid)
             call pio_freedecomp(pio_subsystem, pio_iodesc)
 
@@ -378,9 +390,6 @@ contains
 
       end if
 
-      ! Set initialized flag
-      initialized_noevolve = .true.
-      
       if (initialized_noevolve) then
 
          ! Compute Fgrg_rofi
@@ -469,6 +478,9 @@ contains
          end do
       end if
 
+      ! Set initialized flag
+      initialized_noevolve = .true.
+      
    end subroutine dglc_datamode_noevolve_advance
 
    !===============================================================================
@@ -500,5 +512,198 @@ contains
          is_ice_covered = .false.
       end if
    end function is_ice_covered
+
+  !===============================================================================
+  subroutine dglc_datamode_noevolve_restart_write(model_meshes, case_name, &
+       inst_suffix, ymd, tod, logunit, my_task, main_task, &
+       pio_subsystem, io_type, nx_global, ny_global, rc)
+
+    ! input/output variables
+    type(ESMF_Mesh)        , intent(in)    :: model_meshes(:) ! ice sheets meshes
+    character(len=*)       , intent(in)    :: case_name
+    character(len=*)       , intent(in)    :: inst_suffix
+    integer                , intent(in)    :: ymd             ! model date
+    integer                , intent(in)    :: tod             ! model sec into model date
+    integer                , intent(in)    :: logunit
+    integer                , intent(in)    :: my_task
+    integer                , intent(in)    :: main_task
+    type(iosystem_desc_t)  , pointer       :: pio_subsystem   ! pio info
+    integer                , intent(in)    :: io_type         ! pio info
+    integer                , intent(in)    :: nx_global(:)
+    integer                , intent(in)    :: ny_global(:)
+    integer                , intent(out)   :: rc
+
+    ! local variables
+    type(ESMF_DistGrid) :: distgrid
+    integer             :: ns
+    character(len=CS)   :: cnum
+    integer             :: lsize
+    integer, pointer    :: gindex(:) ! domain decomposition of data
+    integer             :: nu
+    character(len=CL)   :: rest_file_model
+    character(len=CS)   :: date_str
+    type(file_desc_t)   :: pioid
+    integer             :: dimid2(2)
+    type(var_desc_t), allocatable    :: varid(:)
+    type(io_desc_t), allocatable     :: pio_iodesc(:)
+    integer             :: oldmode
+    integer             :: rcode
+    !-------------------------------------------------------------------------------
+
+    rc = ESMF_SUCCESS
+    call shr_cal_datetod2string(date_str, ymd, tod)
+    write(rest_file_model ,"(7a)") trim(case_name),'.','dglc',trim(inst_suffix),'.r.',trim(date_str),'.nc'
+    ! write restart info to rpointer file
+    if (my_task == main_task) then
+       open(newunit=nu, file=trim(rpfile)//trim(inst_suffix), form='formatted')
+       write(nu,'(a)') rest_file_model
+       close(nu)
+       write(logunit,'(a,2x,i0,2x,i0)')' writing with no streams '//trim(rest_file_model), ymd, tod
+    endif
+
+    ! write data model restart data
+    rcode = pio_createfile(pio_subsystem, pioid, io_type, trim(rest_file_model), pio_clobber)
+    allocate(varid(num_icesheets))
+    do ns = 1,num_icesheets
+       ! Need to explicitly write restart since noevolve mode does not read a stream
+       write(cnum,'(i0)') ns
+
+       rcode = pio_def_dim(pioid, '_nx'//trim(cnum), nx_global(ns), dimid2(1))
+       rcode = pio_def_dim(pioid, '_ny'//trim(cnum), ny_global(ns), dimid2(2))
+       rcode = pio_def_var(pioid, 'flgl_rofi'//cnum, PIO_DOUBLE, (/dimid2/), varid(ns))
+       rcode = pio_put_att(pioid, varid(ns), "_FillValue", shr_const_spval)
+       rcode = pio_set_fill(pioid, PIO_FILL, oldmode)
+       rcode = pio_put_att(pioid, pio_global, "version", "nuopc_data_models_v0")
+    enddo
+    rcode = pio_enddef(pioid)
+    allocate(pio_iodesc(num_icesheets))
+    do ns = 1,num_icesheets
+
+       ! Determine gindex for this ice sheet
+       call ESMF_MeshGet(model_meshes(ns), elementdistGrid=distGrid, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call ESMF_DistGridGet(distGrid, localDe=0, elementCount=lsize, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       allocate(gindex(lsize))
+       call ESMF_DistGridGet(distGrid, localDe=0, seqIndexList=gindex, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call pio_initdecomp(pio_subsystem, pio_double, (/nx_global(ns),ny_global(ns)/), gindex, pio_iodesc(ns))
+       call pio_write_darray(pioid, varid(ns), pio_iodesc(ns), Fgrg_rofi(ns)%ptr, rcode, fillval=shr_const_spval)
+       
+       ! Deallocate gindex
+       deallocate (gindex)
+    end do
+    call pio_closefile(pioid)
+    do ns = 1,num_icesheets
+       call pio_freedecomp(pio_subsystem, pio_iodesc(ns))
+    enddo
+
+  end subroutine dglc_datamode_noevolve_restart_write
+
+  !===============================================================================
+  subroutine dglc_datamode_noevolve_restart_read(model_meshes, restfilem, &
+       inst_suffix, logunit, my_task, main_task, mpicom, &
+       pio_subsystem, io_type, nx_global, ny_global, rc)
+
+    ! input/output arguments
+    type(ESMF_Mesh)        , intent(in)    :: model_meshes(:) ! ice sheets meshes
+    character(len=*)       , intent(inout) :: restfilem
+    character(len=*)       , intent(in)    :: inst_suffix
+    integer                , intent(in)    :: logunit
+    integer                , intent(in)    :: my_task
+    integer                , intent(in)    :: main_task
+    integer                , intent(in)    :: mpicom
+    type(iosystem_desc_t)  , pointer       :: pio_subsystem   ! pio info
+    integer                , intent(in)    :: io_type         ! pio info
+    integer                , intent(in)    :: nx_global(:)
+    integer                , intent(in)    :: ny_global(:)
+    integer                , intent(out)   :: rc
+
+    ! local variables
+    type(ESMF_DistGrid) :: distgrid
+    integer             :: ns
+    character(len=CS)   :: cnum
+    integer             :: lsize
+    integer, pointer    :: gindex(:) ! domain decomposition of data
+    type(ESMF_VM)       :: vm
+    integer             :: nu
+    logical             :: exists  ! file existance
+    type(file_desc_t)   :: pioid
+    type(var_desc_t)    :: varid
+    type(io_desc_t)     :: pio_iodesc
+    integer             :: rcode
+    integer             :: tmp(1)
+    character(*), parameter :: subName = "(dglc_datamode_noevolve_restart_read) "
+    !-------------------------------------------------------------------------------
+
+    rc = ESMF_SUCCESS
+    ! Determine restart file
+
+
+    if (trim(restfilem) == trim(nullstr)) then
+       exists = .false.
+       call ESMF_VMGetCurrent(vm, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       if (my_task == main_task) then
+          write(logunit,'(a)') trim(subname)//' restart filename from rpointer'
+          inquire(file=trim(rpfile)//trim(inst_suffix), exist=exists)
+          if (.not.exists) then
+             write(logunit, '(a)') trim(subname)//' ERROR: rpointer file does not exist'
+             call shr_sys_abort(trim(subname)//' ERROR: rpointer file missing')
+          endif
+          open(newunit=nu, file=trim(rpfile)//trim(inst_suffix), form='formatted')
+          read(nu,'(a)') restfilem
+          close(nu)
+          inquire(file=trim(restfilem), exist=exists)
+       endif
+       call ESMF_VMBroadCast(vm, restfilem, CL, main_task, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    else
+       ! use namelist already read
+       if (my_task == main_task) then
+          write(logunit, '(a)') trim(subname)//' restart filenames from namelist '
+          inquire(file=trim(restfilem), exist=exists)
+       endif
+    endif
+    tmp = 0
+    if(exists) tmp=1
+    exists = (tmp(1) == 1)
+    if (.not. exists .and. my_task == main_task) then
+       write(logunit, '(a)') trim(subname)//' file not found, skipping '//trim(restfilem)
+       return
+    end if
+    
+    ! Read restart file
+    if (my_task == main_task) then
+       write(logunit, '(a)') trim(subname)//' reading data model restart '//trim(restfilem)
+    end if
+    
+    rcode = pio_openfile(pio_subsystem, pioid, io_type, trim(restfilem), pio_nowrite)
+    do ns = 1,num_icesheets
+
+       write(cnum,'(i0)') ns
+
+       ! Determine gindex for this ice sheet
+       call ESMF_MeshGet(model_meshes(ns), elementdistGrid=distGrid, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call ESMF_DistGridGet(distGrid, localDe=0, elementCount=lsize, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       allocate(gindex(lsize))
+       call ESMF_DistGridGet(distGrid, localDe=0, seqIndexList=gindex, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+
+       call pio_initdecomp(pio_subsystem, pio_double, (/nx_global(ns),ny_global(ns)/), gindex, pio_iodesc)
+       rcode = pio_inq_varid(pioid, 'flgl_rofi'//cnum, varid)
+       call pio_read_darray(pioid, varid, pio_iodesc, Fgrg_rofi(ns)%ptr, rcode)
+       call pio_freedecomp(pio_subsystem, pio_iodesc)
+
+       ! Deallocate gindex
+       deallocate(gindex)
+
+    end do ! loop over ice sheets
+    call pio_closefile(pioid)
+
+ end subroutine dglc_datamode_noevolve_restart_read
 
 end module dglc_datamode_noevolve_mod
