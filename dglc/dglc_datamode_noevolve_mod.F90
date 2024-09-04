@@ -462,7 +462,7 @@ contains
     character(len=CS)   :: date_str
     type(file_desc_t)   :: pioid
     integer             :: dimid2(2)
-    type(var_desc_t)    :: varid
+    type(var_desc_t), allocatable    :: varid(:)
     type(io_desc_t)     :: pio_iodesc
     integer             :: oldmode
     integer             :: rcode
@@ -481,15 +481,15 @@ contains
 
     ! write data model restart data
     rcode = pio_createfile(pio_subsystem, pioid, io_type, trim(rest_file_model), pio_clobber)
-    
+    allocate(varid(num_icesheets))
     do ns = 1,num_icesheets
        ! Need to explicitly write restart since noevolve mode does not read a stream
        write(cnum,'(i0)') ns
 
        rcode = pio_def_dim(pioid, '_nx'//trim(cnum), nx_global(ns), dimid2(1))
        rcode = pio_def_dim(pioid, '_ny'//trim(cnum), ny_global(ns), dimid2(2))
-       rcode = pio_def_var(pioid, 'flgl_rofi'//cnum, PIO_DOUBLE, (/dimid2/), varid)
-       rcode = pio_put_att(pioid, varid, "_FillValue", shr_const_spval)
+       rcode = pio_def_var(pioid, 'flgl_rofi'//cnum, PIO_DOUBLE, (/dimid2/), varid(ns))
+       rcode = pio_put_att(pioid, varid(ns), "_FillValue", shr_const_spval)
        rcode = pio_set_fill(pioid, PIO_FILL, oldmode)
        rcode = pio_put_att(pioid, pio_global, "version", "nuopc_data_models_v0")
     enddo
@@ -507,7 +507,7 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        
        call pio_initdecomp(pio_subsystem, pio_double, (/nx_global(ns),ny_global(ns)/), gindex, pio_iodesc)
-       call pio_write_darray(pioid, varid, pio_iodesc, Fgrg_rofi(ns)%ptr, rcode, fillval=shr_const_spval)
+       call pio_write_darray(pioid, varid(ns), pio_iodesc, Fgrg_rofi(ns)%ptr, rcode, fillval=shr_const_spval)
        call pio_freedecomp(pio_subsystem, pio_iodesc)
 
        ! Deallocate gindex
