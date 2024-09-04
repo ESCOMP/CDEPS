@@ -462,15 +462,41 @@ contains
     character(len=CS)   :: date_str
     type(file_desc_t)   :: pioid
     integer             :: dimid2(2)
-    type(var_desc_t)    :: varid
-    type(io_desc_t)     :: pio_iodesc
+    type(var_desc_t), allocatable    :: varid(:)
+    type(io_desc_t), allocatable     :: pio_iodesc(:)
     integer             :: oldmode
     integer             :: rcode
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
+    call shr_cal_datetod2string(date_str, ymd, tod)
+    write(rest_file_model ,"(7a)") trim(case_name),'.','dglc',trim(inst_suffix),'.r.',trim(date_str),'.nc'
+    ! write restart info to rpointer file
+    if (my_task == main_task) then
+       open(newunit=nu, file=trim(rpfile)//trim(inst_suffix), form='formatted')
+       write(nu,'(a)') rest_file_model
+       close(nu)
+       write(logunit,'(a,2x,i0,2x,i0)')' writing with no streams '//trim(rest_file_model), ymd, tod
+    endif
 
+    ! write data model restart data
+    rcode = pio_createfile(pio_subsystem, pioid, io_type, trim(rest_file_model), pio_clobber)
+    allocate(varid(num_icesheets))
     do ns = 1,num_icesheets
+       ! Need to explicitly write restart since noevolve mode does not read a stream
+       write(cnum,'(i0)') ns
+
+       rcode = pio_def_dim(pioid, '_nx'//trim(cnum), nx_global(ns), dimid2(1))
+       rcode = pio_def_dim(pioid, '_ny'//trim(cnum), ny_global(ns), dimid2(2))
+       rcode = pio_def_var(pioid, 'flgl_rofi'//cnum, PIO_DOUBLE, (/dimid2/), varid(ns))
+       rcode = pio_put_att(pioid, varid(ns), "_FillValue", shr_const_spval)
+       rcode = pio_set_fill(pioid, PIO_FILL, oldmode)
+       rcode = pio_put_att(pioid, pio_global, "version", "nuopc_data_models_v0")
+    enddo
+    rcode = pio_enddef(pioid)
+    allocate(pio_iodesc(num_icesheets))
+    do ns = 1,num_icesheets
+
        ! Determine gindex for this ice sheet
        call ESMF_MeshGet(model_meshes(ns), elementdistGrid=distGrid, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -479,40 +505,18 @@ contains
        allocate(gindex(lsize))
        call ESMF_DistGridGet(distGrid, localDe=0, seqIndexList=gindex, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-       ! Need to explicitly write restart since noevolve mode does not read a stream
-       write(cnum,'(i0)') ns
-
-       call shr_cal_datetod2string(date_str, ymd, tod)
-       write(rest_file_model ,"(7a)") trim(case_name),'.','dglc',trim(inst_suffix),'.r.',trim(date_str),'.nc'
-
-       ! write restart info to rpointer file
-       if (my_task == main_task) then
-          open(newunit=nu, file=trim(rpfile)//trim(inst_suffix), form='formatted')
-          write(nu,'(a)') rest_file_model
-          close(nu)
-          write(logunit,'(a,2x,i0,2x,i0)')' writing with no streams '//trim(rest_file_model), ymd, tod
-       endif
-
-       ! write data model restart data
-       rcode = pio_createfile(pio_subsystem, pioid, io_type, trim(rest_file_model), pio_clobber)
-       rcode = pio_def_dim(pioid, '_nx'//trim(cnum), nx_global(ns), dimid2(1))
-       rcode = pio_def_dim(pioid, '_ny'//trim(cnum), ny_global(ns), dimid2(2))
-       rcode = pio_def_var(pioid, 'flgl_rofi'//cnum, PIO_DOUBLE, (/dimid2/), varid)
-       rcode = pio_put_att(pioid, varid, "_FillValue", shr_const_spval)
-       rcode = pio_set_fill(pioid, PIO_FILL, oldmode)
-       rcode = pio_put_att(pioid, pio_global, "version", "nuopc_data_models_v0")
-       rcode = pio_enddef(pioid)
-
-       call pio_initdecomp(pio_subsystem, pio_double, (/nx_global(ns),ny_global(ns)/), gindex, pio_iodesc)
-       call pio_write_darray(pioid, varid, pio_iodesc, Fgrg_rofi(ns)%ptr, rcode, fillval=shr_const_spval)
-       call pio_closefile(pioid)
-       call pio_freedecomp(pio_subsystem, pio_iodesc)
-
+       call pio_initdecomp(pio_subsystem, pio_double, (/nx_global(ns),ny_global(ns)/), gindex, pio_iodesc(ns))
+       call pio_write_darray(pioid, varid(ns), pio_iodesc(ns), Fgrg_rofi(ns)%ptr, rcode, fillval=shr_const_spval)
+       
        ! Deallocate gindex
        deallocate (gindex)
     end do
- end subroutine dglc_datamode_noevolve_restart_write
+    call pio_closefile(pioid)
+    do ns = 1,num_icesheets
+       call pio_freedecomp(pio_subsystem, pio_iodesc(ns))
+    enddo
+
+  end subroutine dglc_datamode_noevolve_restart_write
 
   !===============================================================================
   subroutine dglc_datamode_noevolve_restart_read(gcomp, model_meshes, restfilem, &
@@ -554,11 +558,12 @@ contains
     rc = ESMF_SUCCESS
     ! Determine restart file
     exists = .false.
+    call ESMF_VMGetCurrent(vm, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (trim(restfilem) == trim(nullstr)) then
        if (my_task == main_task) then
           call shr_get_rpointer_name(gcomp, 'glc', rpfile, 'read', rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          
           write(logunit,'(a)') trim(subname)//' restart filename from rpointer'
           open(newunit=nu, file=trim(rpfile), form='formatted')
           read(nu,'(a)') restfilem
@@ -574,20 +579,24 @@ contains
           inquire(file=trim(restfilem), exist=exists)
        endif
     endif
-    call ESMF_VMGetCurrent(vm, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
     tmp = 0
     if(exists) tmp=1
     call ESMF_VMBroadCast(vm, tmp, 1, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     exists = (tmp(1) == 1)
+
     if (.not. exists .and. my_task == main_task) then
        write(logunit, '(a)') trim(subname)//' file not found, skipping '//trim(restfilem)
        ! Should we return here or just abort?
        return
     end if
 
-
+    ! Read restart file
+    if (my_task == main_task) then
+       write(logunit, '(a)') trim(subname)//' reading data model restart '//trim(restfilem)
+    end if
+    
+    rcode = pio_openfile(pio_subsystem, pioid, io_type, trim(restfilem), pio_nowrite)
     do ns = 1,num_icesheets
 
        write(cnum,'(i0)') ns
@@ -601,7 +610,6 @@ contains
        call ESMF_DistGridGet(distGrid, localDe=0, seqIndexList=gindex, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-
        ! Read restart file
        if (my_task == main_task) then
           write(logunit, '(a)') trim(subname)//' reading data model restart '//trim(restfilem)
@@ -610,13 +618,17 @@ contains
        call pio_initdecomp(pio_subsystem, pio_double, (/nx_global(ns),ny_global(ns)/), gindex, pio_iodesc)
        rcode = pio_inq_varid(pioid, 'flgl_rofi'//cnum, varid)
        call pio_read_darray(pioid, varid, pio_iodesc, Fgrg_rofi(ns)%ptr, rcode)
-       call pio_closefile(pioid)
+
+       call pio_initdecomp(pio_subsystem, pio_double, (/nx_global(ns),ny_global(ns)/), gindex, pio_iodesc)
+       rcode = pio_inq_varid(pioid, 'flgl_rofi'//cnum, varid)
+       call pio_read_darray(pioid, varid, pio_iodesc, Fgrg_rofi(ns)%ptr, rcode)
        call pio_freedecomp(pio_subsystem, pio_iodesc)
 
        ! Deallocate gindex
        deallocate(gindex)
 
     end do ! loop over ice sheets
+    call pio_closefile(pioid)
 
  end subroutine dglc_datamode_noevolve_restart_read
 

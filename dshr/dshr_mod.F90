@@ -951,7 +951,7 @@ contains
 
   !===============================================================================
   subroutine dshr_restart_read(gcomp, rest_filem, compname, nullstr, &
-       logunit, my_task, mpicom, sdat, fld, fldname)
+       logunit, my_task, mpicom, sdat, rc, fld, fldname)
 
     ! Read restart file
 
@@ -970,7 +970,8 @@ contains
     type(shr_strdata_type)      , intent(inout) :: sdat
     real(r8)         , optional , pointer       :: fld(:)
     character(len=*) , optional , intent(in)    :: fldname
-
+    integer                     , intent(out)   :: rc
+    
     ! local variables
     character(len=ESMF_MAXSTR)   :: rpfile
     type(ESMF_VM)     :: vm
@@ -980,12 +981,11 @@ contains
     type(var_desc_t)  :: varid
     type(io_desc_t)   :: pio_iodesc
     integer           :: rcode
-    integer           :: rc
     integer           :: tmp(1)
     character(*), parameter :: F00   = "('(dshr_restart_read) ',8a)"
     character(*), parameter :: subName = "(dshr_restart_read) "
     !-------------------------------------------------------------------------------
-
+    
     ! no streams means no restart file is read.
     if(shr_strdata_get_stream_count(sdat) <= 0) return
     call ESMF_VMGetCurrent(vm, rc=rc)
@@ -996,7 +996,7 @@ contains
           call shr_get_rpointer_name(gcomp, compname, rpfile, 'read', rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           
-          write(logunit,F00) ' restart filename from rpointer'
+          write(logunit,F00) ' restart filename from rpointer '//trim(rpfile)
 
           open(newunit=nu, file=trim(rpfile), form='formatted')
           read(nu, '(a)') rest_filem
