@@ -10,6 +10,7 @@
 # pylint: disable=wildcard-import,unused-wildcard-import,wrong-import-position
 
 import os, sys
+import re
 
 _CDEPS_CONFIG = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir,os.pardir,"cime_config")
 _CIMEROOT = os.environ.get("CIMEROOT")
@@ -115,6 +116,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     atm_grid = case.get_value("ATM_GRID")
     model_grid = case.get_value("GRID")
     comp_lnd = case.get_value("COMP_LND")
+    compset = case.get_value("COMPSET")
 
     # Check for incompatible options.
     if "CLM" in datm_mode and comp_lnd == "clm":
@@ -135,6 +137,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     logger.debug("DATM preso3 mode is {}".format(datm_preso3))
     logger.debug("DATM topo mode is {}".format(datm_topo))
     logger.debug("CLM_USRDAT_NAME is {}".format(clm_usrdat_name))
+    logger.debug("COMPSET is {}".format(compset))
 
     # Initialize namelist defaults
     config = {}
@@ -205,9 +208,17 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     bias_correct = nmlgen.get_value("bias_correct")
     if bias_correct is not None:
         streamlist.append(bias_correct)
+
+    # Set anomaly forcing
     anomaly_forcing = nmlgen.get_value("anomaly_forcing")
+    ssp = re.search(r"^SSP\d+", compset).group()
+    # First by looking in namelist
     if anomaly_forcing[0] is not None:
         streamlist += anomaly_forcing
+    # If not in namelist, look at compset
+    elif ssp:
+        anomaly_forcing = "Anomaly.Forcing.cmip6." + ssp.lower()
+        streamlist += [anomaly_forcing]
 
     # Generate datm.streams.xml
     outfile = os.path.join(confdir, "datm.streams"+inst_string+".xml" )

@@ -226,11 +226,7 @@
       If set, include anomaly forcing streams in namelist.
     </desc>
     <values>
-      <value>null</value>
-      <value compset="^SSP126_">Anomaly.Forcing.cmip6.ssp126</value>
-      <value compset="^SSP245_">Anomaly.Forcing.cmip6.ssp245</value>
-      <value compset="^SSP370_">Anomaly.Forcing.cmip6.ssp370</value>
-      <value compset="^SSP585_">Anomaly.Forcing.cmip6.ssp585</value>
+      <value/>
     </values>
   </entry>
 
