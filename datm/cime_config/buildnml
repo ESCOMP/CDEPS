@@ -180,6 +180,16 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
 
     nmlgen.init_defaults(infile, config)
 
+    # Get anomaly forcing
+    # First, look in namelist
+    anomaly_forcing = nmlgen.get_value("anomaly_forcing")
+    if anomaly_forcing[0] is None:
+        # If not in namelist, check whether it's an SSP compset
+        ssp = re.search(r"^SSP\d+", compset).group()
+        if ssp:
+            anomaly_forcing = ["Anomaly.Forcing.cmip6." + ssp.lower()]
+            nmlgen.set_value("anomaly_forcing", anomaly_forcing)
+
     # Generate datm_in
     namelist_file = os.path.join(confdir, "datm_in")
     nmlgen.write_output_file(namelist_file, data_list_path, groups=['datm_nml','const_forcing_nml'])
@@ -209,16 +219,10 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     if bias_correct is not None:
         streamlist.append(bias_correct)
 
-    # Set anomaly forcing
+    # Set anomaly forcing in datm.streams.xml
     anomaly_forcing = nmlgen.get_value("anomaly_forcing")
-    ssp = re.search(r"^SSP\d+", compset).group()
-    # First by looking in namelist
     if anomaly_forcing[0] is not None:
         streamlist += anomaly_forcing
-    # If not in namelist, look at compset
-    elif ssp:
-        anomaly_forcing = "Anomaly.Forcing.cmip6." + ssp.lower()
-        streamlist += [anomaly_forcing]
 
     # Generate datm.streams.xml
     outfile = os.path.join(confdir, "datm.streams"+inst_string+".xml" )
