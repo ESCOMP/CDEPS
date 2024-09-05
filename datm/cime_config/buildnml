@@ -183,7 +183,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     # Get anomaly forcing
     # First, look in namelist
     anomaly_forcing = nmlgen.get_value("anomaly_forcing")
-    if anomaly_forcing and anomaly_forcing[0] is None:
+    if not anomaly_forcing or anomaly_forcing[0] is None:
         # If not in namelist, check whether it's an SSP compset
         ssp = re.search(r"^SSP\d+_DATM", compset)
         if ssp:
