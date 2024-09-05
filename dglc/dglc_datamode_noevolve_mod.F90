@@ -398,9 +398,8 @@ contains
             ! Get mesh info
             call ESMF_MeshGet(model_meshes(ns), elementdistGrid=distGrid, rc=rc)
             if (ChkErr(rc,__LINE__,u_FILE_u)) return
-            call ESMF_DistGridGet(distGrid, localDe=0, elementCount=lsize, rc=rc)
-            if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
+            lsize = size(Fgrg_rofi(ns)%ptr)
+            
             allocate(ice_runoff_out(lsize))
             ice_runoff_out(:) = 0.d0
             loc_pos_smb(1) = 0.d0
