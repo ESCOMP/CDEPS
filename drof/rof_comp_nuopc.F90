@@ -36,6 +36,7 @@ module cdeps_drof_comp
   use dshr_mod         , only : dshr_restart_read, dshr_restart_write, dshr_mesh_init
   use dshr_dfield_mod  , only : dfield_type, dshr_dfield_add, dshr_dfield_copy
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add, dshr_fldlist_realize
+  use nuopc_shr_methods, only : shr_get_rpointer_name
 
   implicit none
   private ! except
@@ -388,6 +389,7 @@ contains
     ! local variables
     logical :: first_time = .true.
     integer :: n
+    character(len=CL) :: rpfile
     character(*), parameter :: subName = "(drof_comp_run) "
     !-------------------------------------------------------------------------------
 
@@ -412,7 +414,10 @@ contains
 
        ! Read restart if needed
        if (restart_read .and. .not. skip_restart_read) then
-          call dshr_restart_read(gcomp, restfilm, 'rof', nullstr, logunit, my_task, mpicom, sdat)
+          call shr_get_rpointer_name(gcomp, 'rof', target_ymd, target_tod, rpfile, 'read', rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          call dshr_restart_read(restfilm, rpfile, logunit, my_task, mpicom, sdat, rc=rc)
+          if (chkerr(rc,__LINE__,u_FILE_u)) return
        end if
 
        first_time = .false.
@@ -447,11 +452,13 @@ contains
 
     ! write restarts if needed
     if (restart_write) then
-       select case (trim(datamode))
-       case('copyall')
+       if(trim(datamode) .eq. 'copyall') then
+          call shr_get_rpointer_name(gcomp, 'rof', target_ymd, target_tod, rpfile, 'write', rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
           call dshr_restart_write(rpfile, case_name, 'drof', inst_suffix, target_ymd, target_tod, &
-               logunit, my_task, sdat)
-       end select
+               logunit, my_task, sdat, rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       endif
     end if
 
     ! write diagnostics

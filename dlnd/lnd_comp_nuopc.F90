@@ -98,7 +98,6 @@ module cdeps_dlnd_comp
   integer                      :: glc_nec
   logical                      :: diagnose_data = .true.
   integer      , parameter     :: main_task=0                   ! task number of main task
-  character(*) , parameter     :: rpfile = 'rpointer.lnd'
 #ifdef CESMCOUPLED
   character(*) , parameter     :: modName =  "(lnd_comp_nuopc)"
 #else
@@ -277,6 +276,7 @@ contains
     integer         :: current_mon  ! model month
     integer         :: current_day  ! model day
     integer         :: current_tod  ! model sec into model date
+    character(len=cl) :: rpfile     ! restart pointer file name
     character(len=*),parameter :: subname=trim(modName)//':(InitializeRealize) '
     !-------------------------------------------------------------------------------
 
@@ -301,17 +301,21 @@ contains
     call dlnd_comp_realize(importState, exportState, export_all, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    ! Read restart if necessary
-    if (restart_read .and. .not. skip_restart_read) then
-       call dshr_restart_read(gcomp, restfilm, 'lnd', nullstr, logunit, my_task, mpicom, sdat)
-    end if
-
     ! get the time to interpolate the stream data to
     call ESMF_ClockGet(clock, currTime=currTime, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_TimeGet(currTime, yy=current_year, mm=current_mon, dd=current_day, s=current_tod, rc=rc )
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_cal_ymd2date(current_year, current_mon, current_day, current_ymd)
+
+    ! Read restart if necessary
+    if (restart_read .and. .not. skip_restart_read) then
+       call shr_get_rpointer_name(gcomp, 'lnd', current_ymd, current_tod, rpfile, 'read', rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call dshr_restart_read(restfilm, rpfile, logunit, my_task, mpicom, sdat, rc)
+       if (chkerr(rc,__LINE__,u_FILE_u)) return
+    end if
+
 
     ! Run dlnd to create export state
     call dlnd_comp_run(importState, exportState, current_ymd, current_tod, rc=rc)
@@ -333,7 +337,7 @@ contains
 
   !===============================================================================
   subroutine ModelAdvance(gcomp, rc)
-
+    use nuopc_shr_methods, only : shr_get_rpointer_name
     ! input/output variables
     type(ESMF_GridComp)  :: gcomp
     integer, intent(out) :: rc
@@ -349,6 +353,7 @@ contains
     integer                 :: mon           ! month
     integer                 :: day           ! day in month
     logical                 :: write_restart
+    character(len=CL)       :: rpfile
     character(len=*),parameter :: subname=trim(modName)//':(ModelAdvance) '
     !-------------------------------------------------------------------------------
 
@@ -379,8 +384,11 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (write_restart) then
        call ESMF_TraceRegionEnter('dlnd_restart')
+       call shr_get_rpointer_name(gcomp, 'lnd', next_ymd, next_tod, rpfile, 'write', rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call dshr_restart_write(rpfile, case_name, 'dlnd', inst_suffix, next_ymd, next_tod, &
-            logunit, my_task, sdat)
+            logunit, my_task, sdat, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call ESMF_TraceRegionExit('dlnd_restart')
     endif
 

@@ -395,7 +395,6 @@ contains
 
   !===============================================================================
   subroutine ModelAdvance(gcomp, rc)
-
     ! input/output variables
     type(ESMF_GridComp)  :: gcomp
     integer, intent(out) :: rc
@@ -459,6 +458,7 @@ contains
 
   !===============================================================================
   subroutine dice_comp_run(gcomp, importstate, exportstate, target_ymd, target_tod, cosarg, restart_write, rc)
+    use nuopc_shr_methods, only : shr_get_rpointer_name
 
     ! --------------------------
     ! advance dice
@@ -476,6 +476,7 @@ contains
 
     ! local variables
     logical :: first_time = .true.
+    character(len=CL) :: rpfile
     character(*), parameter :: subName = "(dice_comp_run) "
     !-------------------------------------------------------------------------------
 
@@ -503,9 +504,11 @@ contains
 
        ! read restart if needed
        if (restart_read) then
+          call shr_get_rpointer_name(gcomp, 'ice', target_ymd, target_tod, rpfile, 'read', rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
           select case (trim(datamode))
           case('ssmi', 'ssmi_iaf')
-             call dice_datamode_ssmi_restart_read(gcomp, restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
+             call dice_datamode_ssmi_restart_read(gcomp, restfilm, rpfile, logunit, my_task, mpicom, sdat)
           end select
        end if
 
@@ -550,9 +553,11 @@ contains
 
     ! Write restarts if needed
     if (restart_write) then
+       call shr_get_rpointer_name(gcomp, 'ice', target_ymd, target_tod, rpfile, 'write', rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
        select case (trim(datamode))
        case('ssmi', 'ssmi_iaf')
-          call dice_datamode_ssmi_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
+          call dice_datamode_ssmi_restart_write(rpfile, case_name, inst_suffix, target_ymd, target_tod, &
                logunit, my_task, sdat)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end select

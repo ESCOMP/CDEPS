@@ -34,6 +34,7 @@ module cdeps_dwav_comp
   use dshr_mod         , only : dshr_restart_read, dshr_restart_write, dshr_mesh_init
   use dshr_dfield_mod  , only : dfield_type, dshr_dfield_add, dshr_dfield_copy
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add, dshr_fldlist_realize
+  use nuopc_shr_methods, only : shr_get_rpointer_name
 
   implicit none
   private ! except
@@ -249,7 +250,6 @@ contains
 
   !===============================================================================
   subroutine InitializeRealize(gcomp, importState, exportState, clock, rc)
-
     ! input/output variables
     type(ESMF_GridComp)  :: gcomp
     type(ESMF_State)     :: importState, exportState
@@ -263,6 +263,7 @@ contains
     integer         :: current_mon  ! model month
     integer         :: current_day  ! model day
     integer         :: current_tod  ! model sec into model date
+    character(len=CL):: rpfile
     character(len=*), parameter :: subname=trim(modName)//':(InitializeRealize) '
     !-------------------------------------------------------------------------------
 
@@ -288,17 +289,21 @@ contains
     call dwav_comp_realize(importState, exportState, export_all, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    ! Read restart if necessary
-    if (restart_read .and. .not. skip_restart_read) then
-       call dshr_restart_read(gcomp, restfilm, 'wav', nullstr, logunit, my_task, mpicom, sdat)
-    end if
-
     ! Get the time to interpolate the stream data to
     call ESMF_ClockGet(clock, currTime=currTime, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_TimeGet(currTime, yy=current_year, mm=current_mon, dd=current_day, s=current_tod, rc=rc )
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_cal_ymd2date(current_year, current_mon, current_day, current_ymd)
+
+
+    ! Read restart if necessary
+    if (restart_read .and. .not. skip_restart_read) then
+       call shr_get_rpointer_name(gcomp, 'wav', current_ymd, current_tod, rpfile, 'read', rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call dshr_restart_read(restfilm, rpfile, logunit, my_task, mpicom, sdat, rc)
+       if (chkerr(rc,__LINE__,u_FILE_u)) return
+    end if
 
     ! Run dwav to create export state
     call dwav_comp_run(logunit, current_ymd, current_tod, sdat, rc=rc)
@@ -330,6 +335,7 @@ contains
     integer                 :: next_ymd      ! model date
     integer                 :: next_tod      ! model sec into model date
     logical                 :: write_restart
+    character(len=CL):: rpfile
     character(len=*),parameter :: subname=trim(modName)//':(ModelAdvance) '
     !-------------------------------------------------------------------------------
 
@@ -364,9 +370,12 @@ contains
        call ESMF_TraceRegionEnter('dwav_restart')
        call NUOPC_CompAttributeGet(gcomp, name='case_name', value=case_name, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call shr_get_rpointer_name(gcomp, 'wav', next_ymd, next_tod, rpfile, 'write', rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
        call dshr_restart_write(rpfile, case_name, 'dwav', inst_suffix, next_ymd, next_tod, &
-            logunit, my_task, sdat)
+            logunit, my_task, sdat, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call ESMF_TraceRegionExit('dwav_restart')
     endif
 

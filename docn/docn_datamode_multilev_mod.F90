@@ -1,5 +1,4 @@
 module docn_datamode_multilev_mod
-  use ESMF             , only : ESMF_GridComp
   use ESMF             , only : ESMF_State, ESMF_LOGMSG_INFO, ESMF_LogWrite, ESMF_SUCCESS
   use NUOPC            , only : NUOPC_Advertise
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
@@ -7,7 +6,6 @@ module docn_datamode_multilev_mod
   use shr_sys_mod      , only : shr_sys_abort
   use dshr_methods_mod , only : dshr_state_getfldptr, dshr_fldbun_getfldptr, chkerr
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
-  use dshr_mod         , only : dshr_restart_read, dshr_restart_write
   use dshr_strdata_mod , only : shr_strdata_get_stream_pointer, shr_strdata_type
 
   implicit none
@@ -16,8 +14,6 @@ module docn_datamode_multilev_mod
   public :: docn_datamode_multilev_advertise
   public :: docn_datamode_multilev_init_pointers
   public :: docn_datamode_multilev_advance
-  public :: docn_datamode_multilev_restart_read
-  public :: docn_datamode_multilev_restart_write
 
   ! pointers to export fields
   real(r8), pointer :: So_omask(:)     => null()    ! real ocean fraction sent to mediator
@@ -187,44 +183,5 @@ contains
     first_time = .false.
 
   end subroutine docn_datamode_multilev_advance
-
-  !===============================================================================
-  subroutine docn_datamode_multilev_restart_write(case_name, inst_suffix, ymd, tod, &
-       logunit, my_task, sdat)
-
-    ! write restart file
-
-    ! input/output variables
-    character(len=*)            , intent(in)    :: case_name
-    character(len=*)            , intent(in)    :: inst_suffix
-    integer                     , intent(in)    :: ymd       ! model date
-    integer                     , intent(in)    :: tod       ! model sec into model date
-    integer                     , intent(in)    :: logunit
-    integer                     , intent(in)    :: my_task
-    type(shr_strdata_type)      , intent(inout) :: sdat
-    !-------------------------------------------------------------------------------
-
-    call dshr_restart_write(rpfile, case_name, 'docn', inst_suffix, ymd, tod, &
-         logunit, my_task, sdat)
-
-  end subroutine docn_datamode_multilev_restart_write
-
-  !===============================================================================
-  subroutine docn_datamode_multilev_restart_read(gcomp, rest_filem, logunit, my_task, mpicom, sdat)
-
-    ! read restart file
-
-    ! input/output arguments
-    type(ESMF_GridComp)         , intent(in)    :: gcomp
-    character(len=*)            , intent(inout) :: rest_filem
-    integer                     , intent(in)    :: logunit
-    integer                     , intent(in)    :: my_task
-    integer                     , intent(in)    :: mpicom
-    type(shr_strdata_type)      , intent(inout) :: sdat
-    !-------------------------------------------------------------------------------
-
-    call dshr_restart_read(gcomp, rest_filem, 'ocn', nullstr, logunit, my_task, mpicom, sdat)
-
-  end subroutine docn_datamode_multilev_restart_read
 
 end module docn_datamode_multilev_mod

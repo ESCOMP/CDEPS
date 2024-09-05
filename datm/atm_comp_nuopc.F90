@@ -33,9 +33,9 @@ module cdeps_datm_comp
   use dshr_methods_mod , only : dshr_state_diagnose, chkerr, memcheck
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_init_from_config, shr_strdata_advance
   use dshr_strdata_mod , only : shr_strdata_get_stream_pointer, shr_strdata_setOrbs
-  use dshr_mod         , only : dshr_model_initphase, dshr_init
+  use dshr_mod         , only : dshr_model_initphase, dshr_init, dshr_restart_write
   use dshr_mod         , only : dshr_state_setscalar, dshr_set_runclock, dshr_log_clock_advance
-  use dshr_mod         , only : dshr_mesh_init, dshr_check_restart_alarm
+  use dshr_mod         , only : dshr_mesh_init, dshr_check_restart_alarm, dshr_restart_read
   use dshr_mod         , only : dshr_orbital_init, dshr_orbital_update
   use dshr_dfield_mod  , only : dfield_type, dshr_dfield_add, dshr_dfield_copy
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add, dshr_fldlist_realize
@@ -43,50 +43,34 @@ module cdeps_datm_comp
   use datm_datamode_core2_mod   , only : datm_datamode_core2_advertise
   use datm_datamode_core2_mod   , only : datm_datamode_core2_init_pointers
   use datm_datamode_core2_mod   , only : datm_datamode_core2_advance
-  use datm_datamode_core2_mod   , only : datm_datamode_core2_restart_write
-  use datm_datamode_core2_mod   , only : datm_datamode_core2_restart_read
 
   use datm_datamode_jra_mod     , only : datm_datamode_jra_advertise
   use datm_datamode_jra_mod     , only : datm_datamode_jra_init_pointers
   use datm_datamode_jra_mod     , only : datm_datamode_jra_advance
-  use datm_datamode_jra_mod     , only : datm_datamode_jra_restart_write
-  use datm_datamode_jra_mod     , only : datm_datamode_jra_restart_read
 
   use datm_datamode_clmncep_mod , only : datm_datamode_clmncep_advertise
   use datm_datamode_clmncep_mod , only : datm_datamode_clmncep_init_pointers
   use datm_datamode_clmncep_mod , only : datm_datamode_clmncep_advance
-  use datm_datamode_clmncep_mod , only : datm_datamode_clmncep_restart_write
-  use datm_datamode_clmncep_mod , only : datm_datamode_clmncep_restart_read
 
   use datm_datamode_cplhist_mod , only : datm_datamode_cplhist_advertise
   use datm_datamode_cplhist_mod , only : datm_datamode_cplhist_init_pointers
   use datm_datamode_cplhist_mod , only : datm_datamode_cplhist_advance
-  use datm_datamode_cplhist_mod , only : datm_datamode_cplhist_restart_write
-  use datm_datamode_cplhist_mod , only : datm_datamode_cplhist_restart_read
 
   use datm_datamode_era5_mod    , only : datm_datamode_era5_advertise
   use datm_datamode_era5_mod    , only : datm_datamode_era5_init_pointers
   use datm_datamode_era5_mod    , only : datm_datamode_era5_advance
-  use datm_datamode_era5_mod    , only : datm_datamode_era5_restart_write
-  use datm_datamode_era5_mod    , only : datm_datamode_era5_restart_read
 
   use datm_datamode_gefs_mod    , only : datm_datamode_gefs_advertise
   use datm_datamode_gefs_mod    , only : datm_datamode_gefs_init_pointers
   use datm_datamode_gefs_mod    , only : datm_datamode_gefs_advance
-  use datm_datamode_gefs_mod    , only : datm_datamode_gefs_restart_write
-  use datm_datamode_gefs_mod    , only : datm_datamode_gefs_restart_read
 
   use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_advertise
   use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_init_pointers
   use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_advance
-  use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_restart_write
-  use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_restart_read
 
   use datm_datamode_simple_mod  , only : datm_datamode_simple_advertise
   use datm_datamode_simple_mod  , only : datm_datamode_simple_init_pointers
   use datm_datamode_simple_mod  , only : datm_datamode_simple_advance
-  use datm_datamode_simple_mod  , only : datm_datamode_simple_restart_write
-  use datm_datamode_simple_mod  , only : datm_datamode_simple_restart_read
 
   implicit none
   private ! except
@@ -157,7 +141,6 @@ module cdeps_datm_comp
   integer                      :: idt                                 ! integer model timestep
   logical                      :: diagnose_data = .true.
   integer          , parameter :: main_task   = 0                   ! task number of main task
-  character(len=*) , parameter :: rpfile        = 'rpointer.atm'
 #ifdef CESMCOUPLED
   character(*)     , parameter :: modName       = "(atm_comp_nuopc)"
 #else
@@ -581,13 +564,13 @@ contains
   !===============================================================================
   subroutine datm_comp_run(gcomp, importState, exportState, target_ymd, target_tod, target_mon, &
        orbEccen, orbMvelpp, orbLambm0, orbObliqr, restart_write, rc)
-
+    use nuopc_shr_methods, only : shr_get_rpointer_name
     ! ----------------------------------
     ! run method for datm model
     ! ----------------------------------
 
     ! input/output variables
-    type(ESMF_GridComp)    , intent(in)    :: gcomp
+    type(ESMF_GridComp)    , intent(inout)    :: gcomp
     type(ESMF_State)       , intent(inout) :: importState
     type(ESMF_State)       , intent(inout) :: exportState
     integer                , intent(in)    :: target_ymd       ! model date
@@ -602,7 +585,10 @@ contains
 
     ! local variables
     logical :: first_time = .true.
+    character(len=CL) :: rpfile        
+    character(len=16) :: timestr
     character(*), parameter :: subName = '(datm_comp_run) '
+    integer :: yr, mon, day
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -614,7 +600,6 @@ contains
     !--------------------
 
     if (first_time) then
-
        ! Initialize dfields
        call datm_init_dfields(rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -649,23 +634,14 @@ contains
 
        ! Read restart if needed
        if (restart_read .and. .not. skip_restart_read) then
+          call shr_get_rpointer_name(gcomp, 'atm', target_ymd, target_tod, rpfile, 'read', rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
           select case (trim(datamode))
-          case('CORE2_NYF','CORE2_IAF')
-             call datm_datamode_core2_restart_read(gcomp, restfilm, logunit, my_task, mpicom, sdat)
-          case('CORE_IAF_JRA')
-             call datm_datamode_jra_restart_read(gcomp, restfilm, logunit, my_task, mpicom, sdat)
-          case('CLMNCEP')
-             call datm_datamode_clmncep_restart_read(gcomp, restfilm, logunit, my_task, mpicom, sdat)
-          case('CPLHIST')
-             call datm_datamode_cplhist_restart_read(gcomp, restfilm, logunit, my_task, mpicom, sdat)
-          case('ERA5')
-             call datm_datamode_era5_restart_read(gcomp, restfilm, logunit, my_task, mpicom, sdat)
-          case('GEFS')
-             call datm_datamode_gefs_restart_read(gcomp, restfilm, logunit, my_task, mpicom, sdat)
-          case('CFSR')
-             call datm_datamode_cfsr_restart_read(gcomp, restfilm, logunit, my_task, mpicom, sdat)
-          case('SIMPLE')
-             call datm_datamode_simple_restart_read(gcomp, restfilm, logunit, my_task, mpicom, sdat)
+          case('CORE2_NYF','CORE2_IAF','CORE_IAF_JRA','CLMNCEP','CPLHIST','ERA5','GEFS','CFSR','SIMPLE')
+             call dshr_restart_read(restfilm, rpfile, logunit, my_task, mpicom, sdat, rc)
+             if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          case default
+             call shr_sys_abort(subName//'datamode '//trim(datamode)//' not recognized')
           end select
        end if
 
@@ -728,33 +704,15 @@ contains
 
     ! Write restarts if needed
     if (restart_write) then
+       call shr_get_rpointer_name(gcomp, 'atm', target_ymd, target_tod, rpfile, 'write', rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
        select case (trim(datamode))
-       case('CORE2_NYF','CORE2_IAF')
-          call datm_datamode_core2_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, my_task, sdat)
-       case('CORE_IAF_JRA')
-          call datm_datamode_jra_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, my_task, sdat)
-       case('CLMNCEP')
-          call datm_datamode_clmncep_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, my_task, sdat)
-       case('CPLHIST')
-          call datm_datamode_cplhist_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, my_task, sdat)
-       case('ERA5')
-          call datm_datamode_era5_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, my_task, sdat)
-       case('GEFS')
-          call datm_datamode_gefs_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, my_task, sdat)
+       case('CORE2_NYF','CORE2_IAF','CORE_IAF_JRA','CLMNCEP','CPLHIST','ERA5','GEFS','CFSR','SIMPLE')
+          call dshr_restart_write(rpfile, case_name, 'datm', inst_suffix, target_ymd, target_tod, logunit, &
+               my_task, sdat, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       case('CFSR')
-          call datm_datamode_cfsr_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, my_task, sdat)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       case('SIMPLE')
-          call datm_datamode_simple_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, my_task, sdat)
+       case default
+          call shr_sys_abort(subName//'datamode '//trim(datamode)//' not recognized')
        end select
     end if
 
