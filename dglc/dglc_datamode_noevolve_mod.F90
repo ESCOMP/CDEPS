@@ -261,9 +261,7 @@ contains
       real(r8)               :: usrf      ! upper surface elevation (m) on ice grid
       real(r8)               :: loc_pos_smb(1), Tot_pos_smb(1) ! Sum of positive smb values on each ice sheet for hole-filling
       real(r8)               :: loc_neg_smb(1), Tot_neg_smb(1) ! Sum of negative smb values on each ice sheet for hole-filling
-      real(r8)               :: num_Tot ! Number of active grid cells in total calculation
       real(r8)               :: rat     ! Ratio of hole-filling flux to apply
-      real(r8), allocatable  :: ice_runoff_out(:) ! Scaled ice runoff output after holes filled
 
       character(len=*), parameter :: subname='(dglc_datamode_noevolve_advance): '
       !-------------------------------------------------------------------------------
@@ -395,25 +393,22 @@ contains
          ! Compute Fgrg_rofi
          do ns = 1,num_icesheets
 
-            ! Get mesh info
-            call ESMF_MeshGet(model_meshes(ns), elementdistGrid=distGrid, rc=rc)
-            if (ChkErr(rc,__LINE__,u_FILE_u)) return
+            ! Get number of grid cells per ice sheet
             lsize = size(Fgrg_rofi(ns)%ptr)
-            
-            allocate(ice_runoff_out(lsize))
-            ice_runoff_out(:) = 0.d0
+
+            ! reset output variables to zero
+            Fgrg_rofi(ns)%ptr(:) = 0.d0
             loc_pos_smb(1) = 0.d0
             Tot_pos_smb(1) = 0.d0
             loc_neg_smb(1) = 0.d0
             Tot_neg_smb(1) = 0.d0
-            num_Tot = 0.d0
             rat = 0.d0
 
             ! For No Evolve to reduce negative ice fluxes from DGLC, we will
             ! Calculate the total positive and total negative fluxes on each
             ! processor first (local totals).
             do ng = 1,lsize
-               if (Sg_icemask_coupled_fluxes(ns)%ptr(ng).gt.0.d0) then
+               if (Sg_icemask_coupled_fluxes(ns)%ptr(ng) > 0.d0) then
                   if(Flgl_qice(ns)%ptr(ng) > 0.d0) then
                      loc_pos_smb(1) = loc_pos_smb(1)+Flgl_qice(ns)%ptr(ng)*Sg_area(ns)%ptr(ng)
                   end if
@@ -433,7 +428,7 @@ contains
             call ESMF_VMAllreduce(vm, senddata=loc_neg_smb, recvdata=Tot_neg_smb, count=1, &
                  reduceflag=ESMF_REDUCE_SUM, rc=rc)
             if (ChkErr(rc,__LINE__,u_FILE_u)) return
-            
+
             ! If there's more positive than negative, then set all
             ! negative to zero and destribute the negative flux amount
             ! across the positive values, scaled by the size of the
@@ -442,7 +437,7 @@ contains
             ! runoff is exactly equal to the input smb.
             if(abs(Tot_pos_smb(1)) >= abs(Tot_neg_smb(1))) then
                do ng = 1,lsize             
-                  if (Sg_icemask_coupled_fluxes(ns)%ptr(ng).gt.0.d0) then
+                  if (Sg_icemask_coupled_fluxes(ns)%ptr(ng) > 0.d0) then
                      if(Flgl_qice(ns)%ptr(ng) > 0.d0) then
                         rat = Flgl_qice(ns)%ptr(ng)/Tot_pos_smb(1)
                         Fgrg_rofi(ns)%ptr(ng) = Flgl_qice(ns)%ptr(ng) + rat*Tot_neg_smb(1)
@@ -459,7 +454,7 @@ contains
                ! reduce their negativity a bit. This shouldn't happen often.
                ! This section of code also applies if Tot_pos_smb is zero.
                do ng = 1,lsize
-                  if (Sg_icemask_coupled_fluxes(ns)%ptr(ng).gt.0.d0) then
+                  if (Sg_icemask_coupled_fluxes(ns)%ptr(ng) > 0.d0) then
                      if(Flgl_qice(ns)%ptr(ng) < 0.d0) then
                         rat = Flgl_qice(ns)%ptr(ng)/Tot_neg_smb(1)
                         Fgrg_rofi(ns)%ptr(ng) = Flgl_qice(ns)%ptr(ng) + rat*Tot_pos_smb(1)
@@ -473,9 +468,8 @@ contains
                   
             end if ! More neg or pos smb
 
-            deallocate(ice_runoff_out)
-         end do
-      end if
+         end do ! Each ice sheet
+      end if ! if initialized
 
       ! Set initialized flag
       initialized_noevolve = .true.
