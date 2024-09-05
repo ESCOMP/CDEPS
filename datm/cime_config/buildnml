@@ -221,7 +221,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
 
     # Set anomaly forcing in datm.streams.xml
     anomaly_forcing = nmlgen.get_value("anomaly_forcing")
-    if anomaly_forcing[0] is not None:
+    if anomaly_forcing[0] is not None and anomaly_forcing[0] != "none":
         streamlist += anomaly_forcing
 
     # Generate datm.streams.xml
