@@ -601,8 +601,8 @@ contains
     select case (trim(datamode))
     case('noevolve')
       if (valid_inputs) then
-         call dglc_datamode_noevolve_advance(sdat(1)%pio_subsystem, sdat(1)%io_type, sdat(1)%io_format, &
-              model_meshes, model_internal_gridsize, model_datafiles, rc)
+         call dglc_datamode_noevolve_advance(gcomp, sdat(1)%pio_subsystem, sdat(1)%io_type, sdat(1)%io_format, &
+              logunit, model_meshes, model_internal_gridsize, model_datafiles, rc)
          if (ChkErr(rc,__LINE__,u_FILE_u)) return
       end if
     end select
