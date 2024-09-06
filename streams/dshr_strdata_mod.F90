@@ -720,7 +720,9 @@ contains
     end if
     if (sdat%mainproc) then
        write(sdat%stream(1)%logunit,*) trim(subname)//' stream_nlev = ',stream_nlev
-       write(sdat%stream(1)%logunit,*)' stream vertical levels = ',sdat%pstrm(stream_index)%stream_vlevs
+       if (stream_nlev /= 1) then
+          write(sdat%stream(1)%logunit,*)' stream vertical levels = ',sdat%pstrm(stream_index)%stream_vlevs
+       end if
     end if
 
     ! Set stream_nlev in the per-stream sdat info
@@ -1952,6 +1954,7 @@ contains
     character(*), parameter :: F00  = "('(shr_strdata_set_stream_iodesc) ',a,i8,2x,i8,2x,a)"
     character(*), parameter :: F01  = "('(shr_strdata_set_stream_iodesc) ',a,i8,2x,i8,2x,a)"
     character(*), parameter :: F02  = "('(shr_strdata_set_stream_iodesc) ',a,i8,2x,i8,2x,i8,2x,a)"
+    character(*), parameter :: F03  = "('(shr_strdata_set_stream_iodesc) ',a,i8,2x,a)"
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -2001,13 +2004,23 @@ contains
 
     ! determine io descriptor
     if (ndims == 2) then
-       if (sdat%mainproc) then
-          write(sdat%stream(1)%logunit,F00) 'setting iodesc for : '//trim(fldname)// &
-               ' with dimlens(1), dimlens2 = ',dimlens(1),dimlens(2),&
-               ' variable has no time dimension '
+       rcode = pio_inq_dimname(pioid, dimids(ndims), dimname)
+       if (trim(dimname) == 'time' .or. trim(dimname) == 'nt') then
+          if (sdat%mainproc) then
+             write(sdat%stream(1)%logunit,F03) 'setting iodesc for : '//trim(fldname)// &
+                  ' with dimlens(1) = ',dimlens(1),' and the variable has a time dimension '
+          end if
+          call pio_initdecomp(sdat%pio_subsystem, pio_iovartype, (/dimlens(1)/), compdof, &
+               per_stream%stream_pio_iodesc)
+       else
+          if (sdat%mainproc) then
+             write(sdat%stream(1)%logunit,F00) 'setting iodesc for : '//trim(fldname)// &
+                  ' with dimlens(1), dimlens(2) = ',dimlens(1),dimlens(2),&
+                  ' variable has no time dimension '
+          end if
+          call pio_initdecomp(sdat%pio_subsystem, pio_iovartype, (/dimlens(1),dimlens(2)/), compdof, &
+               per_stream%stream_pio_iodesc)
        end if
-       call pio_initdecomp(sdat%pio_subsystem, pio_iovartype, (/dimlens(1),dimlens(2)/), compdof, &
-            per_stream%stream_pio_iodesc)
 
     else if (ndims == 3) then
        rcode = pio_inq_dimname(pioid, dimids(ndims), dimname)

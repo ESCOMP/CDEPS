@@ -63,7 +63,12 @@ module cdeps_docn_comp
   use docn_datamode_multilev_mod   , only : docn_datamode_multilev_advance
   use docn_datamode_multilev_mod   , only : docn_datamode_multilev_restart_read
   use docn_datamode_multilev_mod   , only : docn_datamode_multilev_restart_write
-  use docn_import_data_mod         , only : docn_import_data_advertise
+  use docn_datamode_multilev_dom_mod, only : docn_datamode_multilev_dom_advertise
+  use docn_datamode_multilev_dom_mod, only : docn_datamode_multilev_dom_init_pointers
+  use docn_datamode_multilev_dom_mod, only : docn_datamode_multilev_dom_advance
+  use docn_datamode_multilev_dom_mod, only : docn_datamode_multilev_dom_restart_read
+  use docn_datamode_multilev_dom_mod, only : docn_datamode_multilev_dom_restart_write
+  use docn_import_data_mod          , only : docn_import_data_advertise
 
   implicit none
   private ! except
@@ -307,7 +312,8 @@ contains
          trim(datamode) == 'cplhist'            .or. & ! read stream, needs import data
          trim(datamode) == 'sst_aquap_analytic' .or. & ! analytic, no streams, import or export data
          trim(datamode) == 'sst_aquap_constant' .or. & ! analytic, no streams, import or export data
-         trim(datamode) == 'multilev') then            ! multilevel ocean input
+         trim(datamode) == 'multilev'           .or. & ! multilevel ocean input
+         trim(datamode) == 'multilev_dom') then        ! multilevel ocean input and sst export
        ! success do nothing
     else
        call shr_sys_abort(' ERROR illegal docn datamode = '//trim(datamode))
@@ -332,6 +338,9 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     else if (trim(datamode) == 'multilev') then
        call docn_datamode_multilev_advertise(exportState, fldsExport, flds_scalar_name, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    else if (trim(datamode) == 'multilev_dom') then
+       call docn_datamode_multilev_dom_advertise(exportState, fldsExport, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
@@ -563,6 +572,9 @@ contains
        case('multilev')
           call docn_datamode_multilev_init_pointers(exportState, sdat,  model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       case('multilev_dom')
+          call docn_datamode_multilev_dom_init_pointers(exportState, sdat,  model_frac, rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end select
 
        ! Read restart if needed
@@ -622,6 +634,9 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('multilev')
        call  docn_datamode_multilev_advance(sdat, logunit, mainproc, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    case('multilev_dom')
+       call  docn_datamode_multilev_dom_advance(sdat, logunit, mainproc, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end select
 
