@@ -35,7 +35,8 @@ module cdeps_dlnd_comp
   use dshr_dfield_mod   , only : dfield_type, dshr_dfield_add, dshr_dfield_copy
   use dshr_fldlist_mod  , only : fldlist_type, dshr_fldlist_add, dshr_fldlist_realize
   use glc_elevclass_mod , only : glc_elevclass_as_string, glc_elevclass_init
-
+  use nuopc_shr_methods , only : shr_get_rpointer_name
+  
   implicit none
   private ! except
 
