@@ -586,9 +586,7 @@ contains
     ! local variables
     logical :: first_time = .true.
     character(len=CL) :: rpfile        
-    character(len=16) :: timestr
     character(*), parameter :: subName = '(datm_comp_run) '
-    integer :: yr, mon, day
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
