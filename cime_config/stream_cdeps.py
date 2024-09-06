@@ -333,14 +333,30 @@ class StreamCDEPS(GenericXML):
                         ),
                     )
                     if var_key in valid_values:
+
+                        # # Handle, e.g., 'bilinear' in namelist instead of bilinear (no quotes)
+                        mod_dict_var_key = mod_dict[var_key]
+
+                        # Check that key is valid
+                        is_valid = mod_dict_var_key in valid_values[var_key]
+                        msg = "{} can only have values of {} for stream {} in file {}, not {}".format(
+                            var_key,
+                            valid_values[var_key],
+                            stream_name,
+                            user_mods_file,
+                            mod_dict[var_key],
+                        )
+                        if not is_valid:
+                            # Check for surrounding quote marks
+                            has_surrounding_quotes = (
+                                (mod_dict_var_key[0] == mod_dict_var_key[-1] == "'") or
+                                (mod_dict_var_key[0] == mod_dict_var_key[-1] == '"')
+                            )
+                            if has_surrounding_quotes and mod_dict_var_key[1:-1] in valid_values[var_key]:
+                                msg += " (try removing surrounding quotes)"
                         expect(
-                            mod_dict[var_key] in valid_values[var_key],
-                            "{} can only have values of {} for stream {} in file {}".format(
-                                var_key,
-                                valid_values[var_key],
-                                stream_name,
-                                user_mods_file,
-                            ),
+                            is_valid,
+                            msg,
                         )
                     stream_vars["stream_" + var_key] = mod_dict[var_key]
                     if var_key == "datafiles":

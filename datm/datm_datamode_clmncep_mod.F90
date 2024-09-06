@@ -76,15 +76,15 @@ module datm_datamode_clmncep_mod
   ! stream data bias correction
   real(r8), pointer :: strm_precsf(:)    => null()
 
-  ! stream data anomonly forcing
-  real(r8), pointer :: strm_u_af(:)      => null() ! anomoly forcing
-  real(r8), pointer :: strm_v_af(:)      => null() ! anomoly forcing
-  real(r8), pointer :: strm_prec_af(:)   => null() ! anomoly forcing
-  real(r8), pointer :: strm_tbot_af(:)   => null() ! anomoly forcing
-  real(r8), pointer :: strm_pbot_af(:)   => null() ! anomoly forcing
-  real(r8), pointer :: strm_shum_af(:)   => null() ! anomoly forcing
-  real(r8), pointer :: strm_swdn_af(:)   => null() ! anomoly forcing
-  real(r8), pointer :: strm_lwdn_af(:)   => null() ! anomoly forcing
+  ! stream data anomaly forcing
+  real(r8), pointer :: strm_u_af(:)      => null() ! anomaly forcing
+  real(r8), pointer :: strm_v_af(:)      => null() ! anomaly forcing
+  real(r8), pointer :: strm_prec_af(:)   => null() ! anomaly forcing
+  real(r8), pointer :: strm_tbot_af(:)   => null() ! anomaly forcing
+  real(r8), pointer :: strm_pbot_af(:)   => null() ! anomaly forcing
+  real(r8), pointer :: strm_shum_af(:)   => null() ! anomaly forcing
+  real(r8), pointer :: strm_swdn_af(:)   => null() ! anomaly forcing
+  real(r8), pointer :: strm_lwdn_af(:)   => null() ! anomaly forcing
 
   ! import state data
   real(r8), pointer :: Sx_avsdr(:)        => null()
@@ -249,7 +249,7 @@ contains
     call shr_strdata_get_stream_pointer( sdat, 'Faxa_precsf'   , strm_precsf   , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    ! initialize pointers for module level stream arrays for anomonly forcing
+    ! initialize pointers for module level stream arrays for anomaly forcing
     call shr_strdata_get_stream_pointer( sdat, 'Sa_u_af'      , strm_u_af   , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'Sa_v_af'      , strm_v_af   , rc)
