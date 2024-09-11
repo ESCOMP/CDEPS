@@ -558,6 +558,7 @@ contains
           call docn_datamode_som_init_pointers(importState, exportState, sdat, model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('sst_aquap_analytic', 'sst_aquap_constant')
+          skip_restart_read=.true.
           call  docn_datamode_aquaplanet_init_pointers(exportState, model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('cplhist')
@@ -649,6 +650,8 @@ contains
           case('som', 'som_aquap')
              call docn_datamode_som_restart_write(rpfile, case_name, inst_suffix, target_ymd, target_tod, &
                logunit, my_task, sdat)
+          case('sst_aquap_analytic', 'sst_aquap_constant')
+             ! Do nothing
           case default
              call shr_sys_abort(subName//'datamode '//trim(datamode)//' not recognized')
           end select
