@@ -905,18 +905,11 @@ contains
     day = (ymd - yr*10000 - mon*100)
     write(timestr,'(i4.4,a,i2.2,a,i2.2,a,i5.5)') yr,'-',mon,'-',day,'-',time
 
-    rpfile = "rpointer."//compname
-    if (trim(inst_suffix) .ne. "") then
-       write(rpfile,*) trim(rpfile),".",trim(inst_suffix)
-    endif
-    write(rpfile,*) trim(rpfile),".",timestr
+    write(rpfile,*) "rpointer."//compname//trim(inst_suffix)//'.'//trim(timestr)
     if (mode.eq.'read') then
        inquire(file=trim(rpfile), exist=isPresent)
        if(.not. isPresent) then
-          rpfile = "rpointer."//compname
-          if (inst_suffix .ne. "") then
-             rpfile = trim(rpfile)//"."//trim(inst_suffix)
-          endif
+          rpfile = "rpointer."//compname//trim(inst_suffix)
           inquire(file=trim(rpfile), exist=isPresent)
           if(.not. isPresent) then
              call shr_sys_abort( subname//'ERROR no rpointer file found in '//rpfile//' or in '//rpfile//'.'//timestr )
