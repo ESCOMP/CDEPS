@@ -582,7 +582,7 @@ contains
              call dshr_restart_read(restfilm, rpfile, logunit, my_task, mpicom, sdat, rc)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
           case('som', 'som_aquap')
-             call docn_datamode_som_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
+             call docn_datamode_som_restart_read(restfilm, rpfile, logunit, my_task, mpicom, sdat)
           end select
        end if
 
