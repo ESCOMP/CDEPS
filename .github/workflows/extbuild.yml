@@ -19,13 +19,11 @@ jobs:
       CPPFLAGS: "-I/usr/include -I/usr/local/include "
       LDFLAGS: "-L/usr/lib/x86_64-linux-gnu "
       # Versions of all dependencies can be updated here - these match tag names in the github repo
-      ESMF_VERSION: v8.4.0
-      #PNETCDF_VERSION: checkpoint.1.12.3
-      #NETCDF_FORTRAN_VERSION: v4.6.0
-      ParallelIO_VERSION: pio2_5_10
+      ESMF_VERSION: v8.6.1
+      ParallelIO_VERSION: pio2_6_2
     steps:
       - id: checkout-CDEPS
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
       - id: load-env
@@ -37,35 +35,11 @@ jobs:
           sudo apt-get install netcdf-bin libnetcdf-dev libnetcdff-dev
           sudo apt-get install pnetcdf-bin libpnetcdf-dev
           sudo apt-get install autotools-dev autoconf
-      # - id: cache-pnetcdf
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: ~/pnetcdf
-      #     key: ${{ runner.os }}-${{ env.PNETCDF_VERSION}}-pnetcdf1
-      # - name: Build PNetCDF
-      #   if: steps.cache-pnetcdf.outputs.cache-hit != 'true'
-      #   uses: ./.github/actions/buildpnetcdf
-      #   with:
-      #     pnetcdf_version: ${{ env.PNETCDF_VERSION }}
-      #     install_prefix: $HOME/pnetcdf
-      # - name: Cache netcdf-fortran
-      #   id: cache-netcdf-fortran
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: ~/netcdf-fortran
-      #     key: ${{ runner.os }}-${{ env.NETCDF_FORTRAN_VERSION }}-netcdf-fortran1
-      # - name: Build NetCDF Fortran
-      #   if: steps.cache-netcdf-fortran.outputs.cache-hit != 'true'
-      #   uses: ./.github/actions/buildnetcdff
-      #   with:
-      #     netcdf_fortran_version: ${{ env.NETCDF_FORTRAN_VERSION }}
-      #     install_prefix: $HOME/netcdf-fortran
-      #     netcdf_c_path: /usr
       - name: Cache PARALLELIO
         id: cache-PARALLELIO
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
-          path: ~/pio
+          path: ${GITHUB_WORKSPACE}/pio
           key: ${{ runner.os }}-${{ env.ParallelIO_VERSION }}-parallelio2
       - name: Build ParallelIO
         if: steps.cache-PARALLELIO.outputs.cache-hit != 'true'
@@ -73,32 +47,33 @@ jobs:
         with:
           parallelio_version: ${{ env.ParallelIO_VERSION }}
           enable_fortran: True
-          install_prefix: $HOME/pio
-      - name: Cache ESMF
-        id: cache-esmf
-        uses: actions/cache@v3
+          install_prefix: ${GITHUB_WORKSPACE}/pio
+      - name: Install ESMF
+        uses: esmf-org/install-esmf-action@v1
+        env:
+          ESMF_COMPILER: gfortran
+          ESMF_BOPT: g
+          ESMF_COMM: openmpi
+          ESMF_NETCDF: nc-config
+          ESMF_PNETCDF: pnetcdf-config
+          ESMF_INSTALL_PREFIX: ${GITHUB_WORKSPACE}/ESMF
+          ESMF_PIO: external
+          ESMF_PIO_INCLUDE: ${GITHUB_WORKSPACE}/pio/include
+          ESMF_PIO_LIBPATH: ${GITHUB_WORKSPACE}/pio/lib
         with:
-          path: ~/ESMF
-          key: ${{ runner.os }}-${{ env.ESMF_VERSION }}-ESMF2
-      - name: Build ESMF
-        if: steps.cache-esmf.outputs.cache-hit != 'true'
-        uses: ./.github/actions/buildesmf
-        with:
-          esmf_version: ${{ env.ESMF_VERSION }}
-          esmf_bopt: g
-          esmf_comm: openmpi
-          install_prefix: $HOME/ESMF
-          netcdf_c_path: /usr
-          netcdf_fortran_path: /usr
-          pnetcdf_path: /usr
-          parallelio_path: $HOME/pio
+          version: ${{ env.ESMF_VERSION }}
+          esmpy: false
+          cache: true
+      
       - name: Build CDEPS
+        uses: ./.github/actions/buildcdeps
+        with:
+          esmfmkfile: $ESMFMKFILE
+          pio_path: ${GITHUB_WORKSPACE}/pio
+          src_root: ${GITHUB_WORKSPACE}
+          cmake_flags: " -Wno-dev -DCMAKE_BUILD_TYPE=DEBUG -DWERROR=ON  -DCMAKE_Fortran_FLAGS=\"-DCPRGNU -g -Wall \
+          -ffree-form -ffree-line-length-none -fallow-argument-mismatch \""
+      - name: Test CDEPS
         run: |
-          export ESMFMKFILE=$HOME/ESMF/lib/libg/Linux.gfortran.64.openmpi.default/esmf.mk
-          export PIO=$HOME/pio
-          export SRC_ROOT=
-          mkdir build-cdeps
-          pushd build-cdeps
-          cmake -Wno-dev -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_Fortran_FLAGS="-DCPRGNU -g -Wall -ffree-form -ffree-line-length-none -fallow-argument-mismatch " -DWERROR=ON ../
+          cd build-cdeps
           make VERBOSE=1
-          popd

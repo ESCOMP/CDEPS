@@ -6,7 +6,8 @@ set(SRCFILES atm_comp_nuopc.F90
              datm_datamode_jra_mod.F90
              datm_datamode_gefs_mod.F90
              datm_datamode_cfsr_mod.F90
-             datm_datamode_era5_mod.F90)
+             datm_datamode_era5_mod.F90
+             datm_datamode_simple_mod.F90)
 
 
 foreach(FILE ${SRCFILES})
@@ -25,4 +26,17 @@ add_dependencies(datm dshr streams)
 target_include_directories (datm PRIVATE ${ESMF_F90COMPILEPATHS})
 target_include_directories (datm PRIVATE ${CMAKE_SOURCE_DIR})
 target_include_directories (datm PRIVATE ${PIO_Fortran_INCLUDE_DIR})
-target_include_directories (datm PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/../fox/include)
+if(NOT DISABLE_FoX)
+  target_include_directories (datm PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/../fox/include)
+endif()
+
+if(BLD_STANDALONE)
+  # ESMX requires mod files
+  foreach (SRC ${SRCFILES})
+    string(REGEX REPLACE "[.]F90$" ".mod" MOD ${SRC})
+    if (NOT DEFINED CIMEROOT AND MOD STREQUAL atm_comp_nuopc.mod)
+      set(MOD cdeps_datm_comp.mod)
+    endif()
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${MOD}" DESTINATION include)
+  endforeach ()
+endif()

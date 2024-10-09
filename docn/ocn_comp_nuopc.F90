@@ -26,7 +26,7 @@ module cdeps_docn_comp
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_sys_mod      , only : shr_sys_abort
   use shr_cal_mod      , only : shr_cal_ymd2date
-  use shr_log_mod     , only : shr_log_setLogUnit
+  use shr_log_mod      , only : shr_log_setLogUnit
   use dshr_methods_mod , only : dshr_state_diagnose, chkerr, memcheck
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_advance, shr_strdata_init_from_config
   use dshr_mod         , only : dshr_model_initphase, dshr_init, dshr_mesh_init
@@ -58,7 +58,17 @@ module cdeps_docn_comp
   use docn_datamode_cplhist_mod    , only : docn_datamode_cplhist_advance
   use docn_datamode_cplhist_mod    , only : docn_datamode_cplhist_restart_read
   use docn_datamode_cplhist_mod    , only : docn_datamode_cplhist_restart_write
-  use docn_import_data_mod         , only : docn_import_data_advertise
+  use docn_datamode_multilev_mod   , only : docn_datamode_multilev_advertise
+  use docn_datamode_multilev_mod   , only : docn_datamode_multilev_init_pointers
+  use docn_datamode_multilev_mod   , only : docn_datamode_multilev_advance
+  use docn_datamode_multilev_mod   , only : docn_datamode_multilev_restart_read
+  use docn_datamode_multilev_mod   , only : docn_datamode_multilev_restart_write
+  use docn_datamode_multilev_dom_mod, only : docn_datamode_multilev_dom_advertise
+  use docn_datamode_multilev_dom_mod, only : docn_datamode_multilev_dom_init_pointers
+  use docn_datamode_multilev_dom_mod, only : docn_datamode_multilev_dom_advance
+  use docn_datamode_multilev_dom_mod, only : docn_datamode_multilev_dom_restart_read
+  use docn_datamode_multilev_dom_mod, only : docn_datamode_multilev_dom_restart_write
+  use docn_import_data_mod          , only : docn_import_data_advertise
 
   implicit none
   private ! except
@@ -103,6 +113,7 @@ module cdeps_docn_comp
   integer                      :: nx_global
   integer                      :: ny_global
   logical                      :: skip_restart_read = .false.         ! true => skip restart read in continuation run
+  logical                      :: export_all = .false.                ! true => export all fields, do not check connected or not
 
   ! linked lists
   type(fldList_type) , pointer :: fldsImport => null()
@@ -177,6 +188,7 @@ contains
 
   !===============================================================================
   subroutine InitializeAdvertise(gcomp, importState, exportState, clock, rc)
+    use shr_nl_mod, only:  shr_nl_find_group_name
 
     ! input/output variables
     type(ESMF_GridComp)  :: gcomp
@@ -189,7 +201,7 @@ contains
     integer           :: nu                 ! unit number
     integer           :: ierr               ! error code
     character(len=CL) :: import_data_fields ! colon deliminted strings of input data fields
-    integer           :: bcasttmp(3)
+    integer           :: bcasttmp(4)
     real(r8)          :: rtmp(1)
     type(ESMF_VM)     :: vm
     character(len=*),parameter :: subname=trim(module_name)//':(InitializeAdvertise) '
@@ -202,7 +214,7 @@ contains
     namelist / docn_nml / datamode, &
          model_meshfile, model_maskfile, &
          restfilm,  nx_global, ny_global, sst_constant_value, skip_restart_read, &
-         import_data_fields
+         import_data_fields, export_all
 
     rc = ESMF_SUCCESS
 
@@ -211,7 +223,7 @@ contains
 
     ! Obtain flds_scalar values, mpi values, multi-instance values and
     ! set logunit and set shr logging to my log file
-    call dshr_init(gcomp, 'OCN', sdat, mpicom, my_task, inst_index, inst_suffix, &
+    call dshr_init(gcomp, 'OCN', mpicom, my_task, inst_index, inst_suffix, &
          flds_scalar_name, flds_scalar_num, flds_scalar_index_nx, flds_scalar_index_ny, logunit, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
@@ -223,6 +235,7 @@ contains
        ! Read docn_nml from nlfilename
        nlfilename = "docn_in"//trim(inst_suffix)
        open (newunit=nu,file=trim(nlfilename),status="old",action="read")
+       call shr_nl_find_group_name(nu, 'docn_nml', status=ierr)
        read (nu,nml=docn_nml,iostat=ierr)
        close(nu)
        if (ierr > 0) then
@@ -241,11 +254,13 @@ contains
        write(logunit,F02)' skip_restart_read = ',skip_restart_read
        write(logunit,F00)' import_data_fields = ',trim(import_data_fields)
        write(logunit,*)  ' sst_constant_value = ',sst_constant_value
+       write(logunit,F02)' export_all        = ', export_all
 
        bcasttmp = 0
        bcasttmp(1) = nx_global
        bcasttmp(2) = ny_global
        if(skip_restart_read) bcasttmp(3) = 1
+       if(export_all) bcasttmp(4) = 1
        rtmp(1) = sst_constant_value
     endif
 
@@ -264,7 +279,7 @@ contains
     call ESMF_VMBroadcast(vm, import_data_fields, CL, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    call ESMF_VMBroadcast(vm, bcasttmp, 3, main_task, rc=rc)
+    call ESMF_VMBroadcast(vm, bcasttmp, 4, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     call ESMF_VMBroadcast(vm, rtmp, 1, main_task, rc=rc)
@@ -273,6 +288,7 @@ contains
     nx_global = bcasttmp(1)
     ny_global = bcasttmp(2)
     skip_restart_read = (bcasttmp(3) == 1)
+    export_all = (bcasttmp(4) == 1)
     sst_constant_value = rtmp(1)
 
     ! Special logic for prescribed aquaplanet
@@ -295,7 +311,9 @@ contains
          trim(datamode) == 'som_aquap'          .or. & ! read stream, needs import data
          trim(datamode) == 'cplhist'            .or. & ! read stream, needs import data
          trim(datamode) == 'sst_aquap_analytic' .or. & ! analytic, no streams, import or export data
-         trim(datamode) == 'sst_aquap_constant' ) then ! analytic, no streams, import or export data
+         trim(datamode) == 'sst_aquap_constant' .or. & ! analytic, no streams, import or export data
+         trim(datamode) == 'multilev'           .or. & ! multilevel ocean input
+         trim(datamode) == 'multilev_dom') then        ! multilevel ocean input and sst export
        ! success do nothing
     else
        call shr_sys_abort(' ERROR illegal docn datamode = '//trim(datamode))
@@ -317,6 +335,12 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     else if (trim(datamode) == 'cplhist') then
        call docn_datamode_cplhist_advertise(exportState, fldsExport, flds_scalar_name, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    else if (trim(datamode) == 'multilev') then
+       call docn_datamode_multilev_advertise(exportState, fldsExport, flds_scalar_name, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    else if (trim(datamode) == 'multilev_dom') then
+       call docn_datamode_multilev_dom_advertise(exportState, fldsExport, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
@@ -390,10 +414,10 @@ contains
     ! NUOPC_Realize "realizes" a previously advertised field in the importState and exportState
     ! by replacing the advertised fields with the newly created fields of the same name.
     call dshr_fldlist_realize( exportState, fldsExport, flds_scalar_name, flds_scalar_num, model_mesh, &
-         subname//trim(modelname)//':Export', rc=rc)
+         subname//trim(modelname)//':Export', export_all, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_fldlist_realize( importState, fldsImport, flds_scalar_name, flds_scalar_num, model_mesh, &
-         subname//trim(modelname)//':Import', rc=rc)
+         subname//trim(modelname)//':Import', .false., rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! for single column, the target point might not be a valid ocn point
@@ -545,6 +569,12 @@ contains
        case('cplhist')
           call docn_datamode_cplhist_init_pointers(exportState, model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       case('multilev')
+          call docn_datamode_multilev_init_pointers(exportState, sdat,  model_frac, rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       case('multilev_dom')
+          call docn_datamode_multilev_dom_init_pointers(exportState, sdat,  model_frac, rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end select
 
        ! Read restart if needed
@@ -602,6 +632,12 @@ contains
     case('cplhist')
        call  docn_datamode_cplhist_advance(rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    case('multilev')
+       call  docn_datamode_multilev_advance(sdat, logunit, mainproc, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    case('multilev_dom')
+       call  docn_datamode_multilev_dom_advance(sdat, logunit, mainproc, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end select
 
     ! Write restarts if needed (no restarts for aquaplanet analytic or aquaplanet input file)
@@ -645,8 +681,10 @@ contains
       ! local variables
       integer                         :: n
       integer                         :: fieldcount
+      integer                         :: dimcount
       type(ESMF_Field)                :: lfield
       character(ESMF_MAXSTR) ,pointer :: lfieldnamelist(:)
+      character(ESMF_MAXSTR)          :: fieldname(1)
       character(*), parameter   :: subName = "(docn_init_dfields) "
       !-------------------------------------------------------------------------------
 
@@ -663,9 +701,18 @@ contains
          call ESMF_StateGet(exportState, itemName=trim(lfieldNameList(n)), field=lfield, rc=rc)
          if (chkerr(rc,__LINE__,u_FILE_u)) return
          if (trim(lfieldnamelist(n)) /= flds_scalar_name) then
-            call dshr_dfield_add( dfields, sdat, trim(lfieldnamelist(n)), trim(lfieldnamelist(n)), exportState, &
-                 logunit, mainproc, rc)
+            call ESMF_FieldGet(lfield, dimcount=dimCount, rc=rc)
             if (chkerr(rc,__LINE__,u_FILE_u)) return
+            if (dimcount == 2) then
+               fieldname(1) = trim(lfieldnamelist(n))
+               call dshr_dfield_add( dfields, sdat, trim(lfieldnamelist(n)), fieldname, exportState, &
+                    logunit, mainproc, rc)
+               if (chkerr(rc,__LINE__,u_FILE_u)) return
+            else
+               call dshr_dfield_add( dfields, sdat, trim(lfieldnamelist(n)), trim(lfieldnamelist(n)), exportState, &
+                    logunit, mainproc, rc)
+               if (chkerr(rc,__LINE__,u_FILE_u)) return
+            endif
          end if
       end do
     end subroutine docn_init_dfields

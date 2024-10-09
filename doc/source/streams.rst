@@ -365,7 +365,7 @@ Data Model Namelist Input
 -------------------------
 
 Each data model has an associated input namelist file, ``d{model_name}_in``,
-where ``model_name=[datm,dlnd,dice,docn,drof,dwav]``.
+where ``model_name=[datm,dlnd,dglc,dice,docn,drof,dwav]``.
 
 The following namelist variables appear in each data model namelist:
 
@@ -380,6 +380,8 @@ The following namelist variables appear in each data model namelist:
   :ref:`Data Ice <dice>`
 
   :ref:`Data Land <dlnd>`
+
+  :ref:`Data Land-Ice <dglc>`
 
   :ref:`Data Ocean <docn>`
 

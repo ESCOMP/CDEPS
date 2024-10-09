@@ -541,6 +541,7 @@ contains
     integer                     :: ungriddedUBound(1)
     integer                     :: lrank
     logical                     :: labort
+    character(len=CS)           :: name
     character(len=*), parameter :: subname='(field_getfldptr)'
     ! ----------------------------------------------
     rc = ESMF_SUCCESS
@@ -554,7 +555,9 @@ contains
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     if (status /= ESMF_FIELDSTATUS_COMPLETE) then
        if (labort) then
-          call ESMF_LogWrite(trim(subname)//": ERROR data not allocated ", ESMF_LOGMSG_ERROR, rc=rc)
+          call ESMF_FieldGet(field, name=name, rc=rc)
+          if (chkerr(rc,__LINE__,u_FILE_u)) return
+          call ESMF_LogWrite(trim(subname)//": field "//trim(name)//" has no data not allocated ", ESMF_LOGMSG_ERROR, rc=rc)
           rc = ESMF_FAILURE
           return
        else
@@ -565,7 +568,7 @@ contains
         if (chkerr(rc,__LINE__,u_FILE_u)) return
         if (ungriddedUBound(1) > 0) then
            if (.not.present(fldptr2)) then
-              call ESMF_LogWrite(trim(subname)//": ERROR missing rank=2 array ", &
+              call ESMF_LogWrite(trim(subname)//": ERROR missing rank=2 array for "//trim(name), &
                    ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
               rc = ESMF_FAILURE
               return
@@ -575,7 +578,7 @@ contains
            lrank = 2
         else
            if (.not.present(fldptr1)) then
-              call ESMF_LogWrite(trim(subname)//": ERROR missing rank=1 array ", &
+              call ESMF_LogWrite(trim(subname)//": ERROR missing rank=1 array for "//trim(name), &
                    ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
               rc = ESMF_FAILURE
               return

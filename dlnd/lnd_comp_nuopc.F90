@@ -25,7 +25,7 @@ module cdeps_dlnd_comp
   use shr_kind_mod      , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_sys_mod       , only : shr_sys_abort
   use shr_cal_mod       , only : shr_cal_ymd2date
-  use shr_log_mod     , only : shr_log_setLogUnit
+  use shr_log_mod       , only : shr_log_setLogUnit
   use dshr_methods_mod  , only : dshr_state_getfldptr, dshr_state_diagnose, chkerr, memcheck
   use dshr_strdata_mod  , only : shr_strdata_type, shr_strdata_advance, shr_strdata_get_stream_domain
   use dshr_strdata_mod  , only : shr_strdata_init_from_config
@@ -81,6 +81,8 @@ module cdeps_dlnd_comp
   integer                  :: nx_global                           ! global nx dimension of model mesh
   integer                  :: ny_global                           ! global ny dimension of model mesh
   logical                  :: skip_restart_read = .false.         ! true => skip restart read in continuation
+  logical                  :: export_all = .false.                ! true => export all fields, do not check connected or not
+
   ! linked lists
   type(fldList_type) , pointer :: fldsExport => null()
   type(dfield_type)  , pointer :: dfields    => null()
@@ -155,6 +157,7 @@ contains
 
   !===============================================================================
   subroutine InitializeAdvertise(gcomp, importState, exportState, clock, rc)
+    use shr_nl_mod, only:  shr_nl_find_group_name
 
     ! input/output variables
     type(ESMF_GridComp)  :: gcomp
@@ -166,7 +169,7 @@ contains
     type(ESMF_VM) :: vm
     character(CL) :: cvalue
     integer       :: nu         ! unit number
-    integer       :: bcasttmp(3)
+    integer       :: bcasttmp(4)
     integer       :: ierr       ! error code
     character(len=*) , parameter :: subname=trim(modName)//':(InitializeAdvertise) '
     character(*)     , parameter :: F00 = "('(" // trim(modName) // ") ',8a)"
@@ -175,7 +178,7 @@ contains
     !-------------------------------------------------------------------------------
 
     namelist / dlnd_nml / datamode, model_meshfile, model_maskfile, &
-         nx_global, ny_global, restfilm, skip_restart_read
+         nx_global, ny_global, restfilm, skip_restart_read, export_all
 
     rc = ESMF_SUCCESS
 
@@ -184,7 +187,7 @@ contains
 
     ! Obtain flds_scalar values, mpi values, multi-instance values and
     ! set logunit and set shr logging to my log file
-    call dshr_init(gcomp, 'LND', sdat, mpicom, my_task, inst_index, inst_suffix, &
+    call dshr_init(gcomp, 'LND', mpicom, my_task, inst_index, inst_suffix, &
          flds_scalar_name, flds_scalar_num, flds_scalar_index_nx, flds_scalar_index_ny, &
          logunit, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -196,6 +199,8 @@ contains
     if (my_task == main_task) then
        nlfilename = "dlnd_in"//trim(inst_suffix)
        open (newunit=nu, file=trim(nlfilename), status="old", action="read")
+       call shr_nl_find_group_name(nu, 'dlnd_nml', status=ierr)
+
        read (nu,nml=dlnd_nml,iostat=ierr)
        close(nu)
        if (ierr > 0) then
@@ -206,7 +211,9 @@ contains
        bcasttmp(1) = nx_global
        bcasttmp(2) = ny_global
        if(skip_restart_read) bcasttmp(3) = 1
+       if(export_all) bcasttmp(4) = 1
     end if
+
     call ESMF_GridCompGet(gcomp, vm=vm, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
@@ -223,6 +230,7 @@ contains
     nx_global = bcasttmp(1)
     ny_global = bcasttmp(2)
     skip_restart_read = (bcasttmp(3) == 1)
+    export_all = (bcasttmp(4) == 1)
 
     ! write namelist input to standard out
     if (my_task == main_task) then
@@ -233,6 +241,7 @@ contains
        write(logunit,F01)' ny_global         = ',ny_global
        write(logunit,F00)' restfilm          = ',trim(restfilm)
        write(logunit,F02)' skip_restart_read = ',skip_restart_read
+       write(logunit,F02)' export_all        = ',export_all
     endif
 
     ! Validate sdat datamode
@@ -289,7 +298,7 @@ contains
 
     ! Realize the actively coupled fields, now that a mesh is established and
     ! initialize dfields data type (to map streams to export state fields)
-    call dlnd_comp_realize(importState, exportState, rc=rc)
+    call dlnd_comp_realize(importState, exportState, export_all, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Read restart if necessary
@@ -459,11 +468,12 @@ contains
   end subroutine dlnd_comp_advertise
 
   !===============================================================================
-  subroutine dlnd_comp_realize(importState, exportState, rc)
+  subroutine dlnd_comp_realize(importState, exportState, export_all, rc)
 
     ! input/output variables
     type(ESMF_State) , intent(inout) :: importState
     type(ESMF_State) , intent(inout) :: exportState
+    logical          , intent(in)    :: export_all
     integer          , intent(out)   :: rc
 
     ! local variables
@@ -478,7 +488,7 @@ contains
     ! -------------------------------------
 
     call dshr_fldlist_realize( exportState, fldsExport, flds_scalar_name, flds_scalar_num,  model_mesh, &
-         subname//':dlndExport', rc=rc)
+         subname//':dlndExport', export_all, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine dlnd_comp_realize

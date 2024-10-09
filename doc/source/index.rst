@@ -29,4 +29,5 @@ Table of contents
    dlnd.rst
    drof.rst
    dwav.rst
+   dglc.rst
    extending.rst

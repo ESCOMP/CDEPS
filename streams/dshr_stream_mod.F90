@@ -15,7 +15,7 @@ module dshr_stream_mod
   ! containing those dates.
   ! -------------------------------------------------------------------------------
 
-  use shr_kind_mod     , only : r8=>shr_kind_r8, cs=>shr_kind_cs, cl=>shr_kind_cl, cxx=>shr_kind_cxx
+  use shr_kind_mod     , only : r8=>shr_kind_r8, cs=>shr_kind_cs, cl=>shr_kind_cl, cxx=>shr_kind_cxx, cx=>shr_kind_cx
   use shr_sys_mod      , only : shr_sys_abort
   use shr_const_mod    , only : shr_const_cday
   use shr_string_mod   , only : shr_string_leftalign_and_convert_tabs, shr_string_parseCFtunit
@@ -85,7 +85,7 @@ module dshr_stream_mod
 
   ! a useful derived type to use inside shr_streamType ---
   type shr_stream_file_type
-     character(CL)         :: name = shr_stream_file_null ! the file name (full pathname)
+     character(CX)         :: name = shr_stream_file_null ! the file name (full pathname)
      logical               :: haveData = .false.          ! has t-coord data been read in?
      integer               :: nt = 0                      ! size of time dimension
      integer  ,allocatable :: date(:)                     ! t-coord date: yyyymmdd
@@ -125,12 +125,14 @@ module dshr_stream_mod
      integer           :: n_gvd        = -1                     ! file/sample of greatest valid date
      logical           :: found_gvd    = .false.                ! T <=> k_gvd,n_gvd have been set
      logical           :: fileopen     = .false.                ! is current file open
-     character(CL)     :: currfile     = ' '                    ! current filename
+     character(CX)     :: currfile     = ' '                    ! current filename
      integer           :: nvars                                 ! number of stream variables
      character(CL)     :: stream_vectors = 'null'               ! stream vectors names
      type(file_desc_t) :: currpioid                             ! current pio file desc
      type(shr_stream_file_type)    , allocatable :: file(:)     ! filenames of stream data files (full pathname)
      type(shr_stream_data_variable), allocatable :: varlist(:)  ! stream variable names (on file and in model)
+     integer           :: src_mask_val = 0                      ! mask value for src mesh
+     integer           :: dst_mask_val = 0                      ! mask value for dst mesh
   end type shr_stream_streamType
 
   !----- parameters -----
@@ -377,7 +379,7 @@ contains
           allocate(streamdat(i)%varlist(streamdat(i)%nvars))
        endif
        do n=1,streamdat(i)%nfiles
-          call ESMF_VMBroadCast(vm, streamdat(i)%file(n)%name, CL, 0, rc=rc)
+          call ESMF_VMBroadCast(vm, streamdat(i)%file(n)%name, CX, 0, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        enddo
        do n=1,streamdat(i)%nvars
@@ -445,7 +447,7 @@ contains
        stream_yearFirst, stream_yearLast, stream_yearAlign, &
        stream_offset, stream_taxmode, stream_tintalgo, stream_dtlimit, &
        stream_fldlistFile, stream_fldListModel, stream_fileNames, &
-       logunit, compname)
+       logunit, compname, stream_src_mask_val, stream_dst_mask_val)
 
     ! --------------------------------------------------------
     ! set values of stream datatype independent of a reading in a stream text file
@@ -472,6 +474,8 @@ contains
     character(*)                ,intent(in)              :: stream_filenames(:)    ! stream data filenames (full pathnamesa)
     integer                     ,intent(in)              :: logunit                ! stdout unit
     character(len=*)            ,intent(in)              :: compname               ! component name (e.g. ATM, OCN...)
+    integer                     ,optional, intent(in)    :: stream_src_mask_val    ! source mask value
+    integer                     ,optional, intent(in)    :: stream_dst_mask_val    ! destination mask value
 
     ! local variables
     integer                :: n
@@ -534,9 +538,14 @@ contains
 
     ! Initialize logunit
     streamdat(:)%logunit = logunit
+
     ! Get stream calendar
     call shr_stream_getCalendar(streamdat(1), 1, calendar)
     streamdat(1)%calendar = trim(calendar)
+
+    ! Set source and destination mask
+    if (present(stream_src_mask_val)) streamdat(1)%src_mask_val = stream_src_mask_val
+    if (present(stream_dst_mask_val)) streamdat(1)%dst_mask_val = stream_dst_mask_val
 
     ! Initialize flag that stream has been set
     streamdat(1)%init = .true.
@@ -571,6 +580,8 @@ contains
     !! stream_data_files:
     !! stream_data_variables:
     !! stream_offset:
+    !! stream_src_mask:
+    !! stream_dst_mask:
     !!---------------------------------------------------------------------
 
     ! input/output variables
@@ -605,7 +616,6 @@ contains
     cf =  ESMF_ConfigCreate(rc=RC)
     call ESMF_ConfigLoadFile(config=CF ,filename=trim(streamfilename), rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
 
     ! get number of streams
     nstrms = ESMF_ConfigGetLen(config=CF, label='stream_info:', rc=rc)
@@ -719,6 +729,13 @@ contains
       streamdat(i)%logunit = logunit
 
       call shr_stream_getCalendar(streamdat(i), 1, streamdat(i)%calendar)
+
+      ! Get source and destination mask, 0 by default
+      call ESMF_ConfigGetAttribute(CF,value=streamdat(i)%src_mask_val,label="stream_src_mask"//mystrm//':', default=0, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+      call ESMF_ConfigGetAttribute(CF,value=streamdat(i)%dst_mask_val,label="stream_dst_mask"//mystrm//':', default=0, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
       ! Error check
       if (trim(streamdat(i)%taxmode) == shr_stream_taxis_extend .and.  streamdat(i)%dtlimit < 1.e10) then
@@ -1202,7 +1219,7 @@ contains
     integer,optional            ,intent(out)   :: rc   ! return code
 
     ! local variables
-    character(CL)          :: fileName    ! filename to read
+    character(CX)          :: fileName    ! filename to read
     integer                :: nt
     integer                :: num,n
     integer                :: din,dout
@@ -1496,7 +1513,7 @@ contains
     type(ESMF_VM)          :: vm
     integer                :: myid
     integer                :: vid, n
-    character(CL)          :: fileName
+    character(CX)          :: fileName
     character(CL)          :: lcal
     integer(PIO_OFFSET_KIND) :: attlen
     integer                :: old_handle
@@ -1711,7 +1728,7 @@ contains
 
   !===============================================================================
   subroutine shr_stream_restIO(pioid, streams, mode)
-
+    use shr_file_mod, only : shr_file_get_real_path
     use pio, only : pio_def_dim, pio_def_var, pio_put_var, pio_get_var, file_desc_t, var_desc_t
     use pio, only : pio_int, pio_char
 
@@ -1727,14 +1744,17 @@ contains
     integer              :: n, k, maxnfiles=0
     integer              :: maxnt = 0
     integer, allocatable :: tmp(:)
-    character(len=CL)    :: fname
+    integer              :: logunit
+    character(len=CX)    :: fname, rfname, rsfname
+
     !-------------------------------------------------------------------------------
 
     if (mode .eq. 'define') then
 
-       rcode = pio_def_dim(pioid, 'strlen',   CL, dimid_str)
+       rcode = pio_def_dim(pioid, 'strlen',   CX, dimid_str)
        do k=1,size(streams)
           ! maxnfiles is the maximum number of files across all streams
+          logunit = streams(k)%logunit
           if (streams(k)%nfiles > maxnfiles) then
              maxnfiles = streams(k)%nfiles
           endif
@@ -1923,16 +1943,28 @@ contains
        rcode = pio_inq_varid(pioid, 'timeofday', tvarid)
        rcode = pio_inq_varid(pioid, 'haveData' , hdvarid)
        do k=1,size(streams)
+          logunit = streams(k)%logunit
           do n=1,streams(k)%nfiles
 
              ! read in filename
              rcode = pio_get_var(pioid, varid, (/1,n,k/), fname)
-             if (trim(fname) /= trim(streams(k)%file(n)%name)) then
-                write(6,'(a)')' fname = '//trim(fname)
-                write(6,'(a,i8,2x,i8,2x,a)')' k,n,streams(k)%file(n)%name = ',k,n,trim(streams(k)%file(n)%name)
-                call shr_sys_abort('ERROR reading in filename')
+             
+             if(trim(fname) /= trim(streams(k)%file(n)%name)) then
+                write(logunit,*) 'Filename does not match restart record, checking realpath'
+                call shr_file_get_real_path(fname, rfname)
+                call shr_file_get_real_path(trim(streams(k)%file(n)%name), rsfname)
+                if (trim(rfname) /= trim(rsfname)) then
+                   write(logunit,*) 'Filename path does not match restartfile, checking filename'
+                   rfname = fname(index(fname,'/',.true.):)
+                   rsfname = streams(k)%file(n)%name(index(streams(k)%file(n)%name, '/',.true.):)
+                   if (trim(rfname) /= trim(rsfname)) then
+                      write(logunit,*) trim(rfname), '<>', trim(rsfname)
+                      write(logunit,'(a)')' fname = '//trim(fname)
+                      write(logunit,'(a,i8,2x,i8,2x,a)')' k,n,streams(k)%file(n)%name = ',k,n,trim(streams(k)%file(n)%name)
+                      call shr_sys_abort('ERROR reading in filename')
+                   endif
+                endif
              endif
-
              ! read in nt
              allocate(tmp(1))
              rcode = pio_get_var(pioid, ntvarid, (/n,k/), tmp(1))

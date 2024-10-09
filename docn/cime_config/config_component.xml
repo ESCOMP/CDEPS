@@ -13,7 +13,7 @@
        This file may have ocn desc entries.
   -->
   <description modifier_mode="1">
-    <desc ocn="DOCN[%DOM][%SOM][%SOMAQP][%IAF][%SST_AQUAP][%AQP1][%AQP2][%AQP3][%AQP4][%AQP5][%AQP6][%AQP7][%AQP8][%AQP9][%AQP10][%AQPFILE][%AQPCONST][%CPLHIST]">DOCN </desc>
+    <desc ocn="DOCN[%DOM][%SOM][%SOMAQP][%IAF][%SST_AQUAP][%AQP1][%AQP2][%AQP3][%AQP4][%AQP5][%AQP6][%AQP7][%AQP8][%AQP9][%AQP10][%AQPFILE][%AQPCONST][%CPLHIST][%MULTILEV][%MULTILEV-DOM]">DOCN </desc>
     <desc option="DOM">  prescribed ocean mode</desc>
     <desc option="SOM">  slab ocean mode</desc>
     <desc option="SOMAQP">  aquaplanet slab ocean mode</desc>
@@ -32,6 +32,8 @@
     <desc option="AQPFILE">  file input aquaplanet sst </desc>
     <desc option="AQPCONST">  globally constant SST for idealized experiments, such as RCE </desc>
     <desc option="CPLHIST"> mediator history output for ocean fields imported to mediator </desc>
+    <desc option="MULTILEV"> input stream files have multi level data</desc>
+    <desc option="MULTILEV-DOM"> input stream files have multi level data and prescribed ocean SST</desc>
   </description>
 
   <entry id="COMP_OCN">
@@ -45,7 +47,7 @@
 
   <entry id="DOCN_MODE">
     <type>char</type>
-    <valid_values>prescribed,sst_aquap1,sst_aquap2,sst_aquap3,sst_aquap4,sst_aquap5,sst_aquap6,sst_aquap7,sst_aquap8,sst_aquap9,sst_aquap10,sst_aquapfile,som,som_aquap,sst_aquap_constant,interannual,cplhist</valid_values>
+    <valid_values>prescribed,sst_aquap1,sst_aquap2,sst_aquap3,sst_aquap4,sst_aquap5,sst_aquap6,sst_aquap7,sst_aquap8,sst_aquap9,sst_aquap10,sst_aquapfile,som,som_aquap,sst_aquap_constant,interannual,cplhist,multilev,multilev_dom</valid_values>
     <default_value>prescribed</default_value>
     <values match="last">
       <value compset="_DOCN%DOM_" >prescribed</value>
@@ -65,6 +67,8 @@
       <value compset="_DOCN%AQPFILE_">sst_aquapfile</value>
       <value compset="_DOCN%AQPCONST_">sst_aquap_constant</value>
       <value compset="_DOCN%CPLHIST">cplhist</value>
+      <value compset="_DOCN%MULTILEV">multilev</value>
+      <value compset="_DOCN%MULTILEV-DOM">multilev_dom</value>
     </values>
     <group>run_component_docn</group>
     <file>env_run.xml</file>
@@ -148,19 +152,19 @@
   <entry id="SSTICE_DATA_FILENAME">
     <type>char</type>
     <valid_values></valid_values>
-    <default_value>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_1x1_clim_c101029.nc</default_value>
+    <default_value>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_1x1_2000climo_c180511.nc</default_value>
     <values match="last">
       <value compset="DOCN%DOM" grid="a%T31.*_oi%T31"						>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_48x96_clim_c050526.nc</value>
       <value compset="DOCN%DOM" grid="a%1.9x2.5.*_oi%1.9x2.5"					>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_1.9x2.5_clim_c061031.nc</value>
       <value compset="DOCN%DOM" grid="a%0.9x1.25.*_oi%0.9x1.25"					>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_0.9x1.25_clim_c040926.nc</value>
       <value compset="DOCN%DOM" grid="a%0.47x0.63.*_oi%0.47x0.63"				>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_0.47x0.63_clim_c061106.nc</value>
       <value compset="DOCN%DOM" grid="a%0.23x0.31.*_oi%0.23x0.31"				>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_0.23x0.31_clim_c110526.nc</value>
-      <value compset="(AMIP_|HIST_|20TR_|5505_|PIPD_|%TSCH)" grid=".+"				>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_1x1_1850_2012_c130411.nc</value>
-      <value compset="(AMIP_|HIST_|20TR_|5505_|PIPD_|%TSCH)" grid="a%T31.*_oi%T31"		>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_48x96_1850_2012_c130411.nc</value>
-      <value compset="(AMIP_|HIST_|20TR_|5505_|PIPD_|%TSCH)" grid="a%1.9x2.5.*_oi%1.9x2.5"	>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_1.9x2.5_1850_2012_c130411.nc</value>
-      <value compset="(AMIP_|HIST_|20TR_|5505_|PIPD_|%TSCH)" grid="a%0.9x1.25.*_oi%0.9x1.25"	>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_0.9x1.25_1850_2012_c130411.nc</value>
-      <value compset="(AMIP_|HIST_|20TR_|5505_|PIPD_|%TSCH)" grid="a%0.47x0.63.*_oi%0.47x0.63"	>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_0.47x0.63_1850_2012_c130411.nc</value>
-      <value compset="(AMIP_|HIST_|20TR_|5505_|PIPD_|%TSCH)" grid="a%0.23x0.31.*_oi%0.23x0.31"	>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_0.23x0.31_1850_2012_c130411.nc</value>
+      <value compset="(AMIP_|HIST_|20TR_|5505_|PIPD_|%TSCH)" grid=".+"				>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_1x1_1850_2021_c120422.nc</value>
+      <value compset="(AMIP_|HIST_|20TR_|5505_|PIPD_|%TSCH)" grid="a%T31.*_oi%T31"		>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_48x96_1850_2021_c120422.nc</value>
+      <value compset="(AMIP_|HIST_|20TR_|5505_|PIPD_|%TSCH)" grid="a%1.9x2.5.*_oi%1.9x2.5"	>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_1.9x2.5_1850_2021_c120422.nc</value>
+      <value compset="(AMIP_|HIST_|20TR_|5505_|PIPD_|%TSCH)" grid="a%0.9x1.25.*_oi%0.9x1.25"	>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_0.9x1.25_1850_2021_c120422.nc</value>
+      <value compset="(AMIP_|HIST_|20TR_|5505_|PIPD_|%TSCH)" grid="a%0.47x0.63.*_oi%0.47x0.63"	>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_0.47x0.63_1850_2021_c120422.nc</value>
+      <value compset="(AMIP_|HIST_|20TR_|5505_|PIPD_|%TSCH)" grid="a%0.23x0.31.*_oi%0.23x0.31"	>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_0.23x0.31_1850_2021_c120422.nc</value>
       <value compset="1850_"  grid=".+"								>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_1x1_clim_pi_c101029.nc</value>
       <value compset="1850S_" grid=".+"								>$DIN_LOC_ROOT/ocn/docn7/SSTDATA/sst_ice_CMIP6_DECK_E3SM_1x1_1850_clim_c20190125.nc</value>
       <value compset="1850_"  grid="a%T31.*_oi%T31"						>$DIN_LOC_ROOT/atm/cam/sst/sst_HadOIBl_bc_48x96_clim_pi_c101028.nc</value>
@@ -240,7 +244,7 @@
     <valid_values></valid_values>
     <default_value>0</default_value>
     <values match="last">
-      <value compset="(AMIP_|HIST_|20TR_|5505_|PIPD_|%TSCH)">2012</value>
+      <value compset="(AMIP_|HIST_|20TR_|5505_|PIPD_|%TSCH)">2021</value>
     </values>
     <group>run_component_cam_sstice</group>
     <file>env_run.xml</file>

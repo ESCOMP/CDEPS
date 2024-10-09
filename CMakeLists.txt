@@ -2,6 +2,12 @@ cmake_minimum_required(VERSION 3.10)
 include(ExternalProject)
 include(FetchContent)
 
+set(DISABLE_FoX OFF CACHE BOOL "Disable FoX library to process XML files.")
+message("DISABLE_FoX = ${DISABLE_FoX}")
+if(DISABLE_FoX)
+  add_definitions(-DDISABLE_FoX)
+endif()
+
 if (DEFINED CIMEROOT)
   message("Using CIME in ${CIMEROOT} with compiler ${COMPILER}")
   include(${CASEROOT}/Macros.cmake)
@@ -23,7 +29,9 @@ else()
   set(BLD_STANDALONE TRUE)
   project(NUOPC_DATA_MODELS LANGUAGES Fortran VERSION 0.1)
   list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
-  set(FOX_ROOT ${CMAKE_SOURCE_DIR}/fox)
+  if(NOT DISABLE_FoX)
+    set(FOX_ROOT ${CMAKE_SOURCE_DIR}/fox)
+  endif()
 endif()
 message("CMAKE_MODULE_PATH is ${CMAKE_MODULE_PATH}, CMAKE_Fortran_COMPILER is ${CMAKE_Fortran_COMPILER}")
 enable_language(Fortran)
@@ -62,33 +70,19 @@ endif()
 add_subdirectory(streams)
 add_subdirectory(dshr)
 
-if(IS_DIRECTORY "${FOX_ROOT}")
-  message(STATUS "FoX library is already checked out!")
-  message(STATUS "FoX source dir: ${FOX_ROOT}")
-else()
-  FetchContent_Declare(fox
-    GIT_REPOSITORY https://github.com/ESMCI/fox.git
-    GIT_TAG 4.1.2.1
-    SOURCE_DIR ${FOX_ROOT}
-    BINARY_DIR ${FOX_ROOT}/..
-  )
-  FetchContent_GetProperties(fox)
-  if(NOT fox_POPULATED)
-    FetchContent_Populate(fox)
-    message(STATUS "FoX source dir: ${fox_SOURCE_DIR}")
-    message(STATUS "FoX binary dir: ${fox_BINARY_DIR}")
-  endif()
-endif()
-add_subdirectory(fox)
+if(NOT DISABLE_FoX)
+  add_subdirectory(fox)
 
-target_include_directories(streams PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/fox/include>
-                                          $<INSTALL_INTERFACE:mod>)
-target_include_directories(dshr PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/fox/include>
-                                       $<INSTALL_INTERFACE:mod>)
+  target_include_directories(streams PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/fox/include>
+                                            $<INSTALL_INTERFACE:mod>)
+  target_include_directories(dshr PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/fox/include>
+                                         $<INSTALL_INTERFACE:mod>)
+endif()
+
 target_include_directories(dshr PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/streams>
                                        $<INSTALL_INTERFACE:mod>)
 
-foreach(COMP datm dice dlnd docn drof dwav)
+foreach(COMP datm dice dglc dlnd docn drof dwav)
   add_subdirectory("${COMP}")
   if(BLD_STANDALONE)
     target_include_directories(${COMP} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/share>
@@ -112,6 +106,9 @@ foreach(COMP datm dice dlnd docn drof dwav)
 endforeach(COMP)
 
 foreach(DEPS streams dshr cdeps_share FoX_dom FoX_wxml FoX_sax FoX_common FoX_utils FoX_fsys)
+  if(DISABLE_FoX AND ${DEPS} MATCHES "^FoX")
+     continue()
+  endif()
   if(NOT BLD_STANDALONE AND ${DEPS} STREQUAL "cdeps_share")
      continue()
   endif()

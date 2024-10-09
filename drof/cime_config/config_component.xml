@@ -13,7 +13,7 @@
   -->
 
   <description modifier_mode="1">
-    <desc rof="DROF[%NULL][%NYF][%IAF][%IAFAIS00][%IAFAIS45][%IAFAIS55][%CPLHIST][%JRA][%JRA-1p4-2018][%JRA-1p4-2018-AIS0ICE][%JRA-1p4-2018-AIS0LIQ][%JRA-1p4-2018-AIS0ROF[%JRA-RYF8485][%JRA-RYF9091][%JRA-RYF0304]">Data runoff model</desc>
+    <desc rof="DROF[%NULL][%NYF][%IAF][%IAFAIS00][%IAFAIS45][%IAFAIS55][%CPLHIST][%JRA][%JRA-1p4-2018][%JRA-1p4-2018-AIS0ICE][%JRA-1p4-2018-AIS0LIQ][%JRA-1p4-2018-AIS0ROF][%JRA-RYF8485][%JRA-RYF9091][%JRA-RYF0304]">Data runoff model</desc>
     <desc option="NULL"     >NULL mode</desc>
     <desc option="NYF"      >COREv2 normal year forcing:</desc>
     <desc option="IAF"      >COREv2 interannual year forcing:</desc>

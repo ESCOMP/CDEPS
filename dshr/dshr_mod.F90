@@ -60,9 +60,9 @@ module dshr_mod
   public  :: dshr_state_setscalar
   public  :: dshr_orbital_update
   public  :: dshr_orbital_init
+  public  :: dshr_alarm_init       ! initialize alarms
 
   private :: dshr_mesh_create_scol ! create mesh for single column mode
-  private :: dshr_alarm_init       ! initialize alarms
   private :: dshr_time_init        ! initialize time
 
   ! Note that gridTofieldMap = 2, therefore the ungridded dimension is innermost
@@ -111,14 +111,13 @@ contains
   end subroutine dshr_model_initphase
 
   !===============================================================================
-  subroutine dshr_init(gcomp, compname, sdat, mpicom, my_task, inst_index, inst_suffix, &
+  subroutine dshr_init(gcomp, compname, mpicom, my_task, inst_index, inst_suffix, &
        flds_scalar_name, flds_scalar_num, flds_scalar_index_nx, flds_scalar_index_ny, logunit, rc)
 #ifdef CESMCOUPLED
     use nuopc_shr_methods, only : set_component_logging
 #endif
     ! input/output variables
     type(ESMF_GridComp)                   :: gcomp
-    type(shr_strdata_type), intent(in) :: sdat   ! No longer used
     character(len=*)      , intent(in)    :: compname  !e.g. ATM, OCN, ...
     integer               , intent(inout) :: mpicom
     integer               , intent(out)   :: my_task
@@ -246,7 +245,7 @@ contains
 
     ! input/output variables
     type(ESMF_GridComp)        , intent(inout) :: gcomp
-    type(shr_strdata_type)     , intent(inout)    :: sdat
+    type(shr_strdata_type)     , intent(inout) :: sdat
     integer                    , intent(in)    :: logunit
     character(len=*)           , intent(in)    :: compname  !e.g. ATM, OCN, ...
     character(len=*)           , intent(in)    :: nullstr
@@ -1346,7 +1345,7 @@ contains
     integer           :: orb_year ! orbital year for current orbital computation
     character(len=CL) :: msgstr   ! temporary
     logical           :: lprint
-    logical           :: first_time = .true.
+    logical, save     :: first_time = .true.
     character(len=*) , parameter :: subname = "(dshr_orbital_update)"
     !-------------------------------------------
 

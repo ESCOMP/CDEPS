@@ -53,7 +53,7 @@ contains
 
   !===============================================================================
 
-  subroutine dshr_fldlist_realize(state, fldLists, flds_scalar_name, flds_scalar_num, mesh, tag, rc)
+  subroutine dshr_fldlist_realize(state, fldLists, flds_scalar_name, flds_scalar_num, mesh, tag, export_all, rc)
 
     ! input/output variables
     type(ESMF_State)    , intent(inout) :: state
@@ -62,6 +62,7 @@ contains
     integer             , intent(in)    :: flds_scalar_num
     type(ESMF_Mesh)     , intent(in)    :: mesh
     character(len=*)    , intent(in)    :: tag
+    logical             , intent(in)    :: export_all
     integer             , intent(inout) :: rc
 
     ! local variables
@@ -77,7 +78,14 @@ contains
     do while (associated(fldList))
        stdname = fldList%stdname
 
-       if (NUOPC_IsConnected(state, fieldName=stdname)) then
+       if (NUOPC_IsConnected(state, fieldName=stdname) .or. export_all) then
+
+          ! Check field name since linked list might have empty string
+          if (trim(stdname) == '') then
+             fldList => fldList%next
+             cycle
+          end if
+
           if (stdname == trim(flds_scalar_name)) then
              call ESMF_LogWrite(trim(subname)//trim(tag)//" Field = "//trim(stdname)//" is connected on root pe", &
                   ESMF_LOGMSG_INFO)

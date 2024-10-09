@@ -5,10 +5,12 @@ set (GenF90_SRCS shr_infnan_mod.F90
                  shr_assert_mod.F90)
 
 add_library(cdeps_share  ${GenF90_SRCS}
+                         shr_nl_mod.F90
                          glc_elevclass_mod.F90
                          shr_timer_mod.F90
                          shr_cal_mod.F90
                          shr_kind_mod.F90
+                         shr_file_mod.F90
                          shr_sys_mod.F90
                          shr_abort_mod.F90
                          shr_const_mod.F90
@@ -16,7 +18,8 @@ add_library(cdeps_share  ${GenF90_SRCS}
                          shr_log_mod.F90
                          shr_strconvert_mod.F90
                          shr_precip_mod.F90
-                         shr_string_mod.F90)
+                         shr_string_mod.F90
+                         nuopc_shr_methods.F90)
 
 target_include_directories (cdeps_share PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${ESMF_F90COMPILEPATHS} ${PIO_Fortran_INCLUDE_DIRS})
 

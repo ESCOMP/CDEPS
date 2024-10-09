@@ -60,7 +60,7 @@ ERA5 (``datm_datamode_era5_mod.F90``)
 
 .. note::
   Due to the high temporal and spatial resoultion of ERA5 dataset, only 2019
-  data is staged on NCAR's Cheyenne platform under
+  data is staged on NCAR's Derecho platform under
   `$CESMDATAROOT/inputdata/atm/datm7/ERA5`
 
 .. note::
@@ -175,6 +175,9 @@ DATM_CPLHIST_CASE
 
 DATM_YR_START
    -  Starting year to loop data over
+
+DATM_YR_START_FILENAME
+   -  Start year listed in PLUMBER2 filename
 
 DATM_YR_END
    -  Ending year to loop data over

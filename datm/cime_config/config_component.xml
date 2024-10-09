@@ -10,7 +10,7 @@
        This file may have atm desc entries.
   -->
   <description modifier_mode="1">
-    <desc atm="DATM[%QIA][%WISOQIA][%CRU][%CRUv7][%GSWP3v1][%MOSARTTEST][%NLDAS2][%CPLHIST][%1PT][%NYF][%IAF][%JRA][%JRA-1p4-2018][%JRA-RYF8485][%JRA-RYF9091][%JRA-RYF0304]"> Data driven ATM </desc>
+    <desc atm="DATM[%QIA][%WISOQIA][%CRU][%CRUv7][%GSWP3v1][%MOSARTTEST][%NLDAS2][%CPLHIST][%1PT][%NYF][%IAF][%JRA][%JRA-1p4-2018][%JRA-RYF8485][%JRA-RYF9091][%JRA-RYF0304][%SIMPLE]"> Data driven ATM </desc>
     <desc option="QIA"> QIAN data set </desc>
     <desc option="WISOQIA">QIAN with water isotopes</desc>
     <desc option="CRU"> CRUNCEP data set </desc>
@@ -27,6 +27,7 @@
     <desc option="JRA-RYF9091"> JRA55 Repeat Year Forcing v1.3 1990-1991</desc>
     <desc option="JRA-RYF0304"> JRA55 Repeat Year Forcing v1.3 2003-2004</desc>
     <desc option="ERA5">ERA5 interannual forcing</desc>
+    <desc option="SIMPLE">Namelist-configurable, constant datm forcing for simple experiments</desc>
   </description>
 
   <entry id="COMP_ATM">
@@ -40,7 +41,7 @@
 
   <entry id="DATM_MODE">
     <type>char</type>
-    <valid_values>CORE2_NYF,CORE2_IAF,CLM_QIAN,CLM_QIAN_WISO,1PT,CLMCRUNCEP,CLMCRUNCEPv7,CLMGSWP3v1,CLMNLDAS2,CPLHIST,CORE_IAF_JRA,CORE_IAF_JRA_1p4_2018,ERA5</valid_values>
+    <valid_values>CORE2_NYF,CORE2_IAF,CLM_QIAN,CLM_QIAN_WISO,1PT,CLMCRUNCEP,CLMCRUNCEPv7,CLMGSWP3v1,CLMNLDAS2,CPLHIST,CORE_IAF_JRA,CORE_IAF_JRA_1p4_2018,ERA5,SIMPLE</valid_values>
     <default_value>CORE2_NYF</default_value>
     <group>run_component_datm</group>
     <file>env_run.xml</file>
@@ -61,6 +62,7 @@
       <value compset="DATM%1PT">1PT</value>
       <value compset="DATM%ERA5">ERA5</value>
       <value compset="DATM%CPLHIST">CPLHIST</value>
+      <value compset="DATM%SIMPLE">SIMPLE</value>
     </values>
   </entry>
 
@@ -292,6 +294,15 @@
     <group>run_component_datm</group>
     <file>env_run.xml</file>
     <desc>starting year to loop data over</desc>
+  </entry>
+
+  <entry id="DATM_YR_START_FILENAME">
+    <type>integer</type>
+    <valid_values></valid_values>
+    <default_value>9999</default_value>
+    <group>run_component_datm</group>
+    <file>env_run.xml</file>
+    <desc>Start year listed in PLUMBER2 filenames for certain datm_modes. Currently only used in PLUMBER2; leave as the default value (9999) for other cases.</desc>
   </entry>
 
   <entry id="DATM_YR_END">
