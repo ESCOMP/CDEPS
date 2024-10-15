@@ -41,7 +41,7 @@ module cdeps_dglc_comp
   use dshr_mod         , only : dshr_state_setscalar, dshr_set_runclock, dshr_check_restart_alarm
   use dshr_dfield_mod  , only : dfield_type, dshr_dfield_add, dshr_dfield_copy
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_realize
-
+  use nuopc_shr_methods, only : shr_get_rpointer_name
   ! Datamode specialized modules
   use dglc_datamode_noevolve_mod, only : dglc_datamode_noevolve_advertise
   use dglc_datamode_noevolve_mod, only : dglc_datamode_noevolve_init_pointers
@@ -518,7 +518,7 @@ contains
     ! --------------------------
 
     ! input/output variables:
-    type(ESMF_GridComp)              :: gcomp
+    type(ESMF_GridComp) ,intent(in)  :: gcomp
     type(ESMF_Clock) , intent(in)    :: clock
     integer          , intent(in)    :: target_ymd       ! model date
     integer          , intent(in)    :: target_tod       ! model sec into model date
@@ -530,6 +530,7 @@ contains
     character(len=CS) :: cnum
     integer           :: ns ! ice sheet index
     logical           :: first_time = .true.
+    character(len=CS) :: rpfile
     character(*), parameter :: subName = "(dglc_comp_run) "
     !-------------------------------------------------------------------------------
 
@@ -557,9 +558,10 @@ contains
 
       ! Read restart if needed
       if (restart_read .and. .not. skip_restart_read) then
-         write(logunit,'(a)')' DEBUG: calling dglc_datamode_noevolve_restart_read'
-         call dglc_datamode_noevolve_restart_read(model_meshes, restfilm, &
-              inst_suffix, logunit, my_task, main_task, mpicom, &
+         call shr_get_rpointer_name(gcomp, 'glc', target_ymd, target_tod, rpfile, 'read', rc)
+         if (ChkErr(rc,__LINE__,u_FILE_u)) return
+         call dglc_datamode_noevolve_restart_read(model_meshes, restfilm, rpfile, &
+              logunit, my_task, main_task, mpicom, &
               sdat(1)%pio_subsystem, sdat(1)%io_type, nx_global, ny_global, rc)
          if (ChkErr(rc,__LINE__,u_FILE_u)) return
       end if
@@ -612,7 +614,9 @@ contains
          if (my_task == main_task) then
             write(logunit,'(a)') 'calling dglc_datamode_noevolve_restart_write'
          end if
-         call dglc_datamode_noevolve_restart_write(model_meshes, case_name, &
+         call shr_get_rpointer_name(gcomp, 'glc', target_ymd, target_tod, rpfile, 'write', rc)
+         if (ChkErr(rc,__LINE__,u_FILE_u)) return
+         call dglc_datamode_noevolve_restart_write(model_meshes, case_name, rpfile, &
               inst_suffix, target_ymd, target_tod, logunit, my_task, main_task, &
               sdat(1)%pio_subsystem, sdat(1)%io_type, nx_global, ny_global, rc)
          if (ChkErr(rc,__LINE__,u_FILE_u)) return

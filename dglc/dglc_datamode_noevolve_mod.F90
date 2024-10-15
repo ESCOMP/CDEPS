@@ -73,7 +73,6 @@ module dglc_datamode_noevolve_mod
    character(len=*), parameter :: field_in_so_s_depth              = 'So_s_depth'
 
    character(*) , parameter :: nullstr = 'null'
-   character(*) , parameter :: rpfile  = 'rpointer.glc'
    character(*) , parameter :: u_FILE_u = &
         __FILE__
 
@@ -508,12 +507,13 @@ contains
 
   !===============================================================================
   subroutine dglc_datamode_noevolve_restart_write(model_meshes, case_name, &
-       inst_suffix, ymd, tod, logunit, my_task, main_task, &
+       rpfile, inst_suffix, ymd, tod, logunit, my_task, main_task, &
        pio_subsystem, io_type, nx_global, ny_global, rc)
 
     ! input/output variables
     type(ESMF_Mesh)        , intent(in)    :: model_meshes(:) ! ice sheets meshes
     character(len=*)       , intent(in)    :: case_name
+    character(len=*)       , intent(in)    :: rpfile
     character(len=*)       , intent(in)    :: inst_suffix
     integer                , intent(in)    :: ymd             ! model date
     integer                , intent(in)    :: tod             ! model sec into model date
@@ -594,14 +594,14 @@ contains
   end subroutine dglc_datamode_noevolve_restart_write
 
   !===============================================================================
-  subroutine dglc_datamode_noevolve_restart_read(model_meshes, restfilem, &
-       inst_suffix, logunit, my_task, main_task, mpicom, &
+  subroutine dglc_datamode_noevolve_restart_read(model_meshes, restfilem, rpfile, &
+       logunit, my_task, main_task, mpicom, &
        pio_subsystem, io_type, nx_global, ny_global, rc)
 
     ! input/output arguments
     type(ESMF_Mesh)        , intent(in)    :: model_meshes(:) ! ice sheets meshes
     character(len=*)       , intent(inout) :: restfilem
-    character(len=*)       , intent(in)    :: inst_suffix
+    character(len=*)       , intent(in)    :: rpfile
     integer                , intent(in)    :: logunit
     integer                , intent(in)    :: my_task
     integer                , intent(in)    :: main_task
@@ -638,13 +638,8 @@ contains
        call ESMF_VMGetCurrent(vm, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        if (my_task == main_task) then
-          write(logunit,'(a)') trim(subname)//' restart filename from rpointer'
-          inquire(file=trim(rpfile)//trim(inst_suffix), exist=exists)
-          if (.not.exists) then
-             write(logunit, '(a)') trim(subname)//' ERROR: rpointer file does not exist'
-             call shr_sys_abort(trim(subname)//' ERROR: rpointer file missing')
-          endif
-          open(newunit=nu, file=trim(rpfile)//trim(inst_suffix), form='formatted')
+          write(logunit,'(a)') trim(subname)//' restart filename from rpointer '//trim(rpfile)
+          open(newunit=nu, file=trim(rpfile), form='formatted')
           read(nu,'(a)') restfilem
           close(nu)
           inquire(file=trim(restfilem), exist=exists)
