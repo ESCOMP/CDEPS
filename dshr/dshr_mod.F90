@@ -63,7 +63,6 @@ module dshr_mod
   public  :: dshr_orbital_init
 
   private :: dshr_mesh_create_scol ! create mesh for single column mode
-  private :: dshr_time_init        ! initialize time
 
   ! Note that gridTofieldMap = 2, therefore the ungridded dimension is innermost
 
@@ -568,44 +567,6 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine dshr_set_runclock
-
-  !===============================================================================
-  subroutine dshr_time_init( Time, ymd, cal, tod, rc)
-
-    ! Create the ESMF_Time object corresponding to the given input time,
-    ! given in YMD (Year Month Day) and TOD (Time-of-day) format.
-    ! Set the time by an integer as YYYYMMDD and integer seconds in the day
-
-    ! input/output parameters:
-    type(ESMF_Time)     , intent(inout) :: Time ! ESMF time
-    integer             , intent(in)    :: ymd  ! year, month, day YYYYMMDD
-    type(ESMF_Calendar) , intent(in)    :: cal  ! ESMF calendar
-    integer             , intent(in)    :: tod  ! time of day in seconds
-    integer             , intent(out)   :: rc
-
-    ! local variables
-    integer :: year, mon, day ! year, month, day as integers
-    integer :: tdate
-    integer         , parameter :: SecPerDay = 86400 ! Seconds per day
-    character(len=*), parameter :: subname='(dshr_time_init)'
-    !-------------------------------------------------------------------------------
-
-    rc = ESMF_SUCCESS
-
-    if ( (ymd < 0) .or. (tod < 0) .or. (tod > SecPerDay) )then
-       call shr_sys_abort( subname//'ERROR yymmdd is a negative number or time-of-day out of bounds' )
-    end if
-
-    tdate = abs(ymd)
-    year = int(tdate/10000)
-    if (ymd < 0) year = -year
-    mon = int( mod(tdate,10000)/  100)
-    day = mod(tdate,  100)
-
-    call ESMF_TimeSet( Time, yy=year, mm=mon, dd=day, s=tod, calendar=cal, rc=rc )
-    if (chkerr(rc,__LINE__,u_FILE_u)) return
-
-  end subroutine dshr_time_init
 
   !===============================================================================
   subroutine dshr_restart_read(rest_filem, rpfile, &
