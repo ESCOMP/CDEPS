@@ -245,10 +245,11 @@ class StreamCDEPS(GenericXML):
                                     + "\n"
                                 )
                         else:
-                            stream_datafiles = child.xml_element.text
-                            stream_datafiles = self._resolve_values(
-                                case, stream_datafiles
+                            _stream_datafiles = child.xml_element.text
+                            _stream_datafiles = self._resolve_values(
+                                case, _stream_datafiles
                             )
+                            stream_datafiles += '\n' + _stream_datafiles
                         # endif neon
                         if (
                             "first_year" in child.xml_element.attrib
