@@ -242,6 +242,7 @@ class StreamCDEPS(GenericXML):
                 elif node_name == "stream_datafiles":
                     # Get the resolved stream data files
                     stream_vars[node_name] = ""
+                    stream_datafiles_list = [] # to join stream_datafiles if multiple entries are present
                     stream_datafiles = ""
                     for child in self.get_children(root=node):
                         if (
@@ -263,11 +264,10 @@ class StreamCDEPS(GenericXML):
                                     + "\n"
                                 )
                         else:
-                            _stream_datafiles = child.xml_element.text
-                            _stream_datafiles = self._resolve_values(
-                                case, _stream_datafiles
+                            stream_datafiles = child.xml_element.text
+                            stream_datafiles = self._resolve_values(
+                                case, stream_datafiles
                             )
-                            stream_datafiles += '\n' + _stream_datafiles
                         # endif neon
                         if (
                             "first_year" in child.xml_element.attrib
@@ -307,6 +307,8 @@ class StreamCDEPS(GenericXML):
                                 stream_datafiles.split("\n"), "file"
                             )
                         # endif
+                        stream_datafiles_list.append(stream_datafiles)
+                    stream_datafiles = "\n".join(stream_datafiles_list)
                 elif node_name in xml_scalar_names:
                     attributes["model_grid"] = case.get_value("GRID")
                     attributes["compset"] = case.get_value("COMPSET")
