@@ -141,11 +141,16 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     available_neon_data = None
     if 'CLM_USRDAT' in model_grid:
         config['model_grid'] = 'CLM_USRDAT'
-        neonsite = case.get_value("NEONSITE")
-        if neonsite:
-            config['neon'] = "True"
-            # download and use the listing.csv file to determine data availablity
-            available_neon_data = _get_neon_data_availability(case, neonsite)
+        if 'NEON' in clm_usrdat_name:
+            neonsite = case.get_value("NEONSITE")
+            if neonsite:
+                config['neon'] = "True"
+                # download and use the listing.csv file to determine data availablity
+                available_neon_data = _get_neon_data_availability(case, neonsite)
+        if 'PLUMBER2' in clm_usrdat_name:
+            plumber2site = case.get_value('PLUMBER2SITE')
+            if plumber2site:
+                config['plumber'] = "True"
     else:
         config['model_grid'] = model_grid
 
@@ -194,6 +199,8 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
         streamlist.append(clm_usrdat_name+"_PRECIP."+neonsite)
     if  clm_usrdat_name == 'NEON':
         streamlist.append(clm_usrdat_name+".NEON_PRECIP."+neonsite)   
+    if clm_usrdat_name == 'PLUMBER2':
+        streamlist.append(clm_usrdat_name+"."+plumber2site)
 
     bias_correct = nmlgen.get_value("bias_correct")
     if bias_correct is not None:
