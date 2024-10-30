@@ -346,6 +346,26 @@
     </values>
   </entry>
 
+  <entry id="nextsw_cday_calc">
+    <type>char</type>
+    <category>datm</category>
+    <group>datm_nml</group>
+    <valid_values>cam6,cam7</valid_values>
+    <desc>
+      Logic to use for calculating nextsw_cday. For CPLHIST cases, this should agree with
+      the version of CAM (or other atmosphere model) used to generate the CPLHIST
+      forcings; the valid values for this variable are based on this: 'cam6' is
+      appropriate for cases generated with the driver ordering in CAM6 and earlier, and
+      'cam7' is appropriate for cases generated with the driver ordering in CAM7 and
+      later. This variable also applies for non-CPLHIST cases, but we currently assume (by
+      default) that non-CPLHIST cases follow the logic that was used in CAM6 and earlier.
+    </desc>
+    <values>
+      <value>cam6</value>
+      <value datm_mode="CPLHIST">cam7</value>
+    </values>
+  </entry>
+
   <entry id="restfilm">
     <type>char</type>
     <category>datm</category>
