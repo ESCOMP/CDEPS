@@ -885,15 +885,14 @@ contains
   real(R8) function getNextRadCDay( julday, tod, stepno, dtime, iradsw )
 
     ! Return the calendar day of the next radiation time-step.
-    ! General Usage: nextswday = getNextRadCDay(curr_date) iradsw is
-    ! the frequency to update the next shortwave.  in number of steps
-    ! (or hours if negative) Julian date.
-    ! -- values greater than 1 set
-    !    the next radiation to the present time plus 2 timesteps every iradsw
-    ! -- values less than 0 turn set the next radiation to the  present time
-    !    plus two timesteps every -iradsw hours.
-    ! -- if iradsw is zero, the next radiation time is the
-    !    present time plus 1 timestep.
+    ! General Usage: nextswday = getNextRadCDay(curr_date). iradsw is
+    ! the frequency to update the next shortwave in number of steps
+    ! (or hours if negative).
+    ! -- values greater than 1 set the next radiation to the present time plus either 1 or
+    !    2 timesteps (depending on the value of nextsw_cday_calc_cam7) every iradsw timesteps.
+    ! -- values less than 0 set the next radiation to the present time plus either 1 or 2
+    !    timesteps (depending on the value of nextsw_cday_calc_cam7) every -iradsw hours.
+    ! -- if iradsw is either 0 or 1, the next radiation time is the present time plus 1 timestep.
 
     ! input/output variables
     real(r8)    , intent(in) :: julday
