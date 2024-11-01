@@ -10,7 +10,6 @@ module datm_datamode_jra_mod
   use shr_const_mod    , only : shr_const_tkfrz, shr_const_pi, shr_const_rdair
   use dshr_strdata_mod , only : shr_strdata_get_stream_pointer, shr_strdata_type
   use dshr_methods_mod , only : dshr_state_getfldptr, dshr_fldbun_getfldptr, dshr_fldbun_regrid, chkerr
-  use dshr_mod         , only : dshr_restart_read, dshr_restart_write
   use dshr_strdata_mod , only : shr_strdata_type
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
 
@@ -20,8 +19,6 @@ module datm_datamode_jra_mod
   public  :: datm_datamode_jra_advertise
   public  :: datm_datamode_jra_init_pointers
   public  :: datm_datamode_jra_advance
-  public  :: datm_datamode_jra_restart_write
-  public  :: datm_datamode_jra_restart_read
 
   ! export state pointers
   real(r8), pointer :: Sa_z(:)       => null()
@@ -302,40 +299,5 @@ contains
     end if
 
   end subroutine datm_datamode_jra_advance
-
-  !===============================================================================
-  subroutine datm_datamode_jra_restart_write(case_name, inst_suffix, ymd, tod, &
-       logunit, my_task, sdat)
-
-    ! input/output variables
-    character(len=*)            , intent(in)    :: case_name
-    character(len=*)            , intent(in)    :: inst_suffix
-    integer                     , intent(in)    :: ymd       ! model date
-    integer                     , intent(in)    :: tod       ! model sec into model date
-    integer                     , intent(in)    :: logunit
-    integer                     , intent(in)    :: my_task
-    type(shr_strdata_type)      , intent(inout) :: sdat
-    !-------------------------------------------------------------------------------
-
-    call dshr_restart_write(rpfile, case_name, 'datm', inst_suffix, ymd, tod, &
-         logunit, my_task, sdat)
-
-  end subroutine datm_datamode_jra_restart_write
-
-  !===============================================================================
-  subroutine datm_datamode_jra_restart_read(rest_filem, inst_suffix, logunit, my_task, mpicom, sdat)
-
-    ! input/output arguments
-    character(len=*)            , intent(inout) :: rest_filem
-    character(len=*)            , intent(in)    :: inst_suffix
-    integer                     , intent(in)    :: logunit
-    integer                     , intent(in)    :: my_task
-    integer                     , intent(in)    :: mpicom
-    type(shr_strdata_type)      , intent(inout) :: sdat
-    !-------------------------------------------------------------------------------
-
-    call dshr_restart_read(rest_filem, rpfile, inst_suffix, nullstr, logunit, my_task, mpicom, sdat)
-
-  end subroutine datm_datamode_jra_restart_read
 
 end module datm_datamode_jra_mod
