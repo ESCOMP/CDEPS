@@ -41,7 +41,6 @@ module datm_datamode_cplhist_mod
   real(r8), pointer :: Faxa_swnet(:)        => null()
 
   character(*), parameter :: nullstr = 'null'
-  character(*), parameter :: rpfile  = 'rpointer.atm'
   character(*), parameter :: u_FILE_u = &
        __FILE__
 

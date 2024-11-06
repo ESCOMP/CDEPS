@@ -102,7 +102,6 @@ module datm_datamode_clmncep_mod
 
 
   character(*), parameter :: nullstr = 'null'
-  character(*), parameter :: rpfile  = 'rpointer.atm'
   character(*), parameter :: u_FILE_u = &
        __FILE__
 

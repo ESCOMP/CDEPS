@@ -81,7 +81,6 @@ module cdeps_drof_comp
 
   logical                      :: diagnose_data = .true.
   integer      , parameter     :: main_task=0                       ! task number of main task
-  character(*) , parameter     :: rpfile = 'rpointer.rof'
 #ifdef CESMCOUPLED
   character(*) , parameter     :: modName =  "(rof_comp_nuopc)"
 #else

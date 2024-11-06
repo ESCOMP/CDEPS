@@ -40,7 +40,6 @@ module docn_datamode_multilev_dom_mod
 
   ! constants
   character(*) , parameter :: nullstr = 'null'
-  character(*) , parameter :: rpfile  = 'rpointer.ocn'
   character(*) , parameter :: u_FILE_u = &
        __FILE__
 
