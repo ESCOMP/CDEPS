@@ -111,6 +111,7 @@ module cdeps_datm_comp
   character(CL)                :: model_meshfile = nullstr            ! full pathname to model meshfile
   character(CL)                :: model_maskfile = nullstr            ! full pathname to obtain mask from
   integer                      :: iradsw = 0                          ! radiation interval (input namelist)
+  logical                      :: nextsw_cday_calc_cam7               ! true => use logic appropriate to cam7 (and later) for calculating nextsw_cday
   character(CL)                :: factorFn_mesh = 'null'              ! file containing correction factors mesh
   character(CL)                :: factorFn_data = 'null'              ! file containing correction factors data
   logical                      :: flds_presaero = .false.             ! true => send valid prescribed aero fields to mediator
@@ -213,6 +214,7 @@ contains
     integer           :: nu         ! unit number
     integer           :: ierr       ! error code
     integer           :: bcasttmp(10)
+    character(CL)     :: nextsw_cday_calc
     type(ESMF_VM)     :: vm
     character(len=*),parameter :: subname=trim(modName) // ':(InitializeAdvertise) '
     character(*)    ,parameter :: F00 = "('(" // trim(modName) // ") ',8a)"
@@ -228,6 +230,7 @@ contains
          ny_global, &
          restfilm, &
          iradsw, &
+         nextsw_cday_calc, &
          factorFn_data, &
          factorFn_mesh, &
          flds_presaero, &
@@ -241,6 +244,9 @@ contains
          export_all
 
     rc = ESMF_SUCCESS
+
+    ! Initialize locally-declared namelist items to default values
+    nextsw_cday_calc = nullstr
 
     call NUOPC_CompAttributeGet(gcomp, name='case_name', value=case_name, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -301,6 +307,8 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_VMBroadcast(vm, restfilm, CL, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, nextsw_cday_calc, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_VMBroadcast(vm, bcasttmp, 10, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     nx_global         = bcasttmp(1)
@@ -314,6 +322,14 @@ contains
     skip_restart_read = (bcasttmp(9) == 1)
     export_all        = (bcasttmp(10) == 1)
 
+    if (nextsw_cday_calc == 'cam7') then
+       nextsw_cday_calc_cam7 = .true.
+    else if (nextsw_cday_calc == 'cam6') then
+       nextsw_cday_calc_cam7 = .false.
+    else
+       call shr_sys_abort(' ERROR illegal datm nextsw_cday_calc = '//trim(nextsw_cday_calc))
+    end if
+
     ! write namelist input to standard out
     if (my_task == main_task) then
        write(logunit,F00)' case_name      = ',trim(case_name)
@@ -324,6 +340,7 @@ contains
        write(logunit,F01)' ny_global      = ',ny_global
        write(logunit,F00)' restfilm       = ',trim(restfilm)
        write(logunit,F01)' iradsw         = ',iradsw
+       write(logunit,F00)' nextsw_cday_calc = ', trim(nextsw_cday_calc)
        write(logunit,F00)' factorFn_data  = ',trim(factorFn_data)
        write(logunit,F00)' factorFn_mesh  = ',trim(factorFn_mesh)
        write(logunit,F02)' flds_presaero  = ',flds_presaero
@@ -825,15 +842,14 @@ contains
   real(R8) function getNextRadCDay( julday, tod, stepno, dtime, iradsw )
 
     ! Return the calendar day of the next radiation time-step.
-    ! General Usage: nextswday = getNextRadCDay(curr_date) iradsw is
-    ! the frequency to update the next shortwave.  in number of steps
-    ! (or hours if negative) Julian date.
-    ! -- values greater than 1 set
-    !    the next radiation to the present time plus 2 timesteps every iradsw
-    ! -- values less than 0 turn set the next radiation to the  present time
-    !    plus two timesteps every -iradsw hours.
-    ! -- if iradsw is zero, the next radiation time is the
-    !    present time plus 1 timestep.
+    ! General Usage: nextswday = getNextRadCDay(curr_date). iradsw is
+    ! the frequency to update the next shortwave in number of steps
+    ! (or hours if negative).
+    ! -- values greater than 1 set the next radiation to the present time plus either 1 or
+    !    2 timesteps (depending on the value of nextsw_cday_calc_cam7) every iradsw timesteps.
+    ! -- values less than 0 set the next radiation to the present time plus either 1 or 2
+    !    timesteps (depending on the value of nextsw_cday_calc_cam7) every -iradsw hours.
+    ! -- if iradsw is either 0 or 1, the next radiation time is the present time plus 1 timestep.
 
     ! input/output variables
     real(r8)    , intent(in) :: julday
@@ -862,10 +878,21 @@ contains
 
     if (liradsw > 1) then
        delta_radsw = liradsw * dtime
-       if (mod(tod+dtime,delta_radsw) == 0 .and. stepno > 0) then
-          nextsw_cday = julday + 2*dtime/shr_const_cday
+       if (nextsw_cday_calc_cam7) then
+          ! The logic in this block is consistent with the driver ordering in CAM7 and
+          ! later. So this is appropriate when using cplhist forcings generated from CAM7
+          ! or later.
+          if (mod(tod,delta_radsw) == 0 .and. stepno > 0) then
+             nextsw_cday = julday + 1*dtime/shr_const_cday
+          else
+             nextsw_cday = -1._r8
+          end if
        else
-          nextsw_cday = -1._r8
+          if (mod(tod+dtime,delta_radsw) == 0 .and. stepno > 0) then
+             nextsw_cday = julday + 2*dtime/shr_const_cday
+          else
+             nextsw_cday = -1._r8
+          end if
        end if
     else
        nextsw_cday = julday + dtime/shr_const_cday
