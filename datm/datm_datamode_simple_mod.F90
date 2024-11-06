@@ -76,7 +76,6 @@ module datm_datamode_simple_mod
   real(R8) , parameter :: dLWarc   =  -5.000_R8
 
   character(*), parameter :: nullstr = 'null'
-  character(*), parameter :: rpfile  = 'rpointer.atm'
   character(*), parameter :: u_FILE_u = &
        __FILE__
 

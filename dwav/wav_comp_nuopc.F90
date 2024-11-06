@@ -83,7 +83,6 @@ module cdeps_dwav_comp
   ! constants
   logical                      :: diagnose_data = .true.
   integer      , parameter     :: main_task=0                       ! task number of main task
-  character(*) , parameter     :: rpfile = 'rpointer.wav'
 #ifdef CESMCOUPLED
   character(*) , parameter     :: modName =  "(wav_comp_nuopc)"
 #else

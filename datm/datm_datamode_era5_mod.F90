@@ -59,7 +59,6 @@ module datm_datamode_era5_mod
   real(r8) , parameter :: rhofw    = SHR_CONST_RHOFW ! density of fresh water ~ kg/m^3
 
   character(*), parameter :: nullstr = 'undefined'
-  character(*), parameter :: rpfile  = 'rpointer.atm'
   character(*), parameter :: u_FILE_u = &
        __FILE__
 
