@@ -1,5 +1,7 @@
 project(dlnd Fortran)
-set(SRCFILES  lnd_comp_nuopc.F90)
+set(SRCFILES  lnd_comp_nuopc.F90
+              dlnd_datamode_glc_forcing.F90
+              dlnd_datamode_rof_forcing.F90)
 
 foreach(FILE ${SRCFILES})
   if(EXISTS "${CASEROOT}/SourceMods/src.dlnd/${FILE}")

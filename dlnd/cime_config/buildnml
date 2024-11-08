@@ -95,6 +95,23 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     streams.create_stream_xml(streamlist, case, outfile, data_list_path,
                               os.path.join(caseroot,'user_nl_dlnd_streams'+inst_string))
 
+####################################################################################
+def _create_drv_flds_in(case, confdir):
+####################################################################################
+    dlnd_nonh2o = case.get_value("DLND_LND2ROF_NONH2O")
+
+    # for now we are hard-coding this file name and values because we
+    # only need it for non-water tracers from lnd to rof
+    # Generate drv_flds_in file
+    outfile = os.path.join(confdir, "drv_flds_in")
+    lnd2rof_nl_name = "&lnd2rof_tracers_inparm"
+    nl_fin = "/"
+
+    with open(outfile, "w") as drv_fl:
+        drv_fl.write(f"{lnd2rof_nl_name}\n")
+        drv_fl.write(f"  lnd2rof_tracers = \"{dlnd_nonh2o}\"\n")
+        drv_fl.write(f"{nl_fin}\n")
+
 ###############################################################################
 def buildnml(case, caseroot, compname):
 ###############################################################################
@@ -167,6 +184,8 @@ def buildnml(case, caseroot, compname):
 
         # create namelist and xml stream file(s)
         _create_namelists(case, confdir, inst_string, namelist_infile, nmlgen, data_list_path)
+
+        _create_drv_flds_in(case, confdir)
 
         # copy namelist files and stream text files, to rundir
         copy_inputs_to_rundir(caseroot, compname, confdir, rundir, inst_string)
