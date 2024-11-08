@@ -246,7 +246,7 @@ contains
     rc = ESMF_SUCCESS
 
     ! Initialize locally-declared namelist items to default values
-    nextsw_cday_calc = nullstr
+    nextsw_cday_calc = 'cam6'
 
     call NUOPC_CompAttributeGet(gcomp, name='case_name', value=case_name, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
