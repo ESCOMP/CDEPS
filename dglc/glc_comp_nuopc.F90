@@ -41,11 +41,13 @@ module cdeps_dglc_comp
   use dshr_mod         , only : dshr_state_setscalar, dshr_set_runclock, dshr_check_restart_alarm
   use dshr_dfield_mod  , only : dfield_type, dshr_dfield_add, dshr_dfield_copy
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_realize
-
+  use nuopc_shr_methods, only : shr_get_rpointer_name
   ! Datamode specialized modules
   use dglc_datamode_noevolve_mod, only : dglc_datamode_noevolve_advertise
   use dglc_datamode_noevolve_mod, only : dglc_datamode_noevolve_init_pointers
   use dglc_datamode_noevolve_mod, only : dglc_datamode_noevolve_advance
+  use dglc_datamode_noevolve_mod, only : dglc_datamode_noevolve_restart_read
+  use dglc_datamode_noevolve_mod, only : dglc_datamode_noevolve_restart_write
 
   implicit none
   private ! except
@@ -251,7 +253,6 @@ contains
       end do
       write(logunit,'(a,a )')' restfilm          = ',trim(restfilm)
       write(logunit,'(a,l6)')' skip_restart_read = ',skip_restart_read
-
       bcasttmp(1) = 0
       if(skip_restart_read) bcasttmp(1) = 1
       bcasttmp(2) = num_icesheets
@@ -331,7 +332,6 @@ contains
     character(CL)   :: cvalue
     character(CS)   :: cns
     logical         :: ispresent, isset
-    logical         :: read_restart
     logical         :: exists
     character(len=*), parameter :: subname=trim(module_name)//':(InitializeRealize) '
     !-------------------------------------------------------------------------------
@@ -356,11 +356,11 @@ contains
     mainproc = (my_task == main_task)
     call shr_log_setLogUnit(logunit)
 
-    ! Set restart flag
+    ! Set restart flag (sets module variable restart_read)
     call NUOPC_CompAttributeGet(gcomp, name='read_restart', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (isPresent .and. isSet) then
-       read(cvalue,*) read_restart
+       read(cvalue,*) restart_read
     else
        call shr_sys_abort(subname//' ERROR: read restart flag must be present')
     end if
@@ -430,7 +430,7 @@ contains
     end do ! end loop over ice sheets
 
     ! Run dglc
-    call dglc_comp_run(clock, current_ymd, current_tod, restart_write=.false., valid_inputs=.true., rc=rc)
+    call dglc_comp_run(gcomp, clock, current_ymd, current_tod, restart_write=.false., valid_inputs=.true., rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     call ESMF_TraceRegionExit('dglc_strdata_init')
@@ -464,6 +464,7 @@ contains
     rc = ESMF_SUCCESS
     call shr_log_setLogUnit(logunit)
 
+    call ESMF_TraceRegionEnter(subname)
     call memcheck(subname, 5, my_task == main_task)
 
     ! query the Component for its clock
@@ -496,21 +497,28 @@ contains
 
     ! determine if will write restart
     restart_write = dshr_check_restart_alarm(clock, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (my_task == main_task) then
+       write(logunit,'(a,l6)') trim(timestring)//': restart write is ',restart_write
+    end if
 
     ! run dglc
-    call dglc_comp_run(clock, next_ymd, next_tod, restart_write, valid_inputs, rc=rc)
+    call dglc_comp_run(gcomp, clock, next_ymd, next_tod, restart_write, valid_inputs, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    call ESMF_TraceRegionExit(subname)
 
   end subroutine ModelAdvance
 
   !===============================================================================
-  subroutine dglc_comp_run(clock, target_ymd, target_tod, restart_write, valid_inputs, rc)
+  subroutine dglc_comp_run(gcomp, clock, target_ymd, target_tod, restart_write, valid_inputs, rc)
 
     ! --------------------------
     ! advance dglc
     ! --------------------------
 
     ! input/output variables:
+    type(ESMF_GridComp) ,intent(in)  :: gcomp
     type(ESMF_Clock) , intent(in)    :: clock
     integer          , intent(in)    :: target_ymd       ! model date
     integer          , intent(in)    :: target_tod       ! model sec into model date
@@ -522,6 +530,7 @@ contains
     character(len=CS) :: cnum
     integer           :: ns ! ice sheet index
     logical           :: first_time = .true.
+    character(len=CS) :: rpfile
     character(*), parameter :: subName = "(dglc_comp_run) "
     !-------------------------------------------------------------------------------
 
@@ -548,10 +557,13 @@ contains
       end select
 
       ! Read restart if needed
-      if (trim(datamode) /= 'noevolve') then
-        if (restart_read .and. .not. skip_restart_read) then
-          ! placeholder for future datamodes
-        end if
+      if (restart_read .and. .not. skip_restart_read) then
+         call shr_get_rpointer_name(gcomp, 'glc', target_ymd, target_tod, rpfile, 'read', rc)
+         if (ChkErr(rc,__LINE__,u_FILE_u)) return
+         call dglc_datamode_noevolve_restart_read(model_meshes, restfilm, rpfile, &
+              logunit, my_task, main_task, mpicom, &
+              sdat(1)%pio_subsystem, sdat(1)%io_type, nx_global, ny_global, rc)
+         if (ChkErr(rc,__LINE__,u_FILE_u)) return
       end if
 
       ! Reset first_time
@@ -589,16 +601,25 @@ contains
     select case (trim(datamode))
     case('noevolve')
       if (valid_inputs) then
-         call dglc_datamode_noevolve_advance(sdat(1)%pio_subsystem, sdat(1)%io_type, sdat(1)%io_format, &
-              model_meshes, model_internal_gridsize, model_datafiles, rc)
+         call dglc_datamode_noevolve_advance(gcomp, sdat(1)%pio_subsystem, sdat(1)%io_type, sdat(1)%io_format, &
+              logunit, model_meshes, model_internal_gridsize, model_datafiles, rc)
          if (ChkErr(rc,__LINE__,u_FILE_u)) return
       end if
     end select
 
     ! Write restarts if needed
+
     if (restart_write) then
-      if (trim(datamode) /= 'evolve') then
-        ! this is a place holder for future datamode
+      if (trim(datamode) == 'noevolve') then
+         if (my_task == main_task) then
+            write(logunit,'(a)') 'calling dglc_datamode_noevolve_restart_write'
+         end if
+         call shr_get_rpointer_name(gcomp, 'glc', target_ymd, target_tod, rpfile, 'write', rc)
+         if (ChkErr(rc,__LINE__,u_FILE_u)) return
+         call dglc_datamode_noevolve_restart_write(model_meshes, case_name, rpfile, &
+              inst_suffix, target_ymd, target_tod, logunit, my_task, main_task, &
+              sdat(1)%pio_subsystem, sdat(1)%io_type, nx_global, ny_global, rc)
+         if (ChkErr(rc,__LINE__,u_FILE_u)) return
       end if
     end if
 

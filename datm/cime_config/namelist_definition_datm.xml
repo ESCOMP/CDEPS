@@ -40,6 +40,9 @@
       <value datm_mode="1PT" model_grid="CLM_USRDAT" neon="True">
         NEON.$NEONSITE
       </value>
+      <value datm_mode="1PT" model_grid="CLM_USRDAT" neon="True">
+        PLUMBER2.$PLUMBER2SITE
+      </value>
       <value datm_mode="1PT" model_grid="CLM_USRDAT">
         CLM_USRDAT.$CLM_USRDAT_NAME
       </value>
@@ -51,6 +54,9 @@
       </value>
       <value datm_mode="CORE_IAF_JRA_1p4_2018" >
         CORE_IAF_JRA_1p4_2018.GCGCS.PREC,CORE_IAF_JRA_1p4_2018.GISS.LWDN,CORE_IAF_JRA_1p4_2018.GISS.SWDN,CORE_IAF_JRA_1p4_2018.NCEP.Q_10,CORE_IAF_JRA_1p4_2018.NCEP.SLP_,CORE_IAF_JRA_1p4_2018.NCEP.T_10,CORE_IAF_JRA_1p4_2018.NCEP.U_10,CORE_IAF_JRA_1p4_2018.NCEP.V_10
+      </value>
+      <value datm_mode="CORE_IAF_JRA_1p5_2023" >
+        CORE_IAF_JRA_1p5_2023.GCGCS.PREC,CORE_IAF_JRA_1p5_2023.GISS.LWDN,CORE_IAF_JRA_1p5_2023.GISS.SWDN,CORE_IAF_JRA_1p5_2023.NCEP.Q_10,CORE_IAF_JRA_1p5_2023.NCEP.SLP_,CORE_IAF_JRA_1p5_2023.NCEP.T_10,CORE_IAF_JRA_1p5_2023.NCEP.U_10,CORE_IAF_JRA_1p5_2023.NCEP.V_10
       </value>
       <value datm_mode="CORE_RYF8485_JRA">
         CORE_RYF8485_JRA.GISS.LWDN,CORE_RYF8485_JRA.GISS.SWDN,CORE_RYF8485_JRA.GCGCS,CORE_RYF8485_JRA.NCEP
@@ -329,17 +335,44 @@
     <category>datm</category>
     <group>datm_nml</group>
     <desc>
-      Frequency to update radiation in number of steps (or hours if negative)
-      irdasw is the radiation setting used to compute the next shortwave
-      Julian date.  values greater than 1 set the next radiation to the
-      present time plus 2 timesteps every iradsw.  values less than 0 turn
-      set the next radiation to the present time plus two timesteps every
-      -iradsw hours.  if iradsw is zero, the next radiation time is the
-      present time plus 1 timestep.  (default=0.)
+      Frequency to update radiation in number of steps (or hours if negative).
+
+      irdasw is the radiation setting used to compute the next shortwave Julian date.
+      Values greater than 1 set the next radiation to the present time plus either 1 or 2
+      timesteps (depending on the value of nextsw_cday_calc) every iradsw timesteps.
+      Values less than 0 set the next radiation to the present time plus either 1 or 2
+      timesteps (depending on the value of nextsw_cday_calc) every -iradsw hours. If
+      iradsw is either 0 or 1, the next radiation time is the present time plus 1
+      timestep. (default=1 for non-CPLHIST cases, and -1 for CPLHIST cases.)
     </desc>
     <values>
       <value>1</value>
       <value datm_mode="CPLHIST">-1</value>
+    </values>
+  </entry>
+
+  <entry id="nextsw_cday_calc">
+    <type>char</type>
+    <category>datm</category>
+    <group>datm_nml</group>
+    <valid_values>cam6,cam7</valid_values>
+    <desc>
+      Logic to use for calculating nextsw_cday. This variable has no effect when iradsw is
+      0 or 1, so by default this only applies in CPLHIST cases.
+
+      For CPLHIST cases, this should agree with the version of CAM (or other atmosphere
+      model) used to generate the CPLHIST forcings; the valid values for this variable are
+      based on this: 'cam6' is appropriate for cases generated with the driver ordering in
+      CAM6 and earlier, and 'cam7' is appropriate for cases generated with the driver
+      ordering in CAM7 and later.
+
+      For 'cam6', the next radiation timestep is set to the present time plus 2 timesteps
+      when mod(tod+dtime,delta_radsw)==0. For 'cam7', the next radiation timestep is set
+      to the present time plus 1 timestep when mod(tod,delta_radsw)==0.
+    </desc>
+    <values>
+      <value>cam6</value>
+      <value datm_mode="CPLHIST">cam7</value>
     </values>
   </entry>
 
