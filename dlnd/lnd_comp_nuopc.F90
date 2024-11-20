@@ -245,7 +245,7 @@ contains
     endif
 
     ! Validate sdat datamode
-    if (trim(datamode) == 'copyall') then
+    if (trim(datamode) == 'glc_forcing_mct' .or. trim(datamode) == 'glc_forcing' ) then
        if (my_task == main_task) write(logunit,*) 'dlnd datamode = ',trim(datamode)
     else
        call shr_sys_abort(' ERROR illegal dlnd datamode = '//trim(datamode))
@@ -457,14 +457,6 @@ contains
        fldList => fldList%next
     enddo
 
-    ! TODO: Non snow fields that nead to be added if dlnd is in cplhist mode
-    ! "Sl_t        " "Sl_tref     " "Sl_qref     " "Sl_avsdr    "
-    ! "Sl_anidr    " "Sl_avsdf    " "Sl_anidf    " "Sl_snowh    "
-    ! "Fall_taux   " "Fall_tauy   " "Fall_lat    " "Fall_sen    "
-    ! "Fall_lwup   " "Fall_evap   " "Fall_swnet  " "Sl_landfrac "
-    ! "Sl_fv       " "Sl_ram1     "
-    ! "Fall_flxdst1" "Fall_flxdst2" "Fall_flxdst3" "Fall_flxdst4"
-
   end subroutine dlnd_comp_advertise
 
   !===============================================================================
@@ -534,21 +526,28 @@ contains
        ! Create stream-> export state mapping
        ! Note that strm_flds is the model name for the stream field
        ! Note that state_fld is the model name for the export field
-       allocate(strm_flds_tsrf(1:glc_nec+1))
-       allocate(strm_flds_topo(1:glc_nec+1))
-       allocate(strm_flds_qice(1:glc_nec+1))
+       if (trim(datamode) == 'glc_forcing_mct' .or. trim(datamode) == 'glc_forcing' ) then
+          allocate(strm_flds_tsrf(1:glc_nec+1))
+          allocate(strm_flds_topo(1:glc_nec+1))
+          allocate(strm_flds_qice(1:glc_nec+1))
+
+          do n = 1,glc_nec+1
+             if (trim(datamode) == 'glc_forcing_mct') then
+                write(nec_str, '(i2.2)') n
+             else if (trim(datamode) == 'glc_forcing') then
+                if (n < 10) then
+                   write(nec_str, '(i1.1)') n
+                else
+                   write(nec_str, '(i2.2)') n
+                end if
+             end if
+             strm_flds_tsrf(n) = 'Sl_tsrf_elev'   // trim(nec_str)
+             strm_flds_topo(n) = 'Sl_topo_elev'   // trim(nec_str)
+             strm_flds_qice(n) = 'Flgl_qice_elev' // trim(nec_str)
+          end do
+       end if
 
        ! The following maps stream input fields to export fields that have an ungridded dimension
-       do n = 1,glc_nec+1
-          if (n < 10) then
-             write(nec_str, '(i1.1)') n
-          else
-             write(nec_str, '(i2.2)') n
-          end if
-          strm_flds_tsrf(n) = 'Sl_tsrf_elev'   // trim(nec_str)
-          strm_flds_topo(n) = 'Sl_topo_elev'   // trim(nec_str)
-          strm_flds_qice(n) = 'Flgl_qice_elev' // trim(nec_str)
-       end do
        call dshr_dfield_add(dfields, sdat, state_fld='Sl_tsrf_elev', strm_flds=strm_flds_tsrf, state=exportState, &
             logunit=logunit, mainproc=mainproc, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
