@@ -24,9 +24,9 @@
       <file first_year="0" last_year="99999">$DLND_CPLHIST_DIR/$DLND_CPLHIST_CASE.cpl.hl2x1yr_glc.%y-01-01.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>lndImp_Sl_tsrf_elev%glc     Sl_tsrf_elev%glc  </var>
-      <var>lndImp_Sl_topo_elev%glc     Sl_topo_elev%glc  </var>
-      <var>lndImp_Flgl_qice_elev%glc   Flgl_qice_elev%glc</var>
+      <var>l2x1yr_glc_Sl_tsrf%glc     Sl_tsrf_elev%glc  </var>
+      <var>l2x1yr_glc_Sl_topo%glc     Sl_topo_elev%glc  </var>
+      <var>l2x1yr_glc_Flgl_qice%glc   Flgl_qice_elev%glc</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
