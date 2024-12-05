@@ -37,30 +37,33 @@ module cdeps_docn_comp
   use nuopc_shr_methods, only : shr_get_rpointer_name
 
   ! Datamode specialized modules
-  use docn_datamode_copyall_mod    , only : docn_datamode_copyall_advertise
-  use docn_datamode_copyall_mod    , only : docn_datamode_copyall_init_pointers
-  use docn_datamode_copyall_mod    , only : docn_datamode_copyall_advance
-  use docn_datamode_iaf_mod        , only : docn_datamode_iaf_advertise
-  use docn_datamode_iaf_mod        , only : docn_datamode_iaf_init_pointers
-  use docn_datamode_iaf_mod        , only : docn_datamode_iaf_advance
-  use docn_datamode_som_mod        , only : docn_datamode_som_advertise
-  use docn_datamode_som_mod        , only : docn_datamode_som_init_pointers
-  use docn_datamode_som_mod        , only : docn_datamode_som_advance
-  use docn_datamode_som_mod        , only : docn_datamode_som_restart_read
-  use docn_datamode_som_mod        , only : docn_datamode_som_restart_write
-  use docn_datamode_aquaplanet_mod , only : docn_datamode_aquaplanet_advertise
-  use docn_datamode_aquaplanet_mod , only : docn_datamode_aquaplanet_init_pointers
-  use docn_datamode_aquaplanet_mod , only : docn_datamode_aquaplanet_advance
-  use docn_datamode_cplhist_mod    , only : docn_datamode_cplhist_advertise
-  use docn_datamode_cplhist_mod    , only : docn_datamode_cplhist_init_pointers
-  use docn_datamode_cplhist_mod    , only : docn_datamode_cplhist_advance
-  use docn_datamode_multilev_mod   , only : docn_datamode_multilev_advertise
-  use docn_datamode_multilev_mod   , only : docn_datamode_multilev_init_pointers
-  use docn_datamode_multilev_mod   , only : docn_datamode_multilev_advance
-  use docn_datamode_multilev_dom_mod, only : docn_datamode_multilev_dom_advertise
-  use docn_datamode_multilev_dom_mod, only : docn_datamode_multilev_dom_init_pointers
-  use docn_datamode_multilev_dom_mod, only : docn_datamode_multilev_dom_advance
-  use docn_import_data_mod          , only : docn_import_data_advertise
+  use docn_datamode_copyall_mod          , only : docn_datamode_copyall_advertise
+  use docn_datamode_copyall_mod          , only : docn_datamode_copyall_init_pointers
+  use docn_datamode_copyall_mod          , only : docn_datamode_copyall_advance
+  use docn_datamode_iaf_mod              , only : docn_datamode_iaf_advertise
+  use docn_datamode_iaf_mod              , only : docn_datamode_iaf_init_pointers
+  use docn_datamode_iaf_mod              , only : docn_datamode_iaf_advance
+  use docn_datamode_som_mod              , only : docn_datamode_som_advertise
+  use docn_datamode_som_mod              , only : docn_datamode_som_init_pointers
+  use docn_datamode_som_mod              , only : docn_datamode_som_advance
+  use docn_datamode_som_mod              , only : docn_datamode_som_restart_read
+  use docn_datamode_som_mod              , only : docn_datamode_som_restart_write
+  use docn_datamode_aquaplanet_mod       , only : docn_datamode_aquaplanet_advertise
+  use docn_datamode_aquaplanet_mod       , only : docn_datamode_aquaplanet_init_pointers
+  use docn_datamode_aquaplanet_mod       , only : docn_datamode_aquaplanet_advance
+  use docn_datamode_cplhist_mod          , only : docn_datamode_cplhist_advertise
+  use docn_datamode_cplhist_mod          , only : docn_datamode_cplhist_init_pointers
+  use docn_datamode_cplhist_mod          , only : docn_datamode_cplhist_advance
+  use docn_datamode_multilev_cplhist_mod , only : docn_datamode_multilev_cplhist_advertise
+  use docn_datamode_multilev_cplhist_mod , only : docn_datamode_multilev_cplhist_init_pointers
+  use docn_datamode_multilev_cplhist_mod , only : docn_datamode_multilev_cplhist_advance
+  use docn_datamode_multilev_dom_mod     , only : docn_datamode_multilev_dom_advertise
+  use docn_datamode_multilev_dom_mod     , only : docn_datamode_multilev_dom_init_pointers
+  use docn_datamode_multilev_dom_mod     , only : docn_datamode_multilev_dom_advance
+  use docn_datamode_multilev_mod         , only : docn_datamode_multilev_advertise
+  use docn_datamode_multilev_mod         , only : docn_datamode_multilev_init_pointers
+  use docn_datamode_multilev_mod         , only : docn_datamode_multilev_advance
+  use docn_import_data_mod               , only : docn_import_data_advertise
 
   implicit none
   private ! except
@@ -304,6 +307,7 @@ contains
          trim(datamode) == 'cplhist'            .or. & ! read stream, needs import data
          trim(datamode) == 'sst_aquap_analytic' .or. & ! analytic, no streams, import or export data
          trim(datamode) == 'sst_aquap_constant' .or. & ! analytic, no streams, import or export data
+         trim(datamode) == 'multilev_cplhist'   .or. & ! multilevel ocean input
          trim(datamode) == 'multilev'           .or. & ! multilevel ocean input
          trim(datamode) == 'multilev_dom') then        ! multilevel ocean input and sst export
        ! success do nothing
@@ -330,6 +334,9 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     else if (trim(datamode) == 'multilev') then
        call docn_datamode_multilev_advertise(exportState, fldsExport, flds_scalar_name, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    else if (trim(datamode) == 'multilev_cplhist') then
+       call docn_datamode_multilev_cplhist_advertise(exportState, fldsExport, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     else if (trim(datamode) == 'multilev_dom') then
        call docn_datamode_multilev_dom_advertise(exportState, fldsExport, flds_scalar_name, rc)
@@ -542,34 +549,50 @@ contains
 
     if (first_time) then
 
-       ! Initialize dfields
-       call docn_init_dfields(importState, exportState, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-       ! Initialize datamode module ponters
+       ! Initialize datamode module pointers
        select case (trim(datamode))
        case('sstdata', 'sst_aquap_file')
           call docn_datamode_copyall_init_pointers(exportState, model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          call docn_init_dfields(importState, exportState, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('iaf')
           call docn_datamode_iaf_init_pointers(importState, exportState, model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          call docn_init_dfields(importState, exportState, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('som', 'som_aquap')
           call docn_datamode_som_init_pointers(importState, exportState, sdat, model_frac, rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          call docn_init_dfields(importState, exportState, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('sst_aquap_analytic', 'sst_aquap_constant')
           skip_restart_read=.true.
           call  docn_datamode_aquaplanet_init_pointers(exportState, model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          call docn_init_dfields(importState, exportState, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('cplhist')
           call docn_datamode_cplhist_init_pointers(exportState, model_frac, rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          call docn_init_dfields(importState, exportState, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('multilev')
           call docn_datamode_multilev_init_pointers(exportState, sdat,  model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          call docn_init_dfields(importState, exportState, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('multilev_dom')
           call docn_datamode_multilev_dom_init_pointers(exportState, sdat,  model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          call docn_init_dfields(importState, exportState, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       case('multilev_cplhist')
+          call docn_datamode_multilev_cplhist_init_pointers(dfields, &
+               exportState, sdat,  model_frac, logunit, mainproc, rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          ! Note that there is no call to docn_init_dfields since the
+          ! initialization of dfields is done in the above routine
        end select
 
        ! Read restart if needed
@@ -578,7 +601,7 @@ contains
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
           select case (trim(datamode))
-          case('sstdata', 'sst_aquap_file', 'iaf', 'cplhist', 'multilev', 'mulitilev_dom')
+          case('sstdata', 'sst_aquap_file', 'iaf', 'cplhist', 'multilev', 'mulitilev_dom', 'multilev_cplhist')
              call dshr_restart_read(restfilm, rpfile, logunit, my_task, mpicom, sdat, rc)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
           case('som', 'som_aquap')
@@ -603,7 +626,7 @@ contains
     ! Copy all fields from streams to export state as default
     ! This automatically will update the fields in the export state
     call ESMF_TraceRegionEnter('docn_dfield_copy')
-    if(.not. aquaplanet) then
+    if (.not. aquaplanet) then
        call dshr_dfield_copy(dfields, sdat, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     endif
@@ -635,28 +658,30 @@ contains
     case('multilev_dom')
        call  docn_datamode_multilev_dom_advance(sdat, logunit, mainproc, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    case('multilev_cplhist')
+       call  docn_datamode_multilev_cplhist_advance(exportState, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end select
 
     ! Write restarts if needed (no restarts for aquaplanet analytic or aquaplanet input file)
     if (restart_write) then
-          call shr_get_rpointer_name(gcomp, 'ocn', target_ymd, target_tod, rpfile, 'write', rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call shr_get_rpointer_name(gcomp, 'ocn', target_ymd, target_tod, rpfile, 'write', rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-          select case (trim(datamode))
-          case('sstdata', 'sst_aquap_file', 'iaf', 'cplhist', 'multilev', 'mulitilev_dom')
-             call dshr_restart_write(rpfile, case_name, 'docn', inst_suffix, target_ymd, target_tod, logunit, &
-                  my_task, sdat, rc)
-             if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          case('som', 'som_aquap')
-             call docn_datamode_som_restart_write(rpfile, case_name, inst_suffix, target_ymd, target_tod, &
+       select case (trim(datamode))
+       case('sstdata', 'sst_aquap_file', 'iaf', 'cplhist', 'multilev', 'mulitilev_dom', 'multilev_cplhist')
+          call dshr_restart_write(rpfile, case_name, 'docn', inst_suffix, target_ymd, target_tod, logunit, &
+               my_task, sdat, rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       case('som', 'som_aquap')
+          call docn_datamode_som_restart_write(rpfile, case_name, inst_suffix, target_ymd, target_tod, &
                logunit, my_task, sdat)
-          case('sst_aquap_analytic', 'sst_aquap_constant')
-             ! Do nothing
-          case default
-             call shr_sys_abort(subName//'datamode '//trim(datamode)//' not recognized')
-          end select
-          
-       endif
+       case('sst_aquap_analytic', 'sst_aquap_constant')
+          ! Do nothing
+       case default
+          call shr_sys_abort(subName//'datamode '//trim(datamode)//' not recognized')
+       end select
+    endif
 
     call ESMF_TraceRegionExit('DOCN_RUN')
 

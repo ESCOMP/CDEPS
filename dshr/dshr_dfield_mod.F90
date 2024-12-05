@@ -84,9 +84,9 @@ contains
     dfield_new%stream_index = iunset
     dfield_new%fldbun_index = iunset
 
-    ! loop over all input streams and ! determine if the strm_fld is in the attribute vector of stream ns
+    ! loop over all input streams
     ! if strm_fld is in the field bundle of stream ns, set the field index of the field with the name strm_fld
-    ! and set the index of the stream
+    ! colon delimited string and set the index of the stream
 
     ! loop over all input streams and ! determine if the strm_fld is in the attribute vector of stream ns
     do ns = 1, shr_strdata_get_stream_count(sdat)

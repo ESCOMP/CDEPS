@@ -36,7 +36,7 @@ module cdeps_dlnd_comp
   use dshr_fldlist_mod  , only : fldlist_type, dshr_fldlist_add, dshr_fldlist_realize
   use glc_elevclass_mod , only : glc_elevclass_as_string, glc_elevclass_init
   use nuopc_shr_methods , only : shr_get_rpointer_name
-  
+
   implicit none
   private ! except
 
@@ -514,6 +514,7 @@ contains
     character(CS), allocatable :: strm_flds_topo(:)
     character(CS), allocatable :: strm_flds_tsrf(:)
     character(CS), allocatable :: strm_flds_qice(:)
+    real(r8), pointer          :: fldptr2(:,:)
     logical                    :: first_time = .true.
     !-------------------------------------------------------------------------------
 
@@ -593,6 +594,27 @@ contains
     case('copyall')
        ! do nothing extra
     end select
+
+    ! Set special value over masked points
+    if (trim(datamode) == 'glc_forcing_mct' .or. trim(datamode) == 'glc_forcing' ) then
+       call dshr_state_getfldptr(exportState, 'Sl_tsrf_elev', fldptr2=fldptr2, rc=rc)
+       if (chkerr(rc,__LINE__,u_FILE_u)) return
+       do n = 1,size(fldptr2,dim=2)
+          if (lfrac(n) == 0.) fldptr2(:,n) = 1.e30_r8
+       end do
+
+       call dshr_state_getfldptr(exportState, 'Sl_topo_elev', fldptr2=fldptr2, rc=rc)
+       if (chkerr(rc,__LINE__,u_FILE_u)) return
+       do n = 1,size(fldptr2,dim=2)
+          if (lfrac(n) == 0.) fldptr2(:,n) = 1.e30_r8
+       end do
+
+       call dshr_state_getfldptr(exportState, 'Flgl_qice_elev', fldptr2=fldptr2, rc=rc)
+       if (chkerr(rc,__LINE__,u_FILE_u)) return
+       do n = 1,size(fldptr2,dim=2)
+          if (lfrac(n) == 0.) fldptr2(:,n) = 1.e30_r8
+       end do
+    end if
 
     call ESMF_TraceRegionExit('dlnd_datamode')
     call ESMF_TraceRegionExit('DLND_RUN')
