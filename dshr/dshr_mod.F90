@@ -1068,8 +1068,7 @@ contains
 
     call shr_cal_datetod2string(date_str, ymd, tod)
     write(rest_file_model ,"(7a)") trim(case_name),'.', trim(model_name),trim(inst_suffix),'.r.', trim(date_str),'.nc'
-    ! temporarily turn off timestamp, remove this code and comment in alpha05c
-    lrpfile = rpfile(:len_trim(rpfile)-17)
+
     ! write restart info to rpointer file
     if (my_task == main_task) then
        open(newunit=nu, file=trim(lrpfile), form='formatted')
