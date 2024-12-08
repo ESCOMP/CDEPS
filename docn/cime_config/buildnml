@@ -69,8 +69,6 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     config['docn_mode'] = docn_mode
     config['aqua_planet'] = 'true' if 'aquap' in docn_mode else 'false'
 
-    print (f"DEBUG: docn_mode is {docn_mode}")
-
     if case.get_value('PTS_LON'):
         scol_lon = float(case.get_value('PTS_LON'))
     else:
@@ -95,7 +93,6 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     streamlist = nmlgen.get_streams()
     if type(streamlist) == type(str()):
         streamlist = []
-    print(f"DEBUG: streamlist is {streamlist}")
 
     # Determine if skip restart is asked for and if it is a valid request
     skip_restart_read = case.get_value('DOCN_SKIP_RESTART_READ')
