@@ -1058,7 +1058,6 @@ contains
     type(io_desc_t)   :: pio_iodesc
     integer           :: oldmode
     integer           :: rcode
-    character(len=CS) :: lrpfile
     character(*), parameter :: F00   = "('(dshr_restart_write) ',2a,2(i0,2x))"
     !-------------------------------------------------------------------------------
 
@@ -1068,10 +1067,9 @@ contains
 
     call shr_cal_datetod2string(date_str, ymd, tod)
     write(rest_file_model ,"(7a)") trim(case_name),'.', trim(model_name),trim(inst_suffix),'.r.', trim(date_str),'.nc'
-
     ! write restart info to rpointer file
     if (my_task == main_task) then
-       open(newunit=nu, file=trim(lrpfile), form='formatted')
+       open(newunit=nu, file=trim(rpfile), form='formatted')
        write(nu,'(a)') rest_file_model
        close(nu)
        write(logunit,F00)' writing ',trim(rest_file_model)
