@@ -1,5 +1,4 @@
 module nuopc_shr_methods
-
   use ESMF         , only : operator(<), operator(/=), operator(+)
   use ESMF         , only : operator(-), operator(*) , operator(>=)
   use ESMF         , only : operator(<=), operator(>), operator(==), MOD
@@ -501,7 +500,7 @@ contains
 
   subroutine alarmInit( clock, alarm, option, &
        opt_n, opt_ymd, opt_tod, RefTime, alarmname, advance_clock, rc)
-    use ESMF, only : ESMF_AlarmPrint
+    use ESMF, only : ESMF_AlarmPrint, ESMF_ClockGetAlarm
     ! Setup an alarm in a clock
     ! Notes: The ringtime sent to AlarmCreate MUST be the next alarm
     ! time.  If you send an arbitrary but proper ringtime from the
@@ -595,27 +594,23 @@ contains
           return
        end if
     end if
+    call ESMF_TimeIntervalSet(AlarmInterval, yy=9999, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
 
     ! Determine inputs for call to create alarm
     selectcase (trim(option))
 
     case (optNONE)
-       call ESMF_TimeIntervalSet(AlarmInterval, yy=9999, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
        call ESMF_TimeSet( NextAlarm, yy=9999, mm=12, dd=1, s=0, calendar=cal, rc=rc )
        if (chkerr(rc,__LINE__,u_FILE_u)) return
        update_nextalarm  = .false.
 
     case (optNever)
-       call ESMF_TimeIntervalSet(AlarmInterval, yy=9999, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
        call ESMF_TimeSet( NextAlarm, yy=9999, mm=12, dd=1, s=0, calendar=cal, rc=rc )
        if (chkerr(rc,__LINE__,u_FILE_u)) return
        update_nextalarm  = .false.
 
     case (optDate)
-       call ESMF_TimeIntervalSet(AlarmInterval, yy=9999, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
        call timeInit(NextAlarm, lymd, cal, ltod, rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
        update_nextalarm  = .false.
@@ -682,6 +677,13 @@ contains
        call ESMF_TimeSet( NextAlarm, yy=cyy, mm=1, dd=1, s=0, calendar=cal, rc=rc )
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        update_nextalarm  = .true.
+
+    case (optEnd)
+       call ESMF_ClockGetAlarm(clock, alarmname="alarm_stop", alarm=alarm, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call ESMF_AlarmGet(alarm, ringTime=NextAlarm, rc=rc) 
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       
     case default
        call ESMF_LogWrite(subname//'unknown option '//trim(option), ESMF_LOGMSG_ERROR)
        rc = ESMF_FAILURE
@@ -762,114 +764,45 @@ contains
 
 !===============================================================================
 
-  integer function get_minimum_timestep(gcomp, rc)
+    integer function get_minimum_timestep(gcomp, rc)
     ! Get the minimum timestep interval in seconds based on the nuopc.config variables *_cpl_dt,
     ! if none of these variables are defined this routine will throw an error
     type(ESMF_GridComp), intent(in) :: gcomp
     integer, intent(out)            :: rc
 
-    character(len=CS) :: cvalue
-    integer                 :: atm_cpl_dt          ! Atmosphere coupling interval
-    integer                 :: lnd_cpl_dt          ! Land coupling interval
-    integer                 :: ice_cpl_dt          ! Sea-Ice coupling interval
-    integer                 :: ocn_cpl_dt          ! Ocean coupling interval
-    integer                 :: glc_cpl_dt          ! Glc coupling interval
-    integer                 :: rof_cpl_dt          ! Runoff coupling interval
-    integer                 :: wav_cpl_dt          ! Wav coupling interval
-    logical                 :: is_present, is_set  ! determine if these variables are used
-    integer                 :: esp_cpl_dt          ! Esp coupling interval
-
+    character(len=CS)          :: cvalue
+    integer                    :: comp_dt             ! coupling interval of component
+    integer, parameter         :: ncomps = 8
+    character(len=3),dimension(ncomps) :: compname
+    character(len=10)          :: comp
+    logical                    :: is_present, is_set  ! determine if these variables are used
+    integer                    :: i
     !---------------------------------------------------------------------------
     ! Determine driver clock timestep
     !---------------------------------------------------------------------------
+    compname = (/"atm", "lnd", "ice", "ocn", "rof", "glc", "wav", "esp"/)
     get_minimum_timestep = huge(1)
+
+    do i=1,ncomps
+       comp = compname(i)//"_cpl_dt"
     
-    call NUOPC_CompAttributeGet(gcomp, name="atm_cpl_dt", isPresent=is_present, isSet=is_set, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    if (is_present .and. is_set) then
-       call NUOPC_CompAttributeGet(gcomp, name="atm_cpl_dt", value=cvalue, rc=rc)
+       call NUOPC_CompAttributeGet(gcomp, name=comp, isPresent=is_present, isSet=is_set, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       read(cvalue,*) atm_cpl_dt
-       get_minimum_timestep = min(atm_cpl_dt, get_minimum_timestep)
-    endif
 
-    call NUOPC_CompAttributeGet(gcomp, name="lnd_cpl_dt", isPresent=is_present, isSet=is_set, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       if (is_present .and. is_set) then
+          call NUOPC_CompAttributeGet(gcomp, name=comp, value=cvalue, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          read(cvalue,*) comp_dt
+          get_minimum_timestep = min(comp_dt, get_minimum_timestep)
+       endif
+    enddo
 
-    if (is_present .and. is_set) then
-       call NUOPC_CompAttributeGet(gcomp, name="lnd_cpl_dt", value=cvalue, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       read(cvalue,*) lnd_cpl_dt
-       get_minimum_timestep = min(lnd_cpl_dt, get_minimum_timestep)
-    endif
-
-    call NUOPC_CompAttributeGet(gcomp, name="ice_cpl_dt", isPresent=is_present, isSet=is_set, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    if (is_present .and. is_set) then
-       call NUOPC_CompAttributeGet(gcomp, name="ice_cpl_dt", value=cvalue, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       read(cvalue,*) ice_cpl_dt
-       get_minimum_timestep = min(ice_cpl_dt, get_minimum_timestep)
-    endif
-
-    call NUOPC_CompAttributeGet(gcomp, name="ocn_cpl_dt", isPresent=is_present, isSet=is_set, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    if (is_present .and. is_set) then
-       call NUOPC_CompAttributeGet(gcomp, name="ocn_cpl_dt", value=cvalue, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       read(cvalue,*) ocn_cpl_dt
-       get_minimum_timestep = min(ocn_cpl_dt, get_minimum_timestep)
-    endif
-
-    call NUOPC_CompAttributeGet(gcomp, name="glc_cpl_dt", isPresent=is_present, isSet=is_set, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    if (is_present .and. is_set) then
-       call NUOPC_CompAttributeGet(gcomp, name="glc_cpl_dt", value=cvalue, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       read(cvalue,*) glc_cpl_dt
-       get_minimum_timestep = min(glc_cpl_dt, get_minimum_timestep)
-    endif
-
-    call NUOPC_CompAttributeGet(gcomp, name="rof_cpl_dt", isPresent=is_present, isSet=is_set, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    if (is_present .and. is_set) then
-       call NUOPC_CompAttributeGet(gcomp, name="rof_cpl_dt", value=cvalue, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       read(cvalue,*) rof_cpl_dt
-       get_minimum_timestep = min(rof_cpl_dt, get_minimum_timestep)
-    endif
-
-    call NUOPC_CompAttributeGet(gcomp, name="wav_cpl_dt", isPresent=is_present, isSet=is_set, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    if (is_present .and. is_set) then
-       call NUOPC_CompAttributeGet(gcomp, name="wav_cpl_dt", value=cvalue, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       read(cvalue,*) wav_cpl_dt
-       get_minimum_timestep = min(wav_cpl_dt, get_minimum_timestep)
-    endif
-
-    call NUOPC_CompAttributeGet(gcomp, name="esp_cpl_dt", isPresent=is_present, isSet=is_set, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    if (is_present .and. is_set) then
-       call NUOPC_CompAttributeGet(gcomp, name="esp_cpl_dt", value=cvalue, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       read(cvalue,*) esp_cpl_dt
-       get_minimum_timestep = min(esp_cpl_dt, get_minimum_timestep)
-    endif
     if(get_minimum_timestep == huge(1)) then
        call ESMF_LogWrite('minimum_timestep_error: this option is not supported ', ESMF_LOGMSG_ERROR)
        rc = ESMF_FAILURE
        return
     endif
     if(get_minimum_timestep <= 0) then
-       print *,__FILE__,__LINE__,atm_cpl_dt, lnd_cpl_dt, ocn_cpl_dt, ice_cpl_dt, glc_cpl_dt, rof_cpl_dt, wav_cpl_dt
        call ESMF_LogWrite('minimum_timestep_error ERROR ', ESMF_LOGMSG_ERROR)
        rc = ESMF_FAILURE
        return
@@ -890,7 +823,6 @@ contains
     character(len=16) timestr
     logical :: isPresent
     character(len=ESMF_MAXSTR)  :: inst_suffix
-    
     character(len=*), parameter :: subname='shr_get_rpointer_name'
     
     rc = ESMF_SUCCESS
@@ -904,8 +836,8 @@ contains
     mon = (ymd - yr*10000)/100
     day = (ymd - yr*10000 - mon*100)
     write(timestr,'(i4.4,a,i2.2,a,i2.2,a,i5.5)') yr,'-',mon,'-',day,'-',time
-
     write(rpfile,*) "rpointer."//compname//trim(inst_suffix)//'.'//trim(timestr)
+    rpfile = adjustl(rpfile)
     if (mode.eq.'read') then
        inquire(file=trim(rpfile), exist=isPresent)
        if(.not. isPresent) then
