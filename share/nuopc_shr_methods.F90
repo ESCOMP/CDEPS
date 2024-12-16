@@ -616,9 +616,9 @@ contains
        update_nextalarm  = .false.
 
    case (optNSteps,trim(optNSteps)//'s')
+      call ESMF_ClockGet(clock, TimeStep=TimestepInterval, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
       if(dtime_drv > 0) then
-         call ESMF_ClockGet(clock, TimeStep=TimestepInterval, rc=rc)
-         if (ChkErr(rc,__LINE__,u_FILE_u)) return
          call ESMF_TimeIntervalSet(AlarmInterval, s=dtime_drv, rc=rc )
          if (ChkErr(rc,__LINE__,u_FILE_u)) return
       else
@@ -628,7 +628,7 @@ contains
       
       AlarmInterval = AlarmInterval * opt_n
       ! timestepinterval*0 is 0 of kind ESMF_TimeStepInterval
-      if (mod(AlarmInterval, TimestepInterval) /= (timestepinterval*0)) then
+      if (mod(AlarmInterval, TimestepInterval) /= (TimestepInterval*0)) then
          call ESMF_LogWrite(subname//'illegal Alarm setting for '//trim(alarmname), ESMF_LOGMSG_ERROR)
          rc = ESMF_FAILURE
          return
