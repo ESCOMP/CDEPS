@@ -8,8 +8,9 @@ module shr_abort_mod
   ! when these routines were defined in shr_sys_mod.)
 
   use, intrinsic :: iso_fortran_env, only: output_unit, error_unit
-  use ESMF,         only : ESMF_Finalize, ESMF_END_ABORT, ESMF_LOGMSG_ERROR, ESMF_LogWrite
+
   use shr_kind_mod, only : shr_kind_in, shr_kind_cx
+  use shr_mpi_mod , only : shr_mpi_initialized, shr_mpi_abort
   use shr_log_mod , only : s_logunit => shr_log_Unit
 
 #ifdef CPRNAG
@@ -34,14 +35,18 @@ module shr_abort_mod
 contains
 
   !===============================================================================
-  subroutine shr_abort_abort(string,rc)
+  subroutine shr_abort_abort(string,rc, line, file)
+    use esmf, only : ESMF_LOGWRITE, ESMF_LOGMSG_ERROR
     ! Consistent stopping mechanism
 
     !----- arguments -----
     character(len=*)    , intent(in), optional :: string  ! error message string
     integer(shr_kind_in), intent(in), optional :: rc      ! error code
+    integer(shr_kind_in), intent(in), optional :: line
+    character(len=*), intent(in), optional :: file
 
     !----- local -----
+    logical :: flag
 
     ! Local version of the string.
     ! (Gets a default value if string is not present.)
@@ -56,13 +61,19 @@ contains
 
     call print_error_to_logs("ERROR", local_string)
 
+    call ESMF_LogWrite(local_string, ESMF_LOGMSG_ERROR, line=line, file=file)
+    
     call shr_abort_backtrace()
 
-    if(present(rc)) then
-       write(local_string, *) trim(local_string), ' rc=',rc
+    call shr_mpi_initialized(flag)
+
+    if (flag) then
+       if (present(rc)) then
+          call shr_mpi_abort(trim(local_string),rc)
+       else
+          call shr_mpi_abort(trim(local_string))
+       endif
     endif
-    call ESMF_LogWrite(local_string, ESMF_LOGMSG_ERROR)
-    call ESMF_Finalize(endflag=ESMF_END_ABORT)
 
     ! A compiler's abort method may print a backtrace or do other nice
     ! things, but in fact we can rarely leverage this, because MPI_Abort
