@@ -44,9 +44,6 @@ contains
     integer(shr_kind_in), intent(in), optional :: line
     character(len=*), intent(in), optional :: file
 
-    !----- local -----
-    logical :: flag
-
     ! Local version of the string.
     ! (Gets a default value if string is not present.)
     character(len=shr_kind_cx) :: local_string
