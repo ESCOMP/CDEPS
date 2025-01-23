@@ -461,7 +461,7 @@ contains
                ESMF_LOGMSG_INFO)
        elseif (lrank == 1) then
           if (.not.present(fldptr1)) then
-             call shr_abort_mod(trim(subname)//": ERROR missing rank=1 array ", &
+             call shr_sys_abort(trim(subname)//": ERROR missing rank=1 array ", &
                   line=__LINE__, file=u_FILE_u)
           endif
           call ESMF_FieldGet(field, farrayPtr=fldptr1, rc=rc)
