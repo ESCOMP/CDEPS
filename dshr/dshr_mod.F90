@@ -101,7 +101,7 @@ contains
     rc = ESMF_SUCCESS
     ! To prevent an unused variable warning
     if(.not. (ESMF_StateIsCreated(importState) .or. ESMF_StateIsCreated(exportState) .or. ESMF_ClockIsCreated(clock))) then
-       call shr_sys_abort(trim(subname)//' state or clock not created', ESMF_LOGMSG_ERROR)
+       call shr_sys_abort(trim(subname)//' state or clock not created')
     endif
 
     ! Switch to IPDv01 by filtering all other phaseMap entries
