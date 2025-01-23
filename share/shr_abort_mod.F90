@@ -10,7 +10,6 @@ module shr_abort_mod
   use, intrinsic :: iso_fortran_env, only: output_unit, error_unit
 
   use shr_kind_mod, only : shr_kind_in, shr_kind_cx
-  use shr_mpi_mod , only : shr_mpi_initialized, shr_mpi_abort
   use shr_log_mod , only : s_logunit => shr_log_Unit
 
 #ifdef CPRNAG
@@ -36,7 +35,7 @@ contains
 
   !===============================================================================
   subroutine shr_abort_abort(string,rc, line, file)
-    use esmf, only : ESMF_LOGWRITE, ESMF_LOGMSG_ERROR
+    use esmf, only : ESMF_LOGWRITE, ESMF_LOGMSG_ERROR, ESMF_FINALIZE, ESMF_END_ABORT
     ! Consistent stopping mechanism
 
     !----- arguments -----
@@ -58,6 +57,9 @@ contains
     else
        local_string = "Unknown error submitted to shr_abort_abort."
     end if
+    if(present(rc)) then
+       write(local_string, *) trim(local_string), ' rc=',rc
+    endif
 
     call print_error_to_logs("ERROR", local_string)
 
@@ -65,15 +67,7 @@ contains
     
     call shr_abort_backtrace()
 
-    call shr_mpi_initialized(flag)
-
-    if (flag) then
-       if (present(rc)) then
-          call shr_mpi_abort(trim(local_string),rc)
-       else
-          call shr_mpi_abort(trim(local_string))
-       endif
-    endif
+    call ESMF_Finalize(endflag=ESMF_END_ABORT)
 
     ! A compiler's abort method may print a backtrace or do other nice
     ! things, but in fact we can rarely leverage this, because MPI_Abort
