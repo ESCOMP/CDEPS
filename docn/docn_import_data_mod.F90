@@ -69,7 +69,7 @@ contains
 
    !===============================================================================
    subroutine docn_get_import_fields(str, flds, rc)
-
+      use shr_sys_mod          , only : shr_sys_abort
       ! input/output variables
       character(len=*)               , intent(in)  :: str     ! colon deliminted string to search
       character(len=*) , allocatable , intent(out) :: flds(:) ! memory will be allocate for flds
