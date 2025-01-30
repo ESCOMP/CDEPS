@@ -17,7 +17,7 @@ module datm_datamode_core2_mod
   use pio              , only : pio_closefile
   use NUOPC            , only : NUOPC_Advertise
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
-  use shr_sys_mod      , only : shr_sys_abort
+  use shr_log_mod      , only : shr_log_error
   use shr_cal_mod      , only : shr_cal_date2julian
   use shr_const_mod    , only : shr_const_tkfrz, shr_const_pi
   use dshr_strdata_mod , only : shr_strdata_get_stream_pointer, shr_strdata_type
@@ -262,12 +262,14 @@ contains
     end if
 
     if (.not. associated(strm_prec) .or. .not. associated(strm_swdn)) then
-       call shr_sys_abort(trim(subname)//'ERROR: prec and swdn must be in streams for CORE2')
+       call shr_log_error(trim(subname)//'ERROR: prec and swdn must be in streams for CORE2', rc=rc)
+       return
     endif
 
     if (trim(datamode) == 'CORE2_IAF' ) then
        if (.not. associated(strm_tarcf)) then
-          call shr_sys_abort(trim(subname)//'tarcf must be in an input stream for CORE2_IAF')
+          call shr_log_error(trim(subname)//'tarcf must be in an input stream for CORE2_IAF', rc=rc)
+          return
        endif
     endif
 

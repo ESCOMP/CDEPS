@@ -22,7 +22,7 @@ module dshr_strdata_mod
   use ESMF             , only : ESMF_LOGMSG_INFO, ESMF_LogWrite
   use shr_kind_mod     , only : r8=>shr_kind_r8, r4=>shr_kind_r4, i2=>shr_kind_I2
   use shr_kind_mod     , only : cs=>shr_kind_cs, cl=>shr_kind_cl, cxx=>shr_kind_cxx, cx=>shr_kind_cx
-  use shr_sys_mod      , only : shr_sys_abort
+  use shr_log_mod      , only : shr_log_error
   use shr_const_mod    , only : shr_const_pi, shr_const_cDay, shr_const_spval
   use shr_cal_mod      , only : shr_cal_calendarname, shr_cal_timeSet
   use shr_cal_mod      , only : shr_cal_noleap, shr_cal_gregorian
@@ -170,11 +170,14 @@ contains
     else if (trim(name) .eq. 'model_ub') then
        shr_strdata_get_stream_fieldbundle = sdat%pstrm(ns)%fldbun_data(sdat%pstrm(ns)%stream_ub)
     else if (trim(name) .eq. 'stream_lb') then
-       call shr_sys_abort("should not be here")
+       call shr_log_error("should not be here", rc=rc)
+       return
     else if (trim(name) .eq. 'stream_ub') then
-       call shr_sys_abort("should not be here")
+       call shr_log_error("should not be here", rc=rc)
+       return
     else
-       call shr_sys_abort(trim(name)//' is not a recognized stream bundle name')
+       call shr_log_error(trim(name)//' is not a recognized stream bundle name', rc=rc)
+       return
     endif
 
   end function shr_strdata_get_stream_fieldbundle
@@ -426,8 +429,8 @@ contains
        if (filename /= 'none' .and. mainproc) then
           inquire(file=trim(filename),exist=fileExists)
           if (.not. fileExists) then
-             write(sdat%stream(1)%logunit,'(a)') "ERROR: file does not exist: "//trim(fileName)
-             call shr_sys_abort(subName//"ERROR: file does not exist: "//trim(fileName))
+             call shr_log_error(subName//"ERROR: file does not exist: "//trim(fileName))
+             return
           end if
        endif
        !
@@ -599,7 +602,8 @@ contains
           else if (trim(sdat%stream(ns)%mapalgo) == 'none') then
              ! single point stream data, no action required.
           else
-             call shr_sys_abort('ERROR: map algo '//trim(sdat%stream(ns)%mapalgo)//' is not supported')
+             call shr_log_error('ERROR: map algo '//trim(sdat%stream(ns)%mapalgo)//' is not supported', rc=rc)
+             return
           end if
        end if
 
@@ -616,17 +620,18 @@ contains
           ! check that for now u and v are only for single level fields
           if (stream_nlev > 1) then
              ! TODO: add support for u and v for multi level fields
-             call shr_sys_abort(subname//': vector fields are not currently supported for multi-level fields')
+             call shr_log_error(subname//': vector fields are not currently supported for multi-level fields', rc=rc)
+             return
           end if
           ! check that stream vector names are valid
           if (.not. shr_string_listIsValid(stream_vector_names)) then
-             write(sdat%stream(1)%logunit,*) trim(subname),' vec fldlist invalid m=',m,trim(stream_vector_names)
-             call shr_sys_abort(subname//': vec fldlist invalid:'//trim(stream_vector_names))
+             call shr_log_error(subname//': vec fldlist invalid:'//trim(stream_vector_names), rc=rc)
+             return
           endif
           ! check that only 2 fields are contained for any vector pairing
           if (shr_string_listGetNum(stream_vector_names) /= 2) then
-             write(sdat%stream(1)%logunit,*) trim(subname),' vec fldlist ne 2 m=',m,trim(stream_vector_names)
-             call shr_sys_abort(subname//': vec fldlist ne 2:'//trim(stream_vector_names))
+             call shr_log_error(subname//': vec fldlist ne 2:'//trim(stream_vector_names), rc=rc)
+             return
           endif
           ! create stream vector field
           sdat%pstrm(ns)%field_stream_vector = ESMF_FieldCreate(stream_mesh, &
@@ -649,7 +654,8 @@ contains
     else if (esmf_caltype == ESMF_CALKIND_GREGORIAN) then
        sdat%model_calendar = trim(shr_cal_gregorian)
     else
-       call shr_sys_abort(subname//" ERROR bad ESMF calendar name "//trim(calendar))
+       call shr_log_error(subname//" ERROR bad ESMF calendar name "//trim(calendar), rc=rc)
+       return
     end if
 
     ! print sdat output
@@ -788,7 +794,8 @@ contains
        flddata(:) = data_double(:)
        deallocate(data_double)
     else
-       call shr_sys_abort(subName//"ERROR: only real and double types are supported for stream domain read")
+       call shr_log_error(subName//"ERROR: only real and double types are supported for stream domain read", rc=rc)
+       return
     end if
 
     ! Free the memory associate with the iodesc and close the file
@@ -969,7 +976,8 @@ contains
              ! TODO: need to put in capability to read all stream data at once
           case default
              write(logunit,F00) "ERROR: Unsupported readmode : ", trim(sdat%stream(ns)%readmode)
-             call shr_sys_abort(subName//"ERROR: Unsupported readmode: "//trim(sdat%stream(ns)%readmode))
+             call shr_log_error(subName//"ERROR: Unsupported readmode: "//trim(sdat%stream(ns)%readmode), rc=rc)
+             return
           end select
 
           if (debug > 0 .and. sdat%mainproc) then
@@ -996,7 +1004,7 @@ contains
                    ! case (3), abort
                    write(logunit,*) trim(subname),' ERROR: mismatch calendar ', &
                         trim(sdat%model_calendar),':',trim(sdat%stream(ns)%calendar)
-                   call shr_sys_abort(trim(subname)//' ERROR: mismatch calendar ')
+                   call shr_log_error(trim(subname)//' ERROR: mismatch calendar ')
                 endif
              else ! calendars are the same
                 if(trim(sdat%model_calendar) == trim(shr_cal_gregorian)) then
@@ -1053,7 +1061,8 @@ contains
                            dtime, sdat%pstrm(ns)%dtmax, sdat%pstrm(ns)%dtmin, sdat%stream(ns)%dtlimit
                       write(6,*) trim(subName),' ERROR: ymdLB, todLB, ymdUB, todUB = ', &
                            sdat%pstrm(ns)%ymdLB, sdat%pstrm(ns)%todLB, sdat%pstrm(ns)%ymdUB, sdat%pstrm(ns)%todUB
-                      call shr_sys_abort(trim(subName)//' ERROR dt limit for stream, see atm.log output')
+                      call shr_log_error(trim(subName)//' ERROR dt limit for stream, see atm.log output', rc=rc)
+                      return
                    endif
                 endif
              endif
@@ -1511,8 +1520,8 @@ contains
     if (sdat%mainproc) then
        inquire(file=trim(fileName),exist=fileExists)
        if (.not. fileExists) then
-          write(sdat%stream(1)%logunit,F00) "ERROR: file does not exist: ", trim(fileName)
-          call shr_sys_abort(subName//"ERROR: file does not exist: "//trim(fileName))
+          call shr_log_error(subName//"ERROR: file does not exist: "//trim(fileName), rc=rc)
+          return
        end if
     endif
 
@@ -1557,7 +1566,8 @@ contains
        if (stream_nlev == 1) then
           allocate(dataptr1d(1))
        else
-          call shr_sys_abort("ERROR: multi-level streams always require a stream mesh")
+          call shr_log_error("ERROR: multi-level streams always require a stream mesh", rc=rc)
+          return
        end if
     end if
 
@@ -1617,11 +1627,15 @@ contains
        else if (pio_iovartype == PIO_SHORT) then
           rcode = pio_get_att(pioid, varid, "scale_factor", scale_factor)
           if(rcode /= PIO_NOERR) then
-             call shr_sys_abort('DATATYPE PIO_SHORT requires attributes scale_factor')
+             rc = rcode
+             call shr_log_error('DATATYPE PIO_SHORT requires attributes scale_factor', rc=rc)
+             return
           endif
           rcode = pio_get_att(pioid, varid, "add_offset", add_offset)
           if(rcode /= PIO_NOERR) then
-             call shr_sys_abort('DATATYPE PIO_SHORT requires attributes add_offset')
+             rc = rcode
+             call shr_log_error('DATATYPE PIO_SHORT requires attributes add_offset', rc=rc)
+             return
           endif
           rcode = pio_get_att(pioid, varid, "_FillValue", fillvalue_i2)
        endif
@@ -1647,14 +1661,17 @@ contains
                 rcode = pio_get_var(pioid, varid,start=(/1,1,1,nt/),count=(/1,1,1,1/), ival=data_real2d)
              end if
              if ( rcode /= PIO_NOERR ) then
-                call shr_sys_abort(' ERROR: reading in variable: '// trim(per_stream%fldlist_stream(nf)))
+                rc = rcode
+                call shr_log_error(' ERROR: reading in variable: '// trim(per_stream%fldlist_stream(nf)), rc=rc)
+                return
              end if
              if (handlefill) then
                 ! Single point streams are not allowed to have missing values
                 if (stream%mapalgo == 'none' .and. any(data_real2d == fillvalue_r4)) then
                    write(errmsg,*) ' ERROR: _Fillvalue found in stream input variable: '// trim(per_stream%fldlist_stream(nf))
                    if(sdat%mainproc) write(sdat%stream(1)%logunit,*) trim(errmsg)
-                   call shr_sys_abort(errmsg)
+                   call shr_log_error(errmsg, rc=rc)
+                   return
                 endif
                 do lev = 1,stream_nlev
                    do n = 1,size(dataptr2d, dim=2)
@@ -1679,14 +1696,17 @@ contains
                 rcode = pio_get_var(pioid, varid,start=(/1,1,nt/),count=(/1,1,1/), ival=data_real1d)
              endif
              if ( rcode /= PIO_NOERR ) then
-                call shr_sys_abort(' ERROR: reading in variable: '// trim(per_stream%fldlist_stream(nf)))
+                rc = rcode
+                call shr_log_error(' ERROR: reading in variable: '// trim(per_stream%fldlist_stream(nf)), rc=rc)
+                return
              end if
              if (handlefill) then
                 ! Single point streams are not allowed to have missing values
                 if (stream%mapalgo == 'none' .and. any(data_real1d == fillvalue_r4)) then
                    write(errmsg,*) ' ERROR: _Fillvalue found in stream input variable: '// trim(per_stream%fldlist_stream(nf))
                    if(sdat%mainproc) write(sdat%stream(1)%logunit,*) trim(errmsg)
-                   call shr_sys_abort(errmsg)
+                   call shr_log_error(errmsg, rc=rc)
+                   return
                 endif
 
                 do n=1,size(dataptr1d)
@@ -1712,14 +1732,16 @@ contains
                 rcode = pio_get_var(pioid, varid,start=(/1,1,1,nt/), count=(/1,1,1,1/), ival=data_dbl2d)
              end if
              if ( rcode /= PIO_NOERR ) then
-                call shr_sys_abort(' ERROR: reading in 2d double variable: '// trim(per_stream%fldlist_stream(nf)))
+                rc = rcode
+                call shr_log_error(' ERROR: reading in 2d double variable: '// trim(per_stream%fldlist_stream(nf)), rc=rc)
+                return
              end if
              if (handlefill) then
                 ! Single point streams are not allowed to have missing values
                 if (stream%mapalgo == 'none' .and. any(data_dbl2d == fillvalue_r8)) then
                    write(errmsg,*) ' ERROR: _Fillvalue found in stream input variable: '// trim(per_stream%fldlist_stream(nf))
-                   if(sdat%mainproc) write(sdat%stream(1)%logunit,*) trim(errmsg)
-                   call shr_sys_abort(errmsg)
+                   call shr_log_error(errmsg, rc=rc)
+                   return
                 endif
                 do lev = 1,stream_nlev
                    do n = 1,size(dataptr2d, dim=2)
@@ -1744,14 +1766,16 @@ contains
                 rcode = pio_get_var(pioid, varid,start=(/1,1,nt/), count=(/1,1,1/), ival=data_dbl1d)
              endif
              if ( rcode /= PIO_NOERR ) then
-                call shr_sys_abort(' ERROR: reading in variable: '// trim(per_stream%fldlist_stream(nf)))
+                rc = rcode
+                call shr_log_error(' ERROR: reading in variable: '// trim(per_stream%fldlist_stream(nf)), rc=rc)
+                return
              end if
              if (handlefill) then
                 ! Single point streams are not allowed to have missing values
                 if (stream%mapalgo == 'none' .and. any(data_dbl1d == fillvalue_r8)) then
                    write(errmsg,*) ' ERROR: _Fillvalue found in stream input variable: '// trim(per_stream%fldlist_stream(nf))
-                   if(sdat%mainproc) write(sdat%stream(1)%logunit,*) trim(errmsg)
-                   call shr_sys_abort(errmsg)
+                   call shr_log_error(errmsg, rc=rc)
+                   return
                 endif
                 do n = 1,size(dataptr1d)
                    if (.not. shr_infnan_isnan(data_dbl1d(n)) .and. data_dbl1d(n) .ne. fillvalue_r8) then
@@ -1778,7 +1802,9 @@ contains
                 rcode = pio_get_var(pioid, varid,start=(/1,1,1,nt/), count=(/1,1,1,1/), ival=data_short2d)
              end if
              if ( rcode /= PIO_NOERR ) then
-                call shr_sys_abort(' ERROR: reading in 2d short variable: '// trim(per_stream%fldlist_stream(nf)))
+                rc = rcode
+                call shr_log_error(' ERROR: reading in 2d short variable: '// trim(per_stream%fldlist_stream(nf)), rc=rc)
+                return
              end if
              if (handlefill) then
                 do lev = 1,stream_nlev
@@ -1804,7 +1830,9 @@ contains
                 rcode = pio_get_var(pioid, varid,start=(/1,1,nt/),count=(/1,1,1/), ival=data_short1d)
              endif
              if ( rcode /= PIO_NOERR ) then
-                call shr_sys_abort(' ERROR: reading in variable: '// trim(per_stream%fldlist_stream(nf)))
+                rc = rcode
+                call shr_log_error(' ERROR: reading in variable: '// trim(per_stream%fldlist_stream(nf)), rc=rc)
+                return
              end if
              if (handlefill) then
                 do n=1,lsize
@@ -1825,7 +1853,8 @@ contains
           ! -----------------------------
           ! pio_iovartype is not supported
           ! -----------------------------
-          call shr_sys_abort(subName//"ERROR: only double, real and short types are supported for stream read")
+          call shr_log_error(subName//"ERROR: only double, real and short types are supported for stream read", rc=rc)
+          return
 
        end if
 
@@ -1881,7 +1910,8 @@ contains
        if (chkerr(rc,__LINE__,u_FILE_u)) return
 
        if (.not. ESMF_FieldIsCreated(per_stream%field_stream_vector)) then
-          call shr_sys_abort('ERROR: per_stream%field_stream_vector has not been created')
+          call shr_log_error('ERROR: per_stream%field_stream_vector has not been created', rc=rc)
+          return
        end if
 
        call ESMF_FieldRegrid(per_stream%field_stream_vector, field_vector_dst, per_stream%routehandle, &
@@ -2052,12 +2082,14 @@ contains
                per_stream%stream_pio_iodesc)
        else
           write(6,*)'ERROR: dimlens= ',dimlens
-          call shr_sys_abort(trim(subname)//' dimlens = 4 assumes a time dimension')
+          call shr_log_error(trim(subname)//' dimlens = 4 assumes a time dimension', rc=rc)
+          return
        end if
 
     else
        write(6,*)'ERROR: dimlens= ',dimlens
-       call shr_sys_abort(trim(subname)//' only ndims of 2 and 3 and 4 are currently supported')
+       call shr_log_error(trim(subname)//' only ndims of 2 and 3 and 4 are currently supported', rc=rc)
+       return
     end if
 
     ! deallocate memory

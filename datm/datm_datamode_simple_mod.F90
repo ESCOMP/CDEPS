@@ -25,7 +25,8 @@ module datm_datamode_simple_mod
   use dshr_methods_mod , only : dshr_state_getfldptr, dshr_fldbun_getfldptr, dshr_fldbun_regrid, chkerr
   use dshr_strdata_mod , only : shr_strdata_type
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
-
+  use shr_log_mod      , only : shr_log_error
+  
   implicit none
   private ! except
 
@@ -117,7 +118,9 @@ contains
        read (nu,nml=const_forcing_nml,iostat=ierr)
        close(nu)
        if (ierr > 0) then
-          call shr_sys_abort(subName//': namelist read error '//trim(nlfilename))
+          rc = ierr
+          call shr_log_error(subName//': namelist read error '//trim(nlfilename), rc=rc)
+          return
        end if
 
       bcasttmp = 0
