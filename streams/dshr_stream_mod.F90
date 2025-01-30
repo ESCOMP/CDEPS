@@ -1255,6 +1255,7 @@ contains
     integer                :: old_handle    ! previous setting of pio error handling
     real(R8)               :: nsec          ! elapsed secs on calendar date
     real(R8),allocatable   :: tvar(:)
+    character(CX)          :: msg
     character(*),parameter :: subname = '(shr_stream_readTCoord) '
     !-------------------------------------------------------------------------------
 
@@ -1334,9 +1335,9 @@ contains
     ! if offset is not zero, adjust strm%file(k)%date(n) and strm%file(k)%secs(n)
     if (strm%offset /= 0) then
        if (size(strm%file(k)%date) /= size(strm%file(k)%secs)) then
-          write(strm%logunit,'(a,2i7)') trim(subname)//" Incompatable date and secs sizes",&
+          write(msg ,'(a,2i7)') trim(subname)//" Incompatable date and secs sizes",&
                size(strm%file(k)%date), size(strm%file(k)%secs)
-          call shr_sys_abort()
+          call shr_sys_abort(trim(msg))
        endif
        num = size(strm%file(k)%date)
        offin = strm%offset
