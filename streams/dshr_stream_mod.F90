@@ -893,7 +893,7 @@ contains
           if (.not. strm%file(k)%haveData) then
              call shr_stream_readtCoord(strm, k, isroot_task, rCode)
              if ( rCode /= 0 )then
-                call shr_log_error(trim(subName)//" ERROR: readtCoord1")
+                call shr_sys_abort(trim(subName)//" ERROR: readtCoord1")
              end if
           end if
           do n=1,strm%file(k)%nt
