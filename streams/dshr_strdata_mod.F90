@@ -44,7 +44,8 @@ module dshr_strdata_mod
   use dshr_tinterp_mod , only : shr_tInterp_getCosz, shr_tInterp_getAvgCosz, shr_tInterp_getFactors
   use dshr_methods_mod , only : dshr_fldbun_getfldptr, dshr_fldbun_getfieldN, dshr_fldbun_fldchk, chkerr
   use dshr_methods_mod , only : dshr_fldbun_diagnose, dshr_fldbun_regrid, dshr_field_getfldptr
-
+  use shr_sys_mod      , only : shr_sys_abort
+  
   use pio              , only : file_desc_t, iosystem_desc_t, io_desc_t, var_desc_t
   use pio              , only : pio_openfile, pio_closefile, pio_nowrite
   use pio              , only : pio_seterrorhandling, pio_initdecomp, pio_freedecomp
@@ -170,14 +171,11 @@ contains
     else if (trim(name) .eq. 'model_ub') then
        shr_strdata_get_stream_fieldbundle = sdat%pstrm(ns)%fldbun_data(sdat%pstrm(ns)%stream_ub)
     else if (trim(name) .eq. 'stream_lb') then
-       call shr_log_error("should not be here", rc=rc)
-       return
+       call shr_sys_abort("should not be here")
     else if (trim(name) .eq. 'stream_ub') then
-       call shr_log_error("should not be here", rc=rc)
-       return
+       call shr_sys_abort("should not be here")
     else
-       call shr_log_error(trim(name)//' is not a recognized stream bundle name', rc=rc)
-       return
+       call shr_sys_abort(trim(name)//' is not a recognized stream bundle name')
     endif
 
   end function shr_strdata_get_stream_fieldbundle
@@ -429,7 +427,7 @@ contains
        if (filename /= 'none' .and. mainproc) then
           inquire(file=trim(filename),exist=fileExists)
           if (.not. fileExists) then
-             call shr_log_error(subName//"ERROR: file does not exist: "//trim(fileName))
+             call shr_log_error(subName//"ERROR: file does not exist: "//trim(fileName), rc=rc)
              return
           end if
        endif
