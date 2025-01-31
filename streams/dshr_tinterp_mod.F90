@@ -12,7 +12,7 @@ module dshr_tInterp_mod
   use shr_orb_mod      , only : shr_orb_cosz, shr_orb_decl, SHR_ORB_UNDEF_REAL
   use shr_const_mod    , only : SHR_CONST_PI
   use dshr_methods_mod , only : chkerr
-
+  use shr_sys_mod      , only : shr_sys_abort
   implicit none
   private ! except
 
