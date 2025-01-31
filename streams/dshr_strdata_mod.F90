@@ -390,7 +390,6 @@ contains
     type(ESMF_CalKind_Flag)      :: esmf_caltype    ! esmf calendar type
     character(CS)                :: calendar        ! calendar name
     integer                      :: ns              ! stream index
-    integer                      :: m               ! generic index
     character(CX)                :: fileName        ! generic file name
     integer                      :: nfld            ! loop stream field index
     type(ESMF_Field)             :: lfield          ! temporary
