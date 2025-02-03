@@ -34,7 +34,7 @@ module dshr_stream_mod
 #ifdef CESMCOUPLED
   use shr_pio_mod      , only : shr_pio_getiosys, shr_pio_getiotype, shr_pio_getioformat
 #endif
-
+  use shr_sys_mod      , only : shr_sys_abort
   implicit none
   private ! default private
 
