@@ -120,7 +120,9 @@ contains
 
   subroutine shr_log_error(string, rc, line, file)
     use esmf, only : ESMF_LOGWRITE, ESMF_LOGMSG_ERROR, ESMF_FINALIZE, ESMF_END_ABORT, ESMF_FAILURE, ESMF_SUCCESS
-    ! Consistent stopping mechanism
+    ! This routine prints error messages to shr_log_unit (which is standard output
+    ! for most tasks in CESM), to the ESMF PET files and to standard error if shr_log_unit is a
+    ! file.  Sets rc to ESMF_FAILURE on return.
 
     !----- arguments -----
     character(len=*)    , intent(in) :: string  ! error message string
