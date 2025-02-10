@@ -307,7 +307,6 @@ contains
     if (lsize < 1 .or. size(lat) /= lsize .or. size(cosz) /= lsize) then
        write(6,*)'ERROR: lsize,size(lat),size(cosz) =  ',lsize,size(lat),size(cosz)
        call shr_sys_abort(subname//' ERROR: lon lat cosz sizes disagree', file=__FILE__,line=__LINE__)
-       return
     endif
 
     call shr_cal_date2julian(ymd, tod, calday, calendar)

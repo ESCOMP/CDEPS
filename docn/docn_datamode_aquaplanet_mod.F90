@@ -307,6 +307,7 @@ contains
 
     else
        call shr_log_error("ERROR: either sst_constant value or sst_option must be input", rc=rc)
+       return
     end if
 
   end subroutine docn_datamode_aquaplanet_advance

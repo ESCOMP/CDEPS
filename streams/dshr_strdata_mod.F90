@@ -1001,7 +1001,8 @@ contains
                    ! case (3), abort
                    write(logunit,*) trim(subname),' ERROR: mismatch calendar ', &
                         trim(sdat%model_calendar),':',trim(sdat%stream(ns)%calendar)
-                   call shr_log_error(trim(subname)//' ERROR: mismatch calendar ')
+                   call shr_log_error(trim(subname)//' ERROR: mismatch calendar ', rc=rc)
+                   return
                 endif
              else ! calendars are the same
                 if(trim(sdat%model_calendar) == trim(shr_cal_gregorian)) then

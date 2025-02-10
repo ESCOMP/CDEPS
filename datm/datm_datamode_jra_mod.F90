@@ -227,6 +227,7 @@ contains
     ! erro check
     if (.not. associated(strm_prec) .or. .not. associated(strm_swdn)) then
        call shr_log_error(trim(subname)//'ERROR: prec and swdn must be in streams for CORE_IAF_JRA', rc=rc)
+       return
     endif
 
   end subroutine datm_datamode_jra_init_pointers
