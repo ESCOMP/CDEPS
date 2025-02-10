@@ -89,6 +89,7 @@ contains
 
   subroutine dshr_model_initphase(gcomp, importState, exportState, clock, rc)
     use ESMF, only : ESMF_ClockIsCreated, ESMF_StateIsCreated
+    use shr_sys_mod, only : shr_sys_abort
     ! input/output variables
     type(ESMF_GridComp)   :: gcomp
     type(ESMF_State)      :: importState, exportState
@@ -100,8 +101,7 @@ contains
     rc = ESMF_SUCCESS
     ! To prevent an unused variable warning
     if(.not. (ESMF_StateIsCreated(importState) .or. ESMF_StateIsCreated(exportState) .or. ESMF_ClockIsCreated(clock))) then
-       call ESMF_LogWrite(trim(subname)//' state or clock not created', ESMF_LOGMSG_ERROR)
-
+       call shr_sys_abort(trim(subname)//' state or clock not created')
     endif
 
     ! Switch to IPDv01 by filtering all other phaseMap entries

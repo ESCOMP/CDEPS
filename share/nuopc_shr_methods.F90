@@ -2,7 +2,7 @@ module nuopc_shr_methods
   use ESMF         , only : operator(<), operator(/=), operator(+)
   use ESMF         , only : operator(-), operator(*) , operator(>=)
   use ESMF         , only : operator(<=), operator(>), operator(==), MOD
-  use ESMF         , only : ESMF_LOGERR_PASSTHRU, ESMF_LogFoundError, ESMF_LOGMSG_ERROR, ESMF_MAXSTR
+  use ESMF         , only : ESMF_LOGERR_PASSTHRU, ESMF_LogFoundError, ESMF_MAXSTR
   use ESMF         , only : ESMF_SUCCESS, ESMF_LogWrite, ESMF_LOGMSG_INFO, ESMF_FAILURE
   use ESMF         , only : ESMF_State, ESMF_StateGet
   use ESMF         , only : ESMF_Field, ESMF_FieldGet
@@ -373,9 +373,7 @@ contains
              call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
           endif
        else
-          call ESMF_LogWrite(trim(subname)//": ERROR rank not supported ", ESMF_LOGMSG_ERROR)
-          rc = ESMF_FAILURE
-          return
+          call shr_sys_abort(trim(subname)//": ERROR rank not supported ")
        endif
     enddo
 
@@ -411,10 +409,8 @@ contains
     ! ----------------------------------------------
 
     if (.not.present(rc)) then
-       call ESMF_LogWrite(trim(subname)//": ERROR rc not present ", &
-            ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
-       rc = ESMF_FAILURE
-       return
+       call shr_sys_abort(trim(subname)//": ERROR rc not present ", &
+            line=__LINE__, file=u_FILE_u)
     endif
 
     rc = ESMF_SUCCESS
@@ -465,27 +461,21 @@ contains
                ESMF_LOGMSG_INFO)
        elseif (lrank == 1) then
           if (.not.present(fldptr1)) then
-             call ESMF_LogWrite(trim(subname)//": ERROR missing rank=1 array ", &
-                  ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
-             rc = ESMF_FAILURE
-             return
+             call shr_sys_abort(trim(subname)//": ERROR missing rank=1 array ", &
+                  line=__LINE__, file=u_FILE_u)
           endif
           call ESMF_FieldGet(field, farrayPtr=fldptr1, rc=rc)
           if (chkerr(rc,__LINE__,u_FILE_u)) return
        elseif (lrank == 2) then
           if (.not.present(fldptr2)) then
-             call ESMF_LogWrite(trim(subname)//": ERROR missing rank=2 array ", &
-                  ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
-             rc = ESMF_FAILURE
-             return
+             call shr_sys_abort(trim(subname)//": ERROR missing rank=2 array ", &
+                  line=__LINE__, file=u_FILE_u)
           endif
           call ESMF_FieldGet(field, farrayPtr=fldptr2, rc=rc)
           if (chkerr(rc,__LINE__,u_FILE_u)) return
        else
-          call ESMF_LogWrite(trim(subname)//": ERROR in rank ", &
-               ESMF_LOGMSG_ERROR, line=__LINE__, file=u_FILE_u)
-          rc = ESMF_FAILURE
-          return
+          call shr_sys_abort(trim(subname)//": ERROR in rank ", &
+               line=__LINE__, file=u_FILE_u)
        endif
 
     endif  ! status
@@ -566,14 +556,10 @@ contains
     ! Error checks
     if (trim(option) == optdate) then
        if (.not. present(opt_ymd)) then
-          call ESMF_LogWrite(trim(subname)//trim(option)//' requires opt_ymd', ESMF_LOGMSG_ERROR)
-          rc = ESMF_FAILURE
-          return
+          call shr_sys_abort(trim(subname)//trim(option)//' requires opt_ymd')
        end if
        if (lymd < 0 .or. ltod < 0) then
-          call ESMF_LogWrite(subname//trim(option)//'opt_ymd, opt_tod invalid', ESMF_LOGMSG_ERROR)
-          rc = ESMF_FAILURE
-          return
+          call shr_sys_abort(subname//trim(option)//'opt_ymd, opt_tod invalid')
        end if
     else if (&
          trim(option) == optNSteps   .or. trim(option) == trim(optNSteps)//'s'   .or. &
@@ -584,14 +570,10 @@ contains
          trim(option) == optNMonths  .or. trim(option) == trim(optNMonths)//'s'  .or. &
          trim(option) == optNYears   .or. trim(option) == trim(optNYears)//'s' ) then
        if (.not.present(opt_n)) then
-          call ESMF_LogWrite(subname//trim(option)//' requires opt_n', ESMF_LOGMSG_ERROR)
-          rc = ESMF_FAILURE
-          return
+          call shr_sys_abort(subname//trim(option)//' requires opt_n')
        end if
        if (opt_n <= 0) then
-          call ESMF_LogWrite(subname//trim(option)//' invalid opt_n', ESMF_LOGMSG_ERROR)
-          rc = ESMF_FAILURE
-          return
+          call shr_sys_abort(subname//trim(option)//' invalid opt_n')
        end if
     end if
     call ESMF_TimeIntervalSet(AlarmInterval, yy=9999, rc=rc)
@@ -629,9 +611,7 @@ contains
       AlarmInterval = AlarmInterval * opt_n
       ! timestepinterval*0 is 0 of kind ESMF_TimeStepInterval
       if (mod(AlarmInterval, TimestepInterval) /= (TimestepInterval*0)) then
-         call ESMF_LogWrite(subname//'illegal Alarm setting for '//trim(alarmname), ESMF_LOGMSG_ERROR)
-         rc = ESMF_FAILURE
-         return
+         call shr_sys_abort(subname//'illegal Alarm setting for '//trim(alarmname))
       endif
       update_nextalarm  = .true.
 
@@ -691,9 +671,7 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        
     case default
-       call ESMF_LogWrite(subname//'unknown option '//trim(option), ESMF_LOGMSG_ERROR)
-       rc = ESMF_FAILURE
-       return
+       call shr_sys_abort(subname//'unknown option '//trim(option))
 
     end select
 
@@ -804,14 +782,10 @@ contains
     enddo
 
     if(get_minimum_timestep == huge(1)) then
-       call ESMF_LogWrite('minimum_timestep_error: this option is not supported ', ESMF_LOGMSG_ERROR)
-       rc = ESMF_FAILURE
-       return
+       call shr_sys_abort('minimum_timestep_error: this option is not supported ')
     endif
     if(get_minimum_timestep <= 0) then
-       call ESMF_LogWrite('minimum_timestep_error ERROR ', ESMF_LOGMSG_ERROR)
-       rc = ESMF_FAILURE
-       return
+       call shr_sys_abort('minimum_timestep_error ERROR ')
     endif
   end function get_minimum_timestep
 
