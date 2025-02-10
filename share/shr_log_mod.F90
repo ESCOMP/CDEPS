@@ -75,13 +75,13 @@ contains
     character(len=SHR_KIND_CX)   :: shr_log_errMsg
     character(len=*), intent(in) :: file
     integer         , intent(in) :: line
-    
+
     !EOP
-    
+
     shr_log_errMsg = 'ERROR in '//trim(file)//' at line '//toString(line)
-    
+
   end function shr_log_errMsg
-  
+
   ! Create a message for an out of bounds error.
   pure function shr_log_OOBMsg(operation, bounds, idx) result(OOBMsg)
 
@@ -89,19 +89,19 @@ contains
     ! occurred. A string containing the subroutine name is ideal, but more
     ! generic descriptions such as "read", "modify", or "insert" could be used.
     character(len=*), intent(in) :: operation
-    
+
     ! Upper and lower bounds allowed for the operation.
     integer, intent(in) :: bounds(2)
-    
+
     ! Index at which access was attempted.
     integer, intent(in) :: idx
-    
+
     ! Output message
     character(len=:), allocatable :: OOBMsg
-    
+
     allocate(OOBMsg, source=(operation//": "//toString(idx)//" not in range ["//&
          toString(bounds(1))//", "//toString(bounds(2))//"]."))
-    
+
   end function shr_log_OOBMsg
 
   subroutine shr_log_setLogUnit(unit)
@@ -160,7 +160,7 @@ contains
        write(log_units(i),*) trim(local_string)
        flush(log_units(i))
     end do
-    
+
   end subroutine shr_log_error
-  
+
 end module shr_log_mod
