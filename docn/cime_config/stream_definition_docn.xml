@@ -193,6 +193,7 @@
       <var>ocnImp_So_s_depth8    So_s_depth8</var>
       <var>ocnImp_So_s_depth9    So_s_depth9</var>
       <var>ocnImp_So_s_depth10   So_s_depth10</var>
+      <var>ocnImp_So_s_depth11   So_s_depth11</var>
       <var>ocnImp_So_s_depth12   So_s_depth12</var>
       <var>ocnImp_So_s_depth13   So_s_depth13</var>
       <var>ocnImp_So_s_depth14   So_s_depth14</var>
@@ -222,6 +223,7 @@
       <var>ocnImp_So_t_depth8    So_t_depth8</var>
       <var>ocnImp_So_t_depth9    So_t_depth9</var>
       <var>ocnImp_So_t_depth10   So_t_depth10</var>
+      <var>ocnImp_So_t_depth11   So_t_depth11</var>
       <var>ocnImp_So_t_depth12   So_t_depth12</var>
       <var>ocnImp_So_t_depth13   So_t_depth13</var>
       <var>ocnImp_So_t_depth14   So_t_depth14</var>

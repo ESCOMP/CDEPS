@@ -56,7 +56,7 @@
     <stream_datafiles>
       <!-- Specify first year = 0, last year = 99999 in order to apply
            this pattern to all possible years that might be included. -->
-      <file first_year="0" last_year="99999">$DLND_CPLHIST_DIR/$DLND_CPLHIST_CASE.cpl.hx.1yr2glc.%y-01-01-00000.nc</file>
+      <file first_year="0" last_year="99999">$DLND_CPLHIST_DIR/$DLND_CPLHIST_CASE.cpl.hx.lnd2glc.%y-01-01-00000.nc</file>
     </stream_datafiles>
    <stream_datavars>
       <var>lndImp_Sl_topo_elev1    Sl_topo_elev1</var>
