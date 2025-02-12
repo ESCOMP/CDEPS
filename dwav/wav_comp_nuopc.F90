@@ -23,9 +23,8 @@ module cdeps_dwav_comp
   use NUOPC_Model      , only : model_label_Finalize    => label_Finalize
   use NUOPC_Model      , only : NUOPC_ModelGet, SetVM
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
-  use shr_sys_mod      , only : shr_sys_abort
   use shr_cal_mod      , only : shr_cal_ymd2date
-  use shr_log_mod      , only : shr_log_setLogUnit
+  use shr_log_mod      , only : shr_log_setLogUnit, shr_log_error
   use dshr_methods_mod , only : dshr_state_getfldptr, chkerr, memcheck, dshr_state_diagnose
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_advance
   use dshr_strdata_mod , only : shr_strdata_init_from_config
@@ -198,7 +197,8 @@ contains
        close(nu)
        if (ierr > 0) then
           write(logunit,*) 'ERROR: reading input namelist, '//trim(nlfilename)//' iostat=',ierr
-          call shr_sys_abort(subName//': namelist read error '//trim(nlfilename))
+          call shr_log_error(subName//': namelist read error '//trim(nlfilename), rc=rc)
+          return
        end if
 
        ! write namelist input to standard out
@@ -240,7 +240,8 @@ contains
     if (trim(datamode) == 'copyall') then
        if (my_task == main_task) write(logunit,*) 'dwav datamode = ',trim(datamode)
     else
-       call shr_sys_abort(' ERROR illegal dwav datamode = '//trim(datamode))
+       call shr_log_error(' ERROR illegal dwav datamode = '//trim(datamode), rc=rc)
+       return
     end if
     call dwav_comp_advertise(importState, exportState, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return

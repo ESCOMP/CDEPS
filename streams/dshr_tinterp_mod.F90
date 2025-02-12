@@ -7,12 +7,12 @@ module dshr_tInterp_mod
   use ESMF             , only : ESMF_Time, ESMF_TimeInterval, ESMF_TimeIntervalGet
   use ESMF             , only : ESMF_SUCCESS, operator(<), operator(-), operator(>), operator(==)
   use shr_kind_mod     , only : i8=>shr_kind_i8, r8=>shr_kind_r8, cs=>shr_kind_cs, cl=>shr_kind_cl, shr_kind_in
-  use shr_sys_mod      , only : shr_sys_abort
+  use shr_log_mod      , only : shr_log_error
   use shr_cal_mod      , only : shr_cal_timeSet, shr_cal_advDateInt, shr_cal_date2julian
   use shr_orb_mod      , only : shr_orb_cosz, shr_orb_decl, SHR_ORB_UNDEF_REAL
   use shr_const_mod    , only : SHR_CONST_PI
   use dshr_methods_mod , only : chkerr
-
+  use shr_sys_mod      , only : shr_sys_abort
   implicit none
   private ! except
 
@@ -88,7 +88,8 @@ contains
     ! --- always check that 1 <= 2, although we could relax this requirement ---
     if (itime2 < itime1) then
        write(logunit,F01) ' ERROR: itime2 < itime1 D=',D1,S1,D2,S2
-       call shr_sys_abort(subName//' itime2 < itime1 ')
+       call shr_log_error(subName//' itime2 < itime1 ', rc=rc)
+       return
     endif
 
     f1 = -1.0
@@ -121,7 +122,8 @@ contains
        !--- check that itimein is between itime1 and itime2 ---
        if (itime2 < itimein .or. itime1 > itimein) then
           write(logunit,F02) ' ERROR illegal linear times: ',D1,S1,Din,Sin,D2,S2
-          call shr_sys_abort(subName//' illegal itimes ')
+          call shr_log_error(subName//' illegal itimes ', rc=rc)
+          return
        endif
        if (itime2 == itime1) then
           f1 = 0.5_r8
@@ -135,8 +137,8 @@ contains
           f1 = real(snum,r8)/real(sden,r8)
        endif
     else
-       if (debug > 0) write(logunit,F00) 'ERROR: illegal lalgo option: ',trim(lalgo)
-       call shr_sys_abort(subName//' illegal algo option '//trim(lalgo))
+       call shr_log_error(subName//' illegal algo option '//trim(lalgo), rc=rc)
+       return
     endif
 
     f2 = c1 - f1
@@ -145,8 +147,8 @@ contains
     if (f1 < c0-eps .or. f1 > c1+eps .or. &
          f2 < c0-eps .or. f2 > c1+eps .or. &
          abs(f1+f2-c1) > eps) then
-       if (debug > 0) write(logunit,F01) 'ERROR: illegal tInterp values ',f1,f2
-       call shr_sys_abort(subName//' illegal tInterp values ')
+       call shr_log_error(subName//' illegal tInterp values ', rc=rc)
+       return
     endif
 
     if (debug > 0) then
@@ -204,9 +206,11 @@ contains
 
     ! error checks
     if (eccen == SHR_ORB_UNDEF_REAL) then
-       call shr_sys_abort(subname//' ERROR in orb params for coszen tinterp')
+       call shr_log_error(subname//' ERROR in orb params for coszen tinterp', rc=rc)
+       return
     else if (modeldt < 1) then
-       call shr_sys_abort(subname//' ERROR: model dt < 1 for coszen tinterp')
+       call shr_log_error(subname//' ERROR: model dt < 1 for coszen tinterp', rc=rc)
+       return
     endif
 
     !-------------------------------------------------------------------------------
@@ -216,7 +220,10 @@ contains
     !--- get LB & UB dates ---
     call shr_cal_timeSet(reday1,ymd1,tod1,calendar)
     call shr_cal_timeSet(reday2,ymd2,tod2,calendar)
-    if (reday1 > reday2) call shr_sys_abort(subname//'ERROR: lower-bound > upper-bound')
+    if (reday1 > reday2) then
+       call shr_log_error(subname//'ERROR: lower-bound > upper-bound', rc=rc)
+       return
+    endif
 
     timeint = reday2-reday1
     call ESMF_TimeIntervalGet(timeint, s_i8=dtsec, rc=rc)
@@ -299,7 +306,7 @@ contains
     lsize = size(lon)
     if (lsize < 1 .or. size(lat) /= lsize .or. size(cosz) /= lsize) then
        write(6,*)'ERROR: lsize,size(lat),size(cosz) =  ',lsize,size(lat),size(cosz)
-       call shr_sys_abort(subname//' ERROR: lon lat cosz sizes disagree')
+       call shr_sys_abort(subname//' ERROR: lon lat cosz sizes disagree', file=__FILE__,line=__LINE__)
     endif
 
     call shr_cal_date2julian(ymd, tod, calday, calendar)
