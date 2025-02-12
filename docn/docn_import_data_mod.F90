@@ -69,7 +69,7 @@ contains
 
    !===============================================================================
    subroutine docn_get_import_fields(str, flds, rc)
-      use shr_sys_mod          , only : shr_sys_abort
+      use shr_log_mod          , only : shr_log_error
       ! input/output variables
       character(len=*)               , intent(in)  :: str     ! colon deliminted string to search
       character(len=*) , allocatable , intent(out) :: flds(:) ! memory will be allocate for flds
@@ -98,7 +98,8 @@ contains
          valid = .false.
       end if
       if (.not. valid) then
-         call shr_sys_abort("ERROR: invalid list = "//trim(str))
+         call shr_log_error("ERROR: invalid list = "//trim(str), rc=rc)
+         return
       end if
       ! get number of fields in a colon delimited string list
       nflds = 0

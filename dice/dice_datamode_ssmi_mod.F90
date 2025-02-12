@@ -5,7 +5,6 @@ module dice_datamode_ssmi_mod
   use ESMF                 , only : ESMF_ArrayCreate, ESMF_ArrayDestroy, ESMF_GridComp
   use NUOPC                , only : NUOPC_Advertise
   use shr_kind_mod         , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
-  use shr_sys_mod          , only : shr_sys_abort
   use shr_const_mod        , only : shr_const_pi, shr_const_spval, shr_const_tkfrz, shr_const_latice
   use shr_frz_mod          , only : shr_frz_freezetemp
   use dshr_strdata_mod     , only : shr_strdata_get_stream_pointer, shr_strdata_type

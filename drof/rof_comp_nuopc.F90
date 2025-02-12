@@ -25,9 +25,8 @@ module cdeps_drof_comp
   use NUOPC_Model      , only : NUOPC_ModelGet, SetVM
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_const_mod    , only : SHR_CONST_SPVAL
-  use shr_sys_mod      , only : shr_sys_abort
   use shr_cal_mod      , only : shr_cal_ymd2date
-  use shr_log_mod      , only : shr_log_setLogUnit
+  use shr_log_mod      , only : shr_log_setLogUnit, shr_log_error
   use dshr_methods_mod , only : dshr_state_getfldptr, dshr_state_diagnose, chkerr, memcheck
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_advance, shr_strdata_get_stream_domain
   use dshr_strdata_mod , only : shr_strdata_init_from_config
@@ -199,8 +198,9 @@ contains
        read (nu,nml=drof_nml,iostat=ierr)
        close(nu)
        if (ierr > 0) then
-          write(logunit,*) 'ERROR: reading input namelist, '//trim(nlfilename)//' iostat=',ierr
-          call shr_sys_abort(subName//': namelist read error '//trim(nlfilename))
+          rc = ierr
+          call shr_log_error(subName//': namelist read error '//trim(nlfilename), rc=rc)
+          return
        end if
 
        ! write namelist input to standard out
@@ -242,7 +242,8 @@ contains
     if (trim(datamode) == 'copyall') then
        if (mainproc) write(logunit,*) 'drof datamode = ',trim(datamode)
     else
-       call shr_sys_abort(' ERROR illegal drof datamode = '//trim(datamode))
+       call shr_log_error(' ERROR illegal drof datamode = '//trim(datamode), rc=rc)
+       return
     end if
 
     call dshr_fldList_add(fldsExport, trim(flds_scalar_name))

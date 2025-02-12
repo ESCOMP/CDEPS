@@ -13,7 +13,7 @@ module dshr_methods_mod
   use ESMF         , only : ESMF_TERMORDER_SRCSEQ, operator(/=)
   use ESMF         , only : ESMF_TraceRegionEnter, ESMF_TraceRegionExit
   use shr_kind_mod , only : r8=>shr_kind_r8, cs=>shr_kind_cs, cl=>shr_kind_cl
-  use shr_sys_mod  , only : shr_sys_abort
+  use shr_log_mod  , only : shr_log_error
   
   implicit none
   public
@@ -108,6 +108,7 @@ contains
     character(len=*),parameter      :: subname='(dshr_state_diagnose)'
     ! ----------------------------------------------
 
+    rc = ESMF_SUCCESS
     call ESMF_StateGet(state, itemCount=fieldCount, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     allocate(lfieldnamelist(fieldCount))
@@ -140,7 +141,8 @@ contains
                 write(msgString,'(A,a)') trim(string)//': '//trim(lfieldnamelist(n))," no data"
              endif
           else
-             call shr_sys_abort(trim(subname)//": ERROR rank not supported ")
+             call shr_log_error(trim(subname)//": ERROR rank not supported ", rc=rc)
+             return
           endif
           call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
        end if
@@ -176,7 +178,8 @@ contains
     rc = ESMF_SUCCESS
 
     if (.not. dshr_fldbun_FldChk(FB, trim(fldname), rc=rc)) then
-       call shr_sys_abort(trim(subname)//": ERROR field "//trim(fldname)//" not in FB ")
+       call shr_log_error(trim(subname)//": ERROR field "//trim(fldname)//" not in FB ", rc=rc)
+       return
     endif
     call ESMF_FieldBundleGet(FB, fieldName=trim(fldname), field=lfield, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -184,16 +187,18 @@ contains
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     if (ungriddedUBound(1) > 0) then
        if (.not.present(fldptr2)) then
-          call shr_sys_abort(trim(subname)//": ERROR missing rank=2 array ", &
-               line=__LINE__, file=u_FILE_u)
+          call shr_log_error(trim(subname)//": ERROR missing rank=2 array ", &
+               line=__LINE__, file=u_FILE_u, rc=rc)
+          return
        endif
        call ESMF_FieldGet(lfield, farrayptr=fldptr2, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
        lrank = 2
     else
        if (.not.present(fldptr1)) then
-          call shr_sys_abort(trim(subname)//": ERROR missing rank=1 array ", &
-               line=__LINE__, file=u_FILE_u)
+          call shr_log_error(trim(subname)//": ERROR missing rank=1 array ", &
+               line=__LINE__, file=u_FILE_u, rc=rc)
+          return
        endif
        call ESMF_FieldGet(lfield, farrayptr=fldptr1, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -332,7 +337,8 @@ contains
     call ESMF_FieldBundleGet(FB, fieldCount=fieldCount, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     if (fieldnum > fieldCount) then
-      call shr_sys_abort(trim(subname)//": ERROR fieldnum > fieldCount ")
+       call shr_log_error(trim(subname)//": ERROR fieldnum > fieldCount ", rc=rc)
+       return
     endif
 
     allocate(lfieldnamelist(fieldCount))
@@ -368,7 +374,8 @@ contains
 
     call ESMF_FieldBundleGet(FB, fieldName=trim(fldname), isPresent=isPresent, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) then
-       call shr_sys_abort(trim(subname)//" Error checking field: "//trim(fldname))
+       call shr_log_error(trim(subname)//" Error checking field: "//trim(fldname), rc=rc)
+       return
     endif
 
     if (isPresent) then
@@ -423,7 +430,8 @@ contains
           write(msgString,'(A,a)') trim(subname)//' '//trim(lstring)//': '//trim(fieldname)," no data"
        endif
     else
-       call shr_sys_abort(trim(subname)//": ERROR rank not supported ")
+       call shr_log_error(trim(subname)//": ERROR rank not supported ", rc=rc)
+       return
     endif
     call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
 
@@ -492,7 +500,8 @@ contains
           endif
 
        else
-          call shr_sys_abort(trim(subname)//": ERROR rank not supported ")
+          call shr_log_error(trim(subname)//": ERROR rank not supported ", rc=rc)
+          return
        endif
        call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
     enddo
@@ -542,7 +551,8 @@ contains
        if (labort) then
           call ESMF_FieldGet(field, name=name, rc=rc)
           if (chkerr(rc,__LINE__,u_FILE_u)) return
-          call shr_sys_abort(trim(subname)//": field "//trim(name)//" has no data not allocated ", rc=rc)
+          call shr_log_error(trim(subname)//": field "//trim(name)//" has no data not allocated ", rc=rc)
+          return
        else
           call ESMF_LogWrite(trim(subname)//": WARNING data not allocated ", ESMF_LOGMSG_INFO, rc=rc)
        endif
@@ -551,9 +561,8 @@ contains
         if (chkerr(rc,__LINE__,u_FILE_u)) return
         if (ungriddedUBound(1) > 0) then
            if (.not.present(fldptr2)) then
-              call shr_sys_abort(trim(subname)//": ERROR missing rank=2 array for "//trim(name), &
-                   line=__LINE__, file=u_FILE_u)
-              rc = ESMF_FAILURE
+              call shr_log_error(trim(subname)//": ERROR missing rank=2 array for "//trim(name), &
+                   line=__LINE__, file=u_FILE_u, rc=rc)
               return
            endif
            call ESMF_FieldGet(field, farrayptr=fldptr2, rc=rc)
@@ -561,9 +570,8 @@ contains
            lrank = 2
         else
            if (.not.present(fldptr1)) then
-              call shr_sys_abort(trim(subname)//": ERROR missing rank=1 array for "//trim(name), &
-                   line=__LINE__, file=u_FILE_u)
-              rc = ESMF_FAILURE
+              call shr_log_error(trim(subname)//": ERROR missing rank=1 array for "//trim(name), &
+                   line=__LINE__, file=u_FILE_u, rc=rc)
               return
            endif
            call ESMF_FieldGet(field, farrayptr=fldptr1, rc=rc)

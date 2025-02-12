@@ -6,7 +6,6 @@ module docn_datamode_som_mod
   use ESMF             , only : ESMF_LogWrite
   use NUOPC            , only : NUOPC_Advertise
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
-  use shr_sys_mod      , only : shr_sys_abort
   use shr_const_mod    , only : shr_const_cpsw, shr_const_rhosw, shr_const_TkFrz
   use shr_const_mod    , only : shr_const_TkFrzSw, shr_const_latice, shr_const_ocn_ref_sal
   use shr_const_mod    , only : shr_const_zsrflyr, shr_const_pi

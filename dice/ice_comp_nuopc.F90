@@ -26,8 +26,7 @@ module cdeps_dice_comp
   use NUOPC_Model          , only : NUOPC_ModelGet, SetVM
   use shr_kind_mod         , only : r8=>shr_kind_r8, cxx=>shr_kind_cxx, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_const_mod        , only : shr_const_pi
-  use shr_log_mod         , only : shr_log_setLogUnit
-  use shr_sys_mod          , only : shr_sys_abort
+  use shr_log_mod          , only : shr_log_setLogUnit, shr_log_error
   use shr_cal_mod          , only : shr_cal_ymd2date, shr_cal_ymd2julian
   use dshr_mod             , only : dshr_model_initphase, dshr_init, dshr_mesh_init, dshr_check_restart_alarm
   use dshr_mod             , only : dshr_state_setscalar, dshr_set_runclock, dshr_log_clock_advance
@@ -212,8 +211,9 @@ contains
        read (nu,nml=dice_nml,iostat=ierr)
        close(nu)
        if (ierr > 0) then
-          write(logunit,*) 'ERROR: reading input namelist, '//trim(nlfilename)//' iostat=',ierr
-          call shr_sys_abort(subName//': namelist read error '//trim(nlfilename))
+          rc = ierr
+          call shr_log_error(subName//': namelist read error '//trim(nlfilename), rc=rc)
+          return
        end if
 
        ! write namelist input to standard out
@@ -268,7 +268,8 @@ contains
     if ( trim(datamode) == 'ssmi' .or. trim(datamode) == 'ssmi_iaf') then
        if (my_task == main_task) write(logunit,*) ' dice datamode = ',trim(datamode)
     else
-       call shr_sys_abort(' ERROR illegal dice datamode = '//trim(datamode))
+       call shr_log_error(' ERROR illegal dice datamode = '//trim(datamode), rc=rc)
+       return
     endif
 
     ! Advertise import and export fields

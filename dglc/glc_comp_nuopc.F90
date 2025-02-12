@@ -28,9 +28,8 @@ module cdeps_dglc_comp
   use NUOPC_Model      , only : model_label_Finalize    => label_Finalize
   use NUOPC_Model      , only : NUOPC_ModelGet, SetVM
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
-  use shr_sys_mod      , only : shr_sys_abort
   use shr_cal_mod      , only : shr_cal_ymd2date
-  use shr_log_mod      , only : shr_log_setLogUnit
+  use shr_log_mod      , only : shr_log_setLogUnit, shr_log_error
   use shr_string_mod   , only : shr_string_listGetNum, shr_string_listGetName
 #ifdef CESMCOUPLED
   use shr_pio_mod      , only : shr_pio_getiosys, shr_pio_getiotype, shr_pio_getioformat
@@ -225,8 +224,8 @@ contains
       read (nu,nml=dglc_nml,iostat=ierr)
       close(nu)
       if (ierr > 0) then
-        write(logunit,'(a,i8)') 'ERROR: reading input namelist, '//trim(nlfilename)//' iostat=',ierr
-        call shr_sys_abort(subName//': namelist read error '//trim(nlfilename))
+         call shr_log_error(subName//': namelist read error '//trim(nlfilename), rc=rc)
+         return
       end if
 
       ! Determine number of ice sheets
@@ -284,7 +283,8 @@ contains
     if ( trim(datamode) == 'noevolve') then  ! read stream, no import data
       ! do nothing
     else
-      call shr_sys_abort(' ERROR illegal dglc datamode = '//trim(datamode))
+       call shr_log_error(' ERROR illegal dglc datamode = '//trim(datamode), rc=rc)
+       return
     endif
 
     ! Allocate module variables
@@ -362,7 +362,8 @@ contains
     if (isPresent .and. isSet) then
        read(cvalue,*) restart_read
     else
-       call shr_sys_abort(subname//' ERROR: read restart flag must be present')
+       call shr_log_error(subname//' ERROR: read restart flag must be present', rc=rc)
+       return
     end if
 
     ! Get the time to interpolate the stream data to
@@ -390,8 +391,8 @@ contains
        if (my_task == main_task) then
           inquire(file=trim(model_meshfiles(ns)), exist=exists)
           if (.not.exists) then
-             write(logunit,'(a)')' ERROR: model_meshfile '//trim(model_meshfiles(ns))//' does not exist'
-             call shr_sys_abort(trim(subname)//' ERROR: model_meshfile '//trim(model_meshfiles(ns))//' does not exist')
+             call shr_log_error(trim(subname)//' ERROR: model_meshfile '//trim(model_meshfiles(ns))//' does not exist', rc=rc)
+             return
           end if
        endif
 
