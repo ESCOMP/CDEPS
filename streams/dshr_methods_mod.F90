@@ -14,7 +14,6 @@ module dshr_methods_mod
   use ESMF         , only : ESMF_TraceRegionEnter, ESMF_TraceRegionExit
   use shr_kind_mod , only : r8=>shr_kind_r8, cs=>shr_kind_cs, cl=>shr_kind_cl
   use shr_sys_mod  , only : shr_sys_abort
-  use shr_log_mod  , only : errMsg => shr_log_errMsg
   
   implicit none
   public
@@ -185,14 +184,16 @@ contains
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     if (ungriddedUBound(1) > 0) then
        if (.not.present(fldptr2)) then
-          call shr_sys_abort(trim(subname)//": ERROR missing rank=2 array "//errMsg(u_FILE_u, __LINE__))
+          call shr_sys_abort(trim(subname)//": ERROR missing rank=2 array ", &
+               line=__LINE__, file=u_FILE_u)
        endif
        call ESMF_FieldGet(lfield, farrayptr=fldptr2, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
        lrank = 2
     else
        if (.not.present(fldptr1)) then
-          call shr_sys_abort(trim(subname)//": ERROR missing rank=1 array "//errMsg(u_FILE_u, __LINE__))
+          call shr_sys_abort(trim(subname)//": ERROR missing rank=1 array ", &
+               line=__LINE__, file=u_FILE_u)
        endif
        call ESMF_FieldGet(lfield, farrayptr=fldptr1, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -550,7 +551,8 @@ contains
         if (chkerr(rc,__LINE__,u_FILE_u)) return
         if (ungriddedUBound(1) > 0) then
            if (.not.present(fldptr2)) then
-              call shr_sys_abort(trim(subname)//": ERROR missing rank=2 array for "//trim(name)//errMsg(u_FILE_u, __LINE__))
+              call shr_sys_abort(trim(subname)//": ERROR missing rank=2 array for "//trim(name), &
+                   line=__LINE__, file=u_FILE_u)
               rc = ESMF_FAILURE
               return
            endif
@@ -559,7 +561,8 @@ contains
            lrank = 2
         else
            if (.not.present(fldptr1)) then
-              call shr_sys_abort(trim(subname)//": ERROR missing rank=1 array for "//trim(name)//errMsg(u_FILE_u, __LINE__))
+              call shr_sys_abort(trim(subname)//": ERROR missing rank=1 array for "//trim(name), &
+                   line=__LINE__, file=u_FILE_u)
               rc = ESMF_FAILURE
               return
            endif
