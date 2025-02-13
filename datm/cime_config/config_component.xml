@@ -231,8 +231,9 @@
       <value compset="20TR.*_DATM%CRUv7">1901</value>
       <value compset="20TR.*_DATM%GSW">1901</value>
       <value compset="SSP.*_DATM%QIA">$DATM_YR_START</value>
+      <value compset="SSP.*_DATM%CRUJRA2024">$DATM_YR_START</value>
+      <value compset="SSP.*_DATM%CRUv7">$DATM_YR_START</value>
       <value compset="SSP.*_DATM%GSW">$DATM_YR_START</value>
-      <value compset="1850.*_DATM%GSW">1</value>
       <value compset="2000.*_DATM">$DATM_YR_START</value>
       <value compset="2003.*_DATM">$DATM_YR_START</value>
       <value compset="2010.*_DATM">$DATM_YR_START</value>
