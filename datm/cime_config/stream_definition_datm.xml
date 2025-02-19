@@ -1169,8 +1169,8 @@
   <!-- ===================      -->
   <!-- anomaly forcing streams  -->
   <!-- ===================      -->
-  
-    <stream_entry name="Anomaly.Forcing.cmip5.rcp45">
+
+  <stream_entry name="Anomaly.Forcing.cmip5.rcp45">
     <stream_meshfile>
       <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
     </stream_meshfile>
