@@ -4,7 +4,7 @@ module docn_datamode_multilev_dom_mod
   use NUOPC            , only : NUOPC_Advertise
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_const_mod    , only : shr_const_TkFrz, shr_const_pi, shr_const_ocn_ref_sal, shr_const_spval
-  use shr_sys_mod      , only : shr_sys_abort
+  use shr_log_mod      , only : shr_log_error
   use dshr_methods_mod , only : dshr_state_getfldptr, dshr_fldbun_getfldptr, chkerr
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
   use dshr_strdata_mod , only : shr_strdata_get_stream_pointer, shr_strdata_type, shr_strdata_get_stream_count
@@ -40,7 +40,6 @@ module docn_datamode_multilev_dom_mod
 
   ! constants
   character(*) , parameter :: nullstr = 'null'
-  character(*) , parameter :: rpfile  = 'rpointer.ocn'
   character(*) , parameter :: u_FILE_u = &
        __FILE__
 
@@ -169,7 +168,8 @@ contains
        if (nlev_stream > 1) exit
     end do
     if (nlev_stream == 0) then
-       call shr_sys_abort(trim(subname)//" could not find vertical levels greater than 0")
+       call shr_log_error(trim(subname)//" could not find vertical levels greater than 0", rc=rc)
+       return
     end if
     allocate(stream_vlevs(nlev_stream))
     stream_vlevs(:) = sdat%pstrm(stream_index)%stream_vlevs(:)
@@ -211,7 +211,8 @@ contains
           end if
        end do
        if (.not. level_found) then
-          call shr_sys_abort(trim(subname)//" could not find level bounds for vertical interpolation")
+          call shr_log_error(trim(subname)//" could not find level bounds for vertical interpolation", rc=rc)
+          return
        end if
     end do
 

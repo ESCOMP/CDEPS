@@ -32,8 +32,7 @@ module dshr_mod
   use ESMF             , only : ESMF_Region_Flag, ESMF_REGION_TOTAL, ESMF_MAXSTR, ESMF_RC_NOT_VALID
   use ESMF             , only : ESMF_UtilStringUpperCase
   use shr_kind_mod     , only : r8=>shr_kind_r8, cs=>shr_kind_cs, cl=>shr_kind_cl, cx=>shr_kind_cx, cxx=>shr_kind_cxx, i8=>shr_kind_i8
-  use shr_sys_mod      , only : shr_sys_abort
-  use shr_log_mod     , only : shr_log_setLogUnit
+  use shr_log_mod      , only : shr_log_setLogUnit, shr_log_error
   use shr_cal_mod      , only : shr_cal_noleap, shr_cal_gregorian, shr_cal_calendarname
   use shr_cal_mod      , only : shr_cal_datetod2string, shr_cal_date2julian
   use shr_const_mod    , only : shr_const_spval, shr_const_cday
@@ -88,6 +87,7 @@ contains
 
   subroutine dshr_model_initphase(gcomp, importState, exportState, clock, rc)
     use ESMF, only : ESMF_ClockIsCreated, ESMF_StateIsCreated
+
     ! input/output variables
     type(ESMF_GridComp)   :: gcomp
     type(ESMF_State)      :: importState, exportState
@@ -99,8 +99,8 @@ contains
     rc = ESMF_SUCCESS
     ! To prevent an unused variable warning
     if(.not. (ESMF_StateIsCreated(importState) .or. ESMF_StateIsCreated(exportState) .or. ESMF_ClockIsCreated(clock))) then
-       call ESMF_LogWrite(trim(subname)//' state or clock not created', ESMF_LOGMSG_ERROR)
-
+       call shr_log_error(trim(subname)//' state or clock not created', rc=rc)
+       return
     endif
 
     ! Switch to IPDv01 by filtering all other phaseMap entries
@@ -299,7 +299,8 @@ contains
     if (isPresent .and. isSet) then
        read(cvalue,*) read_restart
     else
-       call shr_sys_abort(subname//' ERROR: read restart flag must be present')
+       call shr_log_error(subname//' ERROR: read restart flag must be present', rc=rc)
+       return
     end if
 
     ! obtain the single column lon and lat
@@ -331,12 +332,14 @@ contains
           inquire(file=trim(model_meshfile), exist=exists)
           if (.not.exists) then
              write(logunit, *)' ERROR: model_meshfile '//trim(model_meshfile)//' does not exist'
-             call shr_sys_abort(trim(subname)//' ERROR: model_meshfile '//trim(model_meshfile)//' does not exist')
+             call shr_log_error(trim(subname)//' ERROR: model_meshfile '//trim(model_meshfile)//' does not exist', rc=rc)
+             return
           end if
           inquire(file=trim(model_maskfile), exist=exists)
           if (.not.exists) then
              write(logunit, *)' ERROR: model_maskfile '//trim(model_maskfile)//' does not exist'
-             call shr_sys_abort(trim(subname)//' ERROR: model_maskfile '//trim(model_maskfile)//' does not exist')
+             call shr_log_error(trim(subname)//' ERROR: model_maskfile '//trim(model_maskfile)//' does not exist', rc=rc)
+             return
           end if
        endif
 
@@ -437,7 +440,8 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        read(cvalue,*) model_frac(1)
     else
-       call shr_sys_abort('ERROR: currently component '//trim(compname)//' is not supported for single column')
+       call shr_log_error('ERROR: currently component '//trim(compname)//' is not supported for single column', rc=rc)
+       return
     end if
 
     ! Use center and come up with arbitrary area delta lon and lat = .1 degree
@@ -569,6 +573,7 @@ contains
   end subroutine dshr_set_runclock
 
   !===============================================================================
+
   subroutine dshr_restart_read(rest_filem, rpfile, &
        logunit, my_task, mpicom, sdat, rc, fld, fldname)
 
@@ -686,7 +691,6 @@ contains
 
     call shr_cal_datetod2string(date_str, ymd, tod)
     write(rest_file_model ,"(7a)") trim(case_name),'.', trim(model_name),trim(inst_suffix),'.r.', trim(date_str),'.nc'
-
     ! write restart info to rpointer file
     if (my_task == main_task) then
        open(newunit=nu, file=trim(rpfile), form='formatted')

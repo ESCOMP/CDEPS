@@ -4,7 +4,6 @@ module datm_datamode_cplhist_mod
   use ESMF             , only : ESMF_StateItem_Flag
   use NUOPC            , only : NUOPC_Advertise
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
-  use shr_sys_mod      , only : shr_sys_abort
   use dshr_methods_mod , only : dshr_state_getfldptr, chkerr
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_get_stream_pointer
   use dshr_strdata_mod , only : shr_strdata_type
@@ -41,7 +40,6 @@ module datm_datamode_cplhist_mod
   real(r8), pointer :: Faxa_swnet(:)        => null()
 
   character(*), parameter :: nullstr = 'null'
-  character(*), parameter :: rpfile  = 'rpointer.atm'
   character(*), parameter :: u_FILE_u = &
        __FILE__
 
