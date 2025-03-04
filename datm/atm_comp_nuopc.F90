@@ -27,15 +27,14 @@ module cdeps_datm_comp
   use NUOPC_Model      , only : NUOPC_ModelGet, setVM
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_const_mod    , only : shr_const_cday
-  use shr_sys_mod      , only : shr_sys_abort
   use shr_cal_mod      , only : shr_cal_ymd2date
-  use shr_log_mod      , only : shr_log_setLogUnit
+  use shr_log_mod      , only : shr_log_setLogUnit, shr_log_error
   use dshr_methods_mod , only : dshr_state_diagnose, chkerr, memcheck
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_init_from_config, shr_strdata_advance
   use dshr_strdata_mod , only : shr_strdata_get_stream_pointer, shr_strdata_setOrbs
-  use dshr_mod         , only : dshr_model_initphase, dshr_init
+  use dshr_mod         , only : dshr_model_initphase, dshr_init, dshr_restart_write
   use dshr_mod         , only : dshr_state_setscalar, dshr_set_runclock, dshr_log_clock_advance
-  use dshr_mod         , only : dshr_mesh_init, dshr_check_restart_alarm
+  use dshr_mod         , only : dshr_mesh_init, dshr_check_restart_alarm, dshr_restart_read
   use dshr_mod         , only : dshr_orbital_init, dshr_orbital_update
   use dshr_dfield_mod  , only : dfield_type, dshr_dfield_add, dshr_dfield_copy
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add, dshr_fldlist_realize
@@ -43,50 +42,34 @@ module cdeps_datm_comp
   use datm_datamode_core2_mod   , only : datm_datamode_core2_advertise
   use datm_datamode_core2_mod   , only : datm_datamode_core2_init_pointers
   use datm_datamode_core2_mod   , only : datm_datamode_core2_advance
-  use datm_datamode_core2_mod   , only : datm_datamode_core2_restart_write
-  use datm_datamode_core2_mod   , only : datm_datamode_core2_restart_read
 
   use datm_datamode_jra_mod     , only : datm_datamode_jra_advertise
   use datm_datamode_jra_mod     , only : datm_datamode_jra_init_pointers
   use datm_datamode_jra_mod     , only : datm_datamode_jra_advance
-  use datm_datamode_jra_mod     , only : datm_datamode_jra_restart_write
-  use datm_datamode_jra_mod     , only : datm_datamode_jra_restart_read
 
   use datm_datamode_clmncep_mod , only : datm_datamode_clmncep_advertise
   use datm_datamode_clmncep_mod , only : datm_datamode_clmncep_init_pointers
   use datm_datamode_clmncep_mod , only : datm_datamode_clmncep_advance
-  use datm_datamode_clmncep_mod , only : datm_datamode_clmncep_restart_write
-  use datm_datamode_clmncep_mod , only : datm_datamode_clmncep_restart_read
 
   use datm_datamode_cplhist_mod , only : datm_datamode_cplhist_advertise
   use datm_datamode_cplhist_mod , only : datm_datamode_cplhist_init_pointers
   use datm_datamode_cplhist_mod , only : datm_datamode_cplhist_advance
-  use datm_datamode_cplhist_mod , only : datm_datamode_cplhist_restart_write
-  use datm_datamode_cplhist_mod , only : datm_datamode_cplhist_restart_read
 
   use datm_datamode_era5_mod    , only : datm_datamode_era5_advertise
   use datm_datamode_era5_mod    , only : datm_datamode_era5_init_pointers
   use datm_datamode_era5_mod    , only : datm_datamode_era5_advance
-  use datm_datamode_era5_mod    , only : datm_datamode_era5_restart_write
-  use datm_datamode_era5_mod    , only : datm_datamode_era5_restart_read
 
   use datm_datamode_gefs_mod    , only : datm_datamode_gefs_advertise
   use datm_datamode_gefs_mod    , only : datm_datamode_gefs_init_pointers
   use datm_datamode_gefs_mod    , only : datm_datamode_gefs_advance
-  use datm_datamode_gefs_mod    , only : datm_datamode_gefs_restart_write
-  use datm_datamode_gefs_mod    , only : datm_datamode_gefs_restart_read
 
   use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_advertise
   use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_init_pointers
   use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_advance
-  use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_restart_write
-  use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_restart_read
 
   use datm_datamode_simple_mod  , only : datm_datamode_simple_advertise
   use datm_datamode_simple_mod  , only : datm_datamode_simple_init_pointers
   use datm_datamode_simple_mod  , only : datm_datamode_simple_advance
-  use datm_datamode_simple_mod  , only : datm_datamode_simple_restart_write
-  use datm_datamode_simple_mod  , only : datm_datamode_simple_restart_read
 
   implicit none
   private ! except
@@ -127,6 +110,7 @@ module cdeps_datm_comp
   character(CL)                :: model_meshfile = nullstr            ! full pathname to model meshfile
   character(CL)                :: model_maskfile = nullstr            ! full pathname to obtain mask from
   integer                      :: iradsw = 0                          ! radiation interval (input namelist)
+  logical                      :: nextsw_cday_calc_cam7               ! true => use logic appropriate to cam7 (and later) for calculating nextsw_cday
   character(CL)                :: factorFn_mesh = 'null'              ! file containing correction factors mesh
   character(CL)                :: factorFn_data = 'null'              ! file containing correction factors data
   logical                      :: flds_presaero = .false.             ! true => send valid prescribed aero fields to mediator
@@ -157,7 +141,6 @@ module cdeps_datm_comp
   integer                      :: idt                                 ! integer model timestep
   logical                      :: diagnose_data = .true.
   integer          , parameter :: main_task   = 0                   ! task number of main task
-  character(len=*) , parameter :: rpfile        = 'rpointer.atm'
 #ifdef CESMCOUPLED
   character(*)     , parameter :: modName       = "(atm_comp_nuopc)"
 #else
@@ -230,6 +213,7 @@ contains
     integer           :: nu         ! unit number
     integer           :: ierr       ! error code
     integer           :: bcasttmp(10)
+    character(CL)     :: nextsw_cday_calc
     type(ESMF_VM)     :: vm
     character(len=*),parameter :: subname=trim(modName) // ':(InitializeAdvertise) '
     character(*)    ,parameter :: F00 = "('(" // trim(modName) // ") ',8a)"
@@ -245,6 +229,7 @@ contains
          ny_global, &
          restfilm, &
          iradsw, &
+         nextsw_cday_calc, &
          factorFn_data, &
          factorFn_mesh, &
          flds_presaero, &
@@ -258,6 +243,9 @@ contains
          export_all
 
     rc = ESMF_SUCCESS
+
+    ! Initialize locally-declared namelist items to default values
+    nextsw_cday_calc = 'cam6'
 
     call NUOPC_CompAttributeGet(gcomp, name='case_name', value=case_name, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -278,14 +266,16 @@ contains
        open (newunit=nu,file=trim(nlfilename),status="old",action="read")
        call shr_nl_find_group_name(nu, 'datm_nml', status=ierr)
        if (ierr > 0) then
-          write(logunit,*) 'ERROR: reading input namelist, '//trim(nlfilename)//' iostat=',ierr
-          call shr_sys_abort(subName//': namelist read error '//trim(nlfilename))
+          rc = ierr
+          call shr_log_error(subName//': namelist read error '//trim(nlfilename), rc=rc)
+          return
        end if
        read (nu,nml=datm_nml,iostat=ierr)
        close(nu)
        if (ierr > 0) then
-          write(logunit,*) 'ERROR: reading input namelist, '//trim(nlfilename)//' iostat=',ierr
-          call shr_sys_abort(subName//': namelist read error '//trim(nlfilename))
+          rc = ierr
+          call shr_log_error(subName//': namelist read error '//trim(nlfilename), rc=rc)
+          return
        end if
        bcasttmp = 0
        bcasttmp(1) = nx_global
@@ -318,6 +308,8 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_VMBroadcast(vm, restfilm, CL, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, nextsw_cday_calc, CL, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_VMBroadcast(vm, bcasttmp, 10, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     nx_global         = bcasttmp(1)
@@ -331,6 +323,15 @@ contains
     skip_restart_read = (bcasttmp(9) == 1)
     export_all        = (bcasttmp(10) == 1)
 
+    if (nextsw_cday_calc == 'cam7') then
+       nextsw_cday_calc_cam7 = .true.
+    else if (nextsw_cday_calc == 'cam6') then
+       nextsw_cday_calc_cam7 = .false.
+    else
+       call shr_log_error(' ERROR illegal datm nextsw_cday_calc = '//trim(nextsw_cday_calc), rc=rc)
+       return
+    end if
+
     ! write namelist input to standard out
     if (my_task == main_task) then
        write(logunit,F00)' case_name      = ',trim(case_name)
@@ -341,6 +342,7 @@ contains
        write(logunit,F01)' ny_global      = ',ny_global
        write(logunit,F00)' restfilm       = ',trim(restfilm)
        write(logunit,F01)' iradsw         = ',iradsw
+       write(logunit,F00)' nextsw_cday_calc = ', trim(nextsw_cday_calc)
        write(logunit,F00)' factorFn_data  = ',trim(factorFn_data)
        write(logunit,F00)' factorFn_mesh  = ',trim(factorFn_mesh)
        write(logunit,F02)' flds_presaero  = ',flds_presaero
@@ -364,7 +366,8 @@ contains
          trim(datamode) == 'ERA5'         .or. &
          trim(datamode) == 'SIMPLE') then
     else
-       call shr_sys_abort(' ERROR illegal datm datamode = '//trim(datamode))
+       call shr_log_error(' ERROR illegal datm datamode = '//trim(datamode), rc=rc)
+       return
     endif
 
     ! Advertise datm fields
@@ -479,7 +482,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Run datm
-    call datm_comp_run(importstate, exportstate, current_ymd, current_tod, current_mon, &
+    call datm_comp_run(gcomp, importstate, exportstate, current_ymd, current_tod, current_mon, &
          orbEccen, orbMvelpp, orbLambm0, orbObliqr, restart_write=.false., rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
@@ -495,7 +498,8 @@ contains
     if (isPresent .and. isSet) then
        read (cvalue,*) flds_scalar_index_nextsw_cday
     else
-       call shr_sys_abort(subname//'Need to set attribute ScalarFieldIdxNextSwCday')
+       call shr_log_error(subname//'Need to set attribute ScalarFieldIdxNextSwCday', rc=rc)
+       return
     endif
 
     nextsw_cday = getNextRadCDay(dayofYear, current_tod, stepno, idt, iradsw)
@@ -561,7 +565,7 @@ contains
 
     ! Run datm
     call ESMF_TraceRegionEnter('datm_run')
-    call datm_comp_run(importstate, exportstate, next_ymd, next_tod, mon, &
+    call datm_comp_run(gcomp, importstate, exportstate, next_ymd, next_tod, mon, &
          orbEccen, orbMvelpp, orbLambm0, orbObliqr, restart_write,  rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_TraceRegionExit('datm_run')
@@ -579,14 +583,15 @@ contains
   end subroutine ModelAdvance
 
   !===============================================================================
-  subroutine datm_comp_run(importState, exportState, target_ymd, target_tod, target_mon, &
+  subroutine datm_comp_run(gcomp, importState, exportState, target_ymd, target_tod, target_mon, &
        orbEccen, orbMvelpp, orbLambm0, orbObliqr, restart_write, rc)
-
+    use nuopc_shr_methods, only : shr_get_rpointer_name
     ! ----------------------------------
     ! run method for datm model
     ! ----------------------------------
 
     ! input/output variables
+    type(ESMF_GridComp)    , intent(inout)    :: gcomp
     type(ESMF_State)       , intent(inout) :: importState
     type(ESMF_State)       , intent(inout) :: exportState
     integer                , intent(in)    :: target_ymd       ! model date
@@ -601,6 +606,7 @@ contains
 
     ! local variables
     logical :: first_time = .true.
+    character(len=CL) :: rpfile        
     character(*), parameter :: subName = '(datm_comp_run) '
     !-------------------------------------------------------------------------------
 
@@ -613,7 +619,6 @@ contains
     !--------------------
 
     if (first_time) then
-
        ! Initialize dfields
        call datm_init_dfields(rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -648,23 +653,15 @@ contains
 
        ! Read restart if needed
        if (restart_read .and. .not. skip_restart_read) then
+          call shr_get_rpointer_name(gcomp, 'atm', target_ymd, target_tod, rpfile, 'read', rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
           select case (trim(datamode))
-          case('CORE2_NYF','CORE2_IAF')
-             call datm_datamode_core2_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
-          case('CORE_IAF_JRA')
-             call datm_datamode_jra_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
-          case('CLMNCEP')
-             call datm_datamode_clmncep_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
-          case('CPLHIST')
-             call datm_datamode_cplhist_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
-          case('ERA5')
-             call datm_datamode_era5_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
-          case('GEFS')
-             call datm_datamode_gefs_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
-          case('CFSR')
-             call datm_datamode_cfsr_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
-          case('SIMPLE')
-             call datm_datamode_simple_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
+          case('CORE2_NYF','CORE2_IAF','CORE_IAF_JRA','CLMNCEP','CPLHIST','ERA5','GEFS','CFSR','SIMPLE')
+             call dshr_restart_read(restfilm, rpfile, logunit, my_task, mpicom, sdat, rc)
+             if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          case default
+             call shr_log_error(subName//'datamode '//trim(datamode)//' not recognized', rc=rc)
+             return
           end select
        end if
 
@@ -727,33 +724,16 @@ contains
 
     ! Write restarts if needed
     if (restart_write) then
+       call shr_get_rpointer_name(gcomp, 'atm', target_ymd, target_tod, rpfile, 'write', rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
        select case (trim(datamode))
-       case('CORE2_NYF','CORE2_IAF')
-          call datm_datamode_core2_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, my_task, sdat)
-       case('CORE_IAF_JRA')
-          call datm_datamode_jra_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, my_task, sdat)
-       case('CLMNCEP')
-          call datm_datamode_clmncep_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, my_task, sdat)
-       case('CPLHIST')
-          call datm_datamode_cplhist_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, my_task, sdat)
-       case('ERA5')
-          call datm_datamode_era5_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, my_task, sdat)
-       case('GEFS')
-          call datm_datamode_gefs_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, my_task, sdat)
+       case('CORE2_NYF','CORE2_IAF','CORE_IAF_JRA','CLMNCEP','CPLHIST','ERA5','GEFS','CFSR','SIMPLE')
+          call dshr_restart_write(rpfile, case_name, 'datm', inst_suffix, target_ymd, target_tod, logunit, &
+               my_task, sdat, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       case('CFSR')
-          call datm_datamode_cfsr_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, my_task, sdat)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       case('SIMPLE')
-          call datm_datamode_simple_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, my_task, sdat)
+       case default
+          call shr_log_error(subName//'datamode '//trim(datamode)//' not recognized', rc=rc)
+          return
        end select
     end if
 
@@ -856,7 +836,8 @@ contains
             case('cpl_scalars')
                continue
             case default
-               call shr_sys_abort(subName//'field '//trim(lfieldnames(n))//' not recognized')
+               call shr_log_error(subName//'field '//trim(lfieldnames(n))//' not recognized', rc=rc)
+               return
             end select
          end if
       end do
@@ -868,15 +849,14 @@ contains
   real(R8) function getNextRadCDay( julday, tod, stepno, dtime, iradsw )
 
     ! Return the calendar day of the next radiation time-step.
-    ! General Usage: nextswday = getNextRadCDay(curr_date) iradsw is
-    ! the frequency to update the next shortwave.  in number of steps
-    ! (or hours if negative) Julian date.
-    ! -- values greater than 1 set
-    !    the next radiation to the present time plus 2 timesteps every iradsw
-    ! -- values less than 0 turn set the next radiation to the  present time
-    !    plus two timesteps every -iradsw hours.
-    ! -- if iradsw is zero, the next radiation time is the
-    !    present time plus 1 timestep.
+    ! General Usage: nextswday = getNextRadCDay(curr_date). iradsw is
+    ! the frequency to update the next shortwave in number of steps
+    ! (or hours if negative).
+    ! -- values greater than 1 set the next radiation to the present time plus either 1 or
+    !    2 timesteps (depending on the value of nextsw_cday_calc_cam7) every iradsw timesteps.
+    ! -- values less than 0 set the next radiation to the present time plus either 1 or 2
+    !    timesteps (depending on the value of nextsw_cday_calc_cam7) every -iradsw hours.
+    ! -- if iradsw is either 0 or 1, the next radiation time is the present time plus 1 timestep.
 
     ! input/output variables
     real(r8)    , intent(in) :: julday
@@ -905,10 +885,21 @@ contains
 
     if (liradsw > 1) then
        delta_radsw = liradsw * dtime
-       if (mod(tod+dtime,delta_radsw) == 0 .and. stepno > 0) then
-          nextsw_cday = julday + 2*dtime/shr_const_cday
+       if (nextsw_cday_calc_cam7) then
+          ! The logic in this block is consistent with the driver ordering in CAM7 and
+          ! later. So this is appropriate when using cplhist forcings generated from CAM7
+          ! or later.
+          if (mod(tod,delta_radsw) == 0 .and. stepno > 0) then
+             nextsw_cday = julday + 1*dtime/shr_const_cday
+          else
+             nextsw_cday = -1._r8
+          end if
        else
-          nextsw_cday = -1._r8
+          if (mod(tod+dtime,delta_radsw) == 0 .and. stepno > 0) then
+             nextsw_cday = julday + 2*dtime/shr_const_cday
+          else
+             nextsw_cday = -1._r8
+          end if
        end if
     else
        nextsw_cday = julday + dtime/shr_const_cday
