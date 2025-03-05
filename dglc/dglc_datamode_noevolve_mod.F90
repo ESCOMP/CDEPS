@@ -549,7 +549,7 @@ contains
     write(rest_file_model ,"(7a)") trim(case_name),'.','dglc',trim(inst_suffix),'.r.',trim(date_str),'.nc'
     ! write restart info to rpointer file
     if (my_task == main_task) then
-       open(newunit=nu, file=trim(rpfile)//trim(inst_suffix), form='formatted')
+       open(newunit=nu, file=trim(rpfile), form='formatted')
        write(nu,'(a)') rest_file_model
        close(nu)
        write(logunit,'(a,2x,i0,2x,i0)')' writing with no streams '//trim(rest_file_model), ymd, tod
