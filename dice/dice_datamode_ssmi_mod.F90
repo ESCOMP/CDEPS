@@ -586,10 +586,9 @@ contains
   end subroutine dice_datamode_ssmi_restart_write
 
   !===============================================================================
-  subroutine dice_datamode_ssmi_restart_read(gcomp, rest_filem, rpfile, logunit, my_task, mpicom, sdat)
+  subroutine dice_datamode_ssmi_restart_read(rest_filem, rpfile, logunit, my_task, mpicom, sdat)
 
     ! input/output arguments
-    type(ESMF_GridComp)         , intent(in)    :: gcomp
     character(len=*)            , intent(inout) :: rest_filem
     character(len=*)            , intent(in)    :: rpfile
     integer                     , intent(in)    :: logunit
