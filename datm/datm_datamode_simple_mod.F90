@@ -18,23 +18,20 @@ module datm_datamode_simple_mod
   use pio              , only : pio_closefile
   use NUOPC            , only : NUOPC_Advertise
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
-  use shr_sys_mod      , only : shr_sys_abort
   use shr_cal_mod      , only : shr_cal_date2julian
   use shr_const_mod    , only : shr_const_tkfrz, shr_const_pi
   use dshr_strdata_mod , only : shr_strdata_get_stream_pointer, shr_strdata_type
   use dshr_methods_mod , only : dshr_state_getfldptr, dshr_fldbun_getfldptr, dshr_fldbun_regrid, chkerr
-  use dshr_mod         , only : dshr_restart_read, dshr_restart_write
   use dshr_strdata_mod , only : shr_strdata_type
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
-
+  use shr_log_mod      , only : shr_log_error
+  
   implicit none
   private ! except
 
   public  :: datm_datamode_simple_advertise
   public  :: datm_datamode_simple_init_pointers
   public  :: datm_datamode_simple_advance
-  public  :: datm_datamode_simple_restart_write
-  public  :: datm_datamode_simple_restart_read
 
   ! export state pointers
   real(r8), pointer :: Sa_u(:)       => null()
@@ -79,7 +76,6 @@ module datm_datamode_simple_mod
   real(R8) , parameter :: dLWarc   =  -5.000_R8
 
   character(*), parameter :: nullstr = 'null'
-  character(*), parameter :: rpfile  = 'rpointer.atm'
   character(*), parameter :: u_FILE_u = &
        __FILE__
 
@@ -121,7 +117,9 @@ contains
        read (nu,nml=const_forcing_nml,iostat=ierr)
        close(nu)
        if (ierr > 0) then
-          call shr_sys_abort(subName//': namelist read error '//trim(nlfilename))
+          rc = ierr
+          call shr_log_error(subName//': namelist read error '//trim(nlfilename), rc=rc)
+          return
        end if
 
       bcasttmp = 0
@@ -340,40 +338,5 @@ contains
     end if
 
   end subroutine datm_datamode_simple_advance
-
-  !===============================================================================
-  subroutine datm_datamode_simple_restart_write(case_name, inst_suffix, ymd, tod, &
-       logunit, my_task, sdat)
-
-    ! input/output variables
-    character(len=*)            , intent(in)    :: case_name
-    character(len=*)            , intent(in)    :: inst_suffix
-    integer                     , intent(in)    :: ymd       ! model date
-    integer                     , intent(in)    :: tod       ! model sec into model date
-    integer                     , intent(in)    :: logunit
-    integer                     , intent(in)    :: my_task
-    type(shr_strdata_type)      , intent(inout) :: sdat
-    !-------------------------------------------------------------------------------
-
-    call dshr_restart_write(rpfile, case_name, 'datm', inst_suffix, ymd, tod, &
-         logunit, my_task, sdat)
-
-  end subroutine datm_datamode_simple_restart_write
-
-  !===============================================================================
-  subroutine datm_datamode_simple_restart_read(rest_filem, inst_suffix, logunit, my_task, mpicom, sdat)
-
-    ! input/output arguments
-    character(len=*)            , intent(inout) :: rest_filem
-    character(len=*)            , intent(in)    :: inst_suffix
-    integer                     , intent(in)    :: logunit
-    integer                     , intent(in)    :: my_task
-    integer                     , intent(in)    :: mpicom
-    type(shr_strdata_type)      , intent(inout) :: sdat
-    !-------------------------------------------------------------------------------
-
-    call dshr_restart_read(rest_filem, rpfile, inst_suffix, nullstr, logunit, my_task, mpicom, sdat)
-
-  end subroutine datm_datamode_simple_restart_read
 
 end module datm_datamode_simple_mod

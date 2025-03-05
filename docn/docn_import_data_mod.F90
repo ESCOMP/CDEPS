@@ -1,7 +1,6 @@
 module docn_import_data_mod
 
    use ESMF             , only : ESMF_State, ESMF_LOGMSG_INFO, ESMF_LogWrite, ESMF_SUCCESS
-   use ESMF             , only : ESMF_LOGMSG_ERROR, ESMF_FAILURE
    use NUOPC            , only : NUOPC_Advertise
    use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
    use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
@@ -70,7 +69,7 @@ contains
 
    !===============================================================================
    subroutine docn_get_import_fields(str, flds, rc)
-
+      use shr_log_mod          , only : shr_log_error
       ! input/output variables
       character(len=*)               , intent(in)  :: str     ! colon deliminted string to search
       character(len=*) , allocatable , intent(out) :: flds(:) ! memory will be allocate for flds
@@ -99,8 +98,7 @@ contains
          valid = .false.
       end if
       if (.not. valid) then
-         call ESMF_LogWrite("ERROR: invalid list = "//trim(str), ESMF_LOGMSG_ERROR)
-         rc = ESMF_FAILURE
+         call shr_log_error("ERROR: invalid list = "//trim(str), rc=rc)
          return
       end if
       ! get number of fields in a colon delimited string list

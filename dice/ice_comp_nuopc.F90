@@ -26,8 +26,7 @@ module cdeps_dice_comp
   use NUOPC_Model          , only : NUOPC_ModelGet, SetVM
   use shr_kind_mod         , only : r8=>shr_kind_r8, cxx=>shr_kind_cxx, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_const_mod        , only : shr_const_pi
-  use shr_log_mod         , only : shr_log_setLogUnit
-  use shr_sys_mod          , only : shr_sys_abort
+  use shr_log_mod          , only : shr_log_setLogUnit, shr_log_error
   use shr_cal_mod          , only : shr_cal_ymd2date, shr_cal_ymd2julian
   use dshr_mod             , only : dshr_model_initphase, dshr_init, dshr_mesh_init, dshr_check_restart_alarm
   use dshr_mod             , only : dshr_state_setscalar, dshr_set_runclock, dshr_log_clock_advance
@@ -212,8 +211,9 @@ contains
        read (nu,nml=dice_nml,iostat=ierr)
        close(nu)
        if (ierr > 0) then
-          write(logunit,*) 'ERROR: reading input namelist, '//trim(nlfilename)//' iostat=',ierr
-          call shr_sys_abort(subName//': namelist read error '//trim(nlfilename))
+          rc = ierr
+          call shr_log_error(subName//': namelist read error '//trim(nlfilename), rc=rc)
+          return
        end if
 
        ! write namelist input to standard out
@@ -268,7 +268,8 @@ contains
     if ( trim(datamode) == 'ssmi' .or. trim(datamode) == 'ssmi_iaf') then
        if (my_task == main_task) write(logunit,*) ' dice datamode = ',trim(datamode)
     else
-       call shr_sys_abort(' ERROR illegal dice datamode = '//trim(datamode))
+       call shr_log_error(' ERROR illegal dice datamode = '//trim(datamode), rc=rc)
+       return
     endif
 
     ! Advertise import and export fields
@@ -382,7 +383,7 @@ contains
     cosArg = 2.0_R8*shr_const_pi*(jday - jday0)/365.0_R8
 
     ! Run dice
-    call dice_comp_run(importState, exportState, current_ymd, current_tod, cosarg, restart_write=.false., rc=rc)
+    call dice_comp_run(gcomp, importState, exportState, current_ymd, current_tod, cosarg, restart_write=.false., rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Add scalars to export state
@@ -395,7 +396,6 @@ contains
 
   !===============================================================================
   subroutine ModelAdvance(gcomp, rc)
-
     ! input/output variables
     type(ESMF_GridComp)  :: gcomp
     integer, intent(out) :: rc
@@ -450,7 +450,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Run dice
-    call dice_comp_run(importState, exportState, next_ymd, next_tod, cosarg, restart_write, rc)
+    call dice_comp_run(gcomp, importState, exportState, next_ymd, next_tod, cosarg, restart_write, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     call ESMF_TraceRegionExit(subname)
@@ -458,13 +458,15 @@ contains
   end subroutine ModelAdvance
 
   !===============================================================================
-  subroutine dice_comp_run(importstate, exportstate, target_ymd, target_tod, cosarg, restart_write, rc)
+  subroutine dice_comp_run(gcomp, importstate, exportstate, target_ymd, target_tod, cosarg, restart_write, rc)
+    use nuopc_shr_methods, only : shr_get_rpointer_name
 
     ! --------------------------
     ! advance dice
     ! --------------------------
 
     ! input/output variables:
+    type(ESMF_GridComp), intent(in)  :: gcomp
     type(ESMF_State) , intent(inout) :: exportState
     type(ESMF_State) , intent(inout) :: importState
     integer          , intent(in)    :: target_ymd ! model date
@@ -475,6 +477,7 @@ contains
 
     ! local variables
     logical :: first_time = .true.
+    character(len=CL) :: rpfile
     character(*), parameter :: subName = "(dice_comp_run) "
     !-------------------------------------------------------------------------------
 
@@ -502,9 +505,11 @@ contains
 
        ! read restart if needed
        if (restart_read) then
+          call shr_get_rpointer_name(gcomp, 'ice', target_ymd, target_tod, rpfile, 'read', rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
           select case (trim(datamode))
           case('ssmi', 'ssmi_iaf')
-             call dice_datamode_ssmi_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
+             call dice_datamode_ssmi_restart_read(gcomp, restfilm, rpfile, logunit, my_task, mpicom, sdat)
           end select
        end if
 
@@ -549,9 +554,11 @@ contains
 
     ! Write restarts if needed
     if (restart_write) then
+       call shr_get_rpointer_name(gcomp, 'ice', target_ymd, target_tod, rpfile, 'write', rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
        select case (trim(datamode))
        case('ssmi', 'ssmi_iaf')
-          call dice_datamode_ssmi_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
+          call dice_datamode_ssmi_restart_write(rpfile, case_name, inst_suffix, target_ymd, target_tod, &
                logunit, my_task, sdat)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end select

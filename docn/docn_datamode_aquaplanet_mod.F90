@@ -4,7 +4,7 @@ module docn_datamode_aquaplanet_mod
   use NUOPC            , only : NUOPC_Advertise
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_const_mod    , only : shr_const_TkFrz, shr_const_pi
-  use shr_sys_mod      , only : shr_sys_abort
+  use shr_log_mod      , only : shr_log_error
   use dshr_methods_mod , only : dshr_state_getfldptr, dshr_fldbun_getfldptr, chkerr
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
 
@@ -167,7 +167,8 @@ contains
 
        ! Error checks
        if (sst_option < 1 .or. sst_option > 10) then
-          call shr_sys_abort ('docn_prescribed_sst: ERROR: sst_option must be between 1 and 10')
+          call shr_log_error ('docn_prescribed_sst: ERROR: sst_option must be between 1 and 10', rc=rc)
+          return
        end if
 
        ! Determine So_t in degrees C
@@ -305,7 +306,8 @@ contains
        So_t(:) = So_t(:) + TkFrz
 
     else
-       call shr_sys_abort("ERROR: either sst_constant value or sst_option must be input")
+       call shr_log_error("ERROR: either sst_constant value or sst_option must be input", rc=rc)
+       return
     end if
 
   end subroutine docn_datamode_aquaplanet_advance
