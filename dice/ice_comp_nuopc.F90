@@ -588,7 +588,8 @@ contains
           call dice_datamode_ssmi_restart_write(rpfile, case_name, inst_suffix, target_ymd, target_tod, &
                logunit, my_task, sdat)
        case ('cplhist')
-          call dice_datamode_cplhist_restart_write(case_name, inst_suffix, target_ymd, target_tod, logunit, my_task, sdat)
+          call dice_datamode_cplhist_restart_write(rpfile, case_name, inst_suffix, target_ymd, target_tod, &
+               logunit, my_task, sdat)
        end select
     end if
 
