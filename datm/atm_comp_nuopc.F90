@@ -63,10 +63,6 @@ module cdeps_datm_comp
   use datm_datamode_gefs_mod    , only : datm_datamode_gefs_init_pointers
   use datm_datamode_gefs_mod    , only : datm_datamode_gefs_advance
 
-  use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_advertise
-  use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_init_pointers
-  use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_advance
-
   use datm_datamode_simple_mod  , only : datm_datamode_simple_advertise
   use datm_datamode_simple_mod  , only : datm_datamode_simple_init_pointers
   use datm_datamode_simple_mod  , only : datm_datamode_simple_advance
@@ -362,7 +358,6 @@ contains
          trim(datamode) == 'CLMNCEP'      .or. &
          trim(datamode) == 'CPLHIST'      .or. &
          trim(datamode) == 'GEFS'         .or. &
-         trim(datamode) == 'CFSR'         .or. &
          trim(datamode) == 'ERA5'         .or. &
          trim(datamode) == 'SIMPLE') then
     else
@@ -393,9 +388,6 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('GEFS')
        call datm_datamode_gefs_advertise(exportState, fldsExport, flds_scalar_name, rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    case ('CFSR')
-       call datm_datamode_cfsr_advertise(exportState, fldsExport, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('SIMPLE')
        call datm_datamode_simple_advertise(exportState, fldsExport, flds_scalar_name, &
@@ -643,9 +635,6 @@ contains
        case('GEFS')
           call datm_datamode_gefs_init_pointers(exportState, sdat, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       case('CFSR')
-          call datm_datamode_cfsr_init_pointers(exportState, sdat, rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('SIMPLE')
           call datm_datamode_simple_init_pointers(exportState, sdat, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -656,7 +645,7 @@ contains
           call shr_get_rpointer_name(gcomp, 'atm', target_ymd, target_tod, rpfile, 'read', rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           select case (trim(datamode))
-          case('CORE2_NYF','CORE2_IAF','CORE_IAF_JRA','CLMNCEP','CPLHIST','ERA5','GEFS','CFSR','SIMPLE')
+          case('CORE2_NYF','CORE2_IAF','CORE_IAF_JRA','CLMNCEP','CPLHIST','ERA5','GEFS','SIMPLE')
              call dshr_restart_read(restfilm, rpfile, logunit, my_task, mpicom, sdat, rc)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
           case default
@@ -712,9 +701,6 @@ contains
     case('GEFS')
        call datm_datamode_gefs_advance(exportstate, mainproc, logunit, mpicom, target_ymd, &
             target_tod, sdat%model_calendar, rc)
-    case('CFSR')
-       call datm_datamode_cfsr_advance(exportstate, mainproc, logunit, mpicom, target_ymd, &
-            target_tod, sdat%model_calendar, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('SIMPLE')
        call datm_datamode_simple_advance(target_ymd, target_tod, target_mon, &
@@ -727,7 +713,7 @@ contains
        call shr_get_rpointer_name(gcomp, 'atm', target_ymd, target_tod, rpfile, 'write', rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        select case (trim(datamode))
-       case('CORE2_NYF','CORE2_IAF','CORE_IAF_JRA','CLMNCEP','CPLHIST','ERA5','GEFS','CFSR','SIMPLE')
+       case('CORE2_NYF','CORE2_IAF','CORE_IAF_JRA','CLMNCEP','CPLHIST','ERA5','GEFS','SIMPLE')
           call dshr_restart_write(rpfile, case_name, 'datm', inst_suffix, target_ymd, target_tod, logunit, &
                my_task, sdat, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return

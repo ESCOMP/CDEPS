@@ -64,11 +64,9 @@ ERA5 (``datm_datamode_era5_mod.F90``)
   `$CESMDATAROOT/inputdata/atm/datm7/ERA5`
 
 .. note::
-  In addition to the exiting DATM data modes, the `CDEPS fork <https://github.com/NOAA-EMC/CDEPS>`_
+  Using the GEFS data mode, the `CDEPS fork <https://github.com/NOAA-EMC/CDEPS>`_
   used by `NOAA's UFS Weather Model <https://github.com/ufs-community/ufs-weather-model>`_
-  also includes additional data modes such as CFSR, GEFS and GFS. These data modes are not
-  merged with the NCAR's authoritative repository yet but it is tested under UFS Weather
-  model.
+  supports CFSR, GEFS and GFS data inputs.
 
 .. _datm-cime-vars:
 
