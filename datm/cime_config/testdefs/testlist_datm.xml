@@ -68,6 +68,7 @@
     </machines>
     <options>
       <option name="wallclock"> 00:10:00 </option>
+      <option name="comment">Test historical CRUJRA2024 forcing in a short smoke test to make sure it works</option>
     </options>
   </test>
   <test compset="1850_DATM%CRUJRA2024_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="f10_f10_mg37" name="SMS_Ld5">
@@ -77,6 +78,7 @@
     </machines>
     <options>
       <option name="wallclock"> 00:10:00 </option>
+      <option name="comment">Test historical CRUJRA2024 forcing in a short smoke test to make sure it works</option>
     </options>
   </test>
   <test compset="2010_DATM%CRUJRA2024_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="f10_f10_mg37" name="SMS_Ld5">
@@ -86,6 +88,7 @@
     </machines>
     <options>
       <option name="wallclock"> 00:10:00 </option>
+      <option name="comment">Test historical CRUJRA2024 forcing in a short smoke test to make sure it works</option>
     </options>
   </test>
   <test compset="SSP585_DATM%CRUJRA2024_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="f10_f10_mg37" name="SMS_Ld5">
@@ -95,6 +98,7 @@
     </machines>
     <options>
       <option name="wallclock"> 00:10:00 </option>
+      <option name="comment">Test historical CRUJRA2024 forcing in a short smoke test to make sure it works</option>
     </options>
   </test>
   <test compset="2000_DATM%NLDAS2_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="f10_f10_mg37" name="SMS_Ld5">
