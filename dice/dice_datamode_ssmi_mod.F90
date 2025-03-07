@@ -2,10 +2,9 @@ module dice_datamode_ssmi_mod
 
   use ESMF                 , only : ESMF_State, ESMF_LogWrite, ESMF_Array, ESMF_MeshGet
   use ESMF                 , only : ESMF_SUCCESS, ESMF_LOGMSG_INFO, ESMF_DistGrid
-  use ESMF                 , only : ESMF_ArrayCreate, ESMF_ArrayDestroy
+  use ESMF                 , only : ESMF_ArrayCreate, ESMF_ArrayDestroy, ESMF_GridComp
   use NUOPC                , only : NUOPC_Advertise
   use shr_kind_mod         , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
-  use shr_sys_mod          , only : shr_sys_abort
   use shr_const_mod        , only : shr_const_pi, shr_const_spval, shr_const_tkfrz, shr_const_latice
   use shr_frz_mod          , only : shr_frz_freezetemp
   use dshr_strdata_mod     , only : shr_strdata_get_stream_pointer, shr_strdata_type
@@ -102,7 +101,6 @@ module dice_datamode_ssmi_mod
   real(r8) , parameter :: waterMax = 1000.0_r8        ! wrt iFrac comp & frazil ice (kg/m^2)
 
   character(*) , parameter :: nullstr = 'null'
-  character(*) , parameter :: rpfile  = 'rpointer.ice'
   character(*) , parameter :: u_FILE_u = &
        __FILE__
 
@@ -567,10 +565,11 @@ contains
   end subroutine dice_datamode_ssmi_advance
 
   !===============================================================================
-  subroutine dice_datamode_ssmi_restart_write(case_name, inst_suffix, ymd, tod, &
+  subroutine dice_datamode_ssmi_restart_write(rpfile, case_name, inst_suffix, ymd, tod, &
        logunit, my_task, sdat)
 
     ! input/output variables
+    character(len=*)            , intent(in)    :: rpfile
     character(len=*)            , intent(in)    :: case_name
     character(len=*)            , intent(in)    :: inst_suffix
     integer                     , intent(in)    :: ymd       ! model date
@@ -579,30 +578,32 @@ contains
     integer                     , intent(in)    :: my_task
     type(shr_strdata_type)      , intent(inout) :: sdat
     !-------------------------------------------------------------------------------
-
+    integer :: rc
     call dshr_restart_write(rpfile, case_name, 'dice', inst_suffix, ymd, tod, &
-         logunit, my_task, sdat, fld=water, fldname='water')
+         logunit, my_task, sdat, rc, fld=water, fldname='water')
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine dice_datamode_ssmi_restart_write
 
   !===============================================================================
-  subroutine dice_datamode_ssmi_restart_read(rest_filem, inst_suffix, logunit, my_task, mpicom, sdat)
+  subroutine dice_datamode_ssmi_restart_read(rest_filem, rpfile, logunit, my_task, mpicom, sdat)
 
     ! input/output arguments
     character(len=*)            , intent(inout) :: rest_filem
-    character(len=*)            , intent(in)    :: inst_suffix
+    character(len=*)            , intent(in)    :: rpfile
     integer                     , intent(in)    :: logunit
     integer                     , intent(in)    :: my_task
     integer                     , intent(in)    :: mpicom
     type(shr_strdata_type)      , intent(inout) :: sdat
     !-------------------------------------------------------------------------------
-
+    integer :: rc
     ! allocate module memory for restart fields that are read in
     allocate(water(sdat%model_lsize))
 
     ! read restart
-    call dshr_restart_read(rest_filem, rpfile, inst_suffix, nullstr, logunit, my_task, mpicom, sdat, &
+    call dshr_restart_read(rest_filem, rpfile, logunit, my_task, mpicom, sdat, rc,&
          fld=water, fldname='water')
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine dice_datamode_ssmi_restart_read
 

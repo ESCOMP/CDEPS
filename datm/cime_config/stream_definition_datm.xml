@@ -33,13 +33,14 @@
   CLMGSWP3v1            = Run with the CLM GSWP3 V1 forcing (force CLM)
   CLMNLDAS2             = Run with the CLM NLDAS2 regional forcing valid from 1980 to 2018 (force CLM)
   1PT                   = Run with supplied single point data (force CLM)
-  CORE2_NYF             = CORE2 normal year forcing (for forcing POP and CICE)
-  CORE2_IAF             = CORE2 intra-annual year forcing (for forcing POP and CICE)
-  CORE_IAF_JRA          = JRA55 intra-annual year forcing (for forcing POP and CICE)
-  CORE_IAF_JRA_1p4_2018 = JRA55 intra-annual year forcing, v1.4, through 2018 (for forcing POP and CICE)
-  CORE_RYF8485_JRA      = JRA55 repeat year forcing, v1.3, 1984-1985 (for forcing POP and CICE)
-  CORE_RYF9091_JRA      = JRA55 repeat year forcing, v1.3, 1990-1991 (for forcing POP and CICE)
-  CORE_RYF0304_JRA      = JRA55 repeat year forcing, v1.3, 2003-2004 (for forcing POP and CICE)
+  CORE2_NYF             = CORE2 normal year forcing (for forcing MOM6 and CICE)
+  CORE2_IAF             = CORE2 intra-annual year forcing (for forcing MOM6 and CICE)
+  CORE_IAF_JRA          = JRA55 intra-annual year forcing (for forcing MOM6 and CICE)
+  CORE_IAF_JRA_1p4_2018 = JRA55 intra-annual year forcing, v1.4, through 2018 (for forcing MOM6 and CICE)
+  CORE_IAF_JRA_1p5_2023 = JRA55 intra-annual year forcing, v1.5, through 2023 (for forcing MOM6 and CICE)
+  CORE_RYF8485_JRA      = JRA55 repeat year forcing, v1.3, 1984-1985 (for forcing MOM6 and CICE)
+  CORE_RYF9091_JRA      = JRA55 repeat year forcing, v1.3, 1990-1991 (for forcing MOM6 and CICE)
+  CORE_RYF0304_JRA      = JRA55 repeat year forcing, v1.3, 2003-2004 (for forcing MOM6 and CICE)
   ERA5                  = ERA5 intra-annual year forcing
   NEON                  = Run with forcing from NEON tower data
   PLUMBER2              = Run with forcing from PLUMBER2 tower data
@@ -2449,6 +2450,282 @@
     <stream_year_align>1</stream_year_align>
     <stream_year_first>1958</stream_year_first>
     <stream_year_last>2018</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <!-- ================================ -->
+  <!-- datm_mode CORE_IAF_JRA_1p5_2023 -->
+  <!-- ================================ -->
+
+  <stream_entry name="CORE_IAF_JRA_1p5_2023.GCGCS.PREC">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1958" last_year="2020">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.prec.TL319.%y.210504.nc</file>
+      <file first_year="2021" last_year="2021">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.prec.TL319.%y.220505.nc</file>
+      <file first_year="2022" last_year="2022">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.prec.TL319.%y.230718.nc</file>
+      <file first_year="2023" last_year="2023">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.prec.TL319.%y.240531.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>prec  Faxa_prec</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1958</stream_year_first>
+    <stream_year_last>2023</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE_IAF_JRA_1p5_2023.GISS.LWDN">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1958" last_year="2020">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.lwdn.TL319.%y.210504.nc</file>
+      <file first_year="2021" last_year="2021">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.lwdn.TL319.%y.220505.nc</file>
+      <file first_year="2022" last_year="2022">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.lwdn.TL319.%y.230718.nc</file>
+      <file first_year="2023" last_year="2023">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.lwdn.TL319.%y.240531.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>lwdn  Faxa_lwdn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1958</stream_year_first>
+    <stream_year_last>2023</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE_IAF_JRA_1p5_2023.GISS.SWDN">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1958" last_year="2020">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.swdn.TL319.%y.210504.nc</file>
+      <file first_year="2021" last_year="2021">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.swdn.TL319.%y.220505.nc</file>
+      <file first_year="2022" last_year="2022">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.swdn.TL319.%y.230718.nc</file>
+      <file first_year="2023" last_year="2023">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.swdn.TL319.%y.240531.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>swdn  Faxa_swdn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1958</stream_year_first>
+    <stream_year_last>2023</stream_year_last>
+    <stream_offset>-5400</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>coszen</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE_IAF_JRA_1p5_2023.NCEP.Q_10">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1958" last_year="2020">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.q_10.TL319.%y.210504.nc</file>
+      <file first_year="2021" last_year="2021">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.q_10.TL319.%y.220505.nc</file>
+      <file first_year="2022" last_year="2022">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.q_10.TL319.%y.230718.nc</file>
+      <file first_year="2023" last_year="2023">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.q_10.TL319.%y.240531.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>q_10  Sa_shum</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1958</stream_year_first>
+    <stream_year_last>2023</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE_IAF_JRA_1p5_2023.NCEP.SLP_">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1958" last_year="2020">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.slp.TL319.%y.210504.nc</file>
+      <file first_year="2021" last_year="2021">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.slp.TL319.%y.220505.nc</file>
+      <file first_year="2022" last_year="2022">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.slp.TL319.%y.230718.nc</file>
+      <file first_year="2023" last_year="2023">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.slp.TL319.%y.240531.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>slp   Sa_pslv</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1958</stream_year_first>
+    <stream_year_last>2023</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE_IAF_JRA_1p5_2023.NCEP.T_10">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1958" last_year="2020">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.t_10.TL319.%y.210504.nc</file>
+      <file first_year="2021" last_year="2021">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.t_10.TL319.%y.220505.nc</file>
+      <file first_year="2022" last_year="2022">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.t_10.TL319.%y.230718.nc</file>
+      <file first_year="2023" last_year="2023">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.t_10.TL319.%y.240531.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>t_10  Sa_tbot</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1958</stream_year_first>
+    <stream_year_last>2023</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE_IAF_JRA_1p5_2023.NCEP.U_10">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1958" last_year="2020">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.u_10.TL319.%y.210504.nc</file>
+      <file first_year="2021" last_year="2021">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.u_10.TL319.%y.220505.nc</file>
+      <file first_year="2022" last_year="2022">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.u_10.TL319.%y.230718.nc</file>
+      <file first_year="2023" last_year="2023">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.u_10.TL319.%y.240531.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>u_10  Sa_u</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1958</stream_year_first>
+    <stream_year_last>2023</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE_IAF_JRA_1p5_2023.NCEP.V_10">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/TL319_151007_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1958" last_year="2020">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.v_10.TL319.%y.210504.nc</file>
+      <file first_year="2021" last_year="2021">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.v_10.TL319.%y.220505.nc</file>
+      <file first_year="2022" last_year="2022">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.v_10.TL319.%y.230718.nc</file>
+      <file first_year="2023" last_year="2023">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.v_10.TL319.%y.240531.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>v_10  Sa_v</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1958</stream_year_first>
+    <stream_year_last>2023</stream_year_last>
     <stream_offset>0</stream_offset>
     <stream_tintalgo>
       <tintalgo>linear</tintalgo>

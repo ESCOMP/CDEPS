@@ -27,6 +27,9 @@ ssmi (``dice_datamode_ssmi_mod.F90``)
 ssmi_iaf (``dice_datamode_ssmi_mod.F90``)
   - `ssmi_iaf` is the interannually varying version of `ssmi`.
 
+cplhist (``dice_datamode_cplhist_mod.F90``)
+  - It provides mediator history variables from ice component of previous simulation.
+
 .. _dice-cime-vars:
 
 ---------------------------------------
