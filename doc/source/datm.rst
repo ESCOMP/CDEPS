@@ -123,9 +123,9 @@ DATM%CLM_QIAN
 
 DATM%CLMCRUJRA2024
    - CRUJRA atm input data (CESM I compsets)
-   - datm_mode: CLMCRUJRA2024
+   - datm_mode: CLMNCEP
    - streams: CLMCRUJRA2024.Solar,CLMCRUJRA2024.Precip,CLMCRUJRA2024.TPQW
-   - datamode: CLMCRUJRA2024
+   - datamode: CLMNCEP
 
 DATM%CLMCRUNCEPv7
    - CRUNCEP atm input data (CESM I compsets)
