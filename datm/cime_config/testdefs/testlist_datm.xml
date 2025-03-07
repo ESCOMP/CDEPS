@@ -78,7 +78,7 @@
     </machines>
     <options>
       <option name="wallclock"> 00:10:00 </option>
-      <option name="comment">Test historical CRUJRA2024 forcing in a short smoke test to make sure it works</option>
+      <option name="comment">Test 1850 CRUJRA2024 forcing in a short smoke test to make sure it works</option>
     </options>
   </test>
   <test compset="2010_DATM%CRUJRA2024_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="f10_f10_mg37" name="SMS_Ld5">
@@ -88,10 +88,10 @@
     </machines>
     <options>
       <option name="wallclock"> 00:10:00 </option>
-      <option name="comment">Test historical CRUJRA2024 forcing in a short smoke test to make sure it works</option>
+      <option name="comment">Test 2010 CRUJRA2024 forcing in a short smoke test to make sure it works</option>
     </options>
   </test>
-  <test compset="SSP585_DATM%CRUJRA2024_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="f10_f10_mg37" name="SMS_Ld5">
+  <test compset="HIST_DATM%CRUJRA2024_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="f10_f10_mg37" name="SMS_Ld5">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_cdeps"/>
       <machine name="betzy" compiler="intel" category="aux_cdeps_noresm"/>
