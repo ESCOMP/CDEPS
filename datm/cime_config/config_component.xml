@@ -74,7 +74,7 @@
     <valid_values>none,clim_1850,clim_2000,clim_2010,hist,SSP1-1.9,SSP1-2.6,SSP2-4.5,SSP3-7.0,SSP4-3.4,SSP4-6.0,SSP5-3.4,SSP5-8.5,cplhist</valid_values>
     <default_value>clim_2000</default_value>
     <values match="last">
-      <value compset="^1850_"   >clim_1850</value>
+      <value compset="^1850[CE]?_"   >clim_1850</value>
       <value compset="^2000_"   >clim_2000</value>
       <value compset="^2010_"   >clim_2010</value>
       <value compset="^SSP119_" >SSP1-1.9</value>
@@ -85,7 +85,7 @@
       <value compset="^SSP460_" >SSP4-6.0</value>
       <value compset="^SSP534_" >SSP5-3.4</value>
       <value compset="^SSP585_" >SSP5-8.5</value>
-      <value compset="^HIST_"   >hist</value>
+      <value compset="^HIST[CE]?_"   >hist</value>
       <value compset="^20TR_"   >hist</value>
       <value compset="_DATM%CPLHIST">cplhist</value>
       <value compset="_DATM.*_DICE.*_DOCN.*_DROF">none</value>
@@ -100,14 +100,14 @@
     <valid_values>none,clim_1850,clim_2000,clim_2010,hist,SSP1-2.6,SSP2-4.5,SSP3-7.0,SSP5-3.4,SSP5-8.5,cplhist</valid_values>
     <default_value>clim_2000</default_value>
     <values match="last">
-      <value compset="^1850_"   >clim_1850</value>
+      <value compset="^1850[CE]?_"   >clim_1850</value>
       <value compset="^2000_"   >clim_2000</value>
       <value compset="^2010_"   >clim_2010</value>
       <value compset="^SSP126_" >SSP1-2.6</value>
       <value compset="^SSP245_" >SSP2-4.5</value>
       <value compset="^SSP370_" >SSP3-7.0</value>
       <value compset="^SSP585_" >SSP5-8.5</value>
-      <value compset="^HIST_"   >hist</value>
+      <value compset="^HIST[CE]?_"   >hist</value>
       <value compset="^20TR_"   >hist</value>
       <value compset="_DATM%CPLHIST">cplhist</value>
       <value compset="_DATM.*_DICE.*_DOCN.*_DROF">none</value>
@@ -122,13 +122,13 @@
     <valid_values>none,clim_1850,clim_2000,clim_2010,hist,SSP2-4.5,SSP3-7.0,SSP5-8.5</valid_values>
     <default_value>clim_2000</default_value>
     <values match="last">
-      <value compset="^1850_"   >clim_1850</value>
+      <value compset="^1850[CE]?_"   >clim_1850</value>
       <value compset="^2000_"   >clim_2000</value>
       <value compset="^2010_"   >clim_2010</value>
       <value compset="^SSP245_" >SSP2-4.5</value>
       <value compset="^SSP370_" >SSP3-7.0</value>
       <value compset="^SSP585_" >SSP5-8.5</value>
-      <value compset="^HIST_"   >hist</value>
+      <value compset="^HIST[CE]?_"   >hist</value>
       <value compset="^20TR_"   >hist</value>
       <!-- Only needed for compsets with active land; only in DATM CLMNCEP mode -->
       <value compset="_SLND">none</value>
@@ -167,7 +167,7 @@
       <value compset="^SSP460_">SSP4-6.0</value>
       <value compset="^SSP534_">SSP5-3.4</value>
       <value compset="^SSP585_">SSP5-8.5</value>
-      <value compset="^HIST"   >20tr</value>
+      <value compset="^HIST[CE]?_"   >20tr</value>
       <value compset="^20TR"   >20tr</value>
       <value compset="^OMIP_DATM%IAF.*_POP2%[^_]*ECO">omip.iaf</value>
       <value compset="^OMIP_DATM%JRA.*_POP2%[^_]*ECO">omip.jra</value>
