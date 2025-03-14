@@ -29,22 +29,20 @@ module cdeps_docn_comp
   use shr_log_mod      , only : shr_log_setLogUnit
   use dshr_methods_mod , only : dshr_state_diagnose, chkerr, memcheck
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_advance, shr_strdata_init_from_config
-  use dshr_mod         , only : dshr_model_initphase, dshr_init, dshr_mesh_init
+  use dshr_mod         , only : dshr_model_initphase, dshr_init, dshr_mesh_init, dshr_restart_read
   use dshr_mod         , only : dshr_state_setscalar, dshr_set_runclock, dshr_check_restart_alarm
+  use dshr_mod         , only : dshr_restart_write
   use dshr_dfield_mod  , only : dfield_type, dshr_dfield_add, dshr_dfield_copy
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_realize
+  use nuopc_shr_methods, only : shr_get_rpointer_name
 
   ! Datamode specialized modules
   use docn_datamode_copyall_mod    , only : docn_datamode_copyall_advertise
   use docn_datamode_copyall_mod    , only : docn_datamode_copyall_init_pointers
   use docn_datamode_copyall_mod    , only : docn_datamode_copyall_advance
-  use docn_datamode_copyall_mod    , only : docn_datamode_copyall_restart_read
-  use docn_datamode_copyall_mod    , only : docn_datamode_copyall_restart_write
   use docn_datamode_iaf_mod        , only : docn_datamode_iaf_advertise
   use docn_datamode_iaf_mod        , only : docn_datamode_iaf_init_pointers
   use docn_datamode_iaf_mod        , only : docn_datamode_iaf_advance
-  use docn_datamode_iaf_mod        , only : docn_datamode_iaf_restart_read
-  use docn_datamode_iaf_mod        , only : docn_datamode_iaf_restart_write
   use docn_datamode_som_mod        , only : docn_datamode_som_advertise
   use docn_datamode_som_mod        , only : docn_datamode_som_init_pointers
   use docn_datamode_som_mod        , only : docn_datamode_som_advance
@@ -56,18 +54,12 @@ module cdeps_docn_comp
   use docn_datamode_cplhist_mod    , only : docn_datamode_cplhist_advertise
   use docn_datamode_cplhist_mod    , only : docn_datamode_cplhist_init_pointers
   use docn_datamode_cplhist_mod    , only : docn_datamode_cplhist_advance
-  use docn_datamode_cplhist_mod    , only : docn_datamode_cplhist_restart_read
-  use docn_datamode_cplhist_mod    , only : docn_datamode_cplhist_restart_write
   use docn_datamode_multilev_mod   , only : docn_datamode_multilev_advertise
   use docn_datamode_multilev_mod   , only : docn_datamode_multilev_init_pointers
   use docn_datamode_multilev_mod   , only : docn_datamode_multilev_advance
-  use docn_datamode_multilev_mod   , only : docn_datamode_multilev_restart_read
-  use docn_datamode_multilev_mod   , only : docn_datamode_multilev_restart_write
   use docn_datamode_multilev_dom_mod, only : docn_datamode_multilev_dom_advertise
   use docn_datamode_multilev_dom_mod, only : docn_datamode_multilev_dom_init_pointers
   use docn_datamode_multilev_dom_mod, only : docn_datamode_multilev_dom_advance
-  use docn_datamode_multilev_dom_mod, only : docn_datamode_multilev_dom_restart_read
-  use docn_datamode_multilev_dom_mod, only : docn_datamode_multilev_dom_restart_write
   use docn_import_data_mod          , only : docn_import_data_advertise
 
   implicit none
@@ -453,7 +445,7 @@ contains
     call shr_cal_ymd2date(current_year, current_mon, current_day, current_ymd)
 
     ! Run docn
-    call docn_comp_run(importState, exportState, clock, current_ymd, current_tod, restart_write=.false., rc=rc)
+    call docn_comp_run(gcomp, importState, exportState, clock, current_ymd, current_tod, restart_write=.false., rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Add scalars to export state
@@ -512,19 +504,20 @@ contains
     restart_write = dshr_check_restart_alarm(clock, rc=rc)
 
     ! run docn
-    call docn_comp_run(importState, exportState, clock, next_ymd, next_tod, restart_write, rc=rc)
+    call docn_comp_run(gcomp, importState, exportState, clock, next_ymd, next_tod, restart_write, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine ModelAdvance
 
   !===============================================================================
-  subroutine docn_comp_run(importState, exportState, clock, target_ymd, target_tod, restart_write, rc)
+  subroutine docn_comp_run(gcomp, importState, exportState, clock, target_ymd, target_tod, restart_write, rc)
 
     ! --------------------------
     ! advance docn
     ! --------------------------
 
     ! input/output variables:
+    type(ESMF_GridComp), intent(in)  :: gcomp
     type(ESMF_Clock) , intent(in)    :: clock
     type(ESMF_State) , intent(inout) :: importState
     type(ESMF_State) , intent(inout) :: exportState
@@ -535,6 +528,7 @@ contains
 
     ! local variables
     logical :: first_time = .true.
+    character(len=CL) :: rpfile  ! restart pointer file name
     character(*), parameter :: subName = "(docn_comp_run) "
     !-------------------------------------------------------------------------------
 
@@ -564,6 +558,7 @@ contains
           call docn_datamode_som_init_pointers(importState, exportState, sdat, model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('sst_aquap_analytic', 'sst_aquap_constant')
+          skip_restart_read=.true.
           call  docn_datamode_aquaplanet_init_pointers(exportState, model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('cplhist')
@@ -579,13 +574,15 @@ contains
 
        ! Read restart if needed
        if (restart_read .and. .not. skip_restart_read) then
+          call shr_get_rpointer_name(gcomp, 'ocn', target_ymd, target_tod, rpfile, 'read', rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
           select case (trim(datamode))
-          case('sstdata', 'sst_aquap_file')
-             call docn_datamode_copyall_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
-          case('iaf')
-             call docn_datamode_iaf_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
+          case('sstdata', 'sst_aquap_file', 'iaf', 'cplhist', 'multilev', 'mulitilev_dom')
+             call dshr_restart_read(restfilm, rpfile, logunit, my_task, mpicom, sdat, rc)
+             if (ChkErr(rc,__LINE__,u_FILE_u)) return
           case('som', 'som_aquap')
-             call docn_datamode_som_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
+             call docn_datamode_som_restart_read(restfilm, rpfile, logunit, my_task, mpicom, sdat)
           end select
        end if
 
@@ -642,21 +639,24 @@ contains
 
     ! Write restarts if needed (no restarts for aquaplanet analytic or aquaplanet input file)
     if (restart_write) then
-       select case (trim(datamode))
-       case('sstdata','sst_aquap_file')
-          call docn_datamode_copyall_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
+          call shr_get_rpointer_name(gcomp, 'ocn', target_ymd, target_tod, rpfile, 'write', rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+          select case (trim(datamode))
+          case('sstdata', 'sst_aquap_file', 'iaf', 'cplhist', 'multilev', 'mulitilev_dom')
+             call dshr_restart_write(rpfile, case_name, 'docn', inst_suffix, target_ymd, target_tod, logunit, &
+                  my_task, sdat, rc)
+             if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          case('som', 'som_aquap')
+             call docn_datamode_som_restart_write(rpfile, case_name, inst_suffix, target_ymd, target_tod, &
                logunit, my_task, sdat)
-       case('iaf')
-          call docn_datamode_iaf_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, my_task, sdat)
-       case('som','som_aquap')
-          call docn_datamode_som_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, my_task, sdat)
-       case('cplhist')
-          call docn_datamode_cplhist_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, my_task, sdat)
-       end select
-    end if
+          case('sst_aquap_analytic', 'sst_aquap_constant')
+             ! Do nothing
+          case default
+             call shr_sys_abort(subName//'datamode '//trim(datamode)//' not recognized')
+          end select
+          
+       endif
 
     call ESMF_TraceRegionExit('DOCN_RUN')
 

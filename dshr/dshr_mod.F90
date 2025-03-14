@@ -950,8 +950,8 @@ contains
   end subroutine dshr_time_init
 
   !===============================================================================
-  subroutine dshr_restart_read(rest_filem, rpfile, inst_suffix, nullstr, &
-       logunit, my_task, mpicom, sdat, fld, fldname)
+  subroutine dshr_restart_read(rest_filem, rpfile, &
+       logunit, my_task, mpicom, sdat, rc, fld, fldname)
 
     ! Read restart file
 
@@ -960,12 +960,11 @@ contains
     ! input/output arguments
     character(len=*)            , intent(inout) :: rest_filem
     character(len=*)            , intent(in)    :: rpfile
-    character(len=*)            , intent(in)    :: inst_suffix
-    character(len=*)            , intent(in)    :: nullstr
     integer                     , intent(in)    :: logunit
     integer                     , intent(in)    :: my_task
     integer                     , intent(in)    :: mpicom
     type(shr_strdata_type)      , intent(inout) :: sdat
+    integer                     , intent(out)   :: rc
     real(r8)         , optional , pointer       :: fld(:)
     character(len=*) , optional , intent(in)    :: fldname
 
@@ -977,26 +976,20 @@ contains
     type(var_desc_t)  :: varid
     type(io_desc_t)   :: pio_iodesc
     integer           :: rcode
-    integer           :: rc
     integer           :: tmp(1)
     character(*), parameter :: F00   = "('(dshr_restart_read) ',8a)"
     character(*), parameter :: subName = "(dshr_restart_read) "
     !-------------------------------------------------------------------------------
-
+    rc = ESMF_SUCCESS
     ! no streams means no restart file is read.
     if(shr_strdata_get_stream_count(sdat) <= 0) return
     call ESMF_VMGetCurrent(vm, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    exists = .false.
-    if (trim(rest_filem) == trim(nullstr)) then
+    inquire(file=trim(rest_filem), exist=exists)
+    if (trim(rest_filem) == 'none' .or. trim(rest_filem) == 'null') then
        if (my_task == main_task) then
-          write(logunit,F00) ' restart filename from rpointer'
-          inquire(file=trim(rpfile)//trim(inst_suffix), exist=exists)
-          if (.not.exists) then
-             write(logunit, F00) ' ERROR: rpointer file does not exist'
-             call shr_sys_abort(trim(subname)//' ERROR: rpointer file missing')
-          endif
-          open(newunit=nu, file=trim(rpfile)//trim(inst_suffix), form='formatted')
+          write(logunit,F00) ' restart filename from rpointer: '//trim(rpfile)
+          open(newunit=nu, file=trim(rpfile), form='formatted')
           read(nu, '(a)') rest_filem
           close(nu)
           inquire(file=trim(rest_filem), exist=exists)
@@ -1035,7 +1028,7 @@ contains
 
   !===============================================================================
   subroutine dshr_restart_write(rpfile, case_name, model_name, inst_suffix, ymd, tod, &
-       logunit, my_task, sdat, fld, fldname)
+       logunit, my_task, sdat, rc, fld, fldname)
 
     ! Write restart file
 
@@ -1051,6 +1044,7 @@ contains
     integer                     , intent(in)    :: logunit
     integer                     , intent(in)    :: my_task
     type(shr_strdata_type)      , intent(inout) :: sdat
+    integer                     , intent(out)   :: rc
     real(r8)         , optional , pointer       :: fld(:)
     character(len=*) , optional , intent(in)    :: fldname
 
@@ -1067,18 +1061,18 @@ contains
     character(*), parameter :: F00   = "('(dshr_restart_write) ',2a,2(i0,2x))"
     !-------------------------------------------------------------------------------
 
+    rc = ESMF_SUCCESS
     ! no streams means no restart file is written.
     if (shr_strdata_get_stream_count(sdat) <= 0) return
 
     call shr_cal_datetod2string(date_str, ymd, tod)
     write(rest_file_model ,"(7a)") trim(case_name),'.', trim(model_name),trim(inst_suffix),'.r.', trim(date_str),'.nc'
-
     ! write restart info to rpointer file
     if (my_task == main_task) then
-       open(newunit=nu, file=trim(rpfile)//trim(inst_suffix), form='formatted')
+       open(newunit=nu, file=trim(rpfile), form='formatted')
        write(nu,'(a)') rest_file_model
        close(nu)
-       write(logunit,F00)' writing ',trim(rest_file_model), ymd, tod
+       write(logunit,F00)' writing ',trim(rest_file_model)
     endif
 
     ! write data model restart data
