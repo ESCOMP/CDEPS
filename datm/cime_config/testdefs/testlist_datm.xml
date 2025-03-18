@@ -59,6 +59,7 @@
     </machines>
     <options>
       <option name="wallclock"> 00:10:00 </option>
+      <option name="comment">Check that SSP126 compset works right</option>
     </options>
   </test>
   <test compset="SSP245_DATM%GSWP3v1_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="f10_f10_mg37" name="SMS_Ld5">
@@ -68,6 +69,7 @@
     </machines>
     <options>
       <option name="wallclock"> 00:10:00 </option>
+      <option name="comment">Check that SSP245 compset works right</option>
     </options>
   </test>
   <test compset="SSP370_DATM%GSWP3v1_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="f10_f10_mg37" name="SMS_Ld5">
@@ -77,6 +79,7 @@
     </machines>
     <options>
       <option name="wallclock"> 00:10:00 </option>
+      <option name="comment">Check that SSP370 compset works right</option>
     </options>
   </test>
   <test compset="SSP585_DATM%GSWP3v1_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="f10_f10_mg37" name="SMS_Ld5">
