@@ -5,7 +5,6 @@ module dice_datamode_ssmi_mod
   use ESMF                 , only : ESMF_ArrayCreate, ESMF_ArrayDestroy, ESMF_GridComp
   use NUOPC                , only : NUOPC_Advertise
   use shr_kind_mod         , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
-  use shr_sys_mod          , only : shr_sys_abort
   use shr_const_mod        , only : shr_const_pi, shr_const_spval, shr_const_tkfrz, shr_const_latice
   use shr_frz_mod          , only : shr_frz_freezetemp
   use dshr_strdata_mod     , only : shr_strdata_get_stream_pointer, shr_strdata_type
@@ -587,10 +586,9 @@ contains
   end subroutine dice_datamode_ssmi_restart_write
 
   !===============================================================================
-  subroutine dice_datamode_ssmi_restart_read(gcomp, rest_filem, rpfile, logunit, my_task, mpicom, sdat)
+  subroutine dice_datamode_ssmi_restart_read(rest_filem, rpfile, logunit, my_task, mpicom, sdat)
 
     ! input/output arguments
-    type(ESMF_GridComp)         , intent(in)    :: gcomp
     character(len=*)            , intent(inout) :: rest_filem
     character(len=*)            , intent(in)    :: rpfile
     integer                     , intent(in)    :: logunit

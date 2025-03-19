@@ -9,7 +9,7 @@ module dglc_datamode_noevolve_mod
    use ESMF             , only : ESMF_VMGetCurrent, ESMF_VMBroadCast
    use NUOPC            , only : NUOPC_Advertise, NUOPC_IsConnected
    use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
-   use shr_sys_mod      , only : shr_sys_abort
+   use shr_log_mod      , only : shr_log_error
    use shr_const_mod    , only : SHR_CONST_RHOICE, SHR_CONST_RHOSW, SHR_CONST_REARTH, SHR_CONST_TKFRZ
    use shr_const_mod    , only : SHR_CONST_SPVAL
    use shr_cal_mod      , only : shr_cal_datetod2string
@@ -204,7 +204,8 @@ contains
          if (.not. NUOPC_IsConnected(NStateImp(ns), fieldName=field_in_tsrf)) then
             ! NOTE: the field is connected ONLY if the MED->GLC entry is in the nuopc.runconfig file
             ! This restriction occurs even if the field was advertised
-            call shr_sys_abort(trim(subname)//": MED->GLC must appear in run sequence")
+            call shr_log_error(trim(subname)//": MED->GLC must appear in run sequence", rc=rc)
+            return
          end if
          call dshr_state_getfldptr(NStateImp(ns), field_in_tsrf, fldptr1=Sl_tsrf(ns)%ptr, rc=rc)
          if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -309,8 +310,8 @@ contains
             ! Create pioid and pio_iodesc at the module level
             inquire(file=trim(model_datafiles(ns)), exist=exists)
             if (.not.exists) then
-               write(6,'(a)')' ERROR: model input file '//trim(model_datafiles(ns))//' does not exist'
-               call shr_sys_abort()
+               call shr_log_error(' ERROR: model input file '//trim(model_datafiles(ns))//' does not exist', rc=rc)
+               return
             end if
             rcode = pio_openfile(pio_subsystem, pioid, io_type, trim(model_datafiles(ns)), pio_nowrite)
             call pio_seterrorhandling(pioid, PIO_BCAST_ERROR)
@@ -548,7 +549,7 @@ contains
     write(rest_file_model ,"(7a)") trim(case_name),'.','dglc',trim(inst_suffix),'.r.',trim(date_str),'.nc'
     ! write restart info to rpointer file
     if (my_task == main_task) then
-       open(newunit=nu, file=trim(rpfile)//trim(inst_suffix), form='formatted')
+       open(newunit=nu, file=trim(rpfile), form='formatted')
        write(nu,'(a)') rest_file_model
        close(nu)
        write(logunit,'(a,2x,i0,2x,i0)')' writing with no streams '//trim(rest_file_model), ymd, tod

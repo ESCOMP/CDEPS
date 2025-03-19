@@ -28,20 +28,19 @@ module cdeps_dglc_comp
   use NUOPC_Model      , only : model_label_Finalize    => label_Finalize
   use NUOPC_Model      , only : NUOPC_ModelGet, SetVM
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
-  use shr_sys_mod      , only : shr_sys_abort
   use shr_cal_mod      , only : shr_cal_ymd2date
-  use shr_log_mod      , only : shr_log_setLogUnit
+  use shr_log_mod      , only : shr_log_setLogUnit, shr_log_error
   use shr_string_mod   , only : shr_string_listGetNum, shr_string_listGetName
 #ifdef CESMCOUPLED
   use shr_pio_mod      , only : shr_pio_getiosys, shr_pio_getiotype, shr_pio_getioformat
 #endif
   use dshr_methods_mod , only : dshr_state_diagnose, chkerr, memcheck
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_advance, shr_strdata_init_from_config
-  use dshr_mod         , only : dshr_model_initphase, dshr_init, dshr_mesh_init, dshr_alarm_init
+  use dshr_mod         , only : dshr_model_initphase, dshr_init, dshr_mesh_init
   use dshr_mod         , only : dshr_state_setscalar, dshr_set_runclock, dshr_check_restart_alarm
   use dshr_dfield_mod  , only : dfield_type, dshr_dfield_add, dshr_dfield_copy
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_realize
-  use nuopc_shr_methods, only : shr_get_rpointer_name
+  use nuopc_shr_methods, only : shr_get_rpointer_name, alarmInit
   ! Datamode specialized modules
   use dglc_datamode_noevolve_mod, only : dglc_datamode_noevolve_advertise
   use dglc_datamode_noevolve_mod, only : dglc_datamode_noevolve_init_pointers
@@ -225,8 +224,8 @@ contains
       read (nu,nml=dglc_nml,iostat=ierr)
       close(nu)
       if (ierr > 0) then
-        write(logunit,'(a,i8)') 'ERROR: reading input namelist, '//trim(nlfilename)//' iostat=',ierr
-        call shr_sys_abort(subName//': namelist read error '//trim(nlfilename))
+         call shr_log_error(subName//': namelist read error '//trim(nlfilename), rc=rc)
+         return
       end if
 
       ! Determine number of ice sheets
@@ -284,7 +283,8 @@ contains
     if ( trim(datamode) == 'noevolve') then  ! read stream, no import data
       ! do nothing
     else
-      call shr_sys_abort(' ERROR illegal dglc datamode = '//trim(datamode))
+       call shr_log_error(' ERROR illegal dglc datamode = '//trim(datamode), rc=rc)
+       return
     endif
 
     ! Allocate module variables
@@ -362,7 +362,8 @@ contains
     if (isPresent .and. isSet) then
        read(cvalue,*) restart_read
     else
-       call shr_sys_abort(subname//' ERROR: read restart flag must be present')
+       call shr_log_error(subname//' ERROR: read restart flag must be present', rc=rc)
+       return
     end if
 
     ! Get the time to interpolate the stream data to
@@ -390,8 +391,8 @@ contains
        if (my_task == main_task) then
           inquire(file=trim(model_meshfiles(ns)), exist=exists)
           if (.not.exists) then
-             write(logunit,'(a)')' ERROR: model_meshfile '//trim(model_meshfiles(ns))//' does not exist'
-             call shr_sys_abort(trim(subname)//' ERROR: model_meshfile '//trim(model_meshfiles(ns))//' does not exist')
+             call shr_log_error(trim(subname)//' ERROR: model_meshfile '//trim(model_meshfiles(ns))//' does not exist', rc=rc)
+             return
           end if
        endif
 
@@ -736,18 +737,18 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
        if (trim(glc_avg_period) == 'hour') then
-          call dshr_alarm_init(mclock, valid_alarm, 'nhours', opt_n=1, alarmname='alarm_valid_inputs', rc=rc)
+          call alarmInit(mclock, valid_alarm, 'nhours', opt_n=1, alarmname='alarm_valid_inputs', rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        else if (trim(glc_avg_period) == 'day') then
-          call dshr_alarm_init(mclock, valid_alarm, 'ndays' , opt_n=1, alarmname='alarm_valid_inputs', rc=rc)
+          call alarmInit(mclock, valid_alarm, 'ndays' , opt_n=1, alarmname='alarm_valid_inputs', rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        else if (trim(glc_avg_period) == 'yearly') then
-          call dshr_alarm_init(mclock, valid_alarm, 'yearly', alarmname='alarm_valid_inputs', rc=rc)
+          call alarmInit(mclock, valid_alarm, 'yearly', alarmname='alarm_valid_inputs', rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        else if (trim(glc_avg_period) == 'glc_coupling_period') then
           call ESMF_TimeIntervalGet(mtimestep, s=dtime, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          call dshr_alarm_init(mclock, valid_alarm, 'nseconds', opt_n=dtime, alarmname='alarm_valid_inputs', rc=rc)
+          call alarmInit(mclock, valid_alarm, 'nseconds', opt_n=dtime, alarmname='alarm_valid_inputs', rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        else
           call ESMF_LogWrite(trim(subname)// ": ERROR glc_avg_period = "//trim(glc_avg_period)//" not supported", &
@@ -757,6 +758,31 @@ contains
        end if
 
        call ESMF_AlarmSet(valid_alarm, clock=mclock, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+       !----------------
+       ! Stop alarm
+       !----------------
+       call ESMF_LogWrite(subname//'setting stop alarm for dglc' , ESMF_LOGMSG_INFO)
+       call NUOPC_CompAttributeGet(gcomp, name="stop_option", value=stop_option, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+       call NUOPC_CompAttributeGet(gcomp, name="stop_n", value=cvalue, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       read(cvalue,*) stop_n
+
+       call NUOPC_CompAttributeGet(gcomp, name="stop_ymd", value=cvalue, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       read(cvalue,*) stop_ymd
+
+       call alarmInit(mclock, stop_alarm, stop_option, &
+            opt_n   = stop_n,           &
+            opt_ymd = stop_ymd,         &
+            RefTime = mcurrTime,           &
+            alarmname = 'alarm_stop', rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+       call ESMF_AlarmSet(stop_alarm, clock=mclock, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
        !----------------
@@ -776,7 +802,7 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        read(cvalue,*) restart_ymd
 
-       call dshr_alarm_init(mclock, restart_alarm, restart_option, &
+       call alarmInit(mclock, restart_alarm, restart_option, &
             opt_n   = restart_n,           &
             opt_ymd = restart_ymd,         &
             RefTime = mcurrTime,           &
@@ -784,31 +810,6 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
        call ESMF_AlarmSet(restart_alarm, clock=mclock, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-       !----------------
-       ! Stop alarm
-       !----------------
-       call ESMF_LogWrite(subname//'setting stop alarm for dglc' , ESMF_LOGMSG_INFO)
-       call NUOPC_CompAttributeGet(gcomp, name="stop_option", value=stop_option, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-       call NUOPC_CompAttributeGet(gcomp, name="stop_n", value=cvalue, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       read(cvalue,*) stop_n
-
-       call NUOPC_CompAttributeGet(gcomp, name="stop_ymd", value=cvalue, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       read(cvalue,*) stop_ymd
-
-       call dshr_alarm_init(mclock, stop_alarm, stop_option, &
-            opt_n   = stop_n,           &
-            opt_ymd = stop_ymd,         &
-            RefTime = mcurrTime,           &
-            alarmname = 'alarm_stop', rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-       call ESMF_AlarmSet(stop_alarm, clock=mclock, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     end if

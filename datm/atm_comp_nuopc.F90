@@ -27,9 +27,8 @@ module cdeps_datm_comp
   use NUOPC_Model      , only : NUOPC_ModelGet, setVM
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_const_mod    , only : shr_const_cday
-  use shr_sys_mod      , only : shr_sys_abort
   use shr_cal_mod      , only : shr_cal_ymd2date
-  use shr_log_mod      , only : shr_log_setLogUnit
+  use shr_log_mod      , only : shr_log_setLogUnit, shr_log_error
   use dshr_methods_mod , only : dshr_state_diagnose, chkerr, memcheck
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_init_from_config, shr_strdata_advance
   use dshr_strdata_mod , only : shr_strdata_get_stream_pointer, shr_strdata_setOrbs
@@ -63,10 +62,6 @@ module cdeps_datm_comp
   use datm_datamode_gefs_mod    , only : datm_datamode_gefs_advertise
   use datm_datamode_gefs_mod    , only : datm_datamode_gefs_init_pointers
   use datm_datamode_gefs_mod    , only : datm_datamode_gefs_advance
-
-  use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_advertise
-  use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_init_pointers
-  use datm_datamode_cfsr_mod    , only : datm_datamode_cfsr_advance
 
   use datm_datamode_simple_mod  , only : datm_datamode_simple_advertise
   use datm_datamode_simple_mod  , only : datm_datamode_simple_init_pointers
@@ -267,14 +262,16 @@ contains
        open (newunit=nu,file=trim(nlfilename),status="old",action="read")
        call shr_nl_find_group_name(nu, 'datm_nml', status=ierr)
        if (ierr > 0) then
-          write(logunit,*) 'ERROR: reading input namelist, '//trim(nlfilename)//' iostat=',ierr
-          call shr_sys_abort(subName//': namelist read error '//trim(nlfilename))
+          rc = ierr
+          call shr_log_error(subName//': namelist read error '//trim(nlfilename), rc=rc)
+          return
        end if
        read (nu,nml=datm_nml,iostat=ierr)
        close(nu)
        if (ierr > 0) then
-          write(logunit,*) 'ERROR: reading input namelist, '//trim(nlfilename)//' iostat=',ierr
-          call shr_sys_abort(subName//': namelist read error '//trim(nlfilename))
+          rc = ierr
+          call shr_log_error(subName//': namelist read error '//trim(nlfilename), rc=rc)
+          return
        end if
        bcasttmp = 0
        bcasttmp(1) = nx_global
@@ -327,7 +324,8 @@ contains
     else if (nextsw_cday_calc == 'cam6') then
        nextsw_cday_calc_cam7 = .false.
     else
-       call shr_sys_abort(' ERROR illegal datm nextsw_cday_calc = '//trim(nextsw_cday_calc))
+       call shr_log_error(' ERROR illegal datm nextsw_cday_calc = '//trim(nextsw_cday_calc), rc=rc)
+       return
     end if
 
     ! write namelist input to standard out
@@ -360,11 +358,11 @@ contains
          trim(datamode) == 'CLMNCEP'      .or. &
          trim(datamode) == 'CPLHIST'      .or. &
          trim(datamode) == 'GEFS'         .or. &
-         trim(datamode) == 'CFSR'         .or. &
          trim(datamode) == 'ERA5'         .or. &
          trim(datamode) == 'SIMPLE') then
     else
-       call shr_sys_abort(' ERROR illegal datm datamode = '//trim(datamode))
+       call shr_log_error(' ERROR illegal datm datamode = '//trim(datamode), rc=rc)
+       return
     endif
 
     ! Advertise datm fields
@@ -390,9 +388,6 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('GEFS')
        call datm_datamode_gefs_advertise(exportState, fldsExport, flds_scalar_name, rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    case ('CFSR')
-       call datm_datamode_cfsr_advertise(exportState, fldsExport, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('SIMPLE')
        call datm_datamode_simple_advertise(exportState, fldsExport, flds_scalar_name, &
@@ -495,7 +490,8 @@ contains
     if (isPresent .and. isSet) then
        read (cvalue,*) flds_scalar_index_nextsw_cday
     else
-       call shr_sys_abort(subname//'Need to set attribute ScalarFieldIdxNextSwCday')
+       call shr_log_error(subname//'Need to set attribute ScalarFieldIdxNextSwCday', rc=rc)
+       return
     endif
 
     nextsw_cday = getNextRadCDay(dayofYear, current_tod, stepno, idt, iradsw)
@@ -639,9 +635,6 @@ contains
        case('GEFS')
           call datm_datamode_gefs_init_pointers(exportState, sdat, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       case('CFSR')
-          call datm_datamode_cfsr_init_pointers(exportState, sdat, rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('SIMPLE')
           call datm_datamode_simple_init_pointers(exportState, sdat, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -652,11 +645,12 @@ contains
           call shr_get_rpointer_name(gcomp, 'atm', target_ymd, target_tod, rpfile, 'read', rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           select case (trim(datamode))
-          case('CORE2_NYF','CORE2_IAF','CORE_IAF_JRA','CLMNCEP','CPLHIST','ERA5','GEFS','CFSR','SIMPLE')
+          case('CORE2_NYF','CORE2_IAF','CORE_IAF_JRA','CLMNCEP','CPLHIST','ERA5','GEFS','SIMPLE')
              call dshr_restart_read(restfilm, rpfile, logunit, my_task, mpicom, sdat, rc)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
           case default
-             call shr_sys_abort(subName//'datamode '//trim(datamode)//' not recognized')
+             call shr_log_error(subName//'datamode '//trim(datamode)//' not recognized', rc=rc)
+             return
           end select
        end if
 
@@ -707,9 +701,6 @@ contains
     case('GEFS')
        call datm_datamode_gefs_advance(exportstate, mainproc, logunit, mpicom, target_ymd, &
             target_tod, sdat%model_calendar, rc)
-    case('CFSR')
-       call datm_datamode_cfsr_advance(exportstate, mainproc, logunit, mpicom, target_ymd, &
-            target_tod, sdat%model_calendar, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('SIMPLE')
        call datm_datamode_simple_advance(target_ymd, target_tod, target_mon, &
@@ -722,12 +713,13 @@ contains
        call shr_get_rpointer_name(gcomp, 'atm', target_ymd, target_tod, rpfile, 'write', rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        select case (trim(datamode))
-       case('CORE2_NYF','CORE2_IAF','CORE_IAF_JRA','CLMNCEP','CPLHIST','ERA5','GEFS','CFSR','SIMPLE')
+       case('CORE2_NYF','CORE2_IAF','CORE_IAF_JRA','CLMNCEP','CPLHIST','ERA5','GEFS','SIMPLE')
           call dshr_restart_write(rpfile, case_name, 'datm', inst_suffix, target_ymd, target_tod, logunit, &
                my_task, sdat, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case default
-          call shr_sys_abort(subName//'datamode '//trim(datamode)//' not recognized')
+          call shr_log_error(subName//'datamode '//trim(datamode)//' not recognized', rc=rc)
+          return
        end select
     end if
 
@@ -830,7 +822,8 @@ contains
             case('cpl_scalars')
                continue
             case default
-               call shr_sys_abort(subName//'field '//trim(lfieldnames(n))//' not recognized')
+               call shr_log_error(subName//'field '//trim(lfieldnames(n))//' not recognized', rc=rc)
+               return
             end select
          end if
       end do

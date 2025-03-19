@@ -19,6 +19,9 @@
       <value datm_mode="CLM_QIAN_WISO">
         CLM_QIAN_WISO.Solar,CLM_QIAN_WISO.Precip,CLM_QIAN_WISO.TPQW
       </value>
+      <value datm_mode="CLMCRUJRA2024">
+        CLMCRUJRA2024.Solar,CLMCRUJRA2024.Precip,CLMCRUJRA2024.TPQW
+      </value>
       <value datm_mode="CLMCRUNCEPv7">
         CLMCRUNCEPv7.Solar,CLMCRUNCEPv7.Precip,CLMCRUNCEPv7.TPQW
       </value>
