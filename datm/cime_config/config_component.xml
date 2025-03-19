@@ -40,17 +40,6 @@
     <desc>Name of atmospheric component</desc>
   </entry>
 
-  <entry id="DATM_MODE_ANOMALY_FORCING_MISMATCH">
-    <type>logical</type>
-    <valid_values>TRUE,FALSE</valid_values>
-    <default_value>FALSE</default_value>
-    <group>run_component_datm</group>
-    <file>env_run.xml</file>
-    <desc> If set to true, then user will be allowed to specify an anomaly forcing that was based
-    on a different climate forcing than what's given in DATM_MODE
-    </desc>
-  </entry>
-
   <entry id="DATM_MODE">
     <type>char</type>
     <valid_values>CORE2_NYF,CORE2_IAF,CLM_QIAN,CLM_QIAN_WISO,1PT,CLMCRUNCEP,CLMCRUNCEPv7,CLMGSWP3v1,CLMNLDAS2,CPLHIST,CORE_IAF_JRA,CORE_IAF_JRA_1p4_2018,CORE_IAF_JRA_1p5_2023,ERA5,SIMPLE</valid_values>
