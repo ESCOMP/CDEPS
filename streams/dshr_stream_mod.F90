@@ -16,7 +16,7 @@ module dshr_stream_mod
   ! -------------------------------------------------------------------------------
 
   use shr_kind_mod     , only : r8=>shr_kind_r8, cs=>shr_kind_cs, cl=>shr_kind_cl, cxx=>shr_kind_cxx, cx=>shr_kind_cx
-  use shr_sys_mod      , only : shr_sys_abort
+  use shr_log_mod      , only : shr_log_error
   use shr_const_mod    , only : shr_const_cday
   use shr_string_mod   , only : shr_string_leftalign_and_convert_tabs, shr_string_parseCFtunit
   use shr_cal_mod      , only : shr_cal_noleap
@@ -34,7 +34,7 @@ module dshr_stream_mod
 #ifdef CESMCOUPLED
   use shr_pio_mod      , only : shr_pio_getiosys, shr_pio_getiotype, shr_pio_getioformat
 #endif
-
+  use shr_sys_mod      , only : shr_sys_abort
   implicit none
   private ! default private
 
@@ -210,7 +210,8 @@ contains
 
        Sdoc => parseFile(streamfilename, iostat=status)
        if (status /= 0) then
-          call shr_sys_abort("Could not parse file "//trim(streamfilename))
+          call shr_log_error("Could not parse file "//trim(streamfilename), rc=rc)
+          return
        endif
        streamlist => getElementsByTagname(Sdoc, "stream_info")
        nstrms = getLength(streamlist)
@@ -228,7 +229,8 @@ contains
              if (streamdat(i)%taxmode /= shr_stream_taxis_cycle   .and. &
                  streamdat(i)%taxmode /= shr_stream_taxis_extend  .and. &
                  streamdat(i)%taxmode /= shr_stream_taxis_limit) then
-                call shr_sys_abort("tintalgo must have a value of either cycle, extend or limit")
+                call shr_log_error("tintalgo must have a value of either cycle, extend or limit", rc=rc)
+                return
              end if
           endif
 
@@ -241,7 +243,8 @@ contains
                  streamdat(i)%mapalgo /= shr_stream_mapalgo_consf    .and. &
                  streamdat(i)%mapalgo /= shr_stream_mapalgo_consd    .and. &
                  streamdat(i)%mapalgo /= shr_stream_mapalgo_none) then
-                call shr_sys_abort("mapaglo must have a value of either bilinear, redist, nn, consf or consd")
+                call shr_log_error("mapaglo must have a value of either bilinear, redist, nn, consf or consd", rc=rc)
+                return
              end if
           endif
 
@@ -253,7 +256,8 @@ contains
                  streamdat(i)%tInterpAlgo /= shr_stream_tinterp_nearest .and. &
                  streamdat(i)%tInterpAlgo /= shr_stream_tinterp_linear  .and. &
                  streamdat(i)%tInterpAlgo /= shr_stream_tinterp_coszen) then
-                call shr_sys_abort("tintalgo must have a value of either lower, upper, nearest, linear or coszen")
+                call shr_log_error("tintalgo must have a value of either lower, upper, nearest, linear or coszen", rc=rc)
+                return
              end if
           endif
 
@@ -266,21 +270,24 @@ contains
           if(associated(p)) then
              call extractDataContent(p, streamdat(i)%yearFirst)
           else
-             call shr_sys_abort("yearFirst must be provided")
+             call shr_log_error("yearFirst must be provided", rc=rc)
+             return
           endif
 
           p=> item(getElementsByTagname(streamnode, "year_last"), 0)
           if(associated(p)) then
              call extractDataContent(p, streamdat(i)%yearLast)
           else
-             call shr_sys_abort("yearLast must be provided")
+             call shr_log_error("yearLast must be provided", rc=rc)
+             return
           endif
 
           p=> item(getElementsByTagname(streamnode, "year_align"), 0)
           if(associated(p)) then
              call extractDataContent(p, streamdat(i)%yearAlign)
           else
-             call shr_sys_abort("yearAlign must be provided")
+             call shr_log_error("yearAlign must be provided", rc=rc)
+             return
           endif
 
           p=> item(getElementsByTagname(streamnode, "dtlimit"), 0)
@@ -297,14 +304,16 @@ contains
           if (associated(p)) then
              call extractDataContent(p, streamdat(i)%meshfile)
           else
-             call shr_sys_abort("mesh file name must be provided")
+             call shr_log_error("mesh file name must be provided", rc=rc)
+             return
           endif
 
           p => item(getElementsByTagname(streamnode, "vectors"), 0)
           if (associated(p)) then
              call extractDataContent(p, streamdat(i)%stream_vectors)
           else
-             call shr_sys_abort("stream vectors must be provided")
+             call shr_log_error("stream vectors must be provided", rc=rc)
+             return
           endif
 
           ! Determine name of vertical dimension
@@ -312,13 +321,15 @@ contains
           if (associated(p)) then
              call extractDataContent(p, streamdat(i)%lev_dimname)
           else
-             call shr_sys_abort("stream vertical level dimension name must be provided")
+             call shr_log_error("stream vertical level dimension name must be provided", rc=rc)
+             return
           endif
 
           ! Determine input data files
           p => item(getElementsByTagname(streamnode, "datafiles"), 0)
           if (.not. associated(p)) then
-             call shr_sys_abort("stream data files must be provided")
+             call shr_log_error("stream data files must be provided", rc=rc)
+             return
           endif
           filelist => getElementsByTagname(p,"file")
           streamdat(i)%nfiles = getLength(filelist)
@@ -428,7 +439,8 @@ contains
 
        ! Error check
        if (trim(streamdat(i)%taxmode) == shr_stream_taxis_extend .and. streamdat(i)%dtlimit < 1.e10) then
-          call shr_sys_abort(trim(subName)//" ERROR: if taxmode value is extend set dtlimit to 1.e30")
+          call shr_log_error(trim(subName)//" ERROR: if taxmode value is extend set dtlimit to 1.e30", rc=rc)
+          return
        end if
        ! initialize flag that stream has been set
        streamdat(i)%init = .true.
@@ -625,7 +637,8 @@ contains
     if( nstrms > 0 ) then
       allocate(streamdat(nstrms))
     else
-      call shr_sys_abort("no stream_info in config file "//trim(streamfilename))
+       call shr_log_error("no stream_info in config file "//trim(streamfilename), rc=rc)
+       return
     endif
 
     ! fill in non-default values for the streamdat attributes
@@ -647,21 +660,24 @@ contains
         call ESMF_ConfigGetAttribute(CF,value=streamdat(i)%yearFirst,label="yearFirst"//mystrm//':', rc=rc)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
       else
-        call shr_sys_abort("yearFirst must be provided")
+         call shr_log_error("yearFirst must be provided", rc=rc)
+         return
       endif
 
       if( ESMF_ConfigGetLen(config=CF, label="yearLast"//mystrm//':', rc=rc) > 0 ) then
         call ESMF_ConfigGetAttribute(CF,value=streamdat(i)%yearLast,label="yearLast"//mystrm//':', rc=rc)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
       else
-        call shr_sys_abort("yearLast must be provided")
+         call shr_log_error("yearLast must be provided", rc=rc)
+         return
       endif
 
       if( ESMF_ConfigGetLen(config=CF, label="yearAlign"//mystrm//':', rc=rc) > 0 ) then
         call ESMF_ConfigGetAttribute(CF,value=streamdat(i)%yearAlign,label="yearAlign"//mystrm//':', rc=rc)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
       else
-        call shr_sys_abort("yearAlign must be provided")
+         call shr_log_error("yearAlign must be provided", rc=rc)
+         return
       endif
 
       call ESMF_ConfigGetAttribute(CF,value=streamdat(i)%dtlimit,label="dtlimit"//mystrm//':', rc=rc)
@@ -674,21 +690,24 @@ contains
         call ESMF_ConfigGetAttribute(CF,value=streamdat(i)%meshfile,label="stream_mesh_file"//mystrm//':', rc=rc)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
       else
-        call shr_sys_abort("stream_mesh_file must be provided")
+         call shr_log_error("stream_mesh_file must be provided", rc=rc)
+         return
       endif
 
       if( ESMF_ConfigGetLen(config=CF, label="stream_vectors"//mystrm//':', rc=rc) > 0 ) then
         call ESMF_ConfigGetAttribute(CF,value=streamdat(i)%stream_vectors,label="stream_vectors"//mystrm//':', rc=rc)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
       else
-        call shr_sys_abort("stream_vectors must be provided")
+         call shr_log_error("stream_vectors must be provided", rc=rc)
+         return
       endif
 
       if( ESMF_ConfigGetLen(config=CF, label="stream_lev_dimname"//mystrm//':', rc=rc) > 0 ) then
         call ESMF_ConfigGetAttribute(CF,value=streamdat(i)%lev_dimname,label="stream_lev_dimname"//mystrm//':', rc=rc)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
       else
-        call shr_sys_abort("stream_lev_dimname must be provided")
+         call shr_log_error("stream_lev_dimname must be provided", rc=rc)
+         return
       endif
 
       ! Get a list of stream file names
@@ -703,7 +722,8 @@ contains
         enddo
         deallocate(strm_tmpstrings)
       else
-        call shr_sys_abort("stream data files must be provided")
+         call shr_log_error("stream data files must be provided", rc=rc)
+         return
       endif
 
       ! Get name of stream variables in file and model
@@ -718,7 +738,8 @@ contains
         enddo
         deallocate(strm_tmpstrings)
       else
-        call shr_sys_abort("stream data variables must be provided")
+         call shr_log_error("stream data variables must be provided", rc=rc)
+         return
       endif
 
       ! Initialize stream pio
@@ -739,7 +760,8 @@ contains
 
       ! Error check
       if (trim(streamdat(i)%taxmode) == shr_stream_taxis_extend .and.  streamdat(i)%dtlimit < 1.e10) then
-        call shr_sys_abort(trim(subName)//" ERROR: if taxmode value is extend set dtlimit to 1.e30")
+         call shr_log_error(trim(subName)//" ERROR: if taxmode value is extend set dtlimit to 1.e30", rc=rc)
+         return
       end if
 
     enddo ! end loop nstrm
@@ -826,7 +848,6 @@ contains
        cycle = .false.
        limit = .true.
     else
-       write(strm%logunit,*) trim(subName),' ERROR: illegal taxMode = ',trim(strm%taxMode)
        call shr_sys_abort(trim(subName)//' ERROR: illegal taxMode = '//trim(strm%taxMode))
     endif
 
@@ -886,7 +907,6 @@ contains
           end do
        end do A
        if (.not. strm%found_lvd) then
-          write(strm%logunit,F00)  "ERROR: LVD not found, all data is before yearFirst"
           call shr_sys_abort(trim(subName)//" ERROR: LVD not found, all data is before yearFirst")
        else
           !--- LVD is in or beyond yearFirst, verify it is not beyond yearLast ---
@@ -1235,6 +1255,7 @@ contains
     integer                :: old_handle    ! previous setting of pio error handling
     real(R8)               :: nsec          ! elapsed secs on calendar date
     real(R8),allocatable   :: tvar(:)
+    character(CX)          :: msg
     character(*),parameter :: subname = '(shr_stream_readTCoord) '
     !-------------------------------------------------------------------------------
 
@@ -1314,9 +1335,9 @@ contains
     ! if offset is not zero, adjust strm%file(k)%date(n) and strm%file(k)%secs(n)
     if (strm%offset /= 0) then
        if (size(strm%file(k)%date) /= size(strm%file(k)%secs)) then
-          write(strm%logunit,'(a,2i7)') trim(subname)//" Incompatable date and secs sizes",&
+          write(msg ,'(a,2i7)') trim(subname)//" Incompatable date and secs sizes",&
                size(strm%file(k)%date), size(strm%file(k)%secs)
-          call shr_sys_abort()
+          call shr_sys_abort(trim(msg))
        endif
        num = size(strm%file(k)%date)
        offin = strm%offset

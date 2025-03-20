@@ -4,13 +4,12 @@ module datm_datamode_clmncep_mod
   use ESMF             , only : ESMF_STATEITEM_NOTFOUND, ESMF_LOGMSG_INFO, ESMF_StateGet, operator(/=)
   use NUOPC            , only : NUOPC_Advertise
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
-  use shr_sys_mod      , only : shr_sys_abort
+  use shr_log_mod      , only : shr_log_error
   use shr_precip_mod   , only : shr_precip_partition_rain_snow_ramp
   use shr_const_mod    , only : shr_const_spval, shr_const_tkfrz, shr_const_pi
   use shr_const_mod    , only : shr_const_pstd, shr_const_stebol, shr_const_rdair
   use dshr_methods_mod , only : dshr_state_getfldptr, chkerr
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_get_stream_pointer
-  use dshr_mod         , only : dshr_restart_read, dshr_restart_write
   use dshr_strdata_mod , only : shr_strdata_type
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
 
@@ -20,8 +19,6 @@ module datm_datamode_clmncep_mod
   public  :: datm_datamode_clmncep_advertise
   public  :: datm_datamode_clmncep_init_pointers
   public  :: datm_datamode_clmncep_advance
-  public  :: datm_datamode_clmncep_restart_write
-  public  :: datm_datamode_clmncep_restart_read
   private :: datm_esat  ! determine saturation vapor pressure
 
   ! export state data
@@ -105,7 +102,6 @@ module datm_datamode_clmncep_mod
 
 
   character(*), parameter :: nullstr = 'null'
-  character(*), parameter :: rpfile  = 'rpointer.atm'
   character(*), parameter :: u_FILE_u = &
        __FILE__
 
@@ -323,7 +319,8 @@ contains
 
     ! error check
     if (.not. associated(strm_wind) .or. .not. associated(strm_tbot)) then
-       call shr_sys_abort(trim(subname)//' ERROR: wind and tbot must be in streams for CLMNCEP')
+       call shr_log_error(trim(subname)//' ERROR: wind and tbot must be in streams for CLMNCEP', rc=rc)
+       return
     endif
 
     ! determine anidrmax (see below for use)
@@ -384,7 +381,8 @@ contains
        tbotmax = rtmp(2)
        if (mainproc) write(logunit,*) trim(subname),' tbotmax = ',tbotmax
        if(tbotmax <= 0) then
-          call shr_sys_abort(subname//'ERROR: bad value in tbotmax')
+          call shr_log_error(subname//'ERROR: bad value in tbotmax', rc=rc)
+          return
        endif
 
        ! determine anidrmax (see below for use)
@@ -460,7 +458,8 @@ contains
           qsat = (0.622_r8 * e)/(pbot - 0.378_r8 * e)
           Sa_shum(n) = qsat
        else
-          call shr_sys_abort(subname//'ERROR: cannot compute shum')
+          call shr_log_error(subname//'ERROR: cannot compute shum', rc=rc)
+          return
        endif
        !--- density ---
        vp = (Sa_shum(n)*pbot) / (0.622_r8 + 0.378_r8 * Sa_shum(n))
@@ -497,7 +496,8 @@ contains
           swvdf = strm_swdn(n) * 0.50_r8
           Faxa_swvdf(n) = (1._r8 - ratio_rvrf)*swvdf
        else
-          call shr_sys_abort(subName//'ERROR: cannot compute short-wave down')
+          call shr_log_error(subName//'ERROR: cannot compute short-wave down', rc=rc)
+          return
        endif
 
        !--- swnet: a diagnostic quantity ---
@@ -521,7 +521,8 @@ contains
           Faxa_rainc(n) = strm_precn(n)*0.1_r8
           Faxa_rainl(n) = strm_precn(n)*0.9_r8
        else
-          call shr_sys_abort(subName//'ERROR: cannot compute rain and snow')
+          call shr_log_error(subName//'ERROR: cannot compute rain and snow', rc=rc)
+          return
        endif
 
        !--- split precip between rain & snow ---
@@ -591,41 +592,7 @@ contains
   end subroutine datm_datamode_clmncep_advance
 
   !===============================================================================
-  subroutine datm_datamode_clmncep_restart_write(case_name, inst_suffix, ymd, tod, &
-       logunit, my_task, sdat)
 
-    ! input/output variables
-    character(len=*)            , intent(in)    :: case_name
-    character(len=*)            , intent(in)    :: inst_suffix
-    integer                     , intent(in)    :: ymd       ! model date
-    integer                     , intent(in)    :: tod       ! model sec into model date
-    integer                     , intent(in)    :: logunit
-    integer                     , intent(in)    :: my_task
-    type(shr_strdata_type)      , intent(inout) :: sdat
-    !-------------------------------------------------------------------------------
-
-    call dshr_restart_write(rpfile, case_name, 'datm', inst_suffix, ymd, tod, &
-         logunit, my_task, sdat)
-
-  end subroutine datm_datamode_clmncep_restart_write
-
-  !===============================================================================
-  subroutine datm_datamode_clmncep_restart_read(rest_filem, inst_suffix, logunit, my_task, mpicom, sdat)
-
-    ! input/output arguments
-    character(len=*)            , intent(inout) :: rest_filem
-    character(len=*)            , intent(in)    :: inst_suffix
-    integer                     , intent(in)    :: logunit
-    integer                     , intent(in)    :: my_task
-    integer                     , intent(in)    :: mpicom
-    type(shr_strdata_type)      , intent(inout) :: sdat
-    !-------------------------------------------------------------------------------
-
-    call dshr_restart_read(rest_filem, rpfile, inst_suffix, nullstr, logunit, my_task, mpicom, sdat)
-
-  end subroutine datm_datamode_clmncep_restart_read
-
-  !===============================================================================
   real(r8) function datm_eSat(tK,tKbot)
 
     !----------------------------------------------------------------------------

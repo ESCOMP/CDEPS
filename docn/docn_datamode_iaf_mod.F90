@@ -3,14 +3,11 @@ module docn_datamode_iaf_mod
   use ESMF             , only : ESMF_SUCCESS, ESMF_LOGMSG_INFO, ESMF_LogWrite, ESMF_State
   use NUOPC            , only : NUOPC_Advertise
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
-  use shr_sys_mod      , only : shr_sys_abort
   use shr_const_mod    , only : shr_const_TkFrz, shr_const_pi, shr_const_ocn_ref_sal
   use dshr_strdata_mod , only : shr_strdata_get_stream_pointer, shr_strdata_type
   use dshr_methods_mod , only : dshr_state_getfldptr, dshr_fldbun_getfldptr, chkerr
   use dshr_strdata_mod , only : shr_strdata_type
-  use dshr_mod         , only : dshr_restart_read, dshr_restart_write
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
-  use pio
 
   implicit none
   private ! except
@@ -18,8 +15,6 @@ module docn_datamode_iaf_mod
   public :: docn_datamode_iaf_advertise
   public :: docn_datamode_iaf_init_pointers
   public :: docn_datamode_iaf_advance
-  public :: docn_datamode_iaf_restart_read
-  public :: docn_datamode_iaf_restart_write
 
   ! export fields
   real(r8), pointer :: So_omask(:)  => null()    ! real ocean fraction sent to mediator
@@ -41,8 +36,6 @@ module docn_datamode_iaf_mod
   real(r8) , parameter :: tkfrz   = shr_const_tkfrz       ! freezing point, fresh water (kelvin)
   real(r8) , parameter :: ocnsalt = shr_const_ocn_ref_sal ! ocean reference salinity
 
-  character(*) , parameter :: nullstr = 'null'
-  character(*) , parameter :: rpfile  = 'rpointer.ocn'
   character(*) , parameter :: u_FILE_u = &
        __FILE__
 
@@ -175,44 +168,5 @@ contains
     So_s(:)  = ocnsalt
 
   end subroutine docn_datamode_iaf_advance
-
-  !===============================================================================
-  subroutine docn_datamode_iaf_restart_write(case_name, inst_suffix, ymd, tod, &
-       logunit, my_task, sdat)
-
-    ! write restart file
-
-    ! input/output variables
-    character(len=*)            , intent(in)    :: case_name
-    character(len=*)            , intent(in)    :: inst_suffix
-    integer                     , intent(in)    :: ymd       ! model date
-    integer                     , intent(in)    :: tod       ! model sec into model date
-    integer                     , intent(in)    :: logunit
-    integer                     , intent(in)    :: my_task
-    type(shr_strdata_type)      , intent(inout) :: sdat
-    !-------------------------------------------------------------------------------
-
-    call dshr_restart_write(rpfile, case_name, 'docn', inst_suffix, ymd, tod, &
-         logunit, my_task, sdat)
-
-  end subroutine docn_datamode_iaf_restart_write
-
-  !===============================================================================
-  subroutine docn_datamode_iaf_restart_read(rest_filem, inst_suffix, logunit, my_task, mpicom, sdat)
-
-    ! read restart file
-
-    ! input/output arguments
-    character(len=*)            , intent(inout) :: rest_filem
-    character(len=*)            , intent(in)    :: inst_suffix
-    integer                     , intent(in)    :: logunit
-    integer                     , intent(in)    :: my_task
-    integer                     , intent(in)    :: mpicom
-    type(shr_strdata_type)      , intent(inout) :: sdat
-    !-------------------------------------------------------------------------------
-
-    call dshr_restart_read(rest_filem, rpfile, inst_suffix, nullstr, logunit, my_task, mpicom, sdat)
-
-  end subroutine docn_datamode_iaf_restart_read
 
 end module docn_datamode_iaf_mod

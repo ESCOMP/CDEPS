@@ -6,7 +6,6 @@ module docn_datamode_som_mod
   use ESMF             , only : ESMF_LogWrite
   use NUOPC            , only : NUOPC_Advertise
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
-  use shr_sys_mod      , only : shr_sys_abort
   use shr_const_mod    , only : shr_const_cpsw, shr_const_rhosw, shr_const_TkFrz
   use shr_const_mod    , only : shr_const_TkFrzSw, shr_const_latice, shr_const_ocn_ref_sal
   use shr_const_mod    , only : shr_const_zsrflyr, shr_const_pi
@@ -66,7 +65,6 @@ module docn_datamode_som_mod
   real(r8) , parameter :: ocnsalt = shr_const_ocn_ref_sal ! ocean reference salinity
 
   character(*) , parameter :: nullstr = 'null'
-  character(*) , parameter :: rpfile  = 'rpointer.ocn'
   character(*) , parameter :: u_FILE_u = &
        __FILE__
 
@@ -305,12 +303,13 @@ contains
   end subroutine docn_datamode_som_advance
 
   !===============================================================================
-  subroutine docn_datamode_som_restart_write(case_name, inst_suffix, ymd, tod, &
+  subroutine docn_datamode_som_restart_write(rpfile, case_name, inst_suffix, ymd, tod, &
        logunit, my_task, sdat)
 
     ! write restart file
 
     ! input/output variables
+    character(len=*)            , intent(in)    :: rpfile
     character(len=*)            , intent(in)    :: case_name
     character(len=*)            , intent(in)    :: inst_suffix
     integer                     , intent(in)    :: ymd       ! model date
@@ -319,32 +318,33 @@ contains
     integer                     , intent(in)    :: my_task
     type(shr_strdata_type)      , intent(inout) :: sdat
     !-------------------------------------------------------------------------------
-
+    integer :: rc
     call dshr_restart_write(rpfile, case_name, 'docn', inst_suffix, ymd, tod, &
-         logunit, my_task, sdat, fld=somtp, fldname='somtp')
+         logunit, my_task, sdat, rc, fld=somtp, fldname='somtp')
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine docn_datamode_som_restart_write
 
   !===============================================================================
-  subroutine docn_datamode_som_restart_read(rest_filem, inst_suffix, logunit, my_task, mpicom, sdat)
+  subroutine docn_datamode_som_restart_read(rest_filem, rpfile, logunit, my_task, mpicom, sdat)
 
     ! read restart file
 
     ! input/output arguments
     character(len=*)            , intent(inout) :: rest_filem
-    character(len=*)            , intent(in)    :: inst_suffix
+    character(len=*)            , intent(in)    :: rpfile
     integer                     , intent(in)    :: logunit
     integer                     , intent(in)    :: my_task
     integer                     , intent(in)    :: mpicom
     type(shr_strdata_type)      , intent(inout) :: sdat
     !-------------------------------------------------------------------------------
-
+    integer :: rc
     ! allocate module memory for restart fields that are read in
     allocate(somtp(sdat%model_lsize))
-
     ! read restart
-    call dshr_restart_read(rest_filem, rpfile, inst_suffix, nullstr, logunit, my_task, mpicom, sdat, &
+    call dshr_restart_read(rest_filem, rpfile, logunit, my_task, mpicom, sdat, rc,&
          fld=somtp, fldname='somtp')
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine docn_datamode_som_restart_read
 
