@@ -4,10 +4,12 @@ module dglc_datamode_noevolve_mod
    use ESMF             , only : ESMF_Mesh, ESMF_DistGrid, ESMF_FieldBundle, ESMF_Field
    use ESMF             , only : ESMF_FieldBundleCreate, ESMF_FieldCreate, ESMF_MeshLoc_Element
    use ESMF             , only : ESMF_FieldBundleAdd, ESMF_MeshGet, ESMF_DistGridGet, ESMF_Typekind_R8
-   use ESMF             , only : ESMF_VMGetCurrent, ESMF_VMBroadCast, ESMF_VM
+   use ESMF             , only : ESMF_GridComp, ESMF_GridCompGet
+   use ESMF             , only : ESMF_VM, ESMF_VMAllreduce, ESMF_REDUCE_SUM
+   use ESMF             , only : ESMF_VMGetCurrent, ESMF_VMBroadCast
    use NUOPC            , only : NUOPC_Advertise, NUOPC_IsConnected
    use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
-   use shr_sys_mod      , only : shr_sys_abort
+   use shr_log_mod      , only : shr_log_error
    use shr_const_mod    , only : SHR_CONST_RHOICE, SHR_CONST_RHOSW, SHR_CONST_REARTH, SHR_CONST_TKFRZ
    use shr_const_mod    , only : SHR_CONST_SPVAL
    use shr_cal_mod      , only : shr_cal_datetod2string
@@ -71,7 +73,6 @@ module dglc_datamode_noevolve_mod
    character(len=*), parameter :: field_in_so_s_depth              = 'So_s_depth'
 
    character(*) , parameter :: nullstr = 'null'
-   character(*) , parameter :: rpfile  = 'rpointer.glc'
    character(*) , parameter :: u_FILE_u = &
         __FILE__
 
@@ -203,7 +204,8 @@ contains
          if (.not. NUOPC_IsConnected(NStateImp(ns), fieldName=field_in_tsrf)) then
             ! NOTE: the field is connected ONLY if the MED->GLC entry is in the nuopc.runconfig file
             ! This restriction occurs even if the field was advertised
-            call shr_sys_abort(trim(subname)//": MED->GLC must appear in run sequence")
+            call shr_log_error(trim(subname)//": MED->GLC must appear in run sequence", rc=rc)
+            return
          end if
          call dshr_state_getfldptr(NStateImp(ns), field_in_tsrf, fldptr1=Sl_tsrf(ns)%ptr, rc=rc)
          if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -217,15 +219,17 @@ contains
    end subroutine dglc_datamode_noevolve_init_pointers
 
    !===============================================================================
-   subroutine dglc_datamode_noevolve_advance(pio_subsystem, io_type, io_format, &
-        model_meshes, model_internal_gridsize, model_datafiles, rc)
+   subroutine dglc_datamode_noevolve_advance(gcomp, pio_subsystem, io_type, io_format, &
+        logunit, model_meshes, model_internal_gridsize, model_datafiles, rc)
 
       ! Assume that the model mesh is the same as the input data mesh
 
-      ! input/output variables
+     ! input/output variables
+      type(ESMF_GridComp)                 :: gcomp
       type(iosystem_desc_t) , pointer     :: pio_subsystem              ! pio info
       integer               , intent(in)  :: io_type                    ! pio info
       integer               , intent(in)  :: io_format                  ! pio info
+      integer               , intent(in)  :: logunit                    ! For writing logs
       type(ESMF_Mesh)       , intent(in)  :: model_meshes(:)            ! ice sheets meshes
       real(r8)              , intent(in)  :: model_internal_gridsize(:) ! internal model gridsizes (m)
       character(len=*)      , intent(in)  :: model_datafiles(:)         ! input file names
@@ -235,6 +239,7 @@ contains
       type(ESMF_FieldBundle) :: fldbun_noevolve
       type(ESMF_DistGrid)    :: distgrid
       type(ESMF_Field)       :: field_noevolve
+      type(ESMF_VM)          :: vm
       type(file_desc_t)      :: pioid
       type(io_desc_t)        :: pio_iodesc
       integer                :: ns        ! ice sheet index
@@ -254,6 +259,10 @@ contains
       real(r8)               :: eus       ! eustatic sea level
       real(r8)               :: lsrf      ! lower surface elevation (m) on ice grid
       real(r8)               :: usrf      ! upper surface elevation (m) on ice grid
+      real(r8)               :: loc_pos_smb(1), Tot_pos_smb(1) ! Sum of positive smb values on each ice sheet for hole-filling
+      real(r8)               :: loc_neg_smb(1), Tot_neg_smb(1) ! Sum of negative smb values on each ice sheet for hole-filling
+      real(r8)               :: rat     ! Ratio of hole-filling flux to apply
+
       character(len=*), parameter :: subname='(dglc_datamode_noevolve_advance): '
       !-------------------------------------------------------------------------------
 
@@ -301,8 +310,8 @@ contains
             ! Create pioid and pio_iodesc at the module level
             inquire(file=trim(model_datafiles(ns)), exist=exists)
             if (.not.exists) then
-               write(6,'(a)')' ERROR: model input file '//trim(model_datafiles(ns))//' does not exist'
-               call shr_sys_abort()
+               call shr_log_error(' ERROR: model input file '//trim(model_datafiles(ns))//' does not exist', rc=rc)
+               return
             end if
             rcode = pio_openfile(pio_subsystem, pioid, io_type, trim(model_datafiles(ns)), pio_nowrite)
             call pio_seterrorhandling(pioid, PIO_BCAST_ERROR)
@@ -380,25 +389,91 @@ contains
       end if
 
       if (initialized_noevolve) then
+
          ! Compute Fgrg_rofi
          do ns = 1,num_icesheets
-            call ESMF_MeshGet(model_meshes(ns), elementdistGrid=distGrid, rc=rc)
-            if (ChkErr(rc,__LINE__,u_FILE_u)) return
-            call ESMF_DistGridGet(distGrid, localDe=0, elementCount=lsize, rc=rc)
-            if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+            ! Get number of grid cells per ice sheet
+            lsize = size(Fgrg_rofi(ns)%ptr)
+
+            ! reset output variables to zero
+            Fgrg_rofi(ns)%ptr(:) = 0.d0
+            loc_pos_smb(1) = 0.d0
+            Tot_pos_smb(1) = 0.d0
+            loc_neg_smb(1) = 0.d0
+            Tot_neg_smb(1) = 0.d0
+            rat = 0.d0
+
+            ! For No Evolve to reduce negative ice fluxes from DGLC, we will
+            ! Calculate the total positive and total negative fluxes on each
+            ! processor first (local totals).
             do ng = 1,lsize
                if (Sg_icemask_coupled_fluxes(ns)%ptr(ng) > 0.d0) then
-                  Fgrg_rofi(ns)%ptr(ng) = Flgl_qice(ns)%ptr(ng)
-               else
-                  Fgrg_rofi(ns)%ptr(ng) = 0._r8
+                  if(Flgl_qice(ns)%ptr(ng) > 0.d0) then
+                     loc_pos_smb(1) = loc_pos_smb(1)+Flgl_qice(ns)%ptr(ng)*Sg_area(ns)%ptr(ng)
+                  end if
+                  ! Ignore places that are exactly 0.d0
+                  if(Flgl_qice(ns)%ptr(ng) < 0.d0) then
+                     loc_neg_smb(1) = loc_neg_smb(1)+Flgl_qice(ns)%ptr(ng)*Sg_area(ns)%ptr(ng)
+                  end if
                end if
             end do
-         end do
-      end if
+            ! Now do two global sums to get the ice sheet total positive
+            ! and negative ice fluxes
+            call ESMF_GridCompGet(gcomp, vm=vm, rc=rc)
+            if (ChkErr(rc,__LINE__,u_FILE_u)) return
+            call ESMF_VMAllreduce(vm, senddata=loc_pos_smb, recvdata=Tot_pos_smb, count=1, &
+                 reduceflag=ESMF_REDUCE_SUM, rc=rc)
+            if (ChkErr(rc,__LINE__,u_FILE_u)) return
+            call ESMF_VMAllreduce(vm, senddata=loc_neg_smb, recvdata=Tot_neg_smb, count=1, &
+                 reduceflag=ESMF_REDUCE_SUM, rc=rc)
+            if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+            ! If there's more positive than negative, then set all
+            ! negative to zero and destribute the negative flux amount
+            ! across the positive values, scaled by the size of the
+            ! positive value. This section also applies to any chunks
+            ! where there is no negative smb. In that case the ice
+            ! runoff is exactly equal to the input smb.
+            if(abs(Tot_pos_smb(1)) >= abs(Tot_neg_smb(1))) then
+               do ng = 1,lsize             
+                  if (Sg_icemask_coupled_fluxes(ns)%ptr(ng) > 0.d0) then
+                     if(Flgl_qice(ns)%ptr(ng) > 0.d0) then
+                        rat = Flgl_qice(ns)%ptr(ng)/Tot_pos_smb(1)
+                        Fgrg_rofi(ns)%ptr(ng) = Flgl_qice(ns)%ptr(ng) + rat*Tot_neg_smb(1)
+                     else
+                        Fgrg_rofi(ns)%ptr(ng) = 0.d0
+                     end if
+                  else
+                     Fgrg_rofi(ns)%ptr(ng) = 0.d0
+                  end if
+               end do
+            else
+               ! If there's more negative than positive, set the positive to zero
+               ! and distribute the positive amount to the negative spaces to
+               ! reduce their negativity a bit. This shouldn't happen often.
+               ! This section of code also applies if Tot_pos_smb is zero.
+               do ng = 1,lsize
+                  if (Sg_icemask_coupled_fluxes(ns)%ptr(ng) > 0.d0) then
+                     if(Flgl_qice(ns)%ptr(ng) < 0.d0) then
+                        rat = Flgl_qice(ns)%ptr(ng)/Tot_neg_smb(1)
+                        Fgrg_rofi(ns)%ptr(ng) = Flgl_qice(ns)%ptr(ng) + rat*Tot_pos_smb(1)
+                     else
+                        Fgrg_rofi(ns)%ptr(ng) = 0.d0
+                     end if
+                  else
+                     Fgrg_rofi(ns)%ptr(ng) = 0.d0
+                  end if
+               end do
+                  
+            end if ! More neg or pos smb
+
+         end do ! Each ice sheet
+      end if ! if initialized
 
       ! Set initialized flag
       initialized_noevolve = .true.
-
+      
    end subroutine dglc_datamode_noevolve_advance
 
    !===============================================================================
@@ -433,12 +508,13 @@ contains
 
   !===============================================================================
   subroutine dglc_datamode_noevolve_restart_write(model_meshes, case_name, &
-       inst_suffix, ymd, tod, logunit, my_task, main_task, &
+       rpfile, inst_suffix, ymd, tod, logunit, my_task, main_task, &
        pio_subsystem, io_type, nx_global, ny_global, rc)
 
     ! input/output variables
     type(ESMF_Mesh)        , intent(in)    :: model_meshes(:) ! ice sheets meshes
     character(len=*)       , intent(in)    :: case_name
+    character(len=*)       , intent(in)    :: rpfile
     character(len=*)       , intent(in)    :: inst_suffix
     integer                , intent(in)    :: ymd             ! model date
     integer                , intent(in)    :: tod             ! model sec into model date
@@ -473,7 +549,7 @@ contains
     write(rest_file_model ,"(7a)") trim(case_name),'.','dglc',trim(inst_suffix),'.r.',trim(date_str),'.nc'
     ! write restart info to rpointer file
     if (my_task == main_task) then
-       open(newunit=nu, file=trim(rpfile)//trim(inst_suffix), form='formatted')
+       open(newunit=nu, file=trim(rpfile), form='formatted')
        write(nu,'(a)') rest_file_model
        close(nu)
        write(logunit,'(a,2x,i0,2x,i0)')' writing with no streams '//trim(rest_file_model), ymd, tod
@@ -519,14 +595,14 @@ contains
   end subroutine dglc_datamode_noevolve_restart_write
 
   !===============================================================================
-  subroutine dglc_datamode_noevolve_restart_read(model_meshes, restfilem, &
-       inst_suffix, logunit, my_task, main_task, mpicom, &
+  subroutine dglc_datamode_noevolve_restart_read(model_meshes, restfilem, rpfile, &
+       logunit, my_task, main_task, mpicom, &
        pio_subsystem, io_type, nx_global, ny_global, rc)
 
     ! input/output arguments
     type(ESMF_Mesh)        , intent(in)    :: model_meshes(:) ! ice sheets meshes
     character(len=*)       , intent(inout) :: restfilem
-    character(len=*)       , intent(in)    :: inst_suffix
+    character(len=*)       , intent(in)    :: rpfile
     integer                , intent(in)    :: logunit
     integer                , intent(in)    :: my_task
     integer                , intent(in)    :: main_task
@@ -563,13 +639,8 @@ contains
        call ESMF_VMGetCurrent(vm, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        if (my_task == main_task) then
-          write(logunit,'(a)') trim(subname)//' restart filename from rpointer'
-          inquire(file=trim(rpfile)//trim(inst_suffix), exist=exists)
-          if (.not.exists) then
-             write(logunit, '(a)') trim(subname)//' ERROR: rpointer file does not exist'
-             call shr_sys_abort(trim(subname)//' ERROR: rpointer file missing')
-          endif
-          open(newunit=nu, file=trim(rpfile)//trim(inst_suffix), form='formatted')
+          write(logunit,'(a)') trim(subname)//' restart filename from rpointer '//trim(rpfile)
+          open(newunit=nu, file=trim(rpfile), form='formatted')
           read(nu,'(a)') restfilem
           close(nu)
           inquire(file=trim(restfilem), exist=exists)
