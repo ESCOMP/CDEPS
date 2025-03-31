@@ -503,7 +503,7 @@
       <meshfile>$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.CRUJRA.0.5d.c20241231/three_stream/mesh_0.5x0.5_CRUJRAv2.5mask_cdf5_c20240916.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file first_year="1901" last_year="2023">$DIN_LOC_ROOT_CLMFORC/atm_forcing.datm7.CRUJRA.0.5d.c20241231/three_stream/clmforc.CRUJRAv2.5_0.5x0.5.Solr.%y.nc</file>
+      <file first_year="1901" last_year="2023">$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.CRUJRA.0.5d.c20241231/three_stream/clmforc.CRUJRAv2.5_0.5x0.5.Solr.%y.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>FSDS     Faxa_swdn</var>
@@ -534,7 +534,7 @@
       <meshfile>$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.CRUJRA.0.5d.c20241231/three_stream/mesh_0.5x0.5_CRUJRAv2.5mask_cdf5_c20240916.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file first_year="1901" last_year="2023">$DIN_LOC_ROOT_CLMFORC/atm_forcing.datm7.CRUJRA.0.5d.c20241231/three_stream/clmforc.CRUJRAv2.5_0.5x0.5.Prec.%y.nc</file>
+      <file first_year="1901" last_year="2023">$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.CRUJRA.0.5d.c20241231/three_stream/clmforc.CRUJRAv2.5_0.5x0.5.Prec.%y.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>PRECTmms Faxa_precn</var>
@@ -565,7 +565,7 @@
       <meshfile>$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.CRUJRA.0.5d.c20241231/three_stream/mesh_0.5x0.5_CRUJRAv2.5mask_cdf5_c20240916.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file first_year="1901" last_year="2023">$DIN_LOC_ROOT_CLMFORC/atm_forcing.datm7.CRUJRA.0.5d.c20241231/three_stream/clmforc.CRUJRAv2.5_0.5x0.5.TPQWL.%y.nc</file>
+      <file first_year="1901" last_year="2023">$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.CRUJRA.0.5d.c20241231/three_stream/clmforc.CRUJRAv2.5_0.5x0.5.TPQWL.%y.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>TBOT     Sa_tbot</var>
