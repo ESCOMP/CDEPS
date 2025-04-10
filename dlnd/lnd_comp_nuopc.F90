@@ -556,18 +556,22 @@ contains
              strm_flds_topo(n) = 'Sl_topo_elev'   // trim(nec_str)
              strm_flds_qice(n) = 'Flgl_qice_elev' // trim(nec_str)
           end do
-       end if
 
-       ! The following maps stream input fields to export fields that have an ungridded dimension
-       call dshr_dfield_add(dfields, sdat, state_fld='Sl_tsrf_elev', strm_flds=strm_flds_tsrf, state=exportState, &
-            logunit=logunit, mainproc=mainproc, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call dshr_dfield_add(dfields, sdat, state_fld='Sl_topo_elev', strm_flds=strm_flds_topo, state=exportState, &
-            logunit=logunit, mainproc=mainproc, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call dshr_dfield_add(dfields, sdat, state_fld='Flgl_qice_elev', strm_flds=strm_flds_qice, state=exportState, &
-            logunit=logunit, mainproc=mainproc, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          ! The following maps stream input fields to export fields that have an ungridded dimension
+          call dshr_dfield_add(dfields, sdat, state_fld='Sl_tsrf_elev', strm_flds=strm_flds_tsrf, state=exportState, &
+               logunit=logunit, mainproc=mainproc, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          call dshr_dfield_add(dfields, sdat, state_fld='Sl_topo_elev', strm_flds=strm_flds_topo, state=exportState, &
+               logunit=logunit, mainproc=mainproc, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          call dshr_dfield_add(dfields, sdat, state_fld='Flgl_qice_elev', strm_flds=strm_flds_qice, state=exportState, &
+               logunit=logunit, mainproc=mainproc, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+          deallocate(strm_flds_tsrf)
+          deallocate(strm_flds_topo)
+          deallocate(strm_flds_qice)
+       end if
 
        first_time = .false.
     end if
