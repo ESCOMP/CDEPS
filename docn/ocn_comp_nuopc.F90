@@ -24,9 +24,8 @@ module cdeps_docn_comp
   use NUOPC_Model      , only : model_label_Finalize    => label_Finalize
   use NUOPC_Model      , only : NUOPC_ModelGet, SetVM
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
-  use shr_sys_mod      , only : shr_sys_abort
   use shr_cal_mod      , only : shr_cal_ymd2date
-  use shr_log_mod      , only : shr_log_setLogUnit
+  use shr_log_mod      , only : shr_log_setLogUnit, shr_log_error
   use dshr_methods_mod , only : dshr_state_diagnose, chkerr, memcheck
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_advance, shr_strdata_init_from_config
   use dshr_mod         , only : dshr_model_initphase, dshr_init, dshr_mesh_init, dshr_restart_read
@@ -235,7 +234,8 @@ contains
        close(nu)
        if (ierr > 0) then
           write(logunit,F00) 'ERROR: reading input namelist, '//trim(nlfilename)//' iostat=',ierr
-          call shr_sys_abort(subName//': namelist read error '//trim(nlfilename))
+          call shr_log_error(subName//': namelist read error '//trim(nlfilename), rc=rc)
+          return
        end if
 
        ! write namelist input to standard out
@@ -312,7 +312,8 @@ contains
          trim(datamode) == 'multilev_dom') then        ! multilevel ocean input and sst export
        ! success do nothing
     else
-       call shr_sys_abort(' ERROR illegal docn datamode = '//trim(datamode))
+       call shr_log_error(' ERROR illegal docn datamode = '//trim(datamode), rc=rc)
+       return
     endif
 
     ! Advertise docn fields
@@ -650,7 +651,7 @@ contains
        call  docn_datamode_aquaplanet_advance(exportState, model_mesh, sst_constant_value=sst_constant_value, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('cplhist')
-       call  docn_datamode_cplhist_advance(rc=rc)
+       call  docn_datamode_cplhist_advance(sst_constant_value=sst_constant_value, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('multilev')
        call  docn_datamode_multilev_advance(sdat, logunit, mainproc, rc=rc)
@@ -676,12 +677,14 @@ contains
        case('som', 'som_aquap')
           call docn_datamode_som_restart_write(rpfile, case_name, inst_suffix, target_ymd, target_tod, &
                logunit, my_task, sdat)
-       case('sst_aquap_analytic', 'sst_aquap_constant')
-          ! Do nothing
-       case default
-          call shr_sys_abort(subName//'datamode '//trim(datamode)//' not recognized')
-       end select
-    endif
+          case('sst_aquap_analytic', 'sst_aquap_constant')
+             ! Do nothing
+          case default
+             call shr_log_error(subName//'datamode '//trim(datamode)//' not recognized', rc=rc)
+             return
+          end select
+
+       endif
 
     call ESMF_TraceRegionExit('DOCN_RUN')
 
