@@ -4,6 +4,7 @@
 
   <!--
       %glc => GLC elevation class from the range 0 to GLC_NEC, obtained from the GLC_NEC xml variable
+      %rof => Number of lnd2rof non-water tracers, obtained from the LND2ROF_NONh2O_TRACER_NUBER xml variable
       %y   => year from the range yearfirst to yearlast
               obtained from values of <strm_year_start> -> <strm_year_end> below
       %ym  => year-month from the range yearfirst to yearlast with all 12 months
@@ -57,10 +58,11 @@
       <file first_year="0" last_year="99999">TBD</file>
     </stream_datafiles>
     <stream_datavars>
-	    <var>lndImp_Flrl_rofsur Flrl_rofsur</var>
-	    <var>lndImp_Flrl_rofsub Flrl_rofsub</var>
-	    <var>lndImp_Flrl_rofgwl Flrl_rofgwl</var>
-	    <var>lndImp_Flrl_rofi   Flrl_rofi</var>
+	    <var>lndImp_Flrl_rofsur_nonh2o%rof Flrl_rofsur_nonh2o%rof</var>
+	    <var>lndImp_Flrl_rofsur          Flrl_rofsur</var>
+	    <var>lndImp_Flrl_rofsub          Flrl_rofsub</var>
+	    <var>lndImp_Flrl_rofgwl          Flrl_rofgwl</var>
+	    <var>lndImp_Flrl_rofi            Flrl_rofi</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>

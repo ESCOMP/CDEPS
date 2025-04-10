@@ -26,14 +26,15 @@
     <type>char</type>
     <category>dlnd</category>
     <group>dlnd_nml</group>
-    <valid_values>copyall</valid_values>
-    <desc>
-      Copies all fields directly from the input data streams Any required
-      fields not found on an input stream will be set to zero.
-    </desc>
     <values>
-      <value>copyall</value>
+      <value dlnd_mode="LCPL">rof_forcing</value>
+      <value dlnd_mode="SCPL">glc_forcing</value>
     </values>
+    <desc>
+      In both of these modes, copies all fields directly from the
+      input data streams Any required fields not found on an input
+      stream will be set to zero.
+    </desc>
   </entry>
 
   <entry id="model_meshfile">

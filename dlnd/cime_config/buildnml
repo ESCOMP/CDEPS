@@ -87,6 +87,13 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     if type(streamlist) == type(str()):
         streamlist = []
 
+    dlnd_nonh2o = case.get_value("DLND_LND2ROF_NONH2O")
+    if dlnd_nonh2o != "none":
+        dlnd_nonh2o_number = dlnd_nonh2o.count(':') + 1
+    else:
+        dlnd_nonh2o_number = 0
+    case.set_value("DLND_LND2ROF_NONH2O_NUMBER",dlnd_nonh2o_number)
+
     # Generate dlnd.streams.xml
     outfile = os.path.join(confdir, "dlnd.streams"+inst_string+".xml" )
     schema_file = os.path.join(_CDEPS_CONFIG,"stream_definition_v2.0.xsd")
@@ -98,7 +105,6 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
 ####################################################################################
 def _create_drv_flds_in(case, confdir):
 ####################################################################################
-    dlnd_nonh2o = case.get_value("DLND_LND2ROF_NONH2O")
 
     # for now we are hard-coding this file name and values because we
     # only need it for non-water tracers from lnd to rof
@@ -107,9 +113,11 @@ def _create_drv_flds_in(case, confdir):
     lnd2rof_nl_name = "&lnd2rof_tracers_inparm"
     nl_fin = "/"
 
+    dlnd_nonh2o = case.get_value("DLND_LND2ROF_NONH2O")
     with open(outfile, "w") as drv_fl:
         drv_fl.write(f"{lnd2rof_nl_name}\n")
-        drv_fl.write(f"  lnd2rof_tracers = \"{dlnd_nonh2o}\"\n")
+        if dlnd_nonh2o != "none":
+            drv_fl.write(f"  lnd2rof_tracers = \"{dlnd_nonh2o}\"\n")
         drv_fl.write(f"{nl_fin}\n")
 
 ###############################################################################

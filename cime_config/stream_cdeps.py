@@ -507,6 +507,8 @@ class StreamCDEPS(GenericXML):
         Replace any instance of the following substring indicators with the
         appropriate values:
             %glc = two-digit GLC elevation class from 00 through glc_nec
+            %lnd2rof_tracer_number = two-digit number from 01 through the number
+             of non-h2o tracers sent from the dlnd to mosart.
 
         The difference between this function and `_sub_paths` is that this
         function is intended to be used for variable names (especially from the
@@ -538,6 +540,14 @@ class StreamCDEPS(GenericXML):
                     glc_nec_indices = range(case.get_value("GLC_NEC") + 1)
                 for i in glc_nec_indices:
                     new_lines.append(line.replace("%glc", "{:02d}".format(i)))
+            if "%rof" in line:
+                if case.get_value("DLND_LND2ROF_NONH2O_NUMBER") == 0:
+                    lnd2rof_indices = []
+                else:
+                    lnd2rof_indices = range(1,case.get_value("DLND_LND2ROF_NONH2O_NUMBER") + 1)
+                for i in lnd2rof_indices:
+                    new_lines.append(line.replace("%rof", "{:02d}".format(i)))
+
             else:
                 new_lines.append(line)
         return "\n".join(new_lines)

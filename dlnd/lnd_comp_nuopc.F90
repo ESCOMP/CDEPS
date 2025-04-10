@@ -37,16 +37,10 @@ module cdeps_dlnd_comp
   ! Datamode specialized modules
   use dlnd_datamode_glc_forcing_mod, only : dlnd_datamode_glc_forcing_advertise
   use dlnd_datamode_glc_forcing_mod, only : dlnd_datamode_glc_forcing_init_pointers
-  use dlnd_datamode_glc_forcing_mod, only : dlnd_datamode_glc_forcing_advance
-  use dlnd_datamode_glc_forcing_mod, only : dlnd_datamode_glc_forcing_restart_read
-  use dlnd_datamode_glc_forcing_mod, only : dlnd_datamode_glc_forcing_restart_write
+
   use dlnd_datamode_rof_forcing_mod, only : dlnd_datamode_rof_forcing_advertise
   use dlnd_datamode_rof_forcing_mod, only : dlnd_datamode_rof_forcing_init_pointers
-  use dlnd_datamode_rof_forcing_mod, only : dlnd_datamode_rof_forcing_advance
-  use dlnd_datamode_rof_forcing_mod, only : dlnd_datamode_rof_forcing_restart_read
-  use dlnd_datamode_rof_forcing_mod, only : dlnd_datamode_rof_forcing_restart_write
 
-  use glc_elevclass_mod , only : glc_elevclass_as_string, glc_elevclass_init
   use nuopc_shr_methods , only : shr_get_rpointer_name
 
   implicit none
@@ -251,18 +245,16 @@ contains
 
     ! Validate sdat datamode
     if (trim(datamode) /= 'glc_forcing' .and. trim(datamode) /= 'rof_forcing') then
-       call shr_sys_abort(' ERROR illegal dlnd datamode = '//trim(datamode))
-    else
        call shr_log_error(' ERROR illegal dlnd datamode = '//trim(datamode), rc=rc)
        return
     end if
 
     ! Advertise the export fields
     if (trim(datamode) == 'glc_forcing') then
-       call dlnd_datamode_glc_forcing_advertise(gcomp, exportState, fldsExport, flds_scalar_name, rc=rc)
+       call dlnd_datamode_glc_forcing_advertise(exportState, fldsExport, flds_scalar_name, logunit, mainproc, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     else if (trim(datamode) == 'rof_forcing') then
-       call dlnd_datamode_rof_forcing_advertise(gcomp, exportState, fldsExport, flds_scalar_name, rc=rc)
+       call dlnd_datamode_rof_forcing_advertise(exportState, fldsExport, flds_scalar_name, logunit, mainproc, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
@@ -326,9 +318,8 @@ contains
        if (chkerr(rc,__LINE__,u_FILE_u)) return
     end if
 
-
     ! Run dlnd to create export state
-    call dlnd_comp_run(importState, exportState, current_ymd, current_tod, restart_write=.false., rc=rc)
+    call dlnd_comp_run(importState, exportState, current_ymd, current_tod, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! add scalars to export state
@@ -347,7 +338,9 @@ contains
 
   !===============================================================================
   subroutine ModelAdvance(gcomp, rc)
+
     use nuopc_shr_methods, only : shr_get_rpointer_name
+
     ! input/output variables
     type(ESMF_GridComp)  :: gcomp
     integer, intent(out) :: rc
@@ -385,11 +378,8 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_cal_ymd2date(yr, mon, day, next_ymd)
 
-    ! determine if will write restart
-    restart_write = dshr_check_restart_alarm(clock, rc=rc)
-
     ! run dlnd
-    call dlnd_comp_run(importState, exportState, next_ymd, next_tod, restart_write, rc=rc)
+    call dlnd_comp_run(importState, exportState, next_ymd, next_tod, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! write_restart if alarm is ringing
@@ -436,7 +426,7 @@ contains
   end subroutine ModelFinalize
 
   !===============================================================================
-  subroutine dlnd_comp_run(importState, exportState, target_ymd, target_tod, restart_write, rc)
+  subroutine dlnd_comp_run(importState, exportState, target_ymd, target_tod, rc)
 
     ! --------------------------
     ! advance dlnd
@@ -447,7 +437,6 @@ contains
     type(ESMF_State) , intent(inout) :: ExportState
     integer          , intent(in)    :: target_ymd       ! model date
     integer          , intent(in)    :: target_tod       ! model sec into model date
-    logical          , intent(in)    :: restart_write
     integer          , intent(out)   :: rc
 
     ! local variables
@@ -465,25 +454,15 @@ contains
     !--------------------
 
     if (first_time) then
-       ! Initialize datamode module pointers and dfields
+       ! Initialize datamode module pointers AND dfields
        select case (trim(datamode))
        case('glc_forcing')
-          call dlnd_datamode_glc_forcing_init_pointers(exportState, model_frac, logunit, mainproc, dfields, sdat, rc)
+          call dlnd_datamode_glc_forcing_init_pointers(exportState, sdat, dfields, model_frac, logunit, mainproc, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('rof_forcing')
-          call dlnd_datamode_rof_forcing_init_pointers(exportState, model_frac, logunit, mainproc, dfields, sdat, rc)
+          call dlnd_datamode_rof_forcing_init_pointers(exportState, sdat, dfields, model_frac, logunit, mainproc, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end select
-
-       ! Read restart if needed
-       if (restart_read .and. .not. skip_restart_read) then
-          select case (trim(datamode))
-          case('glc_forcing')
-             call dlnd_datamode_glc_forcing_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
-          case('rof_forcing')
-             call dlnd_datamode_rof_forcing_restart_read(restfilm, inst_suffix, logunit, my_task, mpicom, sdat)
-          end select
-       end if
 
        ! Reset first_time
        first_time = .false.
@@ -506,25 +485,6 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_TraceRegionExit('dlnd_dfield_copy')
 
-    ! determine data model behavior based on the mode
-    call ESMF_TraceRegionEnter('dlnd_datamode')
-    select case (trim(datamode))
-    case('rof_forcing')
-       call  dlnd_datamode_rof_forcing_advance(rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    end select
-
-    ! Write restarts if needed
-    if (restart_write) then
-       select case (trim(datamode))
-       case('glc_forcing')
-          call dlnd_datamode_glc_forcing_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, my_task, sdat)
-       case('rof_forcing')
-          call dlnd_datamode_glc_forcing_restart_write(case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, my_task, sdat)
-       end select
-    end if
     call ESMF_TraceRegionExit('dlnd_datamode')
     call ESMF_TraceRegionExit('DLND_RUN')
 
