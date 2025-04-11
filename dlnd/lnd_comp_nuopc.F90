@@ -61,7 +61,7 @@ module cdeps_dlnd_comp
   integer                  :: flds_scalar_index_ny = 0
   integer                  :: mpicom                              ! mpi communicator
   integer                  :: my_task                             ! my task in mpi communicator mpicom
-  logical                  :: mainproc                          ! true of my_task == main_task
+  logical                  :: mainproc                            ! true of my_task == main_task
   integer                  :: inst_index                          ! number of current instance (ie. 1)
   character(len=16)        :: inst_suffix = ""                    ! char string associated with instance (ie. "_0001" or "")
   integer                  :: logunit                             ! logging unit number
@@ -546,11 +546,7 @@ contains
              if (trim(datamode) == 'glc_forcing_mct') then
                 write(nec_str, '(i2.2)') n
              else if (trim(datamode) == 'glc_forcing') then
-                if (n < 10) then
-                   write(nec_str, '(i1.1)') n
-                else
-                   write(nec_str, '(i2.2)') n
-                end if
+                write(nec_str, '(i0)') n
              end if
              strm_flds_tsrf(n) = 'Sl_tsrf_elev'   // trim(nec_str)
              strm_flds_topo(n) = 'Sl_topo_elev'   // trim(nec_str)
@@ -605,19 +601,19 @@ contains
        call dshr_state_getfldptr(exportState, 'Sl_tsrf_elev', fldptr2=fldptr2, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
        do n = 1,size(fldptr2,dim=2)
-          if (lfrac(n) == 0.) fldptr2(:,n) = 1.e30_r8
+          if (lfrac(n) == 0._r8) fldptr2(:,n) = 1.e30_r8
        end do
 
        call dshr_state_getfldptr(exportState, 'Sl_topo_elev', fldptr2=fldptr2, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
        do n = 1,size(fldptr2,dim=2)
-          if (lfrac(n) == 0.) fldptr2(:,n) = 1.e30_r8
+          if (lfrac(n) == 0._r8) fldptr2(:,n) = 1.e30_r8
        end do
 
        call dshr_state_getfldptr(exportState, 'Flgl_qice_elev', fldptr2=fldptr2, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
        do n = 1,size(fldptr2,dim=2)
-          if (lfrac(n) == 0.) fldptr2(:,n) = 1.e30_r8
+          if (lfrac(n) == 0._r8) fldptr2(:,n) = 1.e30_r8
        end do
     end if
 

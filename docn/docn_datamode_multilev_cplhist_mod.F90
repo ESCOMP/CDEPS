@@ -28,9 +28,9 @@ module docn_datamode_multilev_cplhist_mod
 
   integer, parameter :: nlev_export = 30
   real(r8) :: vertical_levels(nlev_export) = (/  &
-       30., 90., 150., 210., 270., 330., 390., 450., 510., 570., &
-       630., 690., 750., 810., 870., 930., 990., 1050., 1110., 1170., &
-       1230., 1290., 1350., 1410., 1470., 1530., 1590., 1650., 1710., 1770. /)
+         30._r8 ,  90._r8,  150._r8,  210._r8,  270._r8,  330._r8,  390._r8,  450._r8,  510._r8,  570._r8, &
+        630._r8,  690._r8,  750._r8,  810._r8,  870._r8,  930._r8,  990._r8, 1050._r8, 1110._r8, 1170._r8, &
+       1230._r8, 1290._r8, 1350._r8, 1410._r8, 1470._r8, 1530._r8, 1590._r8, 1650._r8, 1710._r8, 1770._r8 /)
 
   ! constants
   character(*) , parameter :: nullstr = 'null'
@@ -106,11 +106,7 @@ contains
     allocate(strm_flds_t_depth(1:nlev_export))
     allocate(strm_flds_s_depth(1:nlev_export))
     do n = 1,nlev_export
-       if (n < 10) then
-          write(num_str, '(i1.1)') n
-       else
-          write(num_str, '(i2.2)') n
-       end if
+       write(num_str, '(i0)') n
        strm_flds_t_depth(n) = 'So_t_depth' // trim(num_str)
        strm_flds_s_depth(n) = 'So_s_depth' // trim(num_str)
     end do
@@ -149,7 +145,7 @@ contains
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     do idim2 = 1,size(fldptr2,dim=2)
        do idim1 = 1,size(fldptr2,dim=1)
-          if (fldptr2(idim1,idim2) == 0.) then
+          if (fldptr2(idim1,idim2) == 0._r8) then
              fldptr2(idim1,idim2) = 1.e30_r8
           end if
        end do
@@ -159,7 +155,7 @@ contains
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     do idim2 = 1,size(fldptr2,dim=2)
        do idim1 = 1,size(fldptr2,dim=1)
-          if (fldptr2(idim1,idim2) == 0.) then
+          if (fldptr2(idim1,idim2) == 0._r8) then
              fldptr2(idim1,idim2) = 1.e30_r8
           end if
        end do
