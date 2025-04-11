@@ -537,37 +537,45 @@ contains
        ! Create stream-> export state mapping
        ! Note that strm_flds is the model name for the stream field
        ! Note that state_fld is the model name for the export field
-       if (trim(datamode) == 'glc_forcing_mct' .or. trim(datamode) == 'glc_forcing' ) then
-          allocate(strm_flds_tsrf(1:glc_nec+1))
-          allocate(strm_flds_topo(1:glc_nec+1))
-          allocate(strm_flds_qice(1:glc_nec+1))
 
-          do n = 1,glc_nec+1
-             if (trim(datamode) == 'glc_forcing_mct') then
-                write(nec_str, '(i2.2)') n
-             else if (trim(datamode) == 'glc_forcing') then
-                write(nec_str, '(i0)') n
-             end if
+       if (trim(datamode) == 'glc_forcing_mct') then
+          allocate(strm_flds_tsrf(0:glc_nec))
+          allocate(strm_flds_topo(0:glc_nec))
+          allocate(strm_flds_qice(0:glc_nec))
+          do n = 0,glc_nec
+             write(nec_str, '(i2.2)') n
              strm_flds_tsrf(n) = 'Sl_tsrf_elev'   // trim(nec_str)
              strm_flds_topo(n) = 'Sl_topo_elev'   // trim(nec_str)
              strm_flds_qice(n) = 'Flgl_qice_elev' // trim(nec_str)
           end do
 
-          ! The following maps stream input fields to export fields that have an ungridded dimension
-          call dshr_dfield_add(dfields, sdat, state_fld='Sl_tsrf_elev', strm_flds=strm_flds_tsrf, state=exportState, &
-               logunit=logunit, mainproc=mainproc, rc=rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          call dshr_dfield_add(dfields, sdat, state_fld='Sl_topo_elev', strm_flds=strm_flds_topo, state=exportState, &
-               logunit=logunit, mainproc=mainproc, rc=rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          call dshr_dfield_add(dfields, sdat, state_fld='Flgl_qice_elev', strm_flds=strm_flds_qice, state=exportState, &
-               logunit=logunit, mainproc=mainproc, rc=rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       else if (trim(datamode) == 'glc_forcing' ) then
+          allocate(strm_flds_tsrf(1:glc_nec+1))
+          allocate(strm_flds_topo(1:glc_nec+1))
+          allocate(strm_flds_qice(1:glc_nec+1))
+          do n = 1,glc_nec+1
+             write(nec_str, '(i0)') n
+             strm_flds_tsrf(n) = 'Sl_tsrf_elev'   // trim(nec_str)
+             strm_flds_topo(n) = 'Sl_topo_elev'   // trim(nec_str)
+             strm_flds_qice(n) = 'Flgl_qice_elev' // trim(nec_str)
+          end do
 
-          deallocate(strm_flds_tsrf)
-          deallocate(strm_flds_topo)
-          deallocate(strm_flds_qice)
        end if
+
+       ! The following maps stream input fields to export fields that have an ungridded dimension
+       call dshr_dfield_add(dfields, sdat, state_fld='Sl_tsrf_elev', strm_flds=strm_flds_tsrf, state=exportState, &
+            logunit=logunit, mainproc=mainproc, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call dshr_dfield_add(dfields, sdat, state_fld='Sl_topo_elev', strm_flds=strm_flds_topo, state=exportState, &
+            logunit=logunit, mainproc=mainproc, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call dshr_dfield_add(dfields, sdat, state_fld='Flgl_qice_elev', strm_flds=strm_flds_qice, state=exportState, &
+            logunit=logunit, mainproc=mainproc, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+       deallocate(strm_flds_tsrf)
+       deallocate(strm_flds_topo)
+       deallocate(strm_flds_qice)
 
        first_time = .false.
     end if
