@@ -1,0 +1,9 @@
+./xmlchange DOCN_CPLHIST_CASE=B2G1850_f09_tn14_gl4ais8_coldstart_20250122
+./xmlchange DOCN_CPLHIST_DIR='$DIN_LOC_ROOT/cplhist/noresm3_0/test-dlnd2glc-docn2glc'
+./xmlchange DOCN_CPLHIST_YR_ALIGN=2
+./xmlchange DOCN_CPLHIST_YR_END=6
+./xmlchange DOCN_CPLHIST_YR_START=2
+./xmlchange RUN_STARTDATE=0002-01-01
+./xmlchange ATM_NCPL=1
+./xmlchange ROF_NCPL=1
+./xmlchange NCPL_BASE_PERIOD=year
