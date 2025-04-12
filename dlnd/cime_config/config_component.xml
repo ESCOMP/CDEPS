@@ -75,7 +75,7 @@
     <file>env_run.xml</file>
     <desc>
       Simulation year corresponding to DLND_CPLHIST_YR_START (only used
-      when DLND_MODE is CPLHIST or GLC_CPLHIST). A common usage is to
+      when DLND_MODE is SCPL or GCPL). A common usage is to
       set this to RUN_STARTDATE. With this setting, the forcing in the
       first year of the run will be the forcing of year
       DLND_CPLHIST_YR_START. Another use case is to align the calendar
@@ -87,6 +87,7 @@
       setup to span the same year range as the forcing data.
     </desc>
   </entry>
+
 
   <entry id="DLND_CPLHIST_YR_START">
     <type>integer</type>
