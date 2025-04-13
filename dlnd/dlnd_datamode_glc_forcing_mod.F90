@@ -1,8 +1,8 @@
 module dlnd_datamode_glc_forcing_mod
 
    use ESMF             , only : ESMF_SUCCESS, ESMF_LOGMSG_INFO, ESMF_LogWrite, ESMF_State
-   use ESMF             , only : ESMF_StateItem_Flag
-   use NUOPC            , only : NUOPC_Advertise
+   use ESMF             , only : ESMF_StateItem_Flag, ESMF_GridComp
+   use NUOPC            , only : NUOPC_CompAttributeGet, NUOPC_Advertise
    use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
    use dshr_methods_mod , only : dshr_state_getfldptr, chkerr
    use dshr_strdata_mod , only : shr_strdata_type
@@ -29,24 +29,33 @@ module dlnd_datamode_glc_forcing_mod
 contains
 !===============================================================================
 
-   subroutine dlnd_datamode_glc_forcing_advertise(exportState, fldsExport, flds_scalar_name, logunit, mainproc, rc)
+   subroutine dlnd_datamode_glc_forcing_advertise(gcomp, exportState, fldsExport, flds_scalar_name, logunit, mainproc, rc)
 
       ! determine export state to advertise to mediator
 
       ! input/output arguments
-      type(ESMF_State)                 :: exportState
-      type(fldList_type) , pointer     :: fldsExport
-      character(len=*)   , intent(in)  :: flds_scalar_name
-      integer            , intent(in)  :: logunit
-      logical            , intent(in)  :: mainproc
-      integer            , intent(out) :: rc
+      type(ESMF_GridComp), intent(inout) :: gcomp
+      type(ESMF_State)   , intent(inout) :: exportState
+      type(fldList_type) , pointer       :: fldsExport
+      character(len=*)   , intent(in)    :: flds_scalar_name
+      integer            , intent(in)    :: logunit
+      logical            , intent(in)    :: mainproc
+      integer            , intent(out)   :: rc
 
       ! local variables
       type(fldlist_type), pointer :: fldList
+      character(cl)               :: cvalue
       !-------------------------------------------------------------------------------
 
       rc = ESMF_SUCCESS
 
+      ! Determine glc_nec
+      call NUOPC_CompAttributeGet(gcomp, name='glc_nec', value=cvalue, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      read(cvalue,*) glc_nec
+      call ESMF_LogWrite('glc_nec = '// trim(cvalue), ESMF_LOGMSG_INFO)
+
+      ! Initialize GLC elevation class data to default boundaries, based on given glc_nec
       call glc_elevclass_init(glc_nec)
 
       !-------------------

@@ -244,14 +244,16 @@ contains
     endif
 
     ! Validate sdat datamode
-    if (trim(datamode) /= 'glc_forcing' .and. trim(datamode) /= 'rof_forcing') then
+    if ( trim(datamode) == 'glc_forcing_mct' .or. &
+         trim(datamode) == 'glc_forcing'     .or. &
+         trim(datamode) /= 'rof_forcing') then
        call shr_log_error(' ERROR illegal dlnd datamode = '//trim(datamode), rc=rc)
        return
     end if
 
     ! Advertise the export fields
     if (trim(datamode) == 'glc_forcing') then
-       call dlnd_datamode_glc_forcing_advertise(exportState, fldsExport, flds_scalar_name, logunit, mainproc, rc=rc)
+       call dlnd_datamode_glc_forcing_advertise(gcomp, exportState, fldsExport, flds_scalar_name, logunit, mainproc, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     else if (trim(datamode) == 'rof_forcing') then
        call dlnd_datamode_rof_forcing_advertise(exportState, fldsExport, flds_scalar_name, logunit, mainproc, rc=rc)
