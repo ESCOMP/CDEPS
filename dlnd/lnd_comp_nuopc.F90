@@ -249,6 +249,7 @@ contains
          trim(datamode) == 'glc_forcing'     .or. &
          trim(datamode) == 'rof_forcing') then
        if (my_task == main_task) write(logunit,*) 'dlnd datamode = ',trim(datamode)
+    else
        call shr_log_error(' ERROR illegal dlnd datamode = '//trim(datamode), rc=rc)
        return
     end if
@@ -496,7 +497,6 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
-    call ESMF_TraceRegionExit('dlnd_datamode')
     call ESMF_TraceRegionExit('DLND_RUN')
 
   end subroutine dlnd_comp_run
