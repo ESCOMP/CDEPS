@@ -37,6 +37,7 @@ module cdeps_dlnd_comp
   ! Datamode specialized modules
   use dlnd_datamode_glc_forcing_mod, only : dlnd_datamode_glc_forcing_advertise
   use dlnd_datamode_glc_forcing_mod, only : dlnd_datamode_glc_forcing_init_pointers
+  use dlnd_datamode_glc_forcing_mod, only : dlnd_datamode_glc_forcing_advance
 
   use dlnd_datamode_rof_forcing_mod, only : dlnd_datamode_rof_forcing_advertise
   use dlnd_datamode_rof_forcing_mod, only : dlnd_datamode_rof_forcing_init_pointers
@@ -253,7 +254,7 @@ contains
     end if
 
     ! Advertise the export fields
-    if (trim(datamode) == 'glc_forcing') then
+    if (trim(datamode) == 'glc_forcing' .or. trim(datamode) == 'glc_forcing_mct') then
        call dlnd_datamode_glc_forcing_advertise(gcomp, exportState, fldsExport, flds_scalar_name, logunit, mainproc, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     else if (trim(datamode) == 'rof_forcing') then
@@ -429,76 +430,6 @@ contains
   end subroutine ModelFinalize
 
   !===============================================================================
-  subroutine dlnd_comp_advertise(importState, exportState, rc)
-
-    ! determine export and import fields to advertise to mediator
-
-    ! input/output arguments
-    type(ESMF_State)               :: importState
-    type(ESMF_State)               :: exportState
-    integer          , intent(out) :: rc
-
-    ! local variables
-    type(fldlist_type), pointer :: fldList
-    !-------------------------------------------------------------------------------
-
-    rc = ESMF_SUCCESS
-
-    call glc_elevclass_init(glc_nec)
-
-    !-------------------
-    ! Advertise export fields
-    !-------------------
-
-    call dshr_fldList_add(fldsExport, trim(flds_scalar_name))
-    call dshr_fldlist_add(fldsExport, "Sl_lfrin")
-
-    ! The following puts all of the elevation class fields as an
-    ! undidstributed dimension in the export state field - index1 is bare land - and the total number of
-    ! elevation classes not equal to bare land go from index2 -> glc_nec+1
-    if (glc_nec > 0) then
-       call dshr_fldList_add(fldsExport, 'Sl_tsrf_elev'  , ungridded_lbound=1, ungridded_ubound=glc_nec+1)
-       call dshr_fldList_add(fldsExport, 'Sl_topo_elev'  , ungridded_lbound=1, ungridded_ubound=glc_nec+1)
-       call dshr_fldList_add(fldsExport, 'Flgl_qice_elev', ungridded_lbound=1, ungridded_ubound=glc_nec+1)
-    end if
-
-    fldlist => fldsExport ! the head of the linked list
-    do while (associated(fldlist))
-       call NUOPC_Advertise(exportState, standardName=fldlist%stdname, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call ESMF_LogWrite('(dlnd_comp_advertise): Fr_lnd '//trim(fldList%stdname), ESMF_LOGMSG_INFO)
-       fldList => fldList%next
-    enddo
-
-  end subroutine dlnd_comp_advertise
-
-  !===============================================================================
-  subroutine dlnd_comp_realize(importState, exportState, export_all, rc)
-
-    ! input/output variables
-    type(ESMF_State) , intent(inout) :: importState
-    type(ESMF_State) , intent(inout) :: exportState
-    logical          , intent(in)    :: export_all
-    integer          , intent(out)   :: rc
-
-    ! local variables
-    character(*), parameter    :: subName = "(dlnd_comp_realize) "
-    ! ----------------------------------------------
-
-    rc = ESMF_SUCCESS
-
-    ! -------------------------------------
-    ! NUOPC_Realize "realizes" a previously advertised field in the importState and exportState
-    ! by replacing the advertised fields with the newly created fields of the same name.
-    ! -------------------------------------
-
-    call dshr_fldlist_realize( exportState, fldsExport, flds_scalar_name, flds_scalar_num,  model_mesh, &
-         subname//':dlndExport', export_all, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-  end subroutine dlnd_comp_realize
-
-  !===============================================================================
   subroutine dlnd_comp_run(importState, exportState, target_ymd, target_tod, rc)
 
     ! --------------------------
@@ -513,6 +444,7 @@ contains
     integer          , intent(out)   :: rc
 
     ! local variables
+    logical                    :: first_time = .true.
     integer                    :: n
     character(CS), allocatable :: strm_flds(:)
     !-------------------------------------------------------------------------------
@@ -529,10 +461,10 @@ contains
        ! Initialize datamode module pointers AND dfields
        select case (trim(datamode))
        case('glc_forcing_mct')
-          call dlnd_datamode_glc_forcing_init_pointers(exportState, sdat, dfields, model_frac, logunit, mainproc, rc)
+          call dlnd_datamode_glc_forcing_init_pointers(exportState, sdat, dfields, model_frac, datamode, logunit, mainproc, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('glc_forcing')
-          call dlnd_datamode_glc_forcing_init_pointers(exportState, sdat, dfields, model_frac, logunit, mainproc, rc)
+          call dlnd_datamode_glc_forcing_init_pointers(exportState, sdat, dfields, model_frac, datamode, logunit, mainproc, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('rof_forcing')
           call dlnd_datamode_rof_forcing_init_pointers(exportState, sdat, dfields, model_frac, logunit, mainproc, rc)
@@ -559,25 +491,9 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_TraceRegionExit('dlnd_dfield_copy')
 
-    ! Set special value over masked points
     if (trim(datamode) == 'glc_forcing_mct' .or. trim(datamode) == 'glc_forcing' ) then
-       call dshr_state_getfldptr(exportState, 'Sl_tsrf_elev', fldptr2=fldptr2, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       do n = 1,size(fldptr2,dim=2)
-          if (lfrac(n) == 0._r8) fldptr2(:,n) = 1.e30_r8
-       end do
-
-       call dshr_state_getfldptr(exportState, 'Sl_topo_elev', fldptr2=fldptr2, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       do n = 1,size(fldptr2,dim=2)
-          if (lfrac(n) == 0._r8) fldptr2(:,n) = 1.e30_r8
-       end do
-
-       call dshr_state_getfldptr(exportState, 'Flgl_qice_elev', fldptr2=fldptr2, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       do n = 1,size(fldptr2,dim=2)
-          if (lfrac(n) == 0._r8) fldptr2(:,n) = 1.e30_r8
-       end do
+       call dlnd_datamode_glc_forcing_advance(exportState, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
     call ESMF_TraceRegionExit('dlnd_datamode')

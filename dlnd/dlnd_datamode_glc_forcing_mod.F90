@@ -15,6 +15,7 @@ module dlnd_datamode_glc_forcing_mod
 
    public :: dlnd_datamode_glc_forcing_advertise
    public :: dlnd_datamode_glc_forcing_init_pointers
+   public :: dlnd_datamode_glc_forcing_advance
 
    ! module pointer arrays
    real(r8), pointer :: lfrac(:)
@@ -85,14 +86,14 @@ contains
    end subroutine dlnd_datamode_glc_forcing_advertise
 
    !===============================================================================
-
-   subroutine dlnd_datamode_glc_forcing_init_pointers(exportState, sdat, dfields, model_frac, logunit, mainproc, rc)
+   subroutine dlnd_datamode_glc_forcing_init_pointers(exportState, sdat, dfields, model_frac, datamode, logunit, mainproc, rc)
 
       ! input/output variables
       type(ESMF_State)      , intent(inout) :: exportState
       type(shr_strdata_type), intent(in)    :: sdat
       type(dfield_type)     , pointer       :: dfields
       real(r8)              , intent(in)    :: model_frac(:)
+      character(len=*)      , intent(in)    :: datamode
       integer               , intent(in)    :: logunit
       logical               , intent(in)    :: mainproc
       integer               , intent(out)   :: rc
@@ -100,7 +101,9 @@ contains
       ! local variables
       integer                     :: n
       character(len=2)            :: nec_str
-      character(CS), allocatable  :: strm_flds(:)
+      character(CS), allocatable  :: strm_flds_topo(:)
+      character(CS), allocatable  :: strm_flds_tsrf(:)
+      character(CS), allocatable  :: strm_flds_qice(:)
       character(len=*), parameter :: subname='(dlnd_datamode_glc_forcing_init_pointers): '
       !-------------------------------------------------------------------------------
 
@@ -111,34 +114,85 @@ contains
       if (chkerr(rc,__LINE__,u_FILE_u)) return
       lfrac(:) = model_frac(:)
 
-      ! Create stream-> export state mapping for 2d fields
+      ! Create stream-> export state mapping
       ! Note that strm_flds is the model name for the stream field
       ! Note that state_fld is the model name for the export field
-      allocate(strm_flds(0:glc_nec))
-      do n = 0,glc_nec
-         nec_str = glc_elevclass_as_string(n)
-         strm_flds(n) = 'Sl_tsrf_elev' // trim(nec_str)
-      end do
-      call dshr_dfield_add(dfields, sdat, state_fld='Sl_tsrf_elev', strm_flds=strm_flds, state=exportState, &
+
+      if (trim(datamode) == 'glc_forcing_mct') then
+         allocate(strm_flds_tsrf(0:glc_nec))
+         allocate(strm_flds_topo(0:glc_nec))
+         allocate(strm_flds_qice(0:glc_nec))
+         do n = 0,glc_nec
+            write(nec_str, '(i2.2)') n
+            strm_flds_tsrf(n) = 'Sl_tsrf_elev'   // trim(nec_str)
+            strm_flds_topo(n) = 'Sl_topo_elev'   // trim(nec_str)
+            strm_flds_qice(n) = 'Flgl_qice_elev' // trim(nec_str)
+         end do
+
+      else if (trim(datamode) == 'glc_forcing' ) then
+         allocate(strm_flds_tsrf(1:glc_nec+1))
+         allocate(strm_flds_topo(1:glc_nec+1))
+         allocate(strm_flds_qice(1:glc_nec+1))
+         do n = 1,glc_nec+1
+            write(nec_str, '(i0)') n
+            strm_flds_tsrf(n) = 'Sl_tsrf_elev'   // trim(nec_str)
+            strm_flds_topo(n) = 'Sl_topo_elev'   // trim(nec_str)
+            strm_flds_qice(n) = 'Flgl_qice_elev' // trim(nec_str)
+         end do
+
+      end if
+
+      ! The following maps stream input fields to export fields that have an ungridded dimension
+      call dshr_dfield_add(dfields, sdat, state_fld='Sl_tsrf_elev', strm_flds=strm_flds_tsrf, state=exportState, &
+           logunit=logunit, mainproc=mainproc, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      call dshr_dfield_add(dfields, sdat, state_fld='Sl_topo_elev', strm_flds=strm_flds_topo, state=exportState, &
+           logunit=logunit, mainproc=mainproc, rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      call dshr_dfield_add(dfields, sdat, state_fld='Flgl_qice_elev', strm_flds=strm_flds_qice, state=exportState, &
            logunit=logunit, mainproc=mainproc, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-      do n = 0,glc_nec
-         nec_str = glc_elevclass_as_string(n)
-         strm_flds(n) = 'Sl_topo_elev' // trim(nec_str)
-      end do
-      call dshr_dfield_add(dfields, sdat, state_fld='Sl_topo_elev', strm_flds=strm_flds, state=exportState, &
-           logunit=logunit, mainproc=mainproc, rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-      do n = 0,glc_nec
-         nec_str = glc_elevclass_as_string(n)
-         strm_flds(n) = 'Flgl_qice_elev' // trim(nec_str)
-      end do
-      call dshr_dfield_add(dfields, sdat, state_fld='Flgl_qice_elev', strm_flds=strm_flds, state=exportState, &
-           logunit=logunit, mainproc=mainproc, rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      deallocate(strm_flds_tsrf)
+      deallocate(strm_flds_topo)
+      deallocate(strm_flds_qice)
 
    end subroutine dlnd_datamode_glc_forcing_init_pointers
+
+   !===============================================================================
+   subroutine dlnd_datamode_glc_forcing_advance(exportState, rc)
+
+      ! input/output variables
+      type(ESMF_State)      , intent(inout) :: exportState
+      integer               , intent(out)   :: rc
+
+      ! local variables
+      integer           :: n
+      real(r8), pointer :: fldptr2(:,:)
+      character(len=*), parameter :: subname='(dlnd_datamode_glc_forcing_advance): '
+      !-------------------------------------------------------------------------------
+
+      rc = ESMF_SUCCESS
+
+      ! Set special value over masked points
+      call dshr_state_getfldptr(exportState, 'Sl_tsrf_elev', fldptr2=fldptr2, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      do n = 1,size(fldptr2,dim=2)
+         if (lfrac(n) == 0._r8) fldptr2(:,n) = 1.e30_r8
+      end do
+
+      call dshr_state_getfldptr(exportState, 'Sl_topo_elev', fldptr2=fldptr2, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      do n = 1,size(fldptr2,dim=2)
+         if (lfrac(n) == 0._r8) fldptr2(:,n) = 1.e30_r8
+      end do
+
+      call dshr_state_getfldptr(exportState, 'Flgl_qice_elev', fldptr2=fldptr2, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      do n = 1,size(fldptr2,dim=2)
+         if (lfrac(n) == 0._r8) fldptr2(:,n) = 1.e30_r8
+      end do
+
+   end subroutine dlnd_datamode_glc_forcing_advance
 
 end module dlnd_datamode_glc_forcing_mod
