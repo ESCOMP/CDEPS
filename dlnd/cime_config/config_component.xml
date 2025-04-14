@@ -12,9 +12,9 @@
        This file may have lnd desc entries.
   -->
   <description modifier_mode="1">
-    <desc lnd="DLND[%SCPL][%LCPL]">Data land model (DLND) </desc>
-    <desc option="SCPL">snow coupling mode </desc>
-    <desc option="LCPL">non-snow coupling </desc>
+    <desc lnd="DLND[%SCPL][%GCPL]">Data land model (DLND) </desc>
+    <desc option="SCPL">snow coupling mode to drive glc with data from cpl7 run) </desc>
+    <desc option="GCPL">snow coupling mode to drive glc with data from cmeps run) </desc>
   </description>
 
   <entry id="COMP_LND">
@@ -28,19 +28,17 @@
 
   <entry id="DLND_MODE">
     <type>char</type>
-    <valid_values>SCPL,LCPL</valid_values>
-    <default_value>SCPL</default_value>
+    <valid_values>SCPL,GCPL</valid_values>
+    <default_value>GCPL</default_value>
     <values match="last">
       <value compset="DLND%SCPL">SCPL</value>
-      <value compset="DLND%LCPL">LCPL</value>
+      <value compset="DLND%GCPL">GCPL</value>
     </values>
     <group>run_component_dlnd</group>
     <file>env_run.xml</file>
     <desc>
       model mode.
-      In SCPL, glc coupling data (produced by CISM) from a previous
-      model run is read in from a coupler history file.
-      In LCPL, land forcing data (produced by CLM) from a previous
+      In SCPL or GCPL model glc coupling data produced by lnd from a previous
       model run is read in from a coupler history file.
     </desc>
   </entry>
@@ -77,7 +75,7 @@
     <file>env_run.xml</file>
     <desc>
       Simulation year corresponding to DLND_CPLHIST_YR_START (only used
-      when DLND_MODE is CPLHIST or GLC_CPLHIST). A common usage is to
+      when DLND_MODE is SCPL or GCPL). A common usage is to
       set this to RUN_STARTDATE. With this setting, the forcing in the
       first year of the run will be the forcing of year
       DLND_CPLHIST_YR_START. Another use case is to align the calendar
@@ -89,6 +87,7 @@
       setup to span the same year range as the forcing data.
     </desc>
   </entry>
+
 
   <entry id="DLND_CPLHIST_YR_START">
     <type>integer</type>

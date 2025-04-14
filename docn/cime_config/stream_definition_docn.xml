@@ -175,6 +175,96 @@
     <stream_readmode>single</stream_readmode>
   </stream_entry>
 
+  <stream_entry name="multilev_cplhist">
+    <stream_meshfile>
+      <meshfile>$OCN_DOMAIN_MESH</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="0" last_year="99999">$DOCN_CPLHIST_DIR/$DOCN_CPLHIST_CASE.cpl.hx.ocn2glc.%y-01-01-00000.nc</file>
+   </stream_datafiles>
+    <stream_datavars>
+      <var>ocnImp_So_s_depth1    So_s_depth1</var>
+      <var>ocnImp_So_s_depth2    So_s_depth2</var>
+      <var>ocnImp_So_s_depth3    So_s_depth3</var>
+      <var>ocnImp_So_s_depth4    So_s_depth4</var>
+      <var>ocnImp_So_s_depth5    So_s_depth5</var>
+      <var>ocnImp_So_s_depth6    So_s_depth6</var>
+      <var>ocnImp_So_s_depth7    So_s_depth7</var>
+      <var>ocnImp_So_s_depth8    So_s_depth8</var>
+      <var>ocnImp_So_s_depth9    So_s_depth9</var>
+      <var>ocnImp_So_s_depth10   So_s_depth10</var>
+      <var>ocnImp_So_s_depth11   So_s_depth11</var>
+      <var>ocnImp_So_s_depth12   So_s_depth12</var>
+      <var>ocnImp_So_s_depth13   So_s_depth13</var>
+      <var>ocnImp_So_s_depth14   So_s_depth14</var>
+      <var>ocnImp_So_s_depth15   So_s_depth15</var>
+      <var>ocnImp_So_s_depth16   So_s_depth16</var>
+      <var>ocnImp_So_s_depth17   So_s_depth17</var>
+      <var>ocnImp_So_s_depth18   So_s_depth18</var>
+      <var>ocnImp_So_s_depth19   So_s_depth19</var>
+      <var>ocnImp_So_s_depth20   So_s_depth20</var>
+      <var>ocnImp_So_s_depth21   So_s_depth21</var>
+      <var>ocnImp_So_s_depth22   So_s_depth22</var>
+      <var>ocnImp_So_s_depth23   So_s_depth23</var>
+      <var>ocnImp_So_s_depth24   So_s_depth24</var>
+      <var>ocnImp_So_s_depth25   So_s_depth25</var>
+      <var>ocnImp_So_s_depth26   So_s_depth26</var>
+      <var>ocnImp_So_s_depth27   So_s_depth27</var>
+      <var>ocnImp_So_s_depth28   So_s_depth28</var>
+      <var>ocnImp_So_s_depth29   So_s_depth29</var>
+      <var>ocnImp_So_s_depth30   So_s_depth30</var>
+      <var>ocnImp_So_t_depth1    So_t_depth1</var>
+      <var>ocnImp_So_t_depth2    So_t_depth2</var>
+      <var>ocnImp_So_t_depth3    So_t_depth3</var>
+      <var>ocnImp_So_t_depth4    So_t_depth4</var>
+      <var>ocnImp_So_t_depth5    So_t_depth5</var>
+      <var>ocnImp_So_t_depth6    So_t_depth6</var>
+      <var>ocnImp_So_t_depth7    So_t_depth7</var>
+      <var>ocnImp_So_t_depth8    So_t_depth8</var>
+      <var>ocnImp_So_t_depth9    So_t_depth9</var>
+      <var>ocnImp_So_t_depth10   So_t_depth10</var>
+      <var>ocnImp_So_t_depth11   So_t_depth11</var>
+      <var>ocnImp_So_t_depth12   So_t_depth12</var>
+      <var>ocnImp_So_t_depth13   So_t_depth13</var>
+      <var>ocnImp_So_t_depth14   So_t_depth14</var>
+      <var>ocnImp_So_t_depth15   So_t_depth15</var>
+      <var>ocnImp_So_t_depth16   So_t_depth16</var>
+      <var>ocnImp_So_t_depth17   So_t_depth17</var>
+      <var>ocnImp_So_t_depth18   So_t_depth18</var>
+      <var>ocnImp_So_t_depth19   So_t_depth19</var>
+      <var>ocnImp_So_t_depth20   So_t_depth20</var>
+      <var>ocnImp_So_t_depth21   So_t_depth21</var>
+      <var>ocnImp_So_t_depth22   So_t_depth22</var>
+      <var>ocnImp_So_t_depth23   So_t_depth23</var>
+      <var>ocnImp_So_t_depth24   So_t_depth24</var>
+      <var>ocnImp_So_t_depth25   So_t_depth25</var>
+      <var>ocnImp_So_t_depth26   So_t_depth26</var>
+      <var>ocnImp_So_t_depth27   So_t_depth27</var>
+      <var>ocnImp_So_t_depth28   So_t_depth28</var>
+      <var>ocnImp_So_t_depth29   So_t_depth29</var>
+      <var>ocnImp_So_t_depth30   So_t_depth30</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DOCN_CPLHIST_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DOCN_CPLHIST_YR_START</stream_year_first>
+    <stream_year_last>$DOCN_CPLHIST_YR_END</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>nearest</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
   <stream_entry name="cplhist">
     <stream_meshfile>
       <meshfile>$OCN_DOMAIN_MESH</meshfile>

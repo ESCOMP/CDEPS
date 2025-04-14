@@ -17,8 +17,8 @@
     <group>streams_file</group>
     <desc>List of streams used for each supported dlnd_mode</desc>
     <values>
-      <value dlnd_mode="LCPL">lnd.cplhist</value>
-      <value dlnd_mode="SCPL">sno.cplhist</value>
+      <value dlnd_mode="SCPL">glc_forcing_mct</value>
+      <value dlnd_mode="GCPL">glc_forcing</value>
     </values>
   </entry>
 
@@ -26,13 +26,14 @@
     <type>char</type>
     <category>dlnd</category>
     <group>dlnd_nml</group>
-    <valid_values>copyall</valid_values>
+    <valid_values>glc_forcing_mct,glc_forcing</valid_values>
     <desc>
       Copies all fields directly from the input data streams Any required
       fields not found on an input stream will be set to zero.
     </desc>
     <values>
-      <value>copyall</value>
+      <value dlnd_mode="SCPL">glc_forcing_mct</value>
+      <value dlnd_mode="GCPL">glc_forcing</value>
     </values>
   </entry>
 
