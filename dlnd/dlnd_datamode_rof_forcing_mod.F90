@@ -28,6 +28,9 @@ module dlnd_datamode_rof_forcing_mod
    character(*), parameter :: Flrl_rofi          = 'Flrl_rofi'
    character(*), parameter :: Flrl_irrig         = 'Flrl_irrig'
 
+   character(len=11) :: fldnames_h2o(5) = &
+        (/'Flrl_rofsur', 'Flrl_rofsub','Flrl_rofgwl','Flrl_rofi  ','Flrl_irrig '/)
+
    integer :: ntracers_nonh2o
 
    character(*), parameter :: nullstr = 'null'
@@ -144,25 +147,11 @@ contains
 
       ! Initialize dfields data type (to map streams to export state fields)
       ! Create dfields linked list - used for copying stream fields to export state fields
-      fieldname = Flrl_rofsur
-      call dshr_dfield_add( dfields, sdat, trim(fieldname), trim(fieldname), exportState, logunit, mainproc, rc)
-      if (chkerr(rc,__LINE__,u_FILE_u)) return
-
-      fieldname = Flrl_rofsub
-      call dshr_dfield_add( dfields, sdat, trim(fieldname), trim(fieldname), exportState, logunit, mainproc, rc)
-      if (chkerr(rc,__LINE__,u_FILE_u)) return
-
-      fieldname = Flrl_rofgwl
-      call dshr_dfield_add( dfields, sdat, trim(fieldname), trim(fieldname), exportState, logunit, mainproc, rc)
-      if (chkerr(rc,__LINE__,u_FILE_u)) return
-
-      fieldname = Flrl_rofi
-      call dshr_dfield_add( dfields, sdat, trim(fieldname), trim(fieldname), exportState, logunit, mainproc, rc)
-      if (chkerr(rc,__LINE__,u_FILE_u)) return
-
-      fieldname = Flrl_irrig
-      call dshr_dfield_add( dfields, sdat, trim(fieldname), trim(fieldname), exportState, logunit, mainproc, rc)
-      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      do n = 1,size(fldnames_h2o)
+         fieldname = trim(fldnames_h2o(n))
+         call dshr_dfield_add( dfields, sdat, trim(fieldname), trim(fieldname), exportState, logunit, mainproc, rc)
+         if (chkerr(rc,__LINE__,u_FILE_u)) return
+      end do
 
    end subroutine dlnd_datamode_rof_forcing_init_pointers
 
@@ -174,9 +163,10 @@ contains
       integer               , intent(out)   :: rc
 
       ! local variables
-      integer           :: n
+      integer           :: n,nfld
       real(r8), pointer :: fldptr1(:)
       real(r8), pointer :: fldptr2(:,:)
+      character(CS)     :: fieldname
       character(len=*), parameter :: subname='(dlnd_datamode_rof_forcing_advance): '
       !-------------------------------------------------------------------------------
 
@@ -191,34 +181,13 @@ contains
          end do
       end if
 
-      call dshr_state_getfldptr(exportState, Flrl_rofsur, fldptr1=fldptr1, rc=rc)
-      if (chkerr(rc,__LINE__,u_FILE_u)) return
-      do n = 1,size(fldptr1)
-         if (lfrac(n) == 0._r8) fldptr1(n) = 1.e30_r8
-      end do
-
-      call dshr_state_getfldptr(exportState, Flrl_rofsub, fldptr1=fldptr1, rc=rc)
-      if (chkerr(rc,__LINE__,u_FILE_u)) return
-      do n = 1,size(fldptr1)
-         if (lfrac(n) == 0._r8) fldptr1(n) = 1.e30_r8
-      end do
-
-      call dshr_state_getfldptr(exportState, Flrl_rofgwl, fldptr1=fldptr1, rc=rc)
-      if (chkerr(rc,__LINE__,u_FILE_u)) return
-      do n = 1,size(fldptr1)
-         if (lfrac(n) == 0._r8) fldptr1(n) = 1.e30_r8
-      end do
-
-      call dshr_state_getfldptr(exportState, Flrl_rofi, fldptr1=fldptr1, rc=rc)
-      if (chkerr(rc,__LINE__,u_FILE_u)) return
-      do n = 1,size(fldptr1)
-         if (lfrac(n) == 0._r8) fldptr1(n) = 1.e30_r8
-      end do
-
-      call dshr_state_getfldptr(exportState, Flrl_irrig, fldptr1=fldptr1, rc=rc)
-      if (chkerr(rc,__LINE__,u_FILE_u)) return
-      do n = 1,size(fldptr1)
-         if (lfrac(n) == 0._r8) fldptr1(n) = 1.e30_r8
+      do nfld = 1,size(fldnames_h2o)
+         fieldname = trim(fldnames_h2o(nfld))
+         call dshr_state_getfldptr(exportState, fieldname, fldptr1=fldptr1, rc=rc)
+         if (chkerr(rc,__LINE__,u_FILE_u)) return
+         do n = 1,size(fldptr1)
+            if (lfrac(n) == 0._r8) fldptr1(n) = 1.e30_r8
+         end do
       end do
 
    end subroutine dlnd_datamode_rof_forcing_advance
