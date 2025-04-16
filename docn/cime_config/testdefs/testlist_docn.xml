@@ -30,7 +30,7 @@
   </test>
   <test compset="1850_SATM_SLND_SICE_DOCN%MULTILEV-CPLHIST_SROF_SGLC_SWAV" grid="f09_tn14" name="SMS_Ly4" testmods="docn/multilev_cplhist">
     <machines>
-      <machine name="betzy" compiler="intel" category="aux_cdeps_noresm"/>
+      <machine name="betzy" compiler="gnu" category="aux_cdeps_noresm"/>
     </machines>
     <options>
       <option name="wallclock"> 00:10:00 </option>
