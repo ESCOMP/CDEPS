@@ -29,7 +29,7 @@
 
   <entry id="DLND_MODE">
     <type>char</type>
-    <valid_values>SCPL,GCPL</valid_values>
+    <valid_values>SCPL,GCPL,RCPL</valid_values>
     <default_value>GCPL</default_value>
     <values match="last">
       <value compset="DLND%SCPL">SCPL</value>

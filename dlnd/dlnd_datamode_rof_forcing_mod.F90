@@ -16,6 +16,7 @@ module dlnd_datamode_rof_forcing_mod
 
    public :: dlnd_datamode_rof_forcing_advertise
    public :: dlnd_datamode_rof_forcing_init_pointers
+   public :: dlnd_datamode_rof_forcing_advance
 
    ! module pointer arrays
    real(r8), pointer :: lfrac(:)
@@ -115,6 +116,7 @@ contains
       integer                     :: n
       character(len=2)            :: nchar
       character(CS), allocatable  :: strm_flds(:)
+      character(CS)               :: fieldname
       character(len=*), parameter :: subname='(dlnd_datamode_rof_forcing_init_pointers): '
       !-------------------------------------------------------------------------------
 
@@ -140,6 +142,85 @@ contains
          if (ChkErr(rc,__LINE__,u_FILE_u)) return
       end if
 
+      ! Initialize dfields data type (to map streams to export state fields)
+      ! Create dfields linked list - used for copying stream fields to export state fields
+      fieldname = Flrl_rofsur
+      call dshr_dfield_add( dfields, sdat, trim(fieldname), trim(fieldname), exportState, logunit, mainproc, rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+
+      fieldname = Flrl_rofsub
+      call dshr_dfield_add( dfields, sdat, trim(fieldname), trim(fieldname), exportState, logunit, mainproc, rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+
+      fieldname = Flrl_rofgwl
+      call dshr_dfield_add( dfields, sdat, trim(fieldname), trim(fieldname), exportState, logunit, mainproc, rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+
+      fieldname = Flrl_rofi
+      call dshr_dfield_add( dfields, sdat, trim(fieldname), trim(fieldname), exportState, logunit, mainproc, rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+
+      fieldname = Flrl_irrig
+      call dshr_dfield_add( dfields, sdat, trim(fieldname), trim(fieldname), exportState, logunit, mainproc, rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+
    end subroutine dlnd_datamode_rof_forcing_init_pointers
+
+   !===============================================================================
+   subroutine dlnd_datamode_rof_forcing_advance(exportState, rc)
+
+      ! input/output variables
+      type(ESMF_State)      , intent(inout) :: exportState
+      integer               , intent(out)   :: rc
+
+      ! local variables
+      integer           :: n
+      real(r8), pointer :: fldptr1(:)
+      real(r8), pointer :: fldptr2(:,:)
+      character(len=*), parameter :: subname='(dlnd_datamode_rof_forcing_advance): '
+      !-------------------------------------------------------------------------------
+
+      rc = ESMF_SUCCESS
+
+      if (ntracers_nonh2o > 0) then
+         ! Set special value over masked points
+         call dshr_state_getfldptr(exportState, Flrl_rofsur_nonh2o, fldptr2=fldptr2, rc=rc)
+         if (chkerr(rc,__LINE__,u_FILE_u)) return
+         do n = 1,size(fldptr2,dim=2)
+            if (lfrac(n) == 0._r8) fldptr2(:,n) = 1.e30_r8
+         end do
+      end if
+
+      call dshr_state_getfldptr(exportState, Flrl_rofsur, fldptr1=fldptr1, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      do n = 1,size(fldptr1)
+         if (lfrac(n) == 0._r8) fldptr1(n) = 1.e30_r8
+      end do
+
+      call dshr_state_getfldptr(exportState, Flrl_rofsub, fldptr1=fldptr1, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      do n = 1,size(fldptr1)
+         if (lfrac(n) == 0._r8) fldptr1(n) = 1.e30_r8
+      end do
+
+      call dshr_state_getfldptr(exportState, Flrl_rofgwl, fldptr1=fldptr1, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      do n = 1,size(fldptr1)
+         if (lfrac(n) == 0._r8) fldptr1(n) = 1.e30_r8
+      end do
+
+      call dshr_state_getfldptr(exportState, Flrl_rofi, fldptr1=fldptr1, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      do n = 1,size(fldptr1)
+         if (lfrac(n) == 0._r8) fldptr1(n) = 1.e30_r8
+      end do
+
+      call dshr_state_getfldptr(exportState, Flrl_irrig, fldptr1=fldptr1, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      do n = 1,size(fldptr1)
+         if (lfrac(n) == 0._r8) fldptr1(n) = 1.e30_r8
+      end do
+
+   end subroutine dlnd_datamode_rof_forcing_advance
 
 end module dlnd_datamode_rof_forcing_mod

@@ -41,6 +41,7 @@ module cdeps_dlnd_comp
 
   use dlnd_datamode_rof_forcing_mod, only : dlnd_datamode_rof_forcing_advertise
   use dlnd_datamode_rof_forcing_mod, only : dlnd_datamode_rof_forcing_init_pointers
+  use dlnd_datamode_rof_forcing_mod, only : dlnd_datamode_rof_forcing_advance
 
   use nuopc_shr_methods , only : shr_get_rpointer_name
 
@@ -494,6 +495,9 @@ contains
 
     if (trim(datamode) == 'glc_forcing_mct' .or. trim(datamode) == 'glc_forcing' ) then
        call dlnd_datamode_glc_forcing_advance(exportState, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    else if (trim(datamode) == 'rof_forcing') then
+       call dlnd_datamode_rof_forcing_advance(exportState, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 

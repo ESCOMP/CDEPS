@@ -53,6 +53,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
            "DLND_GRID cannot be null")
 
     # Log some settings.
+    print (f"DEBUG: dlnd_mode is {dlnd_mode}")
     logger.debug("DLND mode is {}".format(dlnd_mode))
     logger.debug("DLND glc_nec is {}".format(glc_nec))
 
