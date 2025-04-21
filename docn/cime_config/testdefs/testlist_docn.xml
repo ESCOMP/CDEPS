@@ -37,7 +37,7 @@
     </options>
   </test>
 
-  <test compset="1850_SATM_SLND_SICE_DOCN%MULTILEV-DOM_SROF_SGLC_SWAV" grid="f09_tn14" name="SMS_Ly4">
+  <test compset="1850_SATM_SLND_SICE_DOCN%MULTILEV-DOM_SROF_SGLC_SWAV" grid="f09_tn14" name="SMS_D_Ly4">
     <machines>
       <machine name="betzy" compiler="gnu" category="aux_cdeps_noresm"/>
     </machines>
