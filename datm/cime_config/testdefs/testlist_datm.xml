@@ -64,7 +64,7 @@
   <test compset="HIST_DATM%CRUJRA2024_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="f10_f10_mg37" name="SMS_Ld5">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_cdeps"/>
-      <machine name="betzy" compiler="intel" category="aux_cdeps_noresm"/>
+      <machine name="betzy" compiler="gnu" category="aux_cdeps_noresm"/>
     </machines>
     <options>
       <option name="wallclock"> 00:10:00 </option>
@@ -94,7 +94,6 @@
   <test compset="2000_DATM%NLDAS2_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="f10_f10_mg37" name="SMS_Ld5">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_cdeps"/>
-      <machine name="betzy" compiler="intel" category="aux_cdeps_noresm"/>
     </machines>
     <options>
       <option name="wallclock"> 00:10:00 </option>
@@ -103,7 +102,6 @@
   <test compset="2000_DATM%NYF_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="ne30pg3_g17" name="SMS_Ld5">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_cdeps"/>
-      <machine name="betzy" compiler="intel" category="aux_cdeps_noresm"/>
     </machines>
     <options>
       <option name="wallclock"> 00:10:00 </option>
@@ -112,7 +110,6 @@
   <test compset="2000_DATM%IAF_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="ne30pg3_g17" name="SMS_Ld5">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_cdeps"/>
-      <machine name="betzy" compiler="intel" category="aux_cdeps_noresm"/>
     </machines>
     <options>
       <option name="wallclock"> 00:10:00 </option>
@@ -121,7 +118,6 @@
   <test compset="2000_DATM%JRA_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="TL319_t232" name="SMS_Ld5">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_cdeps"/>
-      <machine name="betzy" compiler="intel" category="aux_cdeps_noresm"/>
     </machines>
     <options>
       <option name="wallclock"> 00:10:00 </option>
@@ -130,7 +126,6 @@
   <test compset="2000_DATM%JRA-1p4-2018_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="TL319_t232" name="SMS_Ld5">
     <machines>
       <machine name="derecho" compiler="intel" category="aux_cdeps"/>
-      <machine name="betzy" compiler="intel" category="aux_cdeps_noresm"/>
     </machines>
     <options>
       <option name="wallclock"> 00:10:00 </option>
@@ -146,4 +141,37 @@
     </options>
   </test>
 
+  <test compset="2000_DATM%JRA_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="TL319_tn14" name="SMS_Ld5">
+    <machines>
+      <machine name="betzy" compiler="intel" category="aux_cdeps_noresm"/>
+    </machines>
+    <options>
+      <option name="wallclock"> 00:10:00 </option>
+    </options>
+  </test>
+  <test compset="2000_DATM%JRA-1p4-2018_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="TL319_tn14" name="SMS_D_Ld5">
+    <machines>
+      <machine name="betzy" compiler="gnu" category="aux_cdeps_noresm"/>
+    </machines>
+    <options>
+      <option name="wallclock"> 00:30:00 </option>
+    </options>
+  </test>
+
+  <test compset="2000_DATM%NYF_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="ne30pg3_tn14" name="SMS_Ld5">
+    <machines>
+      <machine name="betzy" compiler="intel" category="aux_cdeps_noresm"/>
+    </machines>
+    <options>
+      <option name="wallclock"> 00:10:00 </option>
+    </options>
+  </test>
+  <test compset="2000_DATM%IAF_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="ne30pg3_tn14" name="SMS_Ld5">
+    <machines>
+      <machine name="betzy" compiler="gnu" category="aux_cdeps_noresm"/>
+    </machines>
+    <options>
+      <option name="wallclock"> 00:10:00 </option>
+    </options>
+  </test>
 </testlist>

@@ -19,18 +19,9 @@ module docn_datamode_multilev_cplhist_mod
 
   ! pointers to export fields
   real(r8), pointer :: So_omask(:)     => null()    ! real ocean fraction sent to mediator
-  real(r8), pointer :: So_t_depth(:,:) => null()
-  real(r8), pointer :: So_s_depth(:,:) => null()
 
-  ! pointers to stream fields
-  real(r8), pointer :: stream_So_t_depth(:,:) => null()
-  real(r8), pointer :: stream_So_s_depth(:,:) => null()
 
   integer, parameter :: nlev_export = 30
-  real(r8) :: vertical_levels(nlev_export) = (/  &
-         30._r8 ,  90._r8,  150._r8,  210._r8,  270._r8,  330._r8,  390._r8,  450._r8,  510._r8,  570._r8, &
-        630._r8,  690._r8,  750._r8,  810._r8,  870._r8,  930._r8,  990._r8, 1050._r8, 1110._r8, 1170._r8, &
-       1230._r8, 1290._r8, 1350._r8, 1410._r8, 1470._r8, 1530._r8, 1590._r8, 1650._r8, 1710._r8, 1770._r8 /)
 
   ! constants
   character(*) , parameter :: nullstr = 'null'

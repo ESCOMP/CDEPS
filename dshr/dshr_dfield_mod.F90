@@ -485,7 +485,10 @@ contains
                 if (ungriddedCount > 0) then
                    call dshr_field_getfldptr(lfield, fldptr2=data2d, rc=rc)
                    if (chkerr(rc,__LINE__,u_FILE_u)) return
-                   dfield%state_data2d(:,:) = data2d(:,:)
+                   if (size(dfield%state_data2d,dim=1) == size(data2d,dim=1)) then
+                      ! Only do copy if the ungridded dimension size matches
+                      dfield%state_data2d(:,:) = data2d(:,:)
+                   end if
                 else
                    call dshr_field_getfldptr(lfield, fldptr1=data1d, rc=rc)
                    if (chkerr(rc,__LINE__,u_FILE_u)) return
