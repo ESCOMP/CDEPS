@@ -315,9 +315,7 @@ def buildnml(case, caseroot, compname):
         # create namelist and stream file(s) data component
         _create_namelists(case, confdir, inst_string, namelist_infile, nmlgen, data_list_path)
 
-        print ("DEBUG: here1")
         _create_drv_flds_in(case, confdir)
-        print ("DEBUG: here2")
 
         # copy namelist files and stream text files, to rundir
         copy_inputs_to_rundir(caseroot, compname, confdir, rundir, inst_string)

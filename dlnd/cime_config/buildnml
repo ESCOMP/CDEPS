@@ -88,12 +88,13 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     if type(streamlist) == type(str()):
         streamlist = []
 
+    # count the number of tracers
     dlnd_nonh2o = case.get_value("DLND_LND2ROF_NONH2O")
-    if dlnd_nonh2o != "none":
-        dlnd_nonh2o_number = dlnd_nonh2o.count(':') + 1
+    if dlnd_nonh2o == "none":
+        dlnd_nonh2o_count = 0
     else:
-        dlnd_nonh2o_number = 0
-    case.set_value("DLND_LND2ROF_NONH2O_NUMBER",dlnd_nonh2o_number)
+        dlnd_nonh2o_count = dlnd_nonh2o.count(':') + 1
+    print (f"DEBUG: dlnd_nonh2o_count is {dlnd_nonh2o_count}")
 
     # Generate dlnd.streams.xml
     outfile = os.path.join(confdir, "dlnd.streams"+inst_string+".xml" )
@@ -101,7 +102,8 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     stream_file = os.path.join(_CDEPS_CONFIG,os.pardir, "dlnd","cime_config","stream_definition_dlnd.xml")
     streams = StreamCDEPS(stream_file, schema_file)
     streams.create_stream_xml(streamlist, case, outfile, data_list_path,
-                              os.path.join(caseroot,'user_nl_dlnd_streams'+inst_string))
+                              os.path.join(caseroot,'user_nl_dlnd_streams'+inst_string),
+                              lnd2rof_nonh2o_number=dlnd_nonh2o_count)
 
 ####################################################################################
 def _create_drv_flds_in(case, confdir):
@@ -191,10 +193,11 @@ def buildnml(case, caseroot, compname):
         create_namelist_infile(case, user_nl_file, infile)
         namelist_infile = [infile]
 
+        # first create drv_flds_in to determine number of tracer fields
+        _create_drv_flds_in(case, confdir)
+
         # create namelist and xml stream file(s)
         _create_namelists(case, confdir, inst_string, namelist_infile, nmlgen, data_list_path)
-
-        _create_drv_flds_in(case, confdir)
 
         # copy namelist files and stream text files, to rundir
         copy_inputs_to_rundir(caseroot, compname, confdir, rundir, inst_string)
