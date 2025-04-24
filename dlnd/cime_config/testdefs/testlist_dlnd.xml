@@ -11,7 +11,7 @@
     </options>
   </test>
 
-  <test name="SMS_Ly4" compset="1850_SATM_DLND%GCPL_SICE_SOCN_SROF_SGLC_SWAV" grid="f09_f09_mg17" testmods="dlnd/glc_forcing">
+  <test name="ERS_D_Ly4" compset="1850_SATM_DLND%GCPL_SICE_SOCN_SROF_SGLC_SWAV" grid="f09_f09_mg17" testmods="dlnd/glc_forcing">
     <machines>
       <machine name="betzy" compiler="intel" category="aux_cdeps_noresm"/>
     </machines>

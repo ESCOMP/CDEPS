@@ -550,43 +550,35 @@ contains
 
     if (first_time) then
 
+       if (trim(datamode) /= 'multilev_cplhist') then
+          ! with multilev_cplhist we explicitly create initilize dfields
+          ! within the rpointer call
+          call docn_init_dfields(importState, exportState, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       endif
        ! Initialize datamode module pointers
        select case (trim(datamode))
        case('sstdata', 'sst_aquap_file')
           call docn_datamode_copyall_init_pointers(exportState, model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          call docn_init_dfields(importState, exportState, rc=rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('iaf')
           call docn_datamode_iaf_init_pointers(importState, exportState, model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          call docn_init_dfields(importState, exportState, rc=rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('som', 'som_aquap')
           call docn_datamode_som_init_pointers(importState, exportState, sdat, model_frac, rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          call docn_init_dfields(importState, exportState, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('sst_aquap_analytic', 'sst_aquap_constant')
           skip_restart_read=.true.
           call  docn_datamode_aquaplanet_init_pointers(exportState, model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          call docn_init_dfields(importState, exportState, rc=rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('cplhist')
           call docn_datamode_cplhist_init_pointers(exportState, model_frac, rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          call docn_init_dfields(importState, exportState, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('multilev')
           call docn_datamode_multilev_init_pointers(exportState, sdat,  model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          call docn_init_dfields(importState, exportState, rc=rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('multilev_dom')
           call docn_datamode_multilev_dom_init_pointers(exportState, sdat,  model_frac, rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          call docn_init_dfields(importState, exportState, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('multilev_cplhist')
           call docn_datamode_multilev_cplhist_init_pointers(dfields, &
