@@ -53,7 +53,6 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
            "DLND_GRID cannot be null")
 
     # Log some settings.
-    print (f"DEBUG: dlnd_mode is {dlnd_mode}")
     logger.debug("DLND mode is {}".format(dlnd_mode))
     logger.debug("DLND glc_nec is {}".format(glc_nec))
 
@@ -94,7 +93,6 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
         dlnd_nonh2o_count = 0
     else:
         dlnd_nonh2o_count = dlnd_nonh2o.count(':') + 1
-    print (f"DEBUG: dlnd_nonh2o_count is {dlnd_nonh2o_count}")
 
     # Generate dlnd.streams.xml
     outfile = os.path.join(confdir, "dlnd.streams"+inst_string+".xml" )

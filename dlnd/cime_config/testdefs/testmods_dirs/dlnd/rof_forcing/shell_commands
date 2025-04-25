@@ -1,0 +1,9 @@
+./xmlchange DLND_CPLHIST_CASE=n1850fates-nocomp-cplhist
+./xmlchange DLND_CPLHIST_DIR='$DIN_LOC_ROOT/cplhist/noresm3_0/n1850fates-nocomp-cplhist/cpl/hist'
+./xmlchange DLND_CPLHIST_YR_ALIGN=2
+./xmlchange DLND_CPLHIST_YR_END=6
+./xmlchange DLND_CPLHIST_YR_START=2
+./xmlchange RUN_STARTDATE=0002-01-01
+./xmlchange ATM_NCPL=1
+./xmlchange ROF_NCPL=1
+./xmlchange NCPL_BASE_PERIOD=year

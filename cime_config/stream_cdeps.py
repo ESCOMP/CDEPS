@@ -517,7 +517,7 @@ class StreamCDEPS(GenericXML):
 
         Returns a string.
 
-        Example: If `_sub_fields` is called with an array containing two
+        Example: If `_sub_glc_fields` is called with an array containing two
         elements, each of which contains two strings, and glc_nec=3:
              foo               bar
              s2x_Ss_tsrf%glc   tsrf%glc
@@ -548,7 +548,7 @@ class StreamCDEPS(GenericXML):
         """Substitute indicators with given values in a list of fields.
         Replace any instance of the following substring indicators with the
         appropriate values:
-            %lnd2rof_nonh2o_number = two-digit number from 01 through the number
+            %lnd2rof_nonh2o_number = two-digit number from 0 through the number
              of non-h2o tracers sent from the dlnd to mosart.
 
         The difference between this function and `_sub_paths` is that this
@@ -558,9 +558,16 @@ class StreamCDEPS(GenericXML):
 
         Returns a string.
 
-        Example: If `_sub_fields` is called with an array containing two
-        elements, each of which contains two strings, and
-        lnd2rof_nonh2o_number = 2
+        Example: If `_sub_rof_fields` is called with an array containing only one
+        element, and lnd2rof_nonh2o_number = 2
+             foo               bar
+	     lndImp_Flrl_rofsur_nonh2o%rof Flrl_rofsur_nonh2o%rof
+        then the returned array will be:
+             foo               bar
+	     lndImp_Flrl_rofsur_nonh2o Flrl_rofsur_nonh2o
+
+        Example: If `_sub_rof_fields` is called with an array containing two
+        elements, each of which contains two strings, and lnd2rof_nonh2o_number = 2
              foo               bar
 	     lndImp_Flrl_rofsur_nonh2o%rof Flrl_rofsur_nonh2o%rof
         then the returned array will be:
@@ -579,8 +586,10 @@ class StreamCDEPS(GenericXML):
                 else:
                     lnd2rof_indices = range(1,lnd2rof_nonh2o_number + 1)
                 for i in lnd2rof_indices:
-                    new_lines.append(line.replace("%rof", "{:02d}".format(i)))
-
+                    if len(lnd2rof_indices) == 1:
+                        new_lines.append(line.replace("%rof", "".format(i)))
+                    else:
+                        new_lines.append(line.replace("%rof", "{:02d}".format(i)))
             else:
                 new_lines.append(line)
         return "\n".join(new_lines)
