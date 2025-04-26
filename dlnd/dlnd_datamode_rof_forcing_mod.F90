@@ -135,14 +135,20 @@ contains
       ! Note that strm_flds is the model name for the stream field (1d)
       ! Note that state_fld is the model name for the export field (2d)
       if (ntracers_nonh2o > 0) then
-         allocate(strm_flds(ntracers_nonh2o))
-         do n = 1,ntracers_nonh2o
-            write(nchar,'(i2.2)') n
-            strm_flds(n) = 'Flrl_rofsur_nonh2o' // trim(nchar)
-         end do
-         call dshr_dfield_add(dfields, sdat, state_fld=Flrl_rofsur_nonh2o, strm_flds=strm_flds, state=exportState, &
-              logunit=logunit, mainproc=mainproc, rc=rc)
-         if (ChkErr(rc,__LINE__,u_FILE_u)) return
+         if (ntracers_nonh2o == 1) then
+            fieldname = trim(Flrl_rofsur_nonh2o)
+            call dshr_dfield_add( dfields, sdat, trim(fieldname), trim(fieldname), exportState, logunit, mainproc, rc)
+            if (ChkErr(rc,__LINE__,u_FILE_u)) return
+         else
+            allocate(strm_flds(ntracers_nonh2o))
+            do n = 1,ntracers_nonh2o
+               write(nchar,'(i2.2)') n
+               strm_flds(n) = trim(Flrl_rofsur_nonh2o) // trim(nchar)
+            end do
+            call dshr_dfield_add(dfields, sdat, state_fld=Flrl_rofsur_nonh2o, strm_flds=strm_flds, state=exportState, &
+                 logunit=logunit, mainproc=mainproc, rc=rc)
+            if (ChkErr(rc,__LINE__,u_FILE_u)) return
+         end if
       end if
 
       ! Initialize dfields data type (to map streams to export state fields)
@@ -174,11 +180,19 @@ contains
 
       if (ntracers_nonh2o > 0) then
          ! Set special value over masked points
-         call dshr_state_getfldptr(exportState, Flrl_rofsur_nonh2o, fldptr2=fldptr2, rc=rc)
-         if (chkerr(rc,__LINE__,u_FILE_u)) return
-         do n = 1,size(fldptr2,dim=2)
-            if (lfrac(n) == 0._r8) fldptr2(:,n) = 1.e30_r8
-         end do
+         if (ntracers_nonh2o == 1) then
+            call dshr_state_getfldptr(exportState, Flrl_rofsur_nonh2o, fldptr1=fldptr1, rc=rc)
+            if (chkerr(rc,__LINE__,u_FILE_u)) return
+            do n = 1,size(fldptr1)
+               if (lfrac(n) == 0._r8) fldptr1(:) = 1.e30_r8
+            end do
+         else
+            call dshr_state_getfldptr(exportState, Flrl_rofsur_nonh2o, fldptr2=fldptr2, rc=rc)
+            if (chkerr(rc,__LINE__,u_FILE_u)) return
+            do n = 1,size(fldptr2,dim=2)
+               if (lfrac(n) == 0._r8) fldptr2(:,n) = 1.e30_r8
+            end do
+         end if
       end if
 
       do nfld = 1,size(fldnames_h2o)
