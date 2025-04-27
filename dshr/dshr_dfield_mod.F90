@@ -85,11 +85,11 @@ contains
     dfield_new%stream_index = iunset
     dfield_new%fldbun_index = iunset
 
-    ! loop over all input streams and ! determine if the strm_fld is in the field bundle of stream ns
+    ! loop over all input streams
     ! if strm_fld is in the field bundle of stream ns, set the field index of the field with the name strm_fld
     ! colon delimited string and set the index of the stream
 
-    ! loop over all input streams and ! determine if the strm_fld is in the field bundle of stream ns
+    ! loop over all input streams and ! determine if the strm_fld is in the attribute vector of stream ns
     do ns = 1, shr_strdata_get_stream_count(sdat)
        fldbun_model = shr_strdata_get_stream_fieldbundle(sdat, ns, 'model')
        call ESMF_FieldBundleGet(fldbun_model, fieldCount=fieldCount, rc=rc)
@@ -117,7 +117,8 @@ contains
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     dfield_new%state_data1d = 0.0_r8
     if (mainproc) then
-       write(logunit,'(a)')'(dshr_addfield_add) setting pointer for export state '//trim(state_fld)
+       write(logunit,110)'(dshr_addfield_add) setting pointer for export state '//trim(state_fld)
+110    format(a)
     end if
 
   end subroutine dshr_dfield_add_1d
