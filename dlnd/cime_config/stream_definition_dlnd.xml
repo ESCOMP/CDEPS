@@ -122,10 +122,11 @@
       <file first_year="0" last_year="99999">$DLND_CPLHIST_DIR/$DLND_CPLHIST_CASE.cpl.hx.lnd2rof.24hr.avg.%y-01-01-00000.nc</file>
     </stream_datafiles>
     <stream_datavars>
-	    <var>lndImp_Flrl_rofsur          Flrl_rofsur</var>
-	    <var>lndImp_Flrl_rofsub          Flrl_rofsub</var>
-	    <var>lndImp_Flrl_rofgwl          Flrl_rofgwl</var>
-	    <var>lndImp_Flrl_rofi            Flrl_rofi</var>
+      <var>lndImp_Flrl_rofsur_nonh2o%rof Flrl_rofsur_nonh2o%rof</var>
+	    <var>lndImp_Flrl_rofsur Flrl_rofsur</var>
+	    <var>lndImp_Flrl_rofsub Flrl_rofsub</var>
+	    <var>lndImp_Flrl_rofgwl Flrl_rofgwl</var>
+	    <var>lndImp_Flrl_rofi   Flrl_rofi</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>

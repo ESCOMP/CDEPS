@@ -97,6 +97,9 @@ contains
          call NUOPC_Advertise(exportState, standardName=fldlist%stdname, rc=rc)
          if (ChkErr(rc,__LINE__,u_FILE_u)) return
          call ESMF_LogWrite('(dlnd_comp_advertise): Fr_lnd '//trim(fldList%stdname), ESMF_LOGMSG_INFO)
+         if (mainproc) then
+            write(logunit,'(a)') '(dlnd_comp_advertise): Fr_lnd '//trim(fldList%stdname)
+         end if
          fldList => fldList%next
       enddo
 
@@ -184,7 +187,7 @@ contains
             call dshr_state_getfldptr(exportState, Flrl_rofsur_nonh2o, fldptr1=fldptr1, rc=rc)
             if (chkerr(rc,__LINE__,u_FILE_u)) return
             do n = 1,size(fldptr1)
-               if (lfrac(n) == 0._r8) fldptr1(:) = 1.e30_r8
+               if (lfrac(n) == 0._r8) fldptr1(n) = 1.e30_r8
             end do
          else
             call dshr_state_getfldptr(exportState, Flrl_rofsur_nonh2o, fldptr2=fldptr2, rc=rc)

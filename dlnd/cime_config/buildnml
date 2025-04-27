@@ -89,7 +89,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
 
     # count the number of tracers
     dlnd_nonh2o = case.get_value("DLND_LND2ROF_NONH2O")
-    if dlnd_nonh2o == "none":
+    if dlnd_nonh2o == "":
         dlnd_nonh2o_count = 0
     else:
         dlnd_nonh2o_count = dlnd_nonh2o.count(':') + 1
