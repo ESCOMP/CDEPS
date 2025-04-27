@@ -87,8 +87,8 @@ contains
          call dshr_fldList_add(fldsExport, Flrl_rofsur_nonh2o)
       end if
       call dshr_fldlist_add(FldsExport, Flrl_rofsur)
-      call dshr_fldlist_add(FldsExport, Flrl_rofgwl)
       call dshr_fldlist_add(FldsExport, Flrl_rofsub)
+      call dshr_fldlist_add(FldsExport, Flrl_rofgwl)
       call dshr_fldlist_add(FldsExport, Flrl_rofi  )
       call dshr_fldlist_add(FldsExport, Flrl_irrig )
 
