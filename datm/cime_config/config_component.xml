@@ -10,7 +10,7 @@
        This file may have atm desc entries.
   -->
   <description modifier_mode="1">
-    <desc atm="DATM[%QIA][%WISOQIA][%CRUJRA2024][%CRUv7][%GSWP3v1][%MOSARTTEST][%NLDAS2][%CPLHIST][%1PT][%NYF][%IAF][%JRA][%JRA-1p4-2018][%JRA-1p5-2023][%JRA-RYF8485][%JRA-RYF9091][%JRA-RYF0304][%SIMPLE]"> Data driven ATM </desc>
+    <desc atm="DATM[%QIA][%WISOQIA][%CRUJRA2024][%CRUv7][%GSWP3v1][%MOSARTTEST][%NLDAS2][%CPLHIST][%1PT][%NYF][%IAF][%JRA][%JRA-1p4-2018][%JRA-1p5-2023][%JRA-RYF6162][%JRA-RYF8485][%JRA-RYF9091][%JRA-RYF0304][%SIMPLE]"> Data driven ATM </desc>
     <desc option="QIA"> QIAN data set </desc>
     <desc option="WISOQIA">QIAN with water isotopes</desc>
     <desc option="CRUJRA2024"> CRUJRA 2024 data set </desc>
@@ -24,6 +24,7 @@
     <desc option="JRA">interannual JRA55 forcing</desc>
     <desc option="JRA-1p4-2018">interannual JRA55 forcing, v1.4, through 2018</desc>
     <desc option="JRA-1p5-2023">interannual JRA55 forcing, v1.5, through 2023</desc>
+    <desc option="JRA-RYF6162"> JRA55 Repeat Year Forcing v1.3 1961-1962</desc>
     <desc option="JRA-RYF8485"> JRA55 Repeat Year Forcing v1.3 1984-1985</desc>
     <desc option="JRA-RYF9091"> JRA55 Repeat Year Forcing v1.3 1990-1991</desc>
     <desc option="JRA-RYF0304"> JRA55 Repeat Year Forcing v1.3 2003-2004</desc>
