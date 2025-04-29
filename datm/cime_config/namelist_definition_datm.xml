@@ -90,7 +90,7 @@
     <type>char</type>
     <category>datm</category>
     <group>datm_nml</group>
-    <valid_values>CLMNCEP,CORE2_NYF,CORE2_IAF,CORE_IAF_JRA,ERA5,SIMPLE,CPLHIST,1PT</valid_values>
+    <valid_values>CLMNCEP,CORE2_NYF,CORE2_IAF,CORE_IAF_JRA,CORE_RYF8485_JRA,CORE_RYF9091_JRA,CORE_RYF0304_JRA,ERA5,SIMPLE,CPLHIST,1PT</valid_values>
     <desc>
       general method that operates on the data.
       ----datamode = "CPLHIST"----
@@ -115,6 +115,12 @@
       Clm Dyn doi 10.1007/s00382-008-0441-3.
       ----datamode = "CORE_IAF_JRA"----
       JRA55 intra-annual year forcing
+      ----datamode = "CORE_RYF8485_JRA"----
+      JRA55 Repeat Year Forcing 1984-1985
+      ----datamode = "CORE_RYF9091_JRA"----
+      JRA55 Repeat Year Forcing 1990-1991
+      ----datamode = "CORE_RYF0304_JRA"----
+      JRA55 Repeat Year Forcing 2003-2004
       ----datamode = "CLMNCEP"----
       In conjunction with NCEP climatological atmosphere data, provides the
       atmosphere forcing favored by the Land Model Working Group when
