@@ -11,7 +11,7 @@ referred to as its mode.
 In the case of CESM, the active model components would be: CTSM,
 POP2, MOM6, POP2, CICE5-6, WW3 and MOSART. As examples, CORE2_NYF
 (CORE2 normal year forcing) is the DATM mode used in driving
-POP2 and MOM6. On the other hand CLM_QIAN, CLMCRUNCEP, CLMGSWP3
+POP2 and MOM6. On the other hand CLM_QIAN, CLMCRUJRA2024, CLMCRUNCEP, CLMGSWP3
 and CLM1PT are DATM modes using observational data for forcing CTSM.
 
 .. _datm-datamodes:
@@ -64,11 +64,9 @@ ERA5 (``datm_datamode_era5_mod.F90``)
   `$CESMDATAROOT/inputdata/atm/datm7/ERA5`
 
 .. note::
-  In addition to the exiting DATM data modes, the `CDEPS fork <https://github.com/NOAA-EMC/CDEPS>`_
+  Using the GEFS data mode, the `CDEPS fork <https://github.com/NOAA-EMC/CDEPS>`_
   used by `NOAA's UFS Weather Model <https://github.com/ufs-community/ufs-weather-model>`_
-  also includes additional data modes such as CFSR, GEFS and GFS. These data modes are not
-  merged with the NCAR's authoritative repository yet but it is tested under UFS Weather
-  model.
+  supports CFSR, GEFS and GFS data inputs.
 
 .. _datm-cime-vars:
 
@@ -121,6 +119,12 @@ DATM%CLM_QIAN
    - QIAN atm input data (CESM I compsets)
    - datm_mode: CLMNCEP
    - streams: CLM_QIAN.Solar,CLM_QIAN.Precip,CLM_QIAN.TPQW
+   - datamode: CLMNCEP
+
+DATM%CLMCRUJRA2024
+   - CRUJRA atm input data (CESM I compsets)
+   - datm_mode: CLMNCEP
+   - streams: CLMCRUJRA2024.Solar,CLMCRUJRA2024.Precip,CLMCRUJRA2024.TPQW
    - datamode: CLMNCEP
 
 DATM%CLMCRUNCEPv7

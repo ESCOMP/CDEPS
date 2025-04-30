@@ -336,6 +336,11 @@ class StreamCDEPS(GenericXML):
                         ),
                     )
                     if var_key in valid_values:
+
+                        # # Handle, e.g., 'bilinear' in namelist instead of bilinear (no quotes)
+                        mod_dict[var_key] = re.sub(r"[\"\']", "", mod_dict[var_key])
+
+                        # Check that key is valid
                         expect(
                             mod_dict[var_key] in valid_values[var_key],
                             "{} can only have values of {} for stream {} in file {}".format(
