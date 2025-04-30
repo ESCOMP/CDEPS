@@ -45,7 +45,7 @@ module dshr_strdata_mod
   use dshr_methods_mod , only : dshr_fldbun_getfldptr, dshr_fldbun_getfieldN, dshr_fldbun_fldchk, chkerr
   use dshr_methods_mod , only : dshr_fldbun_diagnose, dshr_fldbun_regrid, dshr_field_getfldptr
   use shr_sys_mod      , only : shr_sys_abort
-  
+
   use pio              , only : file_desc_t, iosystem_desc_t, io_desc_t, var_desc_t
   use pio              , only : pio_openfile, pio_closefile, pio_nowrite
   use pio              , only : pio_seterrorhandling, pio_initdecomp, pio_freedecomp
@@ -138,6 +138,8 @@ module dshr_strdata_mod
      real(r8)                       :: obliqr = SHR_ORB_UNDEF_REAL     ! cosz t-interp info
      real(r8), allocatable          :: tavCoszen(:)                    ! cosz t-interp data
   end type shr_strdata_type
+
+  type(ESMF_Field) :: field_vector_dst ! needed for vector fields
 
   real(r8)         ,parameter :: deg2rad = SHR_CONST_PI/180.0_r8
   character(*)     ,parameter :: u_FILE_u = &
@@ -880,7 +882,6 @@ contains
     real(r8) ,pointer                   :: dataptr2d_lb(:,:)! pointer into field bundle
     real(r8) ,pointer                   :: dataptr2d_ub(:,:)! pointer into field bundle
     real(r8), pointer                   :: nu_coords(:)     ! allocatable local element mesh lat and lons
-    real(r8), pointer                   :: nv_coords(:)     ! allocatable local element mesh lat and lons
     real(r8), pointer                   :: data2d_src(:,:)  ! pointer into field bundle
     real(r8), pointer                   :: data2d_dst(:,:)  ! pointer into field bundle
     real(r8), pointer                   :: data_u_src(:)    ! pointer into field bundle
@@ -913,7 +914,6 @@ contains
     nullify(dataptr2d_ub)
     nullify(dataptr2d_lb)
     nullify(nu_coords)
-    nullify(nv_coords)
     nullify(data2d_src)
     nullify(data2d_dst)
     nullify(data_u_src)
@@ -1459,7 +1459,7 @@ contains
 
     ! local variables
     integer                  :: stream_nlev
-    type(ESMF_Field)         :: field_dst, field_vector_dst
+    type(ESMF_Field)         :: field_dst
     character(CX)            :: currfile
     logical                  :: fileexists
     logical                  :: fileopen
@@ -1485,7 +1485,7 @@ contains
     integer                  :: lsize, n
     integer                  :: spatialDim, numOwnedElements
     integer                  :: pio_iovartype
-    real(r8), pointer        :: nv_coords(:), nu_coords(:)
+    real(r8), pointer        :: nu_coords(:)
     real(r8), pointer        :: data_u_dst(:), data_v_dst(:)
     real(r8)                 :: lat, lon
     real(r8)                 :: sinlat, sinlon
@@ -1509,7 +1509,6 @@ contains
     nullify(dataptr2d)
     nullify(dataptr2d_src)
     nullify(dataptr2d_dst)
-    nullify(nv_coords)
     nullify(nu_coords)
     nullify(data_u_dst)
     nullify(data_v_dst)
@@ -1890,10 +1889,6 @@ contains
        call ESMF_MeshGet(per_stream%stream_mesh, ownedElemCoords=nu_coords)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
 
-       allocate(nv_coords(spatialDim*numOwnedElements))
-       call ESMF_MeshGet(per_stream%stream_mesh, ownedElemCoords=nv_coords)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-
        do i=1,lsize
           dataptr(i) = dataptr2d_src(1,i)
           lon = nu_coords(2*i-1)
@@ -1903,9 +1898,14 @@ contains
           dataptr2d_src(1,i) = (coslon * dataptr(i) - sinlon * dataptr2d_src(2,i))
           dataptr2d_src(2,i) = (sinlon * dataptr(i) + coslon * dataptr2d_src(2,i))
        enddo
-       field_vector_dst = ESMF_FieldCreate(sdat%model_mesh, ESMF_TYPEKIND_r8, name='field_vector_dst', &
-            ungriddedLbound=(/1/), ungriddedUbound=(/2/), gridToFieldMap=(/2/), meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
+
+       deallocate(nu_coords)
+
+       if (.not. ESMF_FieldIsCreated(field_vector_dst)) then
+          field_vector_dst = ESMF_FieldCreate(sdat%model_mesh, ESMF_TYPEKIND_r8, name='field_vector_dst', &
+               ungriddedLbound=(/1/), ungriddedUbound=(/2/), gridToFieldMap=(/2/), meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
+          if (chkerr(rc,__LINE__,u_FILE_u)) return
+       end if
 
        if (.not. ESMF_FieldIsCreated(per_stream%field_stream_vector)) then
           call shr_log_error('ERROR: per_stream%field_stream_vector has not been created', rc=rc)
