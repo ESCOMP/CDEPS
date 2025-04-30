@@ -43,7 +43,7 @@
 
   <entry id="DATM_MODE">
     <type>char</type>
-    <valid_values>CORE2_NYF,CORE2_IAF,CLM_QIAN,CLM_QIAN_WISO,1PT,CLMCRUJRA2024,CLMCRUNCEPv7,CLMGSWP3v1,CLMNLDAS2,CPLHIST,CORE_IAF_JRA,CORE_IAF_JRA_1p4_2018,CORE_IAF_JRA_1p5_2023,ERA5,SIMPLE</valid_values>
+    <valid_values>CORE2_NYF,CORE2_IAF,CLM_QIAN,CLM_QIAN_WISO,1PT,CLMCRUJRA2024,CLMCRUNCEPv7,CLMGSWP3v1,CLMNLDAS2,CPLHIST,CORE_IAF_JRA,CORE_IAF_JRA_1p4_2018,CORE_IAF_JRA_1p5_2023,CORE_RYF8485_JRA,CORE_RYF9091_JRA,CORE_RYF0304_JRA,ERA5,SIMPLE</valid_values>
     <default_value>CORE2_NYF</default_value>
     <group>run_component_datm</group>
     <file>env_run.xml</file>
@@ -57,6 +57,9 @@
       <value compset="DATM%JRA">CORE_IAF_JRA</value>
       <value compset="DATM%JRA-1p4-2018">CORE_IAF_JRA_1p4_2018</value>
       <value compset="DATM%JRA-1p5-2023">CORE_IAF_JRA_1p5_2023</value>
+      <value compset="DATM%JRA-RYF8485">CORE_RYF8485_JRA</value>
+      <value compset="DATM%JRA-RYF9091">CORE_RYF9091_JRA</value>
+      <value compset="DATM%JRA-RYF0304">CORE_RYF0304_JRA</value>
       <value compset="DATM%QIA">CLM_QIAN</value>
       <value compset="DATM%WISOQIA">CLM_QIAN_WISO</value>
       <value compset="DATM%CRUJRA2024">CLMCRUJRA2024</value>
