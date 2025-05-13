@@ -109,6 +109,12 @@ DROF%IAF_JRA_1p4_2018
    - streams: rof.iaf_jra_1p4_2018
    - datamode: copyall
 
+DROF%RYF6162_JRA
+   - JRA55 v1.3 data from 1961 May - 1962 Apr RAF
+   - drof_mode: RYF6162_JRA
+   - streams: rof.ryf6162_jra
+   - datamode: copyall
+
 DROF%RYF8485_JRA
    - JRA55 v1.3 data from 1984 May - 1985 Apr RAF
    - drof_mode: RYF8485_JRA
