@@ -167,7 +167,6 @@ contains
 
     ! local variables
     type(ESMF_VM) :: vm
-    character(CL) :: cvalue
     integer       :: nu         ! unit number
     integer       :: bcasttmp(4)
     integer       :: ierr       ! error code
@@ -446,9 +445,7 @@ contains
     integer          , intent(out)   :: rc
 
     ! local variables
-    logical                    :: first_time = .true.
-    integer                    :: n
-    character(CS), allocatable :: strm_flds(:)
+    logical :: first_time = .true.
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
