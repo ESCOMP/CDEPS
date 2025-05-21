@@ -114,4 +114,39 @@
     <stream_readmode>single</stream_readmode>
   </stream_entry>
 
+  <stream_entry name="rof_forcing">
+    <stream_meshfile>
+      <meshfile>$LND_DOMAIN_MESH</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="0" last_year="99999">$DLND_CPLHIST_DIR/$DLND_CPLHIST_CASE.cpl.hx.lnd2rof.24hr.avg.%y-01-01-00000.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>lndImp_Flrl_rofsur_nonh2o%rof Flrl_rofsur_nonh2o%rof</var>
+	    <var>lndImp_Flrl_rofsur Flrl_rofsur</var>
+	    <var>lndImp_Flrl_rofsub Flrl_rofsub</var>
+	    <var>lndImp_Flrl_rofgwl Flrl_rofgwl</var>
+	    <var>lndImp_Flrl_rofi   Flrl_rofi</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DLND_CPLHIST_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DLND_CPLHIST_YR_START</stream_year_first>
+    <stream_year_last>$DLND_CPLHIST_YR_END</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>lower</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
 </stream_data>

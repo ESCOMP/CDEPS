@@ -20,4 +20,13 @@
     </options>
   </test>
 
+  <test name="ERS_D_Ld30" compset="2000_SATM_DLND%RCPL_SICE_SOCN_SROF_SGLC_SWAV" grid="f09_f09_mg17" testmods="dlnd/rof_forcing">
+    <machines>
+      <machine name="betzy" compiler="intel" category="aux_cdeps_noresm"/>
+    </machines>
+    <options>
+      <option name="wallclock"> 00:10:00 </option>
+    </options>
+  </test>
+
 </testlist>
