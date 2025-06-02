@@ -89,18 +89,6 @@ def _get_neon_data_availability(case, neonsite):
     expect(newestdate, "No tower data found on server for NEON site {}".format(neonsite))
     return None
 
-####################################################################################
-def _check_datm_af_mismatch(anomaly_forcing, datm_mode):
-####################################################################################
-
-    # CMIP5 and CMIP6 anomalies were only generated relative to GSWP3v1
-    is_cmip5_or_6 = any(x in anomaly_forcing for x in ["cmip5", "cmip6"])
-    if is_cmip5_or_6 and datm_mode != "CLMGSWP3v1":
-        raise SystemExit(
-            "CMIP5 and CMIP6 anomalies were only generated relative for DATM_MODE CLMGSWP3v1."
-            " To fix this error, do: ./xmlchange DATM_MODE=CLMGSWP3v1"
-        )
-
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
 ####################################################################################
@@ -236,7 +224,6 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     # Set anomaly forcing in datm.streams.xml
     anomaly_forcing = nmlgen.get_value("anomaly_forcing")
     if anomaly_forcing[0] is not None and anomaly_forcing[0] != "none":
-        _check_datm_af_mismatch(anomaly_forcing[0], datm_mode)
         streamlist += anomaly_forcing
 
     # Generate datm.streams.xml
