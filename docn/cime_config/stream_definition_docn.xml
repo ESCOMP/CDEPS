@@ -257,7 +257,7 @@
       <tintalgo>nearest</tintalgo>
     </stream_tintalgo>
     <stream_taxmode>
-      <taxmode>extend</taxmode>
+      <taxmode>cycle</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit>1.e30</dtlimit>
