@@ -877,6 +877,8 @@ contains
           ! or later.
           if (mod(tod,delta_radsw) == 0 .and. stepno > 0) then
              nextsw_cday = julday + 1*dtime/shr_const_cday
+          elseif (stepno == 0) then
+             nextsw_cday = julday + (1+liradsw)*dtime/shr_const_cday
           else
              nextsw_cday = -1._r8
           end if
