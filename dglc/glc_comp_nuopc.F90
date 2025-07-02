@@ -28,6 +28,7 @@ module cdeps_dglc_comp
   use NUOPC_Model      , only : model_label_Finalize    => label_Finalize
   use NUOPC_Model      , only : NUOPC_ModelGet, SetVM
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
+  use shr_kind_mod     , only : cx=>shr_kind_cx
   use shr_cal_mod      , only : shr_cal_ymd2date
   use shr_log_mod      , only : shr_log_setLogUnit, shr_log_error
   use shr_string_mod   , only : shr_string_listGetNum, shr_string_listGetName
@@ -95,10 +96,10 @@ module cdeps_dglc_comp
   character(CL)     :: case_name
 
   ! dglc_in namelist input
-  character(CL) :: streamfilename = nullstr    ! filename to obtain stream info from
-  character(CL) :: nlfilename = nullstr        ! filename to obtain namelist info from
+  character(CX) :: streamfilename = nullstr    ! filename to obtain stream info from
+  character(CX) :: nlfilename = nullstr        ! filename to obtain namelist info from
   character(CL) :: datamode = nullstr          ! flags physics options wrt input data
-  character(CL) :: restfilm = nullstr          ! model restart file namelist
+  character(CX) :: restfilm = nullstr          ! model restart file namelist
   logical       :: skip_restart_read = .false. ! true => skip restart read in continuation run
   logical       :: export_all = .false.        ! true => export all fields, do not check connected or not
 
@@ -262,7 +263,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_VMBroadcast(vm, datamode, CL, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_VMBroadcast(vm, restfilm, CL, main_task, rc=rc)
+    call ESMF_VMBroadcast(vm, restfilm, CX, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_VMBroadcast(vm, model_meshfiles, CL*max_icesheets, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
