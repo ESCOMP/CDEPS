@@ -68,8 +68,8 @@ module cdeps_drof_comp
   character(CL)                :: case_name                           ! case name
   character(*) , parameter     :: nullstr = 'null'
                                                                       ! drof_in namelist input
-  character(CL)                :: streamfilename = nullstr            ! filename to obtain stream info from
-  character(CL)                :: nlfilename = nullstr                ! filename to obtain namelist info from
+  character(CX)                :: streamfilename = nullstr            ! filename to obtain stream info from
+  character(CX)                :: nlfilename = nullstr                ! filename to obtain namelist info from
   character(CL)                :: dataMode = nullstr                  ! flags physics options wrt input data
   character(CX)                :: model_meshfile = nullstr            ! full pathname to model meshfile
   character(CX)                :: model_maskfile = nullstr            ! full pathname to obtain mask from

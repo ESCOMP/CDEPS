@@ -79,8 +79,8 @@ module cdeps_dice_comp
   character(*) , parameter     :: nullstr = 'null'
 
   ! dice_in namelist input
-  character(CL)                :: streamfilename = nullstr            ! filename to obtain stream info from
-  character(CL)                :: nlfilename = nullstr                ! filename to obtain namelist info from
+  character(CX)                :: streamfilename = nullstr            ! filename to obtain stream info from
+  character(CX)                :: nlfilename = nullstr                ! filename to obtain namelist info from
   character(CL)                :: dataMode                            ! flags physics options wrt input data
   character(CX)                :: model_meshfile = nullstr            ! full pathname to model meshfile
   character(CX)                :: model_maskfile = nullstr            ! full pathname to obtain mask from
