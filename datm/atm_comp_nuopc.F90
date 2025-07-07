@@ -119,7 +119,7 @@ module cdeps_datm_comp
   character(CL)                :: bias_correct = nullstr              ! send bias correction fields to coupler
   character(CL)                :: anomaly_forcing(8) = nullstr        ! send anomaly forcing fields to coupler
 
-  character(CL)                :: restfilm = nullstr                  ! model restart file namelist
+  character(CX)                :: restfilm = nullstr                  ! model restart file namelist
   integer                      :: nx_global                           ! global nx
   integer                      :: ny_global                           ! global ny
   logical                      :: skip_restart_read = .false.         ! true => skip restart read in continuation run
