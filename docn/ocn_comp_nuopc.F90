@@ -24,6 +24,7 @@ module cdeps_docn_comp
   use NUOPC_Model      , only : model_label_Finalize    => label_Finalize
   use NUOPC_Model      , only : NUOPC_ModelGet, SetVM
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
+  use shr_kind_mod     , only : cx=>shr_kind_cx
   use shr_cal_mod      , only : shr_cal_ymd2date
   use shr_log_mod      , only : shr_log_setLogUnit, shr_log_error
   use dshr_methods_mod , only : dshr_state_diagnose, chkerr, memcheck
@@ -93,14 +94,14 @@ module cdeps_docn_comp
   character(*) , parameter     :: nullstr = 'null'
 
   ! docn_in namelist input
-  character(CL)                :: streamfilename = nullstr            ! filename to obtain stream info from
-  character(CL)                :: nlfilename = nullstr                ! filename to obtain namelist info from
+  character(CX)                :: streamfilename = nullstr            ! filename to obtain stream info from
+  character(CX)                :: nlfilename = nullstr                ! filename to obtain namelist info from
   character(CL)                :: datamode = nullstr                  ! flags physics options wrt input data
-  character(CL)                :: model_meshfile = nullstr            ! full pathname to model meshfile
-  character(CL)                :: model_maskfile = nullstr            ! full pathname to obtain mask from
+  character(CX)                :: model_meshfile = nullstr            ! full pathname to model meshfile
+  character(CX)                :: model_maskfile = nullstr            ! full pathname to obtain mask from
   real(R8)                     :: sst_constant_value                  ! sst constant value
   integer                      :: aquap_option                        ! if aqua-planet mode, option to use
-  character(CL)                :: restfilm = nullstr                  ! model restart file namelist
+  character(CX)                :: restfilm = nullstr                  ! model restart file namelist
   integer                      :: nx_global
   integer                      :: ny_global
   logical                      :: skip_restart_read = .false.         ! true => skip restart read in continuation run
@@ -262,11 +263,11 @@ contains
 
     call ESMF_VMBroadcast(vm, datamode, CL, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_VMBroadcast(vm, model_meshfile, CL, main_task, rc=rc)
+    call ESMF_VMBroadcast(vm, model_meshfile, CX, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_VMBroadcast(vm, model_maskfile, CL, main_task, rc=rc)
+    call ESMF_VMBroadcast(vm, model_maskfile, CX, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_VMBroadcast(vm, restfilm, CL, main_task, rc=rc)
+    call ESMF_VMBroadcast(vm, restfilm, CX, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_VMBroadcast(vm, import_data_fields, CL, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return

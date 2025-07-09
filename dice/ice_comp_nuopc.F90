@@ -25,6 +25,7 @@ module cdeps_dice_comp
   use NUOPC_Model          , only : model_label_Finalize    => label_Finalize
   use NUOPC_Model          , only : NUOPC_ModelGet, SetVM
   use shr_kind_mod         , only : r8=>shr_kind_r8, cxx=>shr_kind_cxx, cl=>shr_kind_cl, cs=>shr_kind_cs
+  use shr_kind_mod         , only : cx=>shr_kind_cx
   use shr_const_mod        , only : shr_const_pi
   use shr_log_mod          , only : shr_log_setLogUnit, shr_log_error
   use shr_cal_mod          , only : shr_cal_ymd2date, shr_cal_ymd2julian
@@ -78,16 +79,16 @@ module cdeps_dice_comp
   character(*) , parameter     :: nullstr = 'null'
 
   ! dice_in namelist input
-  character(CL)                :: streamfilename = nullstr            ! filename to obtain stream info from
-  character(CL)                :: nlfilename = nullstr                ! filename to obtain namelist info from
+  character(CX)                :: streamfilename = nullstr            ! filename to obtain stream info from
+  character(CX)                :: nlfilename = nullstr                ! filename to obtain namelist info from
   character(CL)                :: dataMode                            ! flags physics options wrt input data
-  character(CL)                :: model_meshfile = nullstr            ! full pathname to model meshfile
-  character(CL)                :: model_maskfile = nullstr            ! full pathname to obtain mask from
+  character(CX)                :: model_meshfile = nullstr            ! full pathname to model meshfile
+  character(CX)                :: model_maskfile = nullstr            ! full pathname to obtain mask from
   real(R8)                     :: flux_swpf                           ! short-wave penatration factor
   real(R8)                     :: flux_Qmin                           ! bound on melt rate
   logical                      :: flux_Qacc                           ! activates water accumulation/melt wrt Q
   real(R8)                     :: flux_Qacc0                          ! initial water accumulation value
-  character(CL)                :: restfilm = nullstr                  ! model restart file namelist
+  character(CX)                :: restfilm = nullstr                  ! model restart file namelist
   integer                      :: nx_global
   integer                      :: ny_global
   logical                      :: export_all = .false.                ! true => export all fields, do not check connected or not
@@ -250,11 +251,11 @@ contains
 
     call ESMF_VMBroadcast(vm, datamode, CL, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_VMBroadcast(vm, model_meshfile, CL, main_task, rc=rc)
+    call ESMF_VMBroadcast(vm, model_meshfile, CX, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_VMBroadcast(vm, model_maskfile, CL, main_task, rc=rc)
+    call ESMF_VMBroadcast(vm, model_maskfile, CX, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_VMBroadcast(vm, restfilm, CL, main_task, rc=rc)
+    call ESMF_VMBroadcast(vm, restfilm, CX, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_VMBroadcast(vm, bcasttmp, 3, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
