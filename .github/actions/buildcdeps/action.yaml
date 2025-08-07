@@ -16,6 +16,11 @@ inputs:
     default: $HOME/ESMF/lib/libg/Linux.gfortran.64.openmpi.default/esmf.mk 
     required: False
     type: string
+  esmf_root:
+    description: 'Path to the installed ESMF library'
+    default: $HOME/ESMF
+    required: False
+    type: string
   src_root:
     description: 'Path to cdeps source'
     default: $GITHUB_WORKSPACE
@@ -40,6 +45,7 @@ runs:
         mkdir build-cdeps
         pushd build-cdeps
         export ESMFMKFILE=${{ inputs.esmfmkfile }}
+        export ESMF_ROOT=${{ inputs.esmf_root }}
         export PIO=${{ inputs.pio_path }}
         cmake ${{ inputs.cmake_flags }} ${{ inputs.src_root }}
         make VERBOSE=1
