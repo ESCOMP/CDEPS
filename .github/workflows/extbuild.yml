@@ -69,6 +69,7 @@ jobs:
         uses: ./.github/actions/buildcdeps
         with:
           esmfmkfile: $ESMFMKFILE
+          esmf_root: ${GITHUB_WORKSPACE}/ESMF
           pio_path: ${GITHUB_WORKSPACE}/pio
           src_root: ${GITHUB_WORKSPACE}
           cmake_flags: " -Wno-dev -DCMAKE_BUILD_TYPE=DEBUG -DWERROR=ON  -DCMAKE_Fortran_FLAGS=\"-DCPRGNU -g -Wall \
