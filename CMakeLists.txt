@@ -39,6 +39,7 @@ enable_language(Fortran)
 if (TARGET ESMF::ESMF)
   message("Target ESMF::ESMF is already found. Skip find_package ...")
 else()
+  list(APPEND CMAKE_MODULE_PATH $ENV{ESMF_ROOT}/cmake)
   find_package(ESMF REQUIRED)
 endif()
 
