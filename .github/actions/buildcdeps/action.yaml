@@ -40,10 +40,16 @@ runs:
         mkdir build-cdeps
         pushd build-cdeps
         
-        # Use CMAKE_PREFIX_PATH to help CMake find the ESMF and PIO packages.
+        # We need to explicitly set ESMF_DIR and PIO_DIR to the location where
+        # their respective CMake configuration files are.
+        # The esmf-org action installs ESMFConfig.cmake in /ESMF/lib/cmake/ESMF.
+        # The PIO action likely installs pio-config.cmake in /pio/lib/cmake.
+        # By setting the variables directly, we bypass any issues with CMAKE_PREFIX_PATH.
+        # This is a more robust approach.
         cmake \
-          -D CMAKE_PREFIX_PATH=${{ inputs.esmf_root }}:${{ inputs.pio_path }} \
+          -D ESMF_DIR=${{ inputs.esmf_root }}/lib/cmake/ESMF \
+          -D PIO_DIR=${{ inputs.pio_path }}/lib/cmake \
           ${{ inputs.cmake_flags }} ${{ inputs.src_root }}
-          
+        
         make VERBOSE=1
         popd
