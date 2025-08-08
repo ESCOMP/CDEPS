@@ -65,31 +65,17 @@ jobs:
           esmpy: false
           cache: true
       
-      # The build logic is moved directly into this step to avoid
-      # issues with variable scope and inheritance between actions.
-      
-      - name: Debugging - List ESMF and PIO directories
-        run: |
-          echo "Listing contents of gh workspace:"
-          ls -R ${{ github.workspace }}
-          echo "-----------------------------------"
-          echo "Listing contents of ESMF directory:"
-          ls -R ${{ github.workspace }}/ESMF
-          echo "-----------------------------------"
-          echo "Listing contents of PIO directory:"
-          ls -R ${{ github.workspace }}/pio
-
       - name: Build CDEPS
         run: |
           mkdir build-cdeps
           pushd build-cdeps
           
-          # We need to explicitly point to the subdirectory where the
-          # ESMF and PIO CMake configuration files are located.
-          # The install actions put them in a subdirectory, not at the root.
+          # The FindESMF.cmake files were located in specific subdirectories.
+          # We need to explicitly add those paths to CMAKE_MODULE_PATH.
+          # We also set CMAKE_PREFIX_PATH for PIO as that is the standard method.
           cmake \
-            -D ESMF_DIR=${{ github.workspace }}/ESMF/lib/cmake/ESMF \
-            -D PIO_DIR=${{ github.workspace }}/pio/lib/cmake/pio \
+            -D CMAKE_MODULE_PATH=${{ github.workspace }}/ESMF/include/ESMX/Comps/ESMX_Data/cmake:${{ github.workspace }}/ESMF/include/ESMX/Driver/cmake \
+            -D CMAKE_PREFIX_PATH=${{ github.workspace }}/pio \
             -Wno-dev \
             -DCMAKE_BUILD_TYPE=DEBUG \
             -DWERROR=ON \
