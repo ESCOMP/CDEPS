@@ -40,15 +40,12 @@ runs:
         mkdir build-cdeps
         pushd build-cdeps
         
-        # We need to explicitly set ESMF_DIR and PIO_DIR to the location where
-        # their respective CMake configuration files are.
-        # The esmf-org action installs ESMFConfig.cmake in /ESMF/lib/cmake/ESMF.
-        # The PIO action likely installs pio-config.cmake in /pio/lib/cmake.
-        # By setting the variables directly, we bypass any issues with CMAKE_PREFIX_PATH.
-        # This is a more robust approach.
+        # Use the ESMF_DIR environment variable that is set by the
+        # esmf-org/install-esmf-action. This is more reliable than guessing the path
+        # from esmf_root. The PIO action similarly sets PIO_DIR.
         cmake \
-          -D ESMF_DIR=${{ inputs.esmf_root }}/lib/cmake/ESMF \
-          -D PIO_DIR=${{ inputs.pio_path }}/lib/cmake \
+          -D ESMF_DIR="${ESMF_DIR}" \
+          -D PIO_DIR="${PIO_DIR}" \
           ${{ inputs.cmake_flags }} ${{ inputs.src_root }}
         
         make VERBOSE=1
