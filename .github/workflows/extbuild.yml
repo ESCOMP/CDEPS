@@ -67,6 +67,18 @@ jobs:
       
       # The build logic is moved directly into this step to avoid
       # issues with variable scope and inheritance between actions.
+      
+      - name: Debugging - List ESMF and PIO directories
+        run: |
+          echo "Listing contents of gh workspace:"
+          ls -R ${{ github.workspace }}
+          echo "-----------------------------------"
+          echo "Listing contents of ESMF directory:"
+          ls -R ${{ github.workspace }}/ESMF
+          echo "-----------------------------------"
+          echo "Listing contents of PIO directory:"
+          ls -R ${{ github.workspace }}/pio
+
       - name: Build CDEPS
         run: |
           mkdir build-cdeps
