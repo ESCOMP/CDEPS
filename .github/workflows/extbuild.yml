@@ -72,11 +72,12 @@ jobs:
           mkdir build-cdeps
           pushd build-cdeps
           
-          # Use CMAKE_PREFIX_PATH to point CMake to the top-level installation
-          # directory for ESMF and PIO. This is the most reliable method
-          # for `find_package` to locate the required configuration files.
+          # We need to explicitly point to the subdirectory where the
+          # ESMF and PIO CMake configuration files are located.
+          # The install actions put them in a subdirectory, not at the root.
           cmake \
-            -D CMAKE_PREFIX_PATH=${{ github.workspace }}/ESMF:${{ github.workspace }}/pio \
+            -D ESMF_DIR=${{ github.workspace }}/ESMF/lib/cmake/ESMF \
+            -D PIO_DIR=${{ github.workspace }}/pio/lib/cmake/pio \
             -Wno-dev \
             -DCMAKE_BUILD_TYPE=DEBUG \
             -DWERROR=ON \
