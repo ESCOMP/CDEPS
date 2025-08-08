@@ -11,11 +11,6 @@ inputs:
     default: $HOME/pio
     required: False
     type: string
-  esmfmkfile:
-    description: 'Path to the installed ESMF library mkfile'
-    default: $HOME/ESMF/lib/libg/Linux.gfortran.64.openmpi.default/esmf.mk 
-    required: False
-    type: string
   esmf_root:
     description: 'Path to the installed ESMF library'
     default: $HOME/ESMF
@@ -44,9 +39,11 @@ runs:
       run: |
         mkdir build-cdeps
         pushd build-cdeps
-        export ESMFMKFILE=${{ inputs.esmfmkfile }}
-        export ESMF_ROOT=${{ inputs.esmf_root }}
-        export PIO=${{ inputs.pio_path }}
-        cmake ${{ inputs.cmake_flags }} ${{ inputs.src_root }}
+        
+        # Use CMAKE_PREFIX_PATH to help CMake find the ESMF and PIO packages.
+        cmake \
+          -D CMAKE_PREFIX_PATH=${{ inputs.esmf_root }}:${{ inputs.pio_path }} \
+          ${{ inputs.cmake_flags }} ${{ inputs.src_root }}
+          
         make VERBOSE=1
         popd
