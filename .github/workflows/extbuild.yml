@@ -39,7 +39,7 @@ jobs:
         id: cache-PARALLELIO
         uses: actions/cache@v4
         with:
-          path: ${GITHUB_WORKSPACE}/pio
+          path: ${{ github.workspace }}/pio
           key: ${{ runner.os }}-${{ env.ParallelIO_VERSION }}-parallelio2
       - name: Build ParallelIO
         if: steps.cache-PARALLELIO.outputs.cache-hit != 'true'
@@ -47,7 +47,7 @@ jobs:
         with:
           parallelio_version: ${{ env.ParallelIO_VERSION }}
           enable_fortran: True
-          install_prefix: ${GITHUB_WORKSPACE}/pio
+          install_prefix: ${{ github.workspace }}/pio
       - name: Install ESMF
         uses: esmf-org/install-esmf-action@v1
         env:
@@ -56,10 +56,10 @@ jobs:
           ESMF_COMM: openmpi
           ESMF_NETCDF: nc-config
           ESMF_PNETCDF: pnetcdf-config
-          ESMF_INSTALL_PREFIX: ${GITHUB_WORKSPACE}/ESMF
+          ESMF_INSTALL_PREFIX: ${{ github.workspace }}/ESMF
           ESMF_PIO: external
-          ESMF_PIO_INCLUDE: ${GITHUB_WORKSPACE}/pio/include
-          ESMF_PIO_LIBPATH: ${GITHUB_WORKSPACE}/pio/lib
+          ESMF_PIO_INCLUDE: ${{ github.workspace }}/pio/include
+          ESMF_PIO_LIBPATH: ${{ github.workspace }}/pio/lib
         with:
           version: ${{ env.ESMF_VERSION }}
           esmpy: false
@@ -68,12 +68,15 @@ jobs:
       - name: Build CDEPS
         uses: ./.github/actions/buildcdeps
         with:
-          esmfmkfile: $ESMFMKFILE
-          esmf_root: ${GITHUB_WORKSPACE}/ESMF
-          pio_path: ${GITHUB_WORKSPACE}/pio
-          src_root: ${GITHUB_WORKSPACE}
-          cmake_flags: " -Wno-dev -DCMAKE_BUILD_TYPE=DEBUG -DWERROR=ON  -DCMAKE_Fortran_FLAGS=\"-DCPRGNU -g -Wall \
-          -ffree-form -ffree-line-length-none -fallow-argument-mismatch \""
+          # esmfmkfile is removed from the input list as it's not needed by the corrected action.yaml
+          esmf_root: ${{ github.workspace }}/ESMF
+          pio_path: ${{ github.workspace }}/pio
+          src_root: ${{ github.workspace }}
+          cmake_flags: >-
+            -Wno-dev
+            -DCMAKE_BUILD_TYPE=DEBUG
+            -DWERROR=ON
+            -DCMAKE_Fortran_FLAGS="-DCPRGNU -g -Wall -ffree-form -ffree-line-length-none -fallow-argument-mismatch"
       - name: Test CDEPS
         run: |
           cd build-cdeps
