@@ -65,18 +65,26 @@ jobs:
           esmpy: false
           cache: true
       
+      # The build logic is moved directly into this step to avoid
+      # issues with variable scope and inheritance between actions.
       - name: Build CDEPS
-        uses: ./.github/actions/buildcdeps
-        with:
-          # esmfmkfile is removed from the input list as it's not needed by the corrected action.yaml
-          esmf_root: ${{ github.workspace }}/ESMF
-          pio_path: ${{ github.workspace }}/pio
-          src_root: ${{ github.workspace }}
-          cmake_flags: >-
-            -Wno-dev
-            -DCMAKE_BUILD_TYPE=DEBUG
-            -DWERROR=ON
-            -DCMAKE_Fortran_FLAGS="-DCPRGNU -g -Wall -ffree-form -ffree-line-length-none -fallow-argument-mismatch"
+        run: |
+          mkdir build-cdeps
+          pushd build-cdeps
+          
+          # Use CMAKE_PREFIX_PATH to point CMake to the top-level installation
+          # directory for ESMF and PIO. This is the most reliable method
+          # for `find_package` to locate the required configuration files.
+          cmake \
+            -D CMAKE_PREFIX_PATH=${{ github.workspace }}/ESMF:${{ github.workspace }}/pio \
+            -Wno-dev \
+            -DCMAKE_BUILD_TYPE=DEBUG \
+            -DWERROR=ON \
+            -DCMAKE_Fortran_FLAGS="-DCPRGNU -g -Wall -ffree-form -ffree-line-length-none -fallow-argument-mismatch" \
+            ${{ github.workspace }}
+          
+          make VERBOSE=1
+          popd
       - name: Test CDEPS
         run: |
           cd build-cdeps
