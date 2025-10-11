@@ -635,4 +635,35 @@
     <stream_readmode>single</stream_readmode>
   </stream_entry>
 
+    <stream_entry name="rof.glofas">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/ocn/mom/croc/rof/glofas/dis24/GLOFAS_esmf_mesh_v4.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1979" last_year="2024">$DIN_LOC_ROOT/ocn/mom/croc/rof/glofas/dis24/merged_yearly_nc3_files/GloFAS_%y.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>runoff  Forr_rofl</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1979</stream_year_align>
+    <stream_year_first>1979</stream_year_first>
+    <stream_year_last>2024</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>upper</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>3.0</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
 </stream_data>
