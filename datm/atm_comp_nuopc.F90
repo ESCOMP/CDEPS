@@ -26,6 +26,7 @@ module cdeps_datm_comp
   use NUOPC_Model      , only : model_label_Finalize    => label_Finalize
   use NUOPC_Model      , only : NUOPC_ModelGet, setVM
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
+  use shr_kind_mod     , only : cx=>shr_kind_cx
   use shr_const_mod    , only : shr_const_cday
   use shr_cal_mod      , only : shr_cal_ymd2date
   use shr_log_mod      , only : shr_log_setLogUnit, shr_log_error
@@ -100,11 +101,11 @@ module cdeps_datm_comp
   character(len=*) , parameter :: nullstr = 'null'
 
   ! datm_in namelist input
-  character(CL)                :: nlfilename = nullstr                ! filename to obtain namelist info from
-  character(CL)                :: streamfilename = nullstr            ! filename to obtain stream info from
+  character(CX)                :: nlfilename = nullstr                ! filename to obtain namelist info from
+  character(CX)                :: streamfilename = nullstr            ! filename to obtain stream info from
   character(CL)                :: dataMode = nullstr                  ! flags physics options wrt input data
-  character(CL)                :: model_meshfile = nullstr            ! full pathname to model meshfile
-  character(CL)                :: model_maskfile = nullstr            ! full pathname to obtain mask from
+  character(CX)                :: model_meshfile = nullstr            ! full pathname to model meshfile
+  character(CX)                :: model_maskfile = nullstr            ! full pathname to obtain mask from
   integer                      :: iradsw = 0                          ! radiation interval (input namelist)
   logical                      :: nextsw_cday_calc_cam7               ! true => use logic appropriate to cam7 (and later) for calculating nextsw_cday
   character(CL)                :: factorFn_mesh = 'null'              ! file containing correction factors mesh
@@ -118,7 +119,7 @@ module cdeps_datm_comp
   character(CL)                :: bias_correct = nullstr              ! send bias correction fields to coupler
   character(CL)                :: anomaly_forcing(8) = nullstr        ! send anomaly forcing fields to coupler
 
-  character(CL)                :: restfilm = nullstr                  ! model restart file namelist
+  character(CX)                :: restfilm = nullstr                  ! model restart file namelist
   integer                      :: nx_global                           ! global nx
   integer                      :: ny_global                           ! global ny
   logical                      :: skip_restart_read = .false.         ! true => skip restart read in continuation run
@@ -294,15 +295,15 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_VMBroadcast(vm, anomaly_forcing, CL*8, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_VMBroadcast(vm, model_meshfile, CL, main_task, rc=rc)
+    call ESMF_VMBroadcast(vm, model_meshfile, CX, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_VMBroadcast(vm, model_maskfile, CL, main_task, rc=rc)
+    call ESMF_VMBroadcast(vm, model_maskfile, CX, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_VMBroadcast(vm, factorFn_data, CL, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_VMBroadcast(vm, factorFn_mesh, CL, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_VMBroadcast(vm, restfilm, CL, main_task, rc=rc)
+    call ESMF_VMBroadcast(vm, restfilm, CX, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_VMBroadcast(vm, nextsw_cday_calc, CL, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return

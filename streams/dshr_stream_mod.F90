@@ -1035,8 +1035,8 @@ contains
 
     else if (strm%found_gvd .and. rDateIn >= rDategvd) then
        if (limit) then
-          write(strm%logunit,*) trim(subName)," ERROR: limit on and rDateIn gt rDategvd",rDateIn,rDategvd
-          call shr_sys_abort(trim(subName)//" ERROR: rDateIn gt rDategvd limit true")
+          write(strm%logunit,*) trim(subName)," ERROR: limit on and rDateIn >= rDategvd",rDateIn,rDategvd
+          call shr_sys_abort(trim(subName)//" ERROR: rDateIn >= rDategvd limit true")
        endif
 
        if (.not.cycle) then
@@ -1135,8 +1135,8 @@ contains
 
           if (strm%found_gvd .and. rDateIn >= rDategvd) then
              if (limit) then
-                write(strm%logunit,*) trim(subName)," ERROR: limit on and rDateIn gt rDategvd",rDateIn,rDategvd
-                call shr_sys_abort(trim(subName)//" ERROR: rDateIn gt rDategvd limit true")
+                write(strm%logunit,*) trim(subName)," ERROR: limit on and rDateIn >= rDategvd",rDateIn,rDategvd
+                call shr_sys_abort(trim(subName)//" ERROR: rDateIn >= rDategvd limit true")
              endif
 
              if (.not.cycle) then
