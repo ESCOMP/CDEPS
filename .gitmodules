@@ -4,7 +4,7 @@
 [submodule "fox"]
 path = fox
 url = https://github.com/ESMCI/fox.git
-fxtag = 4.1.2.2
+fxtag = 4.1.2.4
 fxrequired = AlwaysRequired
 fxDONOTUSEurl = https://github.com/ESMCI/fox.git
 
