@@ -13,7 +13,7 @@ module dshr_strdata_mod
   use ESMF             , only : ESMF_FILEFORMAT_ESMFMESH, ESMF_FieldCreate
   use ESMF             , only : ESMF_FieldBundleCreate, ESMF_MESHLOC_ELEMENT, ESMF_FieldBundleAdd
   use ESMF             , only : ESMF_POLEMETHOD_ALLAVG, ESMF_EXTRAPMETHOD_NEAREST_STOD
-  use ESMF             , only : ESMF_REGRIDMETHOD_BILINEAR, ESMF_REGRIDMETHOD_NEAREST_STOD
+  use ESMF             , only : ESMF_REGRIDMETHOD_BILINEAR, ESMF_REGRIDMETHOD_NEAREST_STOD, ESMF_FieldSMMStore
   use ESMF             , only : ESMF_REGRIDMETHOD_CONSERVE, ESMF_NORMTYPE_FRACAREA, ESMF_NORMTYPE_DSTAREA
   use ESMF             , only : ESMF_ClockGet, operator(-), operator(==), ESMF_CALKIND_NOLEAP
   use ESMF             , only : ESMF_FieldReGridStore, ESMF_FieldRedistStore, ESMF_UNMAPPEDACTION_IGNORE
@@ -404,6 +404,7 @@ contains
     integer                      :: nvars
     integer                      :: i, stream_nlev, index
     character(CL)                :: stream_vector_names
+    character(CL)                :: mapfile
     character(len=*), parameter  :: subname='(shr_sdat_init)'
     ! ----------------------------------------------
 
@@ -598,6 +599,14 @@ contains
                   srcMaskValues=(/sdat%stream(ns)%src_mask_val/), &
                   srcTermProcessing=srcTermProcessing_Value, ignoreDegenerate=.true., &
                   unmappedaction=ESMF_UNMAPPEDACTION_IGNORE, rc=rc)
+          else if (trim(sdat%stream(ns)%mapalgo(1:8)) == 'mapfile:') then
+             mapfile = trim(sdat%stream(ns)%mapalgo(9:len_trim(sdat%stream(ns)%mapalgo)))
+             write(6,'(a)')'DEBUG: mapfile = '//trim(mapfile)
+             call ESMF_FieldSMMStore(sdat%pstrm(ns)%field_stream, lfield_dst, mapfile, &
+                  routehandle=sdat%pstrm(ns)%routehandle, &
+                  ignoreUnmatchedIndices=.true., &
+                  srcTermProcessing=srcTermProcessing_Value, rc=rc)
+             if (chkerr(rc,__LINE__,u_FILE_u)) return
           else if (trim(sdat%stream(ns)%mapalgo) == 'none') then
              ! single point stream data, no action required.
           else

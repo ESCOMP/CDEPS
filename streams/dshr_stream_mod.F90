@@ -81,6 +81,7 @@ module dshr_stream_mod
   character(CS),parameter,public :: shr_stream_mapalgo_nn       = 'nn'
   character(CS),parameter,public :: shr_stream_mapalgo_consf    = 'consf'
   character(CS),parameter,public :: shr_stream_mapalgo_consd    = 'consd'
+  character(CL),parameter,public :: shr_stream_mapalgo_mapfile  = 'mapfile:'
   character(CS),parameter,public :: shr_stream_mapalgo_none     = 'none'
 
   ! a useful derived type to use inside shr_streamType ---
@@ -112,7 +113,7 @@ module dshr_stream_mod
      character(CS)     :: lev_dimname  = 'null'                 ! name of vertical dimension if any
      character(CS)     :: taxMode      = shr_stream_taxis_cycle ! cycling option for time axis
      character(CS)     :: tInterpAlgo  = 'linear'               ! algorithm to use for time interpolation
-     character(CS)     :: mapalgo      = 'bilinear'             ! type of mapping - default is 'bilinear'
+     character(CL)     :: mapalgo      = 'bilinear'             ! type of mapping - default is 'bilinear'
      character(CS)     :: readMode     = 'single'               ! stream read model - 'single' or 'full_file'
      real(r8)          :: dtlimit      = 1.5_r8                 ! delta time ratio limits for time interpolation
      integer           :: offset       = 0                      ! offset in seconds of stream data
@@ -237,11 +238,13 @@ contains
           p => item(getElementsByTagname(streamnode, "mapalgo"), 0)
           if (associated(p)) then
              call extractDataContent(p, streamdat(i)%mapalgo)
+             write(6,*)'DEBUG: shr_stream_mapalgo = '//trim(streamdat(i)%mapalgo)
              if (streamdat(i)%mapalgo /= shr_stream_mapalgo_bilinear .and. &
                  streamdat(i)%mapalgo /= shr_stream_mapalgo_redist   .and. &
                  streamdat(i)%mapalgo /= shr_stream_mapalgo_nn       .and. &
                  streamdat(i)%mapalgo /= shr_stream_mapalgo_consf    .and. &
                  streamdat(i)%mapalgo /= shr_stream_mapalgo_consd    .and. &
+                 streamdat(i)%mapalgo(1:8) /= shr_stream_mapalgo_mapfile .and. &
                  streamdat(i)%mapalgo /= shr_stream_mapalgo_none) then
                 call shr_log_error("mapaglo must have a value of either bilinear, redist, nn, consf or consd", rc=rc)
                 return
@@ -412,7 +415,7 @@ contains
        call ESMF_VMBroadCast(vm, streamdat(i)%stream_vectors,  CL, 0, rc=rc)
 
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call ESMF_VMBroadCast(vm, streamdat(i)%mapalgo,      CS, 0, rc=rc)
+       call ESMF_VMBroadCast(vm, streamdat(i)%mapalgo,      CL, 0, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        rtmp(1) = streamdat(i)%dtlimit
        call ESMF_VMBroadCast(vm, rtmp, 1, 0, rc=rc)
@@ -1969,7 +1972,7 @@ contains
 
              ! read in filename
              rcode = pio_get_var(pioid, varid, (/1,n,k/), fname)
-             
+
              if(trim(fname) /= trim(streams(k)%file(n)%name)) then
                 write(logunit,*) 'Filename does not match restart record, checking realpath'
                 call shr_file_get_real_path(fname, rfname)

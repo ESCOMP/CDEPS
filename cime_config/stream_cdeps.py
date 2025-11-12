@@ -344,7 +344,8 @@ class StreamCDEPS(GenericXML):
 
                         # Check that key is valid
                         expect(
-                            mod_dict[var_key] in valid_values[var_key],
+                            (mod_dict[var_key] in valid_values[var_key]) or
+                            (var_key == 'mapalgo' and 'mapfile:' in mod_dict[var_key]),
                             "{} can only have values of {} for stream {} in file {}".format(
                                 var_key,
                                 valid_values[var_key],
