@@ -1,7 +1,8 @@
 module datm_datamode_cplhist_mod
 
   use ESMF             , only : ESMF_SUCCESS, ESMF_LOGMSG_INFO, ESMF_LogWrite, ESMF_State
-  use ESMF             , only : ESMF_StateItem_Flag
+  use ESMF             , only : ESMF_StateItem_Flag, ESMF_STATEITEM_NOTFOUND, operator(/=)
+  use ESMF             , only : ESMF_StateGet
   use NUOPC            , only : NUOPC_Advertise
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use dshr_methods_mod , only : dshr_state_getfldptr, chkerr
@@ -38,6 +39,7 @@ module datm_datamode_cplhist_mod
   real(r8), pointer :: Faxa_swvdr(:)        => null()
   real(r8), pointer :: Faxa_swvdf(:)        => null()
   real(r8), pointer :: Faxa_swnet(:)        => null()
+  real(r8), pointer :: Faxa_ndep(:,:)       => null()
 
   character(*), parameter :: nullstr = 'null'
   character(*), parameter :: u_FILE_u = &
@@ -129,6 +131,7 @@ contains
     integer                , intent(out)   :: rc
 
     ! local variables
+    type(ESMF_StateItem_Flag) :: itemFlag
     character(len=*), parameter :: subname='(datm_init_pointers): '
     !-------------------------------------------------------------------------------
 
@@ -174,7 +177,14 @@ contains
     call dshr_state_getfldptr(exportState, 'Faxa_lwdn'  , fldptr1=Faxa_lwdn  , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-  end subroutine datm_datamode_cplhist_init_pointers
+    call ESMF_StateGet(exportState, 'Faxa_ndep', itemFlag, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (itemflag /= ESMF_STATEITEM_NOTFOUND) then
+       call dshr_state_getfldptr(exportState, 'Faxa_ndep', fldptr2=Faxa_ndep, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    end if
+
+ end subroutine datm_datamode_cplhist_init_pointers
 
   !===============================================================================
   subroutine datm_datamode_cplhist_advance(mainproc, logunit, mpicom, rc)
