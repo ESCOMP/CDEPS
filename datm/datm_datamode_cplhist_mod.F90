@@ -191,7 +191,10 @@ contains
 
     rc = ESMF_SUCCESS
 
-    ! For now - do nothing special
+    if (associated(Faxa_ndep)) then
+       ! convert ndep flux to units of kgN/m2/s (assumes that input is in gN/m2/s)
+       Faxa_ndep(:,:) = Faxa_ndep(:,:) / 1000._r8
+    end if
 
   end subroutine datm_datamode_cplhist_advance
 
