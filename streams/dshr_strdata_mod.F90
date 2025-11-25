@@ -601,7 +601,6 @@ contains
                   unmappedaction=ESMF_UNMAPPEDACTION_IGNORE, rc=rc)
           else if (trim(sdat%stream(ns)%mapalgo(1:8)) == 'mapfile:') then
              mapfile = trim(sdat%stream(ns)%mapalgo(9:len_trim(sdat%stream(ns)%mapalgo)))
-             write(6,'(a)')'DEBUG: mapfile = '//trim(mapfile)
              call ESMF_FieldSMMStore(sdat%pstrm(ns)%field_stream, lfield_dst, mapfile, &
                   routehandle=sdat%pstrm(ns)%routehandle, &
                   ignoreUnmatchedIndices=.true., &
