@@ -19,6 +19,7 @@ add_library(cdeps_share  ${GenF90_SRCS}
                          shr_strconvert_mod.F90
                          shr_precip_mod.F90
                          shr_string_mod.F90
+                         shr_is_restart_fh_mod.F90
                          nuopc_shr_methods.F90)
 
 target_include_directories (cdeps_share PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${ESMF_F90COMPILEPATHS} ${PIO_Fortran_INCLUDE_DIRS})
