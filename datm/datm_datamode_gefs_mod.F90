@@ -55,8 +55,7 @@ module datm_datamode_gefs_mod
 contains
 !===============================================================================
 
-  subroutine datm_datamode_gefs_advertise(exportState, fldsexport, &
-       flds_scalar_name, rc)
+  subroutine datm_datamode_gefs_advertise(exportState, fldsexport, flds_scalar_name, rc)
 
     ! input/output variables
     type(esmf_State)   , intent(inout) :: exportState

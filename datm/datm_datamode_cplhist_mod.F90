@@ -18,28 +18,52 @@ module datm_datamode_cplhist_mod
   public  :: datm_datamode_cplhist_advance
 
   ! export state data
-  real(r8), pointer :: Sa_z(:)              => null()
-  real(r8), pointer :: Sa_u(:)              => null()
-  real(r8), pointer :: Sa_v(:)              => null()
-  real(r8), pointer :: Sa_tbot(:)           => null()
-  real(r8), pointer :: Sa_ptem(:)           => null()
-  real(r8), pointer :: Sa_shum(:)           => null()
-  ! TODO: water isotope support
-  !  real(r8), pointer :: Sa_shum_wiso(:,:)    => null() ! water isotopes
-  real(r8), pointer :: Sa_dens(:)           => null()
-  real(r8), pointer :: Sa_pbot(:)           => null()
-  real(r8), pointer :: Sa_pslv(:)           => null()
-  real(r8), pointer :: Faxa_lwdn(:)         => null()
-  real(r8), pointer :: Faxa_rainc(:)        => null()
-  real(r8), pointer :: Faxa_rainl(:)        => null()
-  real(r8), pointer :: Faxa_snowc(:)        => null()
-  real(r8), pointer :: Faxa_snowl(:)        => null()
-  real(r8), pointer :: Faxa_swndr(:)        => null()
-  real(r8), pointer :: Faxa_swndf(:)        => null()
-  real(r8), pointer :: Faxa_swvdr(:)        => null()
-  real(r8), pointer :: Faxa_swvdf(:)        => null()
-  real(r8), pointer :: Faxa_swnet(:)        => null()
-  real(r8), pointer :: Faxa_ndep(:,:)       => null()
+
+  real(r8), pointer :: Sa_z(:)            => null()
+  real(r8), pointer :: Sa_tbot(:)         => null()
+  real(r8), pointer :: Sa_ptem(:)         => null()
+  real(r8), pointer :: Sa_shum(:)         => null()
+  real(r8), pointer :: Sa_dens(:)         => null()
+  real(r8), pointer :: Sa_pbot(:)         => null()
+  real(r8), pointer :: Sa_pslv(:)         => null()
+
+  real(r8), pointer :: Sa_u(:)            => null()
+  real(r8), pointer :: Sa_v(:)            => null()
+
+  real(r8), pointer :: Faxa_rainc(:)      => null()
+  real(r8), pointer :: Faxa_rainl(:)      => null()
+  real(r8), pointer :: Faxa_snowc(:)      => null()
+  real(r8), pointer :: Faxa_snowl(:)      => null()
+  real(r8), pointer :: Faxa_lwdn(:)       => null()
+
+  real(r8), pointer :: Faxa_swndr(:)      => null()
+  real(r8), pointer :: Faxa_swndf(:)      => null()
+  real(r8), pointer :: Faxa_swvdr(:)      => null()
+  real(r8), pointer :: Faxa_swvdf(:)      => null()
+
+  ! stream data
+
+  real(r8), pointer :: strm_Sa_z   (:)    => null()
+  real(r8), pointer :: strm_Sa_tbot(:)    => null()
+  real(r8), pointer :: strm_Sa_ptem(:)    => null()
+  real(r8), pointer :: strm_Sa_shum(:)    => null()
+  real(r8), pointer :: strm_Sa_pbot(:)    => null()
+  real(r8), pointer :: strm_Sa_dens(:)    => null()
+  real(r8), pointer :: strm_Sa_pslv(:)    => null()
+
+  real(r8), pointer :: strm_Sa_u(:)       => null()
+  real(r8), pointer :: strm_Sa_v(:)       => null()
+
+  real(r8), pointer :: strm_Faxa_swndr(:) => null()
+  real(r8), pointer :: strm_Faxa_swvdr(:) => null()
+  real(r8), pointer :: strm_Faxa_swndf(:) => null()
+  real(r8), pointer :: strm_Faxa_swvdf(:) => null()
+
+  real(r8), pointer :: strm_Faxa_rainc(:) => null()
+  real(r8), pointer :: strm_Faxa_rainl(:) => null()
+  real(r8), pointer :: strm_Faxa_snowc(:) => null()
+  real(r8), pointer :: strm_Faxa_snowl(:) => null()
+  real(r8), pointer :: strm_Faxa_lwdn (:) => null()
 
   character(*), parameter :: nullstr = 'null'
   character(*), parameter :: u_FILE_u = &
@@ -49,16 +73,11 @@ module datm_datamode_cplhist_mod
 contains
 !===============================================================================
 
-  subroutine datm_datamode_cplhist_advertise(exportState, fldsexport, flds_scalar_name, &
-       flds_co2, flds_wiso, flds_presaero, flds_presndep, rc)
+  subroutine datm_datamode_cplhist_advertise(exportState, fldsexport, flds_scalar_name, rc)
 
     ! input/output variables
     type(esmf_State)   , intent(inout) :: exportState
     type(fldlist_type) , pointer       :: fldsexport
-    logical            , intent(in)    :: flds_co2
-    logical            , intent(in)    :: flds_wiso
-    logical            , intent(in)    :: flds_presaero
-    logical            , intent(in)    :: flds_presndep
     character(len=*)   , intent(in)    :: flds_scalar_name
     integer            , intent(out)   :: rc
 
@@ -71,45 +90,29 @@ contains
     call dshr_fldList_add(fldsExport, trim(flds_scalar_name))
     call dshr_fldList_add(fldsExport, 'Sa_topo'    )
     call dshr_fldList_add(fldsExport, 'Sa_z'       )
-    call dshr_fldList_add(fldsExport, 'Sa_u'       )
-    call dshr_fldList_add(fldsExport, 'Sa_v'       )
     call dshr_fldList_add(fldsExport, 'Sa_ptem'    )
     call dshr_fldList_add(fldsExport, 'Sa_dens'    )
     call dshr_fldList_add(fldsExport, 'Sa_pslv'    )
     call dshr_fldList_add(fldsExport, 'Sa_tbot'    )
     call dshr_fldList_add(fldsExport, 'Sa_pbot'    )
     call dshr_fldList_add(fldsExport, 'Sa_shum'    )
-    call dshr_fldList_add(fldsExport, 'Faxa_rainc' )
-    call dshr_fldList_add(fldsExport, 'Faxa_rainl' )
-    call dshr_fldList_add(fldsExport, 'Faxa_snowc' )
-    call dshr_fldList_add(fldsExport, 'Faxa_snowl' )
+
+    call dshr_fldList_add(fldsExport, 'Sa_u'       )
+    call dshr_fldList_add(fldsExport, 'Sa_v'       )
+
     call dshr_fldList_add(fldsExport, 'Faxa_swndr' )
     call dshr_fldList_add(fldsExport, 'Faxa_swvdr' )
     call dshr_fldList_add(fldsExport, 'Faxa_swndf' )
     call dshr_fldList_add(fldsExport, 'Faxa_swvdf' )
-    call dshr_fldList_add(fldsExport, 'Faxa_swnet' )
+
+    call dshr_fldList_add(fldsExport, 'Faxa_rainc' )
+    call dshr_fldList_add(fldsExport, 'Faxa_rainl' )
+    call dshr_fldList_add(fldsExport, 'Faxa_snowc' )
+    call dshr_fldList_add(fldsExport, 'Faxa_snowl' )
     call dshr_fldList_add(fldsExport, 'Faxa_lwdn'  )
-    call dshr_fldList_add(fldsExport, 'Faxa_swdn'  )
-    if (flds_co2) then
-       call dshr_fldList_add(fldsExport, 'Sa_co2prog')
-       call dshr_fldList_add(fldsExport, 'Sa_co2diag')
-    end if
-    if (flds_presaero) then
-       call dshr_fldList_add(fldsExport, 'Faxa_bcph'   , ungridded_lbound=1, ungridded_ubound=3)
-       call dshr_fldList_add(fldsExport, 'Faxa_ocph'   , ungridded_lbound=1, ungridded_ubound=3)
-       call dshr_fldList_add(fldsExport, 'Faxa_dstwet' , ungridded_lbound=1, ungridded_ubound=4)
-       call dshr_fldList_add(fldsExport, 'Faxa_dstdry' , ungridded_lbound=1, ungridded_ubound=4)
-    end if
-    if (flds_presndep) then
-       call dshr_fldList_add(fldsExport, 'Faxa_ndep', ungridded_lbound=1, ungridded_ubound=2)
-    end if
-    if (flds_wiso) then
-       call dshr_fldList_add(fldsExport, 'Faxa_rainc_wiso', ungridded_lbound=1, ungridded_ubound=3)
-       call dshr_fldList_add(fldsExport, 'Faxa_rainl_wiso', ungridded_lbound=1, ungridded_ubound=3)
-       call dshr_fldList_add(fldsExport, 'Faxa_snowc_wiso', ungridded_lbound=1, ungridded_ubound=3)
-       call dshr_fldList_add(fldsExport, 'Faxa_snowl_wiso', ungridded_lbound=1, ungridded_ubound=3)
-       call dshr_fldList_add(fldsExport, 'Faxa_shum_wiso' , ungridded_lbound=1, ungridded_ubound=3)
-    end if
+
+    !call dshr_fldList_add(fldsExport, 'Faxa_swnet' ) !???
+    !call dshr_fldList_add(fldsExport, 'Faxa_swdn'  ) !???
 
     fldlist => fldsExport ! the head of the linked list
     do while (associated(fldlist))
@@ -140,10 +143,6 @@ contains
     ! get export state pointers
     call dshr_state_getfldptr(exportState, 'Sa_z'       , fldptr1=Sa_z       , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call dshr_state_getfldptr(exportState, 'Sa_u'       , fldptr1=Sa_u       , rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call dshr_state_getfldptr(exportState, 'Sa_v'       , fldptr1=Sa_v       , rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Sa_tbot'    , fldptr1=Sa_tbot    , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Sa_pbot'    , fldptr1=Sa_pbot    , rc=rc)
@@ -156,6 +155,12 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Sa_dens'    , fldptr1=Sa_dens    , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    call dshr_state_getfldptr(exportState, 'Sa_u'       , fldptr1=Sa_u       , rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call dshr_state_getfldptr(exportState, 'Sa_v'       , fldptr1=Sa_v       , rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
     call dshr_state_getfldptr(exportState, 'Faxa_rainc' , fldptr1=Faxa_rainc , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Faxa_rainl' , fldptr1=Faxa_rainl , rc=rc)
@@ -164,6 +169,9 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Faxa_snowl' , fldptr1=Faxa_snowl , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call dshr_state_getfldptr(exportState, 'Faxa_lwdn'  , fldptr1=Faxa_lwdn  , rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
     call dshr_state_getfldptr(exportState, 'Faxa_swvdr' , fldptr1=Faxa_swvdr , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Faxa_swvdf' , fldptr1=Faxa_swvdf , rc=rc)
@@ -172,17 +180,55 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Faxa_swndf' , fldptr1=Faxa_swndf , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call dshr_state_getfldptr(exportState, 'Faxa_swnet' , fldptr1=Faxa_swnet , rc=rc)
+
+    ! call dshr_state_getfldptr(exportState, 'Faxa_swnet' , fldptr1=Faxa_swnet , rc=rc) !???
+    ! if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    ! Set pointers into stream data
+
+    call shr_strdata_get_stream_pointer(sdat, 'strm_Sa_z'   , strm_Sa_z   , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call dshr_state_getfldptr(exportState, 'Faxa_lwdn'  , fldptr1=Faxa_lwdn  , rc=rc)
+    call shr_strdata_get_stream_pointer(sdat, 'strm_Sa_tbog', strm_Sa_tbot, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer(sdat, 'strm_Sa_ptem', strm_Sa_ptem, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer(sdat, 'strm_Sa_shum', strm_Sa_shum, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer(sdat, 'strm_Sa_pbot', strm_Sa_pbot, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer(sdat, 'strm_Sa_dens', strm_Sa_dens, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer(sdat, 'strm_Sa_pslv', strm_Sa_pslv, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer(sdat, 'strm_Sa_dens', strm_Sa_dens, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    call ESMF_StateGet(exportState, 'Faxa_ndep', itemFlag, rc=rc)
+    call shr_strdata_get_stream_pointer(sdat, 'strm_Sa_u', strm_Sa_u, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    if (itemflag /= ESMF_STATEITEM_NOTFOUND) then
-       call dshr_state_getfldptr(exportState, 'Faxa_ndep', fldptr2=Faxa_ndep, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    end if
+    call shr_strdata_get_stream_pointer(sdat, 'strm_Sa_v', strm_Sa_v, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    call shr_strdata_get_stream_pointer(sdat, 'strm_Faxa_rainc', strm_Faxa_rainc, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer(sdat, 'strm_Faxa_rainl', strm_Faxa_rainl, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer(sdat, 'strm_Faxa_snowc', strm_Faxa_snowc, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer(sdat, 'strm_Faxa_snowl', strm_Faxa_snowl, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer(sdat, 'strm_Faxa_lwdn', strm_Faxa_lwdn, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    call shr_strdata_get_stream_pointer(sdat, 'strm_Faxa_swndr', strm_Faxa_swndr, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer(sdat, 'strm_Faxa_swvdr', strm_Faxa_swvdr, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer(sdat, 'strm_Faxa_swndf', strm_Faxa_swndf, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer(sdat, 'strm_Faxa_swvdf', strm_Faxa_swvdf, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer(sdat, 'strm_Faxa_lwdn', strm_Faxa_lwdn  , rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
  end subroutine datm_datamode_cplhist_init_pointers
 
@@ -201,11 +247,28 @@ contains
 
     rc = ESMF_SUCCESS
 
-    if (associated(Faxa_ndep)) then
-       ! convert ndep flux to units of kgN/m2/s (assumes that input is in gN/m2/s)
-       Faxa_ndep(:,:) = Faxa_ndep(:,:) / 1000._r8
-    end if
+    Sa_z(:)       = strm_Sa_z(:)    
+    Sa_tbot(:)    = strm_Sa_tbot(:)    
+    Sa_ptem(:)    = strm_Sa_ptem(:)    
+    Sa_shum(:)    = strm_Sa_shum(:)    
+    Sa_dens(:)    = strm_Sa_dens(:)    
+    Sa_pbot(:)    = strm_Sa_pbot(:)    
+    Sa_pslv(:)    = strm_Sa_pslv(:)    
 
+    Sa_u(:)       = strm_Sa_u(:)       
+    Sa_v(:)       = strm_Sa_v(:)       
+
+    Faxa_rainc(:) = strm_Faxa_rainc(:) 
+    Faxa_rainl(:) = strm_Faxa_rainl(:) 
+    Faxa_snowc(:) = strm_Faxa_snowc(:) 
+    Faxa_snowl(:) = strm_Faxa_snowl(:) 
+    Faxa_lwdn(:)  = strm_Faxa_lwdn (:) 
+
+    Faxa_swndr(:) = strm_Faxa_swndr(:) 
+    Faxa_swndf(:) = strm_Faxa_swvdr(:) 
+    Faxa_swvdr(:) = strm_Faxa_swndf(:) 
+    Faxa_swvdf(:) = strm_Faxa_swvdf(:) 
+    
   end subroutine datm_datamode_cplhist_advance
 
 end module datm_datamode_cplhist_mod
