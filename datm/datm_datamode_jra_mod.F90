@@ -151,21 +151,21 @@ contains
     end do
 
     ! Stream pointers
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Sa_tbot'   , strm_Sa_tbot   , rc) ! required
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_tbot'   , strm_Sa_tbot   , rc) ! required
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Sa_pslv'   , strm_Sa_pslv   , rc) ! required
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_pslv'   , strm_Sa_pslv   , rc) ! required
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Sa_u'      , strm_Sa_u      , rc) ! required
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_u'      , strm_Sa_u      , rc) ! required
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Sa_v'      , strm_Sa_v      , rc) ! required
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_v'      , strm_Sa_v      , rc) ! required
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Sa_shum'   , strm_Sa_shum   , rc) ! required
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_shum'   , strm_Sa_shum   , rc) ! required
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Faxa_prec' , strm_Faxa_prec , rc) ! required
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_prec' , strm_Faxa_prec , rc) ! required
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Faxa_lwdn' , strm_Faxa_lwdn , rc) ! required
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_lwdn' , strm_Faxa_lwdn , rc) ! required
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Faxa_swdn' , strm_Faxa_swdn , rc) ! required
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_swdn' , strm_Faxa_swdn , rc) ! required
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Export state pointers

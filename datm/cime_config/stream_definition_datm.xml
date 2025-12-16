@@ -28,6 +28,7 @@
 
   Currently the following data modes are supported:
   CLM_QIAN              = Run with the CLM Qian dataset valid from 1948 to 2004 (force CLM)
+  CLM_QIAN_WISO         = Run with the CLM Qian dataset with isotopes valid from 2000 to 2004 (force CLM)
   CLMCRUJRA2024         = Run with the CLM CRUJRA 2024 forcing valid from 1901 to 2023 (force CLM)
   CLMCRUNCEPv7          = Run with the CLM CRU NCEP V7 forcing valid from 1900 to 2010 (force CLM)
   CLMGSWP3v1            = Run with the CLM GSWP3 V1 forcing (force CLM)
@@ -248,13 +249,13 @@
       <file first_year="$DATM_YR_START" last_year="$DATM_YR_END">$DIN_LOC_ROOT/atm/cdeps/v1/$NEONSITE/%ym.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>FSDS     strm_Faxa_swdn </var>
-      <var>ZBOT     strm_Sa_z    </var>
-      <var>TBOT     strm_Sa_tbot </var>
-      <var>WIND     strm_Sa_wind </var>
-      <var>RH       strm_Sa_rh   </var>
-      <var>PSRF     strm_Sa_pbot </var>
-      <var>FLDS     strm_Faxa_lwdn </var>
+      <var>FSDS     Faxa_swdn </var>
+      <var>ZBOT     Sa_z    </var>
+      <var>TBOT     Sa_tbot </var>
+      <var>WIND     Sa_wind </var>
+      <var>RH       Sa_rh   </var>
+      <var>PSRF     Sa_pbot </var>
+      <var>FLDS     Faxa_lwdn </var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -290,7 +291,7 @@
       <file first_year="$DATM_YR_START" last_year="$DATM_YR_END">$DIN_LOC_ROOT/atm/cdeps/PRISM/${NEONSITE}_%y.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>PRECIP   strm_Faxa_precn</var>
+      <var>PRECIP   Faxa_precn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -327,7 +328,7 @@
       <file first_year="$DATM_YR_START" last_year="$DATM_YR_END">$DIN_LOC_ROOT/atm/cdeps/v1/$NEONSITE/%ym.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>PRECTmms  strm_Faxa_precn</var>
+      <var>PRECTmms   Faxa_precn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -364,14 +365,14 @@
       <file first_year="$DATM_YR_START" last_year="$DATM_YR_END">$DIN_LOC_ROOT/atm/datm7/CLM1PT_data/PLUMBER2/${PLUMBER2SITE}/CLM1PT_data/CTSM_DATM_${PLUMBER2SITE}_${DATM_YR_START_FILENAME}-${DATM_YR_END}.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>ZBOT       strm_Sa_z</var>
-      <var>TBOT       strm_Sa_tbot</var>
-      <var>QBOT       strm_Sa_shum</var>
-      <var>WIND       strm_Sa_wind</var>
-      <var>PRECTmms   strm_Faxa_precn</var>
-      <var>FSDS       strm_Faxa_swdn</var>
-      <var>PSRF       strm_Sa_pbot</var>
-      <var>FLDS       strm_Faxa_lwdn</var>
+      <var>ZBOT   Sa_z</var>
+      <var>TBOT   Sa_tbot</var>
+      <var>QBOT   Sa_shum</var>
+      <var>WIND   Sa_wind</var>
+      <var>PRECTmms   Faxa_precn</var>
+      <var>FSDS   Faxa_swdn</var>
+      <var>PSRF   Sa_pbot</var>
+      <var>FLDS   Faxa_lwdn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -407,7 +408,7 @@
       <file first_year="1901" last_year="2014">$DIN_LOC_ROOT_CLMFORC/atm_forcing.datm7.GSWP3.0.5d.v1.c170516/Solar/clmforc.GSWP3.c2011.0.5x0.5.Solr.%ym.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>FSDS strm_Faxa_swdn</var>
+      <var>FSDS Faxa_swdn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -438,7 +439,7 @@
       <file first_year="1901" last_year="2014">$DIN_LOC_ROOT_CLMFORC/atm_forcing.datm7.GSWP3.0.5d.v1.c170516/Precip/clmforc.GSWP3.c2011.0.5x0.5.Prec.%ym.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>PRECTmms strm_Faxa_precn</var>
+      <var>PRECTmms Faxa_precn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -469,11 +470,11 @@
       <file first_year="1901" last_year="2014">$DIN_LOC_ROOT_CLMFORC/atm_forcing.datm7.GSWP3.0.5d.v1.c170516/TPHWL/clmforc.GSWP3.c2011.0.5x0.5.TPQWL.%ym.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>TBOT     strm_Sa_tbot</var>
-      <var>WIND     strm_Sa_wind</var>
-      <var>QBOT     strm_Sa_shum</var>
-      <var>PSRF     strm_Sa_pbot</var>
-      <var>FLDS     strm_Faxa_lwdn</var>
+      <var>TBOT     Sa_tbot</var>
+      <var>WIND     Sa_wind</var>
+      <var>QBOT     Sa_shum</var>
+      <var>PSRF     Sa_pbot</var>
+      <var>FLDS     Faxa_lwdn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -508,7 +509,7 @@
       <file first_year="1901" last_year="2023">$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.CRUJRA.0.5d.c20241231/three_stream/clmforc.CRUJRAv2.5_0.5x0.5.Solr.%y.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>FSDS strm_Faxa_swdn</var>
+      <var>FSDS     Faxa_swdn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -539,7 +540,7 @@
       <file first_year="1901" last_year="2023">$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.CRUJRA.0.5d.c20241231/three_stream/clmforc.CRUJRAv2.5_0.5x0.5.Prec.%y.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>PRECTmms strm_Faxa_precn</var>
+      <var>PRECTmms Faxa_precn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -570,11 +571,11 @@
       <file first_year="1901" last_year="2023">$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.CRUJRA.0.5d.c20241231/three_stream/clmforc.CRUJRAv2.5_0.5x0.5.TPQWL.%y.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>TBOT     strm_Sa_tbot</var>
-      <var>WIND     strm_Sa_wind</var>
-      <var>QBOT     strm_Sa_shum</var>
-      <var>PSRF     strm_Sa_pbot</var>
-      <var>FLDS     strm_Faxa_lwdn</var>
+      <var>TBOT     Sa_tbot</var>
+      <var>WIND     Sa_wind</var>
+      <var>QBOT     Sa_shum</var>
+      <var>PSRF     Sa_pbot</var>
+      <var>FLDS     Faxa_lwdn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -609,7 +610,7 @@
       <file first_year="1901" last_year="2016">$DIN_LOC_ROOT_CLMFORC/atm_forcing.datm7.cruncep_qianFill.0.5d.v7.c160715/Solar6Hrly/clmforc.cruncep.V7.c2016.0.5d.Solr.%ym.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>FSDS     strm_Faxa_swdn</var>
+      <var>FSDS     Faxa_swdn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -640,7 +641,7 @@
       <file first_year="1901" last_year="2016">$DIN_LOC_ROOT_CLMFORC/atm_forcing.datm7.cruncep_qianFill.0.5d.v7.c160715/Precip6Hrly/clmforc.cruncep.V7.c2016.0.5d.Prec.%ym.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>PRECTmms strm_Faxa_precn</var>
+      <var>PRECTmms Faxa_precn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -671,10 +672,10 @@
       <file first_year="1901" last_year="2016">$DIN_LOC_ROOT_CLMFORC/atm_forcing.datm7.cruncep_qianFill.0.5d.v7.c160715/TPHWL6Hrly/clmforc.cruncep.V7.c2016.0.5d.TPQWL.%ym.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>TBOT     strm_Sa_tbot</var>
-      <var>WIND     strm_Sa_wind</var>
-      <var>QBOT     strm_Sa_shum</var>
-      <var>PSRF     strm_Sa_pbot</var>
+      <var>TBOT     Sa_tbot</var>
+      <var>WIND     Sa_wind</var>
+      <var>QBOT     Sa_shum</var>
+      <var>PSRF     Sa_pbot</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -709,7 +710,7 @@
       <file first_year="1948" last_year="2004">$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.Qian.T62.c080727/Solar6Hrly/clmforc.Qian.c2006.T62.Solr.%ym.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>FSDS     strm_Faxa_swdn</var>
+      <var>FSDS     Faxa_swdn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -740,7 +741,7 @@
       <file first_year="1948" last_year="2004">$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.Qian.T62.c080727/Precip6Hrly/clmforc.Qian.c2006.T62.Prec.%ym.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>PRECTmms strm_Faxa_precn</var>
+      <var>PRECTmms Faxa_precn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -771,10 +772,10 @@
       <file first_year="1948" last_year="2004">$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.Qian.T62.c080727/TmpPrsHumWnd3Hrly/clmforc.Qian.c2006.T62.TPQW.%ym.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>TBOT strm_Sa_tbot</var>
-      <var>WIND strm_Sa_wind</var>
-      <var>QBOT strm_Sa_shum</var>
-      <var>PSRF strm_Sa_pbot</var>
+      <var>TBOT Sa_tbot</var>
+      <var>WIND Sa_wind</var>
+      <var>QBOT Sa_shum</var>
+      <var>PSRF Sa_pbot</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -784,6 +785,106 @@
     <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
     <stream_year_first>$DATM_YR_START</stream_year_first>
     <stream_year_last>$DATM_YR_END</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <!-- ===================================  -->
+  <!-- CLM_QIAN_WISO streams                     -->
+  <!-- ===================================  -->
+
+  <stream_entry name="CLM_QIAN_WISO.Solar">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.Qian.T62.c080727/clmforc.Qian.c2006.T62.ESMFmesh_120620.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1948" last_year="2004">$DIN_LOC_ROOT/atm/datm7/atm_forcing_iso.datm7.Qian.T62.c080727/Solar6Hrly/clmforc.Qian.c2006.T62.Solr.%ym.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>FSDS Faxaswdn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>2000</stream_year_align>
+    <stream_year_first>2000</stream_year_first>
+    <stream_year_last>2004</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>coszen</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CLM_QIAN_WISO.Precip">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.Qian.T62.c080727/clmforc.Qian.c2006.T62.ESMFmesh_120620.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file  first_year="1948" last_year="2004">$DIN_LOC_ROOT/atm/datm7/atm_forcing_iso.datm7.Qian.T62.c080727/Precip6Hrly/clmforc.Qian.c2006.T62.Prec.%ym.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>PRECTmms Faxa_precn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>2000</stream_year_align>
+    <stream_year_first>2000</stream_year_first>
+    <stream_year_last>2004</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>nearest</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CLM_QIAN_WISO.TPQW">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.Qian.T62.c080727/clmforc.Qian.c2006.T62.ESMFmesh_120620.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1948" last_year="2004">$DIN_LOC_ROOT/atm/datm7/atm_forcing_iso.datm7.Qian.T62.c080727/TmpPrsHumWnd3Hrly/clmforc.Qian.c2006.T62.TPQW.%ym.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>TBOT     Sa_tbot</var>
+      <var>WIND     Sa_wind</var>
+      <var>QBOT     Sa_shum</var>
+      <var>PSRF     Sa_pbot</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>2000</stream_year_align>
+    <stream_year_first>2000</stream_year_first>
+    <stream_year_last>2004</stream_year_last>
     <stream_offset>0</stream_offset>
     <stream_tintalgo>
       <tintalgo>linear</tintalgo>
@@ -809,7 +910,7 @@
       <file first_year="1980" last_year="2018">$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.NLDAS2.0.125d.v1/Solar/ctsmforc.NLDAS2.0.125d.v1.Solr.%ym.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>FSDS     strm_Faxa_swdn</var>
+      <var>FSDS     Faxa_swdn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -841,7 +942,7 @@
       <file first_year="1980" last_year="2018">$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.NLDAS2.0.125d.v1/Precip/ctsmforc.NLDAS2.0.125d.v1.Prec.%ym.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>PRECTmms strm_Faxa_precn</var>
+      <var>PRECTmms Faxa_precn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -873,11 +974,11 @@
       <file first_year="1980" last_year="2018">$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.NLDAS2.0.125d.v1/TPQWL/ctsmforc.NLDAS2.0.125d.v1.TPQWL.%ym.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>TBOT strm_Sa_tbot</var>
-      <var>WIND strm_Sa_wind</var>
-      <var>QBOT strm_Sa_shum</var>
-      <var>PSRF strm_Sa_pbot</var>
-      <var>FLDS strm_Faxa_lwdn</var>
+      <var>TBOT Sa_tbot</var>
+      <var>WIND Sa_wind</var>
+      <var>QBOT Sa_shum</var>
+      <var>PSRF Sa_pbot</var>
+      <var>FLDS Faxa_lwdn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -915,14 +1016,14 @@
       <file first_year="$DATM_YR_START" last_year="$DATM_YR_END">$DIN_LOC_ROOT_CLMFORC/$CLM_USRDAT_NAME/CLM1PT_data/%ym.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>PRECTmms strm_Faxa_precn</var>
-      <var>FSDS     strm_Faxa_swdn </var>
-      <var>ZBOT     strm_Sa_z    </var>
-      <var>TBOT     strm_Sa_tbot </var>
-      <var>WIND     strm_Sa_wind </var>
-      <var>RH       strm_Sa_rh   </var>
-      <var>PSRF     strm_Sa_pbot </var>
-      <var>FLDS     strm_Faxa_lwdn </var>
+      <var>PRECTmms Faxa_precn</var>
+      <var>FSDS     Faxa_swdn </var>
+      <var>ZBOT     Sa_z    </var>
+      <var>TBOT     Sa_tbot </var>
+      <var>WIND     Sa_wind </var>
+      <var>RH       Sa_rh   </var>
+      <var>PSRF     Sa_pbot </var>
+      <var>FLDS     Faxa_lwdn </var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -954,16 +1055,16 @@
       <file>$DIN_LOC_ROOT/atm/datm7/CLM1PT_data/mexicocityMEX.c080124/clm1pt-1993-12.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>ZBOT     strm_Sa_z</var>
-      <var>TBOT     strm_Sa_tbot</var>
-      <var>RH       strm_Sa_rh</var>
-      <var>WIND     strm_Sa_wind</var>
-      <var>PSRF     strm_Sa_pbot</var>
-      <var>PRECTmms strm_Faxa_precn</var>
-      <var>FSDS     strm_Faxa_swdn</var>
-      <var>FSDSdir  strm_Faxa_swdndr</var>
-      <var>FSDSdif  strm_Faxa_swdndf</var>
-      <var>FLDS     strm_Faxa_lwdn</var>
+      <var>ZBOT     Sa_z</var>
+      <var>TBOT     Sa_tbot</var>
+      <var>RH       Sa_rh</var>
+      <var>WIND     Sa_wind</var>
+      <var>PSRF     Sa_pbot</var>
+      <var>PRECTmms Faxa_precn</var>
+      <var>FSDS     Faxa_swdn</var>
+      <var>FSDSdir  Faxa_swdndr</var>
+      <var>FSDSdif  Faxa_swdndf</var>
+      <var>FLDS     Faxa_lwdn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -994,16 +1095,16 @@
       <file>$DIN_LOC_ROOT/atm/datm7/CLM1PT_data/vancouverCAN.c080124/clm1pt-1992-08.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>ZBOT     strm_Sa_z</var>
-      <var>TBOT     strm_Sa_tbot</var>
-      <var>RH       strm_Sa_rh</var>
-      <var>WIND     strm_Sa_wind</var>
-      <var>PSRF     strm_Sa_pbot</var>
-      <var>PRECTmms strm_Faxa_precn</var>
-      <var>FSDS     strm_Faxa_swdn</var>
-      <var>FSDSdir  strm_Faxa_swdndr</var>
-      <var>FSDSdif  strm_Faxa_swdndf</var>
-      <var>FLDS     strm_Faxa_lwdn</var>
+      <var>ZBOT     Sa_z</var>
+      <var>TBOT     Sa_tbot</var>
+      <var>RH       Sa_rh</var>
+      <var>WIND     Sa_wind</var>
+      <var>PSRF     Sa_pbot</var>
+      <var>PRECTmms Faxa_precn</var>
+      <var>FSDS     Faxa_swdn</var>
+      <var>FSDSdir  Faxa_swdndr</var>
+      <var>FSDSdif  Faxa_swdndf</var>
+      <var>FLDS     Faxa_lwdn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -1049,16 +1150,16 @@
       <file>$DIN_LOC_ROOT/atm/datm7/CLM1PT_data/urbanc_alpha.c080416/clm1pt-0002-11.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>ZBOT     strm_Sa_z</var>
-      <var>TBOT     strm_Sa_tbot</var>
-      <var>RH       strm_Sa_rh</var>
-      <var>WIND     strm_Sa_wind</var>
-      <var>PSRF     strm_Sa_pbot</var>
-      <var>PRECTmms strm_Faxa_precn</var>
-      <var>FSDS     strm_Faxa_swdn</var>
-      <var>FSDSdir  strm_Faxa_swdndr</var>
-      <var>FSDSdif  strm_Faxa_swdndf</var>
-      <var>FLDS     strm_Faxa_lwdn</var>
+      <var>ZBOT     Sa_z</var>
+      <var>TBOT     Sa_tbot</var>
+      <var>RH       Sa_rh</var>
+      <var>WIND     Sa_wind</var>
+      <var>PSRF     Sa_pbot</var>
+      <var>PRECTmms Faxa_precn</var>
+      <var>FSDS     Faxa_swdn</var>
+      <var>FSDSdir  Faxa_swdndr</var>
+      <var>FSDSdif  Faxa_swdndf</var>
+      <var>FLDS     Faxa_lwdn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -1093,7 +1194,7 @@
       <file first_year="1979" last_year="2004">$DIN_LOC_ROOT/atm/datm7/bias_correction/precip/gpcp/qian/bias_correction.Prec.%y.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>BC_PREC  strm_Faxa_precsf</var>
+      <var>BC_PREC  Faxa_precsf</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -1124,7 +1225,7 @@
       <file first_year="1979" last_year="2012">$DIN_LOC_ROOT/atm/datm7/clm_output/cruncep_precip_1deg/gpcp_1deg_bias_correction/bias_correction.Prec.%y.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>BC_PREC  strm_Faxa_precsf</var>
+      <var>BC_PREC  Faxa_precsf</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -1155,7 +1256,7 @@
       <file first_year="1979" last_year="2010">$DIN_LOC_ROOT/atm/datm7/bias_correction/precip/cmap/cruncep/bias_correction.Prec.%y.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>BC_PREC  strm_Faxa_precsf</var>
+      <var>BC_PREC  Faxa_precsf</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -1190,14 +1291,14 @@
       <file>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/af.allvars.ccsm4.rcp45.2006-2300.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>huss  strm_Sa_shum_af</var>
-      <var>pr    strm_Faxa_prec_af</var>
-      <var>ps    strm_Sa_pbot_af</var>
-      <var>rlds  strm_Faxa_lwdn_af</var>
-      <var>rsds  strm_Faxa_swdn_af</var>
-      <var>tas   strm_Sa_tbot_af</var>
-      <var>uas   strm_Sa_u_af</var>
-      <var>vas   strm_Sa_v_af</var>
+      <var>huss  Sa_shum_af</var>
+      <var>pr    Faxa_prec_af</var>
+      <var>ps    Sa_pbot_af</var>
+      <var>rlds  Faxa_lwdn_af</var>
+      <var>rsds  Faxa_swdn_af</var>
+      <var>tas   Sa_tbot_af</var>
+      <var>uas   Sa_u_af</var>
+      <var>vas   Sa_v_af</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -1228,14 +1329,14 @@
       <file>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/CMIP6-SSP1-2.6/af.allvars.CESM.SSP1-2.6.2015-2100_c20220628.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>pr    strm_Faxa_prec_af</var>
-      <var>rlds  strm_Faxa_lwdn_af</var>
-      <var>rsds  strm_Faxa_swdn_af</var>
-      <var>huss  strm_Sa_shum_af</var>
-      <var>ps    strm_Sa_pbot_af</var>
-      <var>tas   strm_Sa_tbot_af</var>
-      <var>uas   strm_Sa_u_af</var>
-      <var>vas   strm_Sa_v_af</var>
+      <var>huss  Sa_shum_af</var>
+      <var>pr    Faxa_prec_af</var>
+      <var>ps    Sa_pbot_af</var>
+      <var>rlds  Faxa_lwdn_af</var>
+      <var>rsds  Faxa_swdn_af</var>
+      <var>tas   Sa_tbot_af</var>
+      <var>uas   Sa_u_af</var>
+      <var>vas   Sa_v_af</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -1266,14 +1367,14 @@
       <file>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/CMIP6-SSP2-4.5/af.allvars.CESM.SSP2-4.5.2015-2100_c20220628.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>pr    strm_Faxa_prec_af</var>
-      <var>rlds  strm_Faxa_lwdn_af</var>
-      <var>rsds  strm_Faxa_swdn_af</var>
-      <var>huss  strm_Sa_shum_af</var>
-      <var>ps    strm_Sa_pbot_af</var>
-      <var>tas   strm_Sa_tbot_af</var>
-      <var>uas   strm_Sa_u_af</var>
-      <var>vas   strm_Sa_v_af</var>
+      <var>huss  Sa_shum_af</var>
+      <var>pr    Faxa_prec_af</var>
+      <var>ps    Sa_pbot_af</var>
+      <var>rlds  Faxa_lwdn_af</var>
+      <var>rsds  Faxa_swdn_af</var>
+      <var>tas   Sa_tbot_af</var>
+      <var>uas   Sa_u_af</var>
+      <var>vas   Sa_v_af</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -1296,7 +1397,7 @@
     <stream_readmode>single</stream_readmode>
   </stream_entry>
 
-  <stream_entry name="Anomaly.Forcing.cmip6.ssp370">
+    <stream_entry name="Anomaly.Forcing.cmip6.ssp370">
     <stream_meshfile>
       <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
     </stream_meshfile>
@@ -1304,14 +1405,14 @@
       <file>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/CMIP6-SSP3-7.0/af.allvars.CESM.SSP3-7.0.2015-2100_c20220628.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>pr    strm_Faxa_prec_af</var>
-      <var>rlds  strm_Faxa_lwdn_af</var>
-      <var>rsds  strm_Faxa_swdn_af</var>
-      <var>huss  strm_Sa_shum_af</var>
-      <var>ps    strm_Sa_pbot_af</var>
-      <var>tas   strm_Sa_tbot_af</var>
-      <var>uas   strm_Sa_u_af</var>
-      <var>vas   strm_Sa_v_af</var>
+      <var>huss  Sa_shum_af</var>
+      <var>pr    Faxa_prec_af</var>
+      <var>ps    Sa_pbot_af</var>
+      <var>rlds  Faxa_lwdn_af</var>
+      <var>rsds  Faxa_swdn_af</var>
+      <var>tas   Sa_tbot_af</var>
+      <var>uas   Sa_u_af</var>
+      <var>vas   Sa_v_af</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -1342,14 +1443,14 @@
       <file>$DIN_LOC_ROOT/atm/datm7/anomaly_forcing/CMIP6-SSP5-8.5/af.allvars.CESM.SSP5-8.5.2015-2100_c20220628.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>huss  strm_Sa_shum_af</var>
-      <var>pr    strm_Faxa_prec_af</var>
-      <var>ps    strm_Sa_pbot_af</var>
-      <var>rlds  strm_Faxa_lwdn_af</var>
-      <var>rsds  strm_Faxa_swdn_af</var>
-      <var>tas   strm_Sa_tbot_af</var>
-      <var>uas   strm_Sa_u_af</var>
-      <var>vas   strm_Sa_v_af</var>
+      <var>huss  Sa_shum_af</var>
+      <var>pr    Faxa_prec_af</var>
+      <var>ps    Sa_pbot_af</var>
+      <var>rlds  Faxa_lwdn_af</var>
+      <var>rsds  Faxa_swdn_af</var>
+      <var>tas   Sa_tbot_af</var>
+      <var>uas   Sa_u_af</var>
+      <var>vas   Sa_v_af</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -1385,8 +1486,9 @@
       <file>$DIN_LOC_ROOT/atm/datm7/NYF/nyf.giss.T62.051007.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>lwdn  strm_Faxa_lwdn</var>
-      <var>swdn  strm_Faxa_swdn</var>
+      <var>lwdn  Faxa_lwdn</var>
+      <var>swdn  Faxa_swdn</var>
+      <var>swup  Faxa_swup</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -1417,7 +1519,7 @@
       <file>$DIN_LOC_ROOT/atm/datm7/NYF/nyf.gxgxs.T62.051007.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>prc  strm_Faxa_prec</var>
+      <var>prc  Faxa_prec</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -1448,12 +1550,12 @@
       <file>$DIN_LOC_ROOT/atm/datm7/NYF/nyf.ncep.T62.050923.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>dn10  strm_Sa_dens</var>
-      <var>slp_  strm_Sa_pslv</var>
-      <var>q_10  strm_Sa_shum</var>
-      <var>t_10  strm_Sa_tbot</var>
-      <var>u_10  strm_Sa_u</var>
-      <var>v_10  strm_Sa_v</var>
+      <var>dn10  Sa_dens</var>
+      <var>slp_  Sa_pslv</var>
+      <var>q_10  Sa_shum</var>
+      <var>t_10  Sa_tbot</var>
+      <var>u_10  Sa_u</var>
+      <var>v_10  Sa_v</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -1488,7 +1590,7 @@
       <file>$DIN_LOC_ROOT/ocn/iaf/ncep.SOFS.2010.nc</file>
     </stream_datafiles>
     <stream_datavars>
-    <var>dn10  strm_Sa_dens</var>
+    <var>dn10  Sa_dens</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -1519,7 +1621,7 @@
       <file>$DIN_LOC_ROOT/ocn/iaf/ncep.SOFS.2010.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>slp_  strm_Sa_pslv</var>
+      <var>slp_  Sa_pslv</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -1550,7 +1652,7 @@
       <file>$DIN_LOC_ROOT/ocn/iaf/SOFS.daily.03-09.2010.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>prec  strm_Faxa_prec</var>
+      <var>prec  Faxa_prec</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -1581,7 +1683,7 @@
       <file>$DIN_LOC_ROOT/ocn/iaf/SOFS.daily.03-09.2010.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>lwdn  strm_Faxa_lwdn</var>
+      <var>lwdn  Faxa_lwdn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -1612,7 +1714,38 @@
       <file>$DIN_LOC_ROOT/ocn/iaf/SOFS.daily.03-09.2010.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>swdn  strm_Faxa_swdn</var>
+      <var>swdn  Faxa_swdn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>2010</stream_year_first>
+    <stream_year_last>2011</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CORE2_IAF.SWUP.SOFS.DAILY">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/ocn/iaf/SOFS.daily.03-09.2010.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>swup  Faxa_swup</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -1643,7 +1776,7 @@
       <file>$DIN_LOC_ROOT/ocn/iaf/SOFS.6hour.03-09.2010.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>q3_5  strm_Faxa_shum</var>
+      <var>q3_5  Faxa_shum</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -1674,7 +1807,7 @@
       <file>$DIN_LOC_ROOT/ocn/iaf/SOFS.6hour.03-09.2010.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>t3_5  strm_Sa_tbot</var>
+      <var>t3_5  Sa_tbot</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -1705,7 +1838,7 @@
       <file>$DIN_LOC_ROOT/ocn/iaf/SOFS.6hour.03-09.2010.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>u3_5  strm_Sa_u</var>
+      <var>u3_5  Sa_u</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -1736,7 +1869,7 @@
       <file>$DIN_LOC_ROOT/ocn/iaf/SOFS.6hour.03-09.2010.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>v3_5  strm_Sa_v</var>
+      <var>v3_5  Sa_v</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -1768,7 +1901,7 @@
       <file first_year="2008" last_year="2009">$DIN_LOC_ROOT/ocn/iaf/gcgcs.prec.T62.%y.20120412.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>prc  strm_Faxa_prec</var>
+      <var>prc  Faxa_prec</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -1800,7 +1933,7 @@
       <file first_year="2008" last_year="2009">$DIN_LOC_ROOT/ocn/iaf/giss.lwdn.T62.%y.20120412.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>lwdn  strm_Faxa_lwdn</var>
+      <var>lwdn  Faxa_lwdn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -1832,7 +1965,7 @@
       <file first_year="2008" last_year="2009">$DIN_LOC_ROOT/ocn/iaf/giss.swdn.T62.%y.20120412.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>swdn  strm_Faxa_swdn</var>
+      <var>swdn  Faxa_swdn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -1855,6 +1988,38 @@
     <stream_readmode>single</stream_readmode>
   </stream_entry>
 
+  <stream_entry name="CORE2_IAF.GISS.SWUP">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1948" last_year="2007">$DIN_LOC_ROOT/ocn/iaf/giss.swup.T62.%y.nc</file>
+      <file first_year="2008" last_year="2009">$DIN_LOC_ROOT/ocn/iaf/giss.swup.T62.%y.20120412.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>swup  Faxa_swup</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1948</stream_year_first>
+    <stream_year_last>2009</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
   <stream_entry name="CORE2_IAF.NCEP.DN10">
     <stream_meshfile>
       <meshfile>$DIN_LOC_ROOT/share/meshes/T62_040121_ESMFmesh_c20190714.nc</meshfile>
@@ -1866,7 +2031,7 @@
       <file first_year="2008" last_year="2009">$DIN_LOC_ROOT/ocn/iaf/ncep.dn10.T62.%y.20120412.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>dn10  strm_Sa_dens</var>
+      <var>dn10  Sa_dens</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -1900,7 +2065,7 @@
       <file first_year="2008" last_year="2009">$DIN_LOC_ROOT/ocn/iaf/ncep.q_10.T62.%y.20120412.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>q_10  strm_Sa_shum</var>
+      <var>q_10  Sa_shum</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -1934,7 +2099,7 @@
       <file first_year="2008" last_year="2009">$DIN_LOC_ROOT/ocn/iaf/ncep.slp_.T62.%y.20120412.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>slp_  strm_Sa_pslv</var>
+      <var>slp_  Sa_pslv</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -1968,7 +2133,7 @@
       <file first_year="2008" last_year="2009">$DIN_LOC_ROOT/ocn/iaf/ncep.t_10.T62.%y.20120412.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>t_10  strm_Sa_tbot</var>
+      <var>t_10  Sa_tbot</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -2002,7 +2167,7 @@
       <file first_year="2008" last_year="2009">$DIN_LOC_ROOT/ocn/iaf/ncep.u_10.T62.%y.20120412.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>u_10  strm_Sa_u</var>
+      <var>u_10  Sa_u</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -2036,7 +2201,7 @@
       <file first_year="2008" last_year="2009">$DIN_LOC_ROOT/ocn/iaf/ncep.v_10.T62.%y.20120412.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>v_10  strm_Sa_v</var>
+      <var>v_10  Sa_v</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -2067,7 +2232,7 @@
       <file>$DIN_LOC_ROOT/atm/datm7/CORE2/CORE2.t_10.ArcFactor.T62.1997-2004.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>TarcFactor strm_tarcf</var>
+      <var>TarcFactor tarcf</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -2110,7 +2275,7 @@
       <file first_year="1958" last_year="2018">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap/JRA.v1.3.prec.TL319.%y.190528.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>prec  strm_Faxa_prec</var>
+      <var>prec  Faxa_prec</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -2141,7 +2306,7 @@
       <file first_year="1958" last_year="2018">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap/JRA.v1.3.lwdn.TL319.%y.190528.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>lwdn  strm_Faxa_lwdn</var>
+      <var>lwdn  Faxa_lwdn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -2172,7 +2337,7 @@
       <file first_year="1958" last_year="2018">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap/JRA.v1.3.swdn.TL319.%y.190528.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>swdn  strm_Faxa_swdn</var>
+      <var>swdn  Faxa_swdn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -2203,7 +2368,7 @@
       <file first_year="1958" last_year="2018">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap/JRA.v1.3.q_10.TL319.%y.190528.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>q_10  strm_Sa_shum</var>
+      <var>q_10  Sa_shum</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -2234,7 +2399,7 @@
       <file first_year="1958" last_year="2018">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap/JRA.v1.3.slp.TL319.%y.190528.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>slp   strm_Sa_pslv</var>
+      <var>slp   Sa_pslv</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -2265,7 +2430,7 @@
       <file first_year="1958" last_year="2018">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap/JRA.v1.3.t_10.TL319.%y.190528.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>t_10  strm_Sa_tbot</var>
+      <var>t_10  Sa_tbot</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -2296,7 +2461,7 @@
       <file first_year="1958" last_year="2018">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap/JRA.v1.3.u_10.TL319.%y.190528.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>u_10  strm_Sa_u</var>
+      <var>u_10  Sa_u</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -2327,7 +2492,7 @@
       <file first_year="1958" last_year="2018">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap/JRA.v1.3.v_10.TL319.%y.190528.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>v_10  strm_Sa_v</var>
+      <var>v_10  Sa_v</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -2365,7 +2530,7 @@
       <file first_year="2023" last_year="2023">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.prec.TL319.%y.240531.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>prec  strm_Faxa_prec</var>
+      <var>prec  Faxa_prec</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -2399,7 +2564,7 @@
       <file first_year="2023" last_year="2023">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.lwdn.TL319.%y.240531.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>lwdn  strm_Faxa_lwdn</var>
+      <var>lwdn  Faxa_lwdn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -2433,7 +2598,7 @@
       <file first_year="2023" last_year="2023">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.swdn.TL319.%y.240531.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>swdn  strm_Faxa_swdn</var>
+      <var>swdn  Faxa_swdn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -2467,7 +2632,7 @@
       <file first_year="2023" last_year="2023">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.q_10.TL319.%y.240531.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>q_10  strm_Sa_shum</var>
+      <var>q_10  Sa_shum</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -2501,7 +2666,7 @@
       <file first_year="2023" last_year="2023">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.slp.TL319.%y.240531.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>slp   strm_Sa_pslv</var>
+      <var>slp   Sa_pslv</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -2535,7 +2700,7 @@
       <file first_year="2023" last_year="2023">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.t_10.TL319.%y.240531.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>t_10  strm_Sa_tbot</var>
+      <var>t_10  Sa_tbot</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -2569,7 +2734,7 @@
       <file first_year="2023" last_year="2023">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.u_10.TL319.%y.240531.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>u_10  strm_Sa_u</var>
+      <var>u_10  Sa_u</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -2603,7 +2768,7 @@
       <file first_year="2023" last_year="2023">$DIN_LOC_ROOT/ocn/jra55/v1.5_noleap/JRA.v1.5.v_10.TL319.%y.240531.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>v_10  strm_Sa_v</var>
+      <var>v_10  Sa_v</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -2638,7 +2803,7 @@
       <file>$DIN_LOC_ROOT/ocn/jra55/v1.3_ryf/RAF_6162.JRA.v1.3.radiation.lwdn.TL319.250427.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>lwdn  strm_Faxa_lwdn</var>
+      <var>lwdn  Faxa_lwdn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -2669,7 +2834,7 @@
       <file>$DIN_LOC_ROOT/ocn/jra55/v1.3_ryf/RAF_6162.JRA.v1.3.radiation.swdn.TL319.250427.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>swdn  strm_Faxa_swdn</var>
+      <var>swdn  Faxa_swdn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -2700,7 +2865,7 @@
       <file>$DIN_LOC_ROOT/ocn/jra55/v1.3_ryf/RAF_6162.JRA.v1.3.prec.TL319.250427.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>prec  strm_Faxa_prec</var>
+      <var>prec  Faxa_prec</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -2731,11 +2896,11 @@
       <file>$DIN_LOC_ROOT/ocn/jra55/v1.3_ryf/RAF_6162.JRA.v1.3.states.TL319.250427.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>u_10  strm_Sa_u</var>
-      <var>v_10  strm_Sa_v</var>
-      <var>t_10  strm_Sa_tbot</var>
-      <var>q_10  strm_Sa_shum</var>
-      <var>slp   strm_Sa_pslv</var>
+      <var>u_10  Sa_u</var>
+      <var>v_10  Sa_v</var>
+      <var>t_10  Sa_tbot</var>
+      <var>q_10  Sa_shum</var>
+      <var>slp   Sa_pslv</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -2770,7 +2935,7 @@
       <file>$DIN_LOC_ROOT/ocn/jra55/v1.3_ryf/RAF_8485.JRA.v1.3.radiation.lwdn.TL319.180404.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>lwdn  strm_Faxa_lwdn</var>
+      <var>lwdn  Faxa_lwdn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -2801,7 +2966,7 @@
       <file>$DIN_LOC_ROOT/ocn/jra55/v1.3_ryf/RAF_8485.JRA.v1.3.radiation.swdn.TL319.180404.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>swdn  strm_Faxa_swdn</var>
+      <var>swdn  Faxa_swdn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -2832,7 +2997,7 @@
       <file>$DIN_LOC_ROOT/ocn/jra55/v1.3_ryf/RAF_8485.JRA.v1.3.prec.TL319.180404.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>prec  strm_Faxa_prec</var>
+      <var>prec  Faxa_prec</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -2863,11 +3028,11 @@
       <file>$DIN_LOC_ROOT/ocn/jra55/v1.3_ryf/RAF_8485.JRA.v1.3.states.TL319.180404.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>u_10  strm_Sa_u</var>
-      <var>v_10  strm_Sa_v</var>
-      <var>t_10  strm_Sa_tbot</var>
-      <var>q_10  strm_Sa_shum</var>
-      <var>slp   strm_Sa_pslv</var>
+      <var>u_10  Sa_u</var>
+      <var>v_10  Sa_v</var>
+      <var>t_10  Sa_tbot</var>
+      <var>q_10  Sa_shum</var>
+      <var>slp   Sa_pslv</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -2902,7 +3067,7 @@
       <file>$DIN_LOC_ROOT/ocn/jra55/v1.3_ryf/RAF_9091.JRA.v1.3.radiation.lwdn.TL319.180404.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>lwdn  strm_Faxa_lwdn</var>
+      <var>lwdn  Faxa_lwdn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -2933,7 +3098,7 @@
       <file>$DIN_LOC_ROOT/ocn/jra55/v1.3_ryf/RAF_9091.JRA.v1.3.radiation.swdn.TL319.180404.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>swdn  strm_Faxa_swdn</var>
+      <var>swdn  Faxa_swdn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -2964,7 +3129,7 @@
       <file>$DIN_LOC_ROOT/ocn/jra55/v1.3_ryf/RAF_9091.JRA.v1.3.prec.TL319.180404.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>prec  strm_Faxa_prec</var>
+      <var>prec  Faxa_prec</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -2995,11 +3160,11 @@
       <file>$DIN_LOC_ROOT/ocn/jra55/v1.3_ryf/RAF_9091.JRA.v1.3.states.TL319.180404.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>u_10  strm_Sa_u</var>
-      <var>v_10  strm_Sa_v</var>
-      <var>t_10  strm_Sa_tbot</var>
-      <var>q_10  strm_Sa_shum</var>
-      <var>slp   strm_Sa_pslv</var>
+      <var>u_10  Sa_u</var>
+      <var>v_10  Sa_v</var>
+      <var>t_10  Sa_tbot</var>
+      <var>q_10  Sa_shum</var>
+      <var>slp   Sa_pslv</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -3034,7 +3199,7 @@
       <file>$DIN_LOC_ROOT/ocn/jra55/v1.3_ryf/RAF_0304.JRA.v1.3.radiation.lwdn.TL319.180404.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>lwdn  strm_Faxa_lwdn</var>
+      <var>lwdn  Faxa_lwdn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -3065,7 +3230,7 @@
       <file>$DIN_LOC_ROOT/ocn/jra55/v1.3_ryf/RAF_0304.JRA.v1.3.radiation.swdn.TL319.180404.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>swdn  strm_Faxa_swdn</var>
+      <var>swdn  Faxa_swdn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -3096,7 +3261,7 @@
       <file>$DIN_LOC_ROOT/ocn/jra55/v1.3_ryf/RAF_0304.JRA.v1.3.prec.TL319.180404.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>prec  strm_Faxa_prec</var>
+      <var>prec  Faxa_prec</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -3127,11 +3292,11 @@
       <file>$DIN_LOC_ROOT/ocn/jra55/v1.3_ryf/RAF_0304.JRA.v1.3.states.TL319.180404.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>u_10  strm_Sa_u</var>
-      <var>v_10  strm_Sa_v</var>
-      <var>t_10  strm_Sa_tbot</var>
-      <var>q_10  strm_Sa_shum</var>
-      <var>slp   strm_Sa_pslv</var>
+      <var>u_10  Sa_u</var>
+      <var>v_10  Sa_v</var>
+      <var>t_10  Sa_tbot</var>
+      <var>q_10  Sa_shum</var>
+      <var>slp   Sa_pslv</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -3166,7 +3331,7 @@
       <file first_year="1958" last_year="2016">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap/JRA.v1.3.prec.TL319.%y.171019.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>prec  strm_Faxa_prec</var>
+      <var>prec  Faxa_prec</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -3197,7 +3362,7 @@
       <file first_year="1958" last_year="2016">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap/JRA.v1.3.lwdn.TL319.%y.171019.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>lwdn  strm_Faxa_lwdn</var>
+      <var>lwdn  Faxa_lwdn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -3228,7 +3393,7 @@
       <file first_year="1958" last_year="2016">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap/JRA.v1.3.swdn.TL319.%y.171019.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>swdn  strm_Faxa_swdn</var>
+      <var>swdn  Faxa_swdn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -3259,7 +3424,7 @@
       <file first_year="1958" last_year="2016">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap/JRA.v1.3.q_10.TL319.%y.171019.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>q_10  strm_Sa_shum</var>
+      <var>q_10  Sa_shum</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -3290,7 +3455,7 @@
       <file first_year="1958" last_year="2016">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap/JRA.v1.3.slp.TL319.%y.171019.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>slp   strm_Sa_pslv</var>
+      <var>slp   Sa_pslv</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -3321,7 +3486,7 @@
       <file first_year="1958" last_year="2016">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap/JRA.v1.3.t_10.TL319.%y.171019.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>t_10  strm_Sa_tbot</var>
+      <var>t_10  Sa_tbot</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -3352,7 +3517,7 @@
       <file first_year="1958" last_year="2016">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap/JRA.v1.3.u_10.TL319.%y.171019.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>u_10  strm_Sa_u</var>
+      <var>u_10  Sa_u</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -3383,7 +3548,7 @@
       <file first_year="1958" last_year="2016">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap/JRA.v1.3.v_10.TL319.%y.171019.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>v_10  strm_Sa_v</var>
+      <var>v_10  Sa_v</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -3429,29 +3594,29 @@
       <file>$DIN_LOC_ROOT/atm/datm7/ERA5/ERA5.TL639.2019.12.200618.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>u10   strm_Sa_u10m</var>
-      <var>v10   strm_Sa_v10m</var>
-      <var>t2m   strm_Sa_t2m</var>
-      <var>skt   strm_Sa_tskn</var>
-      <var>d2m   strm_Sa_tdew</var>
-      <var>msl   strm_Sa_pslv</var>
-      <var>tp    strm_Faxa_rain</var>
-      <var>cp    strm_Faxa_rainc</var>
-      <var>lsp   strm_Faxa_rainl</var>
-      <var>csf   strm_Faxa_snowc</var>
-      <var>lsf   strm_Faxa_snowl</var>
-      <var>ssrd  strm_Faxa_swdn</var>
-      <var>ssr   strm_Faxa_swnet</var>
-      <var>strd  strm_Faxa_lwdn</var>
-      <var>str   strm_Faxa_lwnet</var>
-      <var>aluvp strm_Faxa_swvdr</var>
-      <var>aluvd strm_Faxa_swvdf</var>
-      <var>alnip strm_Faxa_swndr</var>
-      <var>alnid strm_Faxa_swndf</var>
-      <var>sshf  strm_Faxa_sen</var>
-      <var>slhf  strm_Faxa_lat</var>
-      <var>ewss  strm_Faxa_taux</var>
-      <var>nsss  strm_Faxa_tauy</var>
+      <var>u10   Sa_u10m</var>
+      <var>v10   Sa_v10m</var>
+      <var>t2m   Sa_t2m</var>
+      <var>skt   Sa_tskn</var>
+      <var>d2m   Sa_tdew</var>
+      <var>msl   Sa_pslv</var>
+      <var>tp    Faxa_rain</var>
+      <var>cp    Faxa_rainc</var>
+      <var>lsp   Faxa_rainl</var>
+      <var>csf   Faxa_snowc</var>
+      <var>lsf   Faxa_snowl</var>
+      <var>ssrd  Faxa_swdn</var>
+      <var>ssr   Faxa_swnet</var>
+      <var>strd  Faxa_lwdn</var>
+      <var>str   Faxa_lwnet</var>
+      <var>aluvp Faxa_swvdr</var>
+      <var>aluvd Faxa_swvdf</var>
+      <var>alnip Faxa_swndr</var>
+      <var>alnid Faxa_swndf</var>
+      <var>sshf  Faxa_sen</var>
+      <var>slhf  Faxa_lat</var>
+      <var>ewss  Faxa_taux</var>
+      <var>nsss  Faxa_tauy</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -3489,7 +3654,7 @@
       <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_global_simyr_1750-2014_CMIP6_c180929.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>CO2   strm_co2diag</var>
+      <var>CO2   Sa_co2diag</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -3520,7 +3685,7 @@
       <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_global_ssp585_simyr_1750-2020_CMIP6_c200324.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>CO2 strm_co2diag</var>
+      <var>CO2 Sa_co2diag</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -3551,7 +3716,7 @@
       <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_global_ssp585_simyr_1750-2020_CMIP6_c200324.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>CO2 strm_co2diag</var>
+      <var>CO2 Sa_co2diag</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -3582,7 +3747,7 @@
       <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_lat-bandsSSP1-1.9_simyr_2014-2500_CMIP6_c190514.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>CO2   strm_co2diag</var>
+      <var>CO2   Sa_co2diag</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -3613,7 +3778,7 @@
       <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_lat-bandsSSP1-2.6__simyr_2014-2500_CMIP6_c190506.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>CO2   strm_co2diag</var>
+      <var>CO2   Sa_co2diag</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -3644,7 +3809,7 @@
       <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_lat-bandsSSP2-4.5__simyr_2014-2500_CMIP6_c190506.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>CO2   strm_co2diag</var>
+      <var>CO2   Sa_co2diag</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -3675,7 +3840,7 @@
       <file>$DIN_LOC_ROOT/atm/datm7/CO2/co2_datm_lat-bandsSSP3-7.0__simyr_2014-2500_CMIP6_c190506.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>CO2   strm_co2diag</var>
+      <var>CO2   Sa_co2diag</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -3706,7 +3871,7 @@
       <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_lat-bandsSSP4-3.4_simyr_2014-2500_CMIP6_c190514.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>CO2   strm_co2diag</var>
+      <var>CO2   Sa_co2diag</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -3737,7 +3902,7 @@
       <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_lat-bandsSSP4-6.0__simyr_2014-2500_CMIP6_c190506.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>CO2   strm_co2diag</var>
+      <var>CO2   Sa_co2diag</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -3768,7 +3933,7 @@
       <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_lat-bandsSSP5-3.4__simyr_2014-2500_CMIP6_c190506.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>CO2   strm_co2diag</var>
+      <var>CO2   Sa_co2diag</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -3799,7 +3964,7 @@
       <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_lat-bandsSSP5-8.5__simyr_2014-2500_CMIP6_c190506.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>CO2   strm_co2diag</var>
+      <var>CO2   Sa_co2diag</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -3830,7 +3995,7 @@
       <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_globalSSP1-1.9_simyr_2014-2501_CMIP6_c190514.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>CO2   strm_co2diag</var>
+      <var>CO2   Sa_co2diag</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -3861,7 +4026,7 @@
       <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_globalSSP1-2.6__simyr_2014-2501_CMIP6_c190506.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>CO2   strm_co2diag</var>
+      <var>CO2   Sa_co2diag</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -3892,7 +4057,7 @@
       <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_globalSSP2-4.5__simyr_2014-2501_CMIP6_c190506.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>CO2   strm_co2diag</var>
+      <var>CO2   Sa_co2diag</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -3923,7 +4088,7 @@
       <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_globalSSP3-7.0_simyr_1750-2501_CMIP6_c201101.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>CO2   strm_co2diag</var>
+      <var>CO2   Sa_co2diag</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -3954,7 +4119,7 @@
       <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_globalSSP4-3.4_simyr_2014-2501_CMIP6_c190514.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>CO2   strm_co2diag</var>
+      <var>CO2   Sa_co2diag</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -3985,7 +4150,7 @@
       <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_globalSSP4-6.0__simyr_2014-2501_CMIP6_c190506.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>CO2   strm_co2diag</var>
+      <var>CO2   Sa_co2diag</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -4016,7 +4181,7 @@
       <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_globalSSP5-3.4__simyr_2014-2501_CMIP6_c190506.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>CO2   strm_co2diag</var>
+      <var>CO2   Sa_co2diag</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -4047,7 +4212,7 @@
       <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_globalSSP5-8.5__simyr_2014-2501_CMIP6_c190506.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>CO2   strm_co2diag</var>
+      <var>CO2   Sa_co2diag</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -4082,20 +4247,20 @@
       <file>$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/aero/aerosoldep_WACCM.ensmean_monthly_hist_1849-2015_0.9x1.25_CMIP6_c180926.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>BCDEPWET   strm_Faxabcphiwet</var>
-      <var>BCPHODRY   strm_Faxabcphodry</var>
-      <var>BCPHIDRY   strm_Faxabcphidry</var>
-      <var>OCDEPWET   strm_Faxaocphiwet</var>
-      <var>OCPHIDRY   strm_Faxaocphidry</var>
-      <var>OCPHODRY   strm_Faxaocphodry</var>
-      <var>DSTX01WD   strm_Faxadstwet1</var>
-      <var>DSTX01DD   strm_Faxadstdry1</var>
-      <var>DSTX02WD   strm_Faxadstwet2</var>
-      <var>DSTX02DD   strm_Faxadstdry2</var>
-      <var>DSTX03WD   strm_Faxadstwet3</var>
-      <var>DSTX03DD   strm_Faxadstdry3</var>
-      <var>DSTX04WD   strm_Faxadstwet4</var>
-      <var>DSTX04DD   strm_Faxadstdry4</var>
+      <var>BCDEPWET   Faxa_bcphiwet</var>
+      <var>BCPHODRY   Faxa_bcphodry</var>
+      <var>BCPHIDRY   Faxa_bcphidry</var>
+      <var>OCDEPWET   Faxa_ocphiwet</var>
+      <var>OCPHIDRY   Faxa_ocphidry</var>
+      <var>OCPHODRY   Faxa_ocphodry</var>
+      <var>DSTX01WD   Faxa_dstwet1</var>
+      <var>DSTX01DD   Faxa_dstdry1</var>
+      <var>DSTX02WD   Faxa_dstwet2</var>
+      <var>DSTX02DD   Faxa_dstdry2</var>
+      <var>DSTX03WD   Faxa_dstwet3</var>
+      <var>DSTX03DD   Faxa_dstdry3</var>
+      <var>DSTX04WD   Faxa_dstwet4</var>
+      <var>DSTX04DD   Faxa_dstdry4</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -4126,20 +4291,20 @@
       <file>$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/aero/aerosoldep_WACCM.ensmean_monthly_hist_1849-2015_0.9x1.25_CMIP6_c180926.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>BCDEPWET   strm_Faxabcphiwet</var>
-      <var>BCPHODRY   strm_Faxabcphodry</var>
-      <var>BCPHIDRY   strm_Faxabcphidry</var>
-      <var>OCDEPWET   strm_Faxaocphiwet</var>
-      <var>OCPHIDRY   strm_Faxaocphidry</var>
-      <var>OCPHODRY   strm_Faxaocphodry</var>
-      <var>DSTX01WD   strm_Faxadstwet1</var>
-      <var>DSTX01DD   strm_Faxadstdry1</var>
-      <var>DSTX02WD   strm_Faxadstwet2</var>
-      <var>DSTX02DD   strm_Faxadstdry2</var>
-      <var>DSTX03WD   strm_Faxadstwet3</var>
-      <var>DSTX03DD   strm_Faxadstdry3</var>
-      <var>DSTX04WD   strm_Faxadstwet4</var>
-      <var>DSTX04DD   strm_Faxadstdry4</var>
+      <var>BCDEPWET   Faxa_bcphiwet</var>
+      <var>BCPHODRY   Faxa_bcphodry</var>
+      <var>BCPHIDRY   Faxa_bcphidry</var>
+      <var>OCDEPWET   Faxa_ocphiwet</var>
+      <var>OCPHIDRY   Faxa_ocphidry</var>
+      <var>OCPHODRY   Faxa_ocphodry</var>
+      <var>DSTX01WD   Faxa_dstwet1</var>
+      <var>DSTX01DD   Faxa_dstdry1</var>
+      <var>DSTX02WD   Faxa_dstwet2</var>
+      <var>DSTX02DD   Faxa_dstdry2</var>
+      <var>DSTX03WD   Faxa_dstwet3</var>
+      <var>DSTX03DD   Faxa_dstdry3</var>
+      <var>DSTX04WD   Faxa_dstwet4</var>
+      <var>DSTX04DD   Faxa_dstdry4</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -4170,20 +4335,20 @@
       <file>$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/aero/aerosoldep_WACCM.ensmean_monthly_hist_1849-2015_0.9x1.25_CMIP6_c180926.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>BCDEPWET   strm_Faxabcphiwet</var>
-      <var>BCPHODRY   strm_Faxabcphodry</var>
-      <var>BCPHIDRY   strm_Faxabcphidry</var>
-      <var>OCDEPWET   strm_Faxaocphiwet</var>
-      <var>OCPHIDRY   strm_Faxaocphidry</var>
-      <var>OCPHODRY   strm_Faxaocphodry</var>
-      <var>DSTX01WD   strm_Faxadstwet1</var>
-      <var>DSTX01DD   strm_Faxadstdry1</var>
-      <var>DSTX02WD   strm_Faxadstwet2</var>
-      <var>DSTX02DD   strm_Faxadstdry2</var>
-      <var>DSTX03WD   strm_Faxadstwet3</var>
-      <var>DSTX03DD   strm_Faxadstdry3</var>
-      <var>DSTX04WD   strm_Faxadstwet4</var>
-      <var>DSTX04DD   strm_Faxadstdry4</var>
+      <var>BCDEPWET   Faxa_bcphiwet</var>
+      <var>BCPHODRY   Faxa_bcphodry</var>
+      <var>BCPHIDRY   Faxa_bcphidry</var>
+      <var>OCDEPWET   Faxa_ocphiwet</var>
+      <var>OCPHIDRY   Faxa_ocphidry</var>
+      <var>OCPHODRY   Faxa_ocphodry</var>
+      <var>DSTX01WD   Faxa_dstwet1</var>
+      <var>DSTX01DD   Faxa_dstdry1</var>
+      <var>DSTX02WD   Faxa_dstwet2</var>
+      <var>DSTX02DD   Faxa_dstdry2</var>
+      <var>DSTX03WD   Faxa_dstwet3</var>
+      <var>DSTX03DD   Faxa_dstdry3</var>
+      <var>DSTX04WD   Faxa_dstwet4</var>
+      <var>DSTX04DD   Faxa_dstdry4</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -4214,20 +4379,20 @@
       <file>$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/aero/aerosoldep_WACCM.ensmean_monthly_hist_1849-2015_0.9x1.25_CMIP6_c180926.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>BCDEPWET   strm_Faxabcphiwet</var>
-      <var>BCPHODRY   strm_Faxabcphodry</var>
-      <var>BCPHIDRY   strm_Faxabcphidry</var>
-      <var>OCDEPWET   strm_Faxaocphiwet</var>
-      <var>OCPHIDRY   strm_Faxaocphidry</var>
-      <var>OCPHODRY   strm_Faxaocphodry</var>
-      <var>DSTX01WD   strm_Faxadstwet1</var>
-      <var>DSTX01DD   strm_Faxadstdry1</var>
-      <var>DSTX02WD   strm_Faxadstwet2</var>
-      <var>DSTX02DD   strm_Faxadstdry2</var>
-      <var>DSTX03WD   strm_Faxadstwet3</var>
-      <var>DSTX03DD   strm_Faxadstdry3</var>
-      <var>DSTX04WD   strm_Faxadstwet4</var>
-      <var>DSTX04DD   strm_Faxadstdry4</var>
+      <var>BCDEPWET   Faxa_bcphiwet</var>
+      <var>BCPHODRY   Faxa_bcphodry</var>
+      <var>BCPHIDRY   Faxa_bcphidry</var>
+      <var>OCDEPWET   Faxa_ocphiwet</var>
+      <var>OCPHIDRY   Faxa_ocphidry</var>
+      <var>OCPHODRY   Faxa_ocphodry</var>
+      <var>DSTX01WD   Faxa_dstwet1</var>
+      <var>DSTX01DD   Faxa_dstdry1</var>
+      <var>DSTX02WD   Faxa_dstwet2</var>
+      <var>DSTX02DD   Faxa_dstdry2</var>
+      <var>DSTX03WD   Faxa_dstwet3</var>
+      <var>DSTX03DD   Faxa_dstdry3</var>
+      <var>DSTX04WD   Faxa_dstwet4</var>
+      <var>DSTX04DD   Faxa_dstdry4</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -4258,20 +4423,20 @@
       <file>$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/aero/aerodep_clm_SSP126_b.e21.BSSP126cmip6.f09_g17.CMIP6-SSP1-2.6.001_2014-2101_monthly_0.9x1.25_c190523.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>BCDEPWET   strm_Faxabcphiwet</var>
-      <var>BCPHODRY   strm_Faxabcphodry</var>
-      <var>BCPHIDRY   strm_Faxabcphidry</var>
-      <var>OCDEPWET   strm_Faxaocphiwet</var>
-      <var>OCPHIDRY   strm_Faxaocphidry</var>
-      <var>OCPHODRY   strm_Faxaocphodry</var>
-      <var>DSTX01WD   strm_Faxadstwet1</var>
-      <var>DSTX01DD   strm_Faxadstdry1</var>
-      <var>DSTX02WD   strm_Faxadstwet2</var>
-      <var>DSTX02DD   strm_Faxadstdry2</var>
-      <var>DSTX03WD   strm_Faxadstwet3</var>
-      <var>DSTX03DD   strm_Faxadstdry3</var>
-      <var>DSTX04WD   strm_Faxadstwet4</var>
-      <var>DSTX04DD   strm_Faxadstdry4</var>
+      <var>BCDEPWET   Faxa_bcphiwet</var>
+      <var>BCPHODRY   Faxa_bcphodry</var>
+      <var>BCPHIDRY   Faxa_bcphidry</var>
+      <var>OCDEPWET   Faxa_ocphiwet</var>
+      <var>OCPHIDRY   Faxa_ocphidry</var>
+      <var>OCPHODRY   Faxa_ocphodry</var>
+      <var>DSTX01WD   Faxa_dstwet1</var>
+      <var>DSTX01DD   Faxa_dstdry1</var>
+      <var>DSTX02WD   Faxa_dstwet2</var>
+      <var>DSTX02DD   Faxa_dstdry2</var>
+      <var>DSTX03WD   Faxa_dstwet3</var>
+      <var>DSTX03DD   Faxa_dstdry3</var>
+      <var>DSTX04WD   Faxa_dstwet4</var>
+      <var>DSTX04DD   Faxa_dstdry4</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -4302,20 +4467,20 @@
       <file>$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/aero/aerodep_clm_SSP245_b.e21.BWSSP245cmip6.f09_g17.CMIP6-SSP2-4.5-WACCM.001_2014-2101_monthly_0.9x1.25_c190401.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>BCDEPWET   strm_Faxabcphiwet</var>
-      <var>BCPHODRY   strm_Faxabcphodry</var>
-      <var>BCPHIDRY   strm_Faxabcphidry</var>
-      <var>OCDEPWET   strm_Faxaocphiwet</var>
-      <var>OCPHIDRY   strm_Faxaocphidry</var>
-      <var>OCPHODRY   strm_Faxaocphodry</var>
-      <var>DSTX01WD   strm_Faxadstwet1</var>
-      <var>DSTX01DD   strm_Faxadstdry1</var>
-      <var>DSTX02WD   strm_Faxadstwet2</var>
-      <var>DSTX02DD   strm_Faxadstdry2</var>
-      <var>DSTX03WD   strm_Faxadstwet3</var>
-      <var>DSTX03DD   strm_Faxadstdry3</var>
-      <var>DSTX04WD   strm_Faxadstwet4</var>
-      <var>DSTX04DD   strm_Faxadstdry4</var>
+      <var>BCDEPWET   Faxa_bcphiwet</var>
+      <var>BCPHODRY   Faxa_bcphodry</var>
+      <var>BCPHIDRY   Faxa_bcphidry</var>
+      <var>OCDEPWET   Faxa_ocphiwet</var>
+      <var>OCPHIDRY   Faxa_ocphidry</var>
+      <var>OCPHODRY   Faxa_ocphodry</var>
+      <var>DSTX01WD   Faxa_dstwet1</var>
+      <var>DSTX01DD   Faxa_dstdry1</var>
+      <var>DSTX02WD   Faxa_dstwet2</var>
+      <var>DSTX02DD   Faxa_dstdry2</var>
+      <var>DSTX03WD   Faxa_dstwet3</var>
+      <var>DSTX03DD   Faxa_dstdry3</var>
+      <var>DSTX04WD   Faxa_dstwet4</var>
+      <var>DSTX04DD   Faxa_dstdry4</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -4346,20 +4511,20 @@
       <file>$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/aero/aerodep_clm_SSP370_b.e21.BWSSP370cmip6.f09_g17.CMIP6-SSP3-7.0-WACCM.001_1849-2101_monthly_0.9x1.25_c201103.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>BCDEPWET   strm_Faxabcphiwet</var>
-      <var>BCPHODRY   strm_Faxabcphodry</var>
-      <var>BCPHIDRY   strm_Faxabcphidry</var>
-      <var>OCDEPWET   strm_Faxaocphiwet</var>
-      <var>OCPHIDRY   strm_Faxaocphidry</var>
-      <var>OCPHODRY   strm_Faxaocphodry</var>
-      <var>DSTX01WD   strm_Faxadstwet1</var>
-      <var>DSTX01DD   strm_Faxadstdry1</var>
-      <var>DSTX02WD   strm_Faxadstwet2</var>
-      <var>DSTX02DD   strm_Faxadstdry2</var>
-      <var>DSTX03WD   strm_Faxadstwet3</var>
-      <var>DSTX03DD   strm_Faxadstdry3</var>
-      <var>DSTX04WD   strm_Faxadstwet4</var>
-      <var>DSTX04DD   strm_Faxadstdry4</var>
+      <var>BCDEPWET   Faxa_bcphiwet</var>
+      <var>BCPHODRY   Faxa_bcphodry</var>
+      <var>BCPHIDRY   Faxa_bcphidry</var>
+      <var>OCDEPWET   Faxa_ocphiwet</var>
+      <var>OCPHIDRY   Faxa_ocphidry</var>
+      <var>OCPHODRY   Faxa_ocphodry</var>
+      <var>DSTX01WD   Faxa_dstwet1</var>
+      <var>DSTX01DD   Faxa_dstdry1</var>
+      <var>DSTX02WD   Faxa_dstwet2</var>
+      <var>DSTX02DD   Faxa_dstdry2</var>
+      <var>DSTX03WD   Faxa_dstwet3</var>
+      <var>DSTX03DD   Faxa_dstdry3</var>
+      <var>DSTX04WD   Faxa_dstwet4</var>
+      <var>DSTX04DD   Faxa_dstdry4</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -4391,20 +4556,20 @@
       <file>null</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>BCDEPWET   strm_Faxabcphiwet</var>
-      <var>BCPHODRY   strm_Faxabcphodry</var>
-      <var>BCPHIDRY   strm_Faxabcphidry</var>
-      <var>OCDEPWET   strm_Faxaocphiwet</var>
-      <var>OCPHIDRY   strm_Faxaocphidry</var>
-      <var>OCPHODRY   strm_Faxaocphodry</var>
-      <var>DSTX01WD   strm_Faxadstwet1</var>
-      <var>DSTX01DD   strm_Faxadstdry1</var>
-      <var>DSTX02WD   strm_Faxadstwet2</var>
-      <var>DSTX02DD   strm_Faxadstdry2</var>
-      <var>DSTX03WD   strm_Faxadstwet3</var>
-      <var>DSTX03DD   strm_Faxadstdry3</var>
-      <var>DSTX04WD   strm_Faxadstwet4</var>
-      <var>DSTX04DD   strm_Faxadstdry4</var>
+      <var>BCDEPWET   Faxa_bcphiwet</var>
+      <var>BCPHODRY   Faxa_bcphodry</var>
+      <var>BCPHIDRY   Faxa_bcphidry</var>
+      <var>OCDEPWET   Faxa_ocphiwet</var>
+      <var>OCPHIDRY   Faxa_ocphidry</var>
+      <var>OCPHODRY   Faxa_ocphodry</var>
+      <var>DSTX01WD   Faxa_dstwet1</var>
+      <var>DSTX01DD   Faxa_dstdry1</var>
+      <var>DSTX02WD   Faxa_dstwet2</var>
+      <var>DSTX02DD   Faxa_dstdry2</var>
+      <var>DSTX03WD   Faxa_dstwet3</var>
+      <var>DSTX03DD   Faxa_dstdry3</var>
+      <var>DSTX04WD   Faxa_dstwet4</var>
+      <var>DSTX04DD   Faxa_dstdry4</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -4435,20 +4600,20 @@
       <file>$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/aero/aerodep_clm_SSP585_b.e21.BSSP585cmip6.f09_g17.CMIP6-SSP5-8.5.001_2014-2101_monthly_0.9x1.25_c190419.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>BCDEPWET   strm_Faxabcphiwet</var>
-      <var>BCPHODRY   strm_Faxabcphodry</var>
-      <var>BCPHIDRY   strm_Faxabcphidry</var>
-      <var>OCDEPWET   strm_Faxaocphiwet</var>
-      <var>OCPHIDRY   strm_Faxaocphidry</var>
-      <var>OCPHODRY   strm_Faxaocphodry</var>
-      <var>DSTX01WD   strm_Faxadstwet1</var>
-      <var>DSTX01DD   strm_Faxadstdry1</var>
-      <var>DSTX02WD   strm_Faxadstwet2</var>
-      <var>DSTX02DD   strm_Faxadstdry2</var>
-      <var>DSTX03WD   strm_Faxadstwet3</var>
-      <var>DSTX03DD   strm_Faxadstdry3</var>
-      <var>DSTX04WD   strm_Faxadstwet4</var>
-      <var>DSTX04DD   strm_Faxadstdry4</var>
+      <var>BCDEPWET   Faxa_bcphiwet</var>
+      <var>BCPHODRY   Faxa_bcphodry</var>
+      <var>BCPHIDRY   Faxa_bcphidry</var>
+      <var>OCDEPWET   Faxa_ocphiwet</var>
+      <var>OCPHIDRY   Faxa_ocphidry</var>
+      <var>OCPHODRY   Faxa_ocphodry</var>
+      <var>DSTX01WD   Faxa_dstwet1</var>
+      <var>DSTX01DD   Faxa_dstdry1</var>
+      <var>DSTX02WD   Faxa_dstwet2</var>
+      <var>DSTX02DD   Faxa_dstdry2</var>
+      <var>DSTX03WD   Faxa_dstwet3</var>
+      <var>DSTX03DD   Faxa_dstdry3</var>
+      <var>DSTX04WD   Faxa_dstwet4</var>
+      <var>DSTX04DD   Faxa_dstdry4</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -4483,7 +4648,7 @@
       <file>$DIN_LOC_ROOT/cdeps/datm/ozone/O3_surface.f09_g17.CMIP6-historical-WACCM.001.monthly.185001-201412.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>O3  strm_o3</var>
+      <var>O3  Sa_o3</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -4514,7 +4679,7 @@
       <file>$DIN_LOC_ROOT/cdeps/datm/ozone/O3_surface.f09_g17.CMIP6-historical-WACCM.001.monthly.185001-201412.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>O3  strm_o3</var>
+      <var>O3  Sa_o3</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -4545,7 +4710,7 @@
       <file>$DIN_LOC_ROOT/cdeps/datm/ozone/O3_surface.f09_g17.CMIP6-historical-WACCM.001.monthly.185001-201412.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>O3  strm_o3</var>
+      <var>O3  Sa_o3</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -4576,7 +4741,7 @@
       <file>$DIN_LOC_ROOT/cdeps/datm/ozone/O3_surface.f09_g17.CMIP6-historical-WACCM.001.monthly.185001-201412.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>O3  strm_o3</var>
+      <var>O3  Sa_o3</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -4607,7 +4772,7 @@
       <file>$DIN_LOC_ROOT/cdeps/datm/ozone/O3_surface.f09_g17.CMIP6-SSP2-4.5-WACCM.001.monthly.201501-210012.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>O3  strm_o3</var>
+      <var>O3  Sa_o3</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -4638,7 +4803,7 @@
       <file>$DIN_LOC_ROOT/cdeps/datm/ozone/O3_surface.f09_g17.CMIP6-SSP3-7.0-WACCM.001.monthly.201501-210012.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>O3  strm_o3</var>
+      <var>O3  Sa_o3</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -4669,7 +4834,7 @@
       <file>$DIN_LOC_ROOT/cdeps/datm/ozone/O3_surface.f09_g17.CMIP6-SSP5-8.5-WACCM.001.monthly.201501-210012.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>O3  strm_o3</var>
+      <var>O3  Sa_o3</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -4706,10 +4871,11 @@
       <file>$DIN_LOC_ROOT/atm/ndep/cmip7/ndep_input4MIPs_surfaceFluxes_CMIP_FZJ-CMIP-nitrogen-1-2_gn_185001-202212.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>drynhx  strm_Faxandep_nhx_dry</var>
-      <var>wetnhx  strm_Faxa_ndep_nhx_wet</var>
-      <var>drynoy  strm_Faxa_ndep_noy_dry</var>
-      <var>wetnoy  strm_Faxa_ndep_noy_wet</var>
+      <!-- the following stream fields are in units of kg/m2/sec - so need no unit conversion -->
+      <var>drynhx  Faxandep_nhx_dry</var>
+      <var>wetnhx  Faxa_ndep_nhx_wet</var>
+      <var>drynoy  Faxa_ndep_noy_dry</var>
+      <var>wetnoy  Faxa_ndep_noy_wet</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -4740,10 +4906,11 @@
       <file>$DIN_LOC_ROOT/atm/ndep/cmip7/ndep_input4MIPs_surfaceFluxes_CMIP_FZJ-CMIP-nitrogen-1-2_gn_185001-202212.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>drynhx  strm_Faxa_ndep_nhx_dry</var>
-      <var>wetnhx  strm_Faxa_ndep_nhx_wet</var>
-      <var>drynoy  strm_Faxa_ndep_noy_dry</var>
-      <var>wetnoy  strm_Faxa_ndep_noy_wet</var>
+      <!-- the following stream fields are in units of kg/m2/sec - so need no unit conversion -->
+      <var>drynhx  Faxa_ndep_nhx_dry</var>
+      <var>wetnhx  Faxa_ndep_nhx_wet</var>
+      <var>drynoy  Faxa_ndep_noy_dry</var>
+      <var>wetnoy  Faxa_ndep_noy_wet</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -4766,6 +4933,39 @@
     <stream_readmode>single</stream_readmode>
   </stream_entry>
 
+  <stream_entry name="presndep.clim_1850">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/lnd/clm2/ndepdata/fndep_clm_WACCM6_CMIP6piControl001_y21-50avg_1850monthly_0.95x1.25_c180802.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <!-- the following stream fields are in units of g/m2/sec - need conversion to kg/m2/sec-->
+      <var>NDEP_NHx_month  Faxa_ndep_nhx</var>
+      <var>NDEP_NOy_month  Faxa_ndep_noy</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1850</stream_year_first>
+    <stream_year_last>1850</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
   <stream_entry name="presndep.clim_2000">
     <stream_meshfile>
       <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
@@ -4774,8 +4974,9 @@
       <file>$DIN_LOC_ROOT/lnd/clm2/ndepdata/fndep_clm_hist_b.e21.BWHIST.f09_g17.CMIP6-historical-WACCM.ensmean_1849-2015_monthly_0.9x1.25_c180926.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>NDEP_NHx_month  strm_Faxa_ndep_nhx</var>
-      <var>NDEP_NOy_month  strm_Faxa_ndep_noy</var>
+      <!-- the following stream fields are in units of g/m2/sec - need conversion to kg/m2/sec-->
+      <var>NDEP_NHx_month  Faxa_ndep_nhx</var>
+      <var>NDEP_NOy_month  Faxa_ndep_noy</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -4806,8 +5007,8 @@
       <file>$DIN_LOC_ROOT/lnd/clm2/ndepdata/fndep_clm_hist_b.e21.BWHIST.f09_g17.CMIP6-historical-WACCM.ensmean_1849-2015_monthly_0.9x1.25_c180926.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>NDEP_NHx_month  strm_Faxa_ndep_nhx</var>
-      <var>NDEP_NOy_month  strm_Faxa_ndep_noy</var>
+      <var>NDEP_NHx_month  Faxa_ndep_nhx</var>
+      <var>NDEP_NOy_month  Faxa_ndep_noy</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -4838,8 +5039,9 @@
       <file>$DIN_LOC_ROOT/lnd/clm2/ndepdata/fndep_clm_hist_b.e21.BWHIST.f09_g17.CMIP6-historical-WACCM.ensmean_1849-2015_monthly_0.9x1.25_c180926.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>NDEP_NHx_month  strm_Faxa_ndep_nhx</var>
-      <var>NDEP_NOy_month  strm_Faxa_ndep_noy</var>
+      <!-- the following stream fields are in units of g/m2/sec - need conversion to kg/m2/sec-->
+      <var>NDEP_NHx_month  Faxa_ndep_nhx</var>
+      <var>NDEP_NOy_month  Faxa_ndep_noy</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -4870,8 +5072,9 @@
       <file>$DIN_LOC_ROOT/lnd/clm2/ndepdata/fndep_clm_f09_g17.CMIP6-SSP1-2.6-WACCM_1849-2101_monthly_c191007.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>NDEP_NHx_month  strm_Faxa_ndep_nhx</var>
-      <var>NDEP_NOy_month  strm_Faxa_ndep_noy</var>
+      <!-- the following stream fields are in units of g/m2/sec - need conversion to kg/m2/sec-->
+      <var>NDEP_NHx_month  Faxa_ndep_nhx</var>
+      <var>NDEP_NOy_month  Faxa_ndep_noy</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -4902,8 +5105,9 @@
       <file>$DIN_LOC_ROOT/lnd/clm2/ndepdata/fndep_clm_f09_g17.CMIP6-SSP2-4.5-WACCM_1849-2101_monthly_c191007.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>NDEP_NHx_month  strm_Faxa_ndep_nhx</var>
-      <var>NDEP_NOy_month  strm_Faxa_ndep_noy</var>
+      <!-- the following stream fields are in units of g/m2/sec - need conversion to kg/m2/sec-->
+      <var>NDEP_NHx_month  Faxa_ndep_nhx</var>
+      <var>NDEP_NOy_month  Faxa_ndep_noy</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -4934,8 +5138,9 @@
       <file>$DIN_LOC_ROOT/lnd/clm2/ndepdata/fndep_clm_SSP370_b.e21.BWSSP370cmip6.f09_g17.CMIP6-SSP3-7.0-WACCM.002_1849-2101_monthly_0.9x1.25_c211216.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>NDEP_NHx_month  strm_Faxa_ndep_nhx</var>
-      <var>NDEP_NOy_month  strm_Faxa_ndep_noy</var>
+      <!-- the following stream fields are in units of g/m2/sec - need conversion to kg/m2/sec-->
+      <var>NDEP_NHx_month  Faxa_ndep_nhx</var>
+      <var>NDEP_NOy_month  Faxa_ndep_noy</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -4967,8 +5172,9 @@
       <file>$DIN_LOC_ROOT/lnd/clm2/ndepdata/fndep_clm_f09_g17.CMIP6-SSP5-8.5-WACCM_1849-2101_monthly_c191007.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>NDEP_NHx_month  strm_Faxa_ndep_nhx</var>
-      <var>NDEP_NOy_month  strm_Faxa_ndep_noy</var>
+      <!-- the following stream fields are in units of g/m2/sec - need conversion to kg/m2/sec-->
+      <var>NDEP_NHx_month  Faxa_ndep_nhx</var>
+      <var>NDEP_NOy_month  Faxa_ndep_noy</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -5003,7 +5209,7 @@
       <file first_year="$DATM_YR_START" last_year="$DATM_YR_END">$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.hx.atm.3h.avrg.%ymd-10800.nc</file>
    </stream_datafiles>
     <stream_datavars>
-      <var>atmImp_Sa_topo  strm_Sa_topo</var>
+      <var>atmImp_Sa_topo  Sa_topo</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -5023,8 +5229,7 @@
     <stream_dtlimit>
       <dtlimit>3.0</dtlimit>
     </stream_dtlimit>
-    <stream_readmode>single</stream_readmode>
-  </stream_entry>
+    <stream_readmode>single</stream_readmode></stream_entry>
 
   <stream_entry name="presaero.cplhist">
     <stream_meshfile>
@@ -5034,20 +5239,20 @@
       <file first_year="$DATM_YR_START" last_year="$DATM_YR_END" filename_advance_days='1'>$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.hx.atm.24h.avrg.%ymd-00000.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>atmImp_Faxa_bcph1   strm_Faxa_bcphidry</var>
-      <var>atmImp_Faxa_bcph2   strm_Faxa_bcphodry</var>
-      <var>atmImp_Faxa_bcph3   strm_Faxa_bcphiwet</var>
-      <var>atmImp_Faxa_ocph1   strm_Faxa_ocphidry</var>
-      <var>atmImp_Faxa_ocph2   strm_Faxa_ocphodry</var>
-      <var>atmImp_Faxa_ocph3   strm_Faxa_ocphiwet</var>
-      <var>atmImp_Faxa_dstwet1 strm_Faxa_dstwet1</var>
-      <var>atmImp_Faxa_dstdry1 strm_Faxa_dstdry1</var>
-      <var>atmImp_Faxa_dstwet2 strm_Faxa_dstwet2</var>
-      <var>atmImp_Faxa_dstdry2 strm_Faxa_dstdry2</var>
-      <var>atmImp_Faxa_dstwet3 strm_Faxa_dstwet3</var>
-      <var>atmImp_Faxa_dstdry3 strm_Faxa_dstdry3</var>
-      <var>atmImp_Faxa_dstwet4 strm_Faxa_dstwet4</var>
-      <var>atmImp_Faxa_dstdry4 strm_Faxa_dstdry4</var>
+      <var>atmImp_Faxa_bcph1 Faxa_bcphidry</var>
+      <var>atmImp_Faxa_bcph2 Faxa_bcphodry</var>
+      <var>atmImp_Faxa_bcph3 Faxa_bcphiwet</var>
+      <var>atmImp_Faxa_ocph1 Faxa_ocphidry</var>
+      <var>atmImp_Faxa_ocph2 Faxa_ocphodry</var>
+      <var>atmImp_Faxa_ocph3 Faxa_ocphiwet</var>
+      <var>atmImp_Faxa_dstwet1 Faxa_dstwet1</var>
+      <var>atmImp_Faxa_dstdry1 Faxa_dstdry1</var>
+      <var>atmImp_Faxa_dstwet2 Faxa_dstwet2</var>
+      <var>atmImp_Faxa_dstdry2 Faxa_dstdry2</var>
+      <var>atmImp_Faxa_dstwet3 Faxa_dstwet3</var>
+      <var>atmImp_Faxa_dstdry3 Faxa_dstdry3</var>
+      <var>atmImp_Faxa_dstwet4 Faxa_dstwet4</var>
+      <var>atmImp_Faxa_dstdry4 Faxa_dstdry4</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -5075,11 +5280,10 @@
       <meshfile>$ATM_DOMAIN_MESH</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <!-- NOTE: this is the old cpl7 format and does not apply any more -->
       <file first_year="$DATM_YR_START" last_year="$DATM_YR_END">$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.ha2x1d.%ym.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>a2x1d_Faxa_ndep  strm_Faxa_ndep</var> <!-- ??? -->
+      <var>a2x1d_Faxa_ndep  Faxa_ndep</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -5110,10 +5314,10 @@
       <file first_year="$DATM_YR_START" last_year="$DATM_YR_END">$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.hx.atm.1h.inst.%ymd-03600.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>atmImp_Faxa_swndr strm_Faxa_swndr</var>
-      <var>atmImp_Faxa_swvdr strm_Faxa_swvdr</var>
-      <var>atmImp_Faxa_swndf strm_Faxa_swndf</var>
-      <var>atmImp_Faxa_swvdf strm_Faxa_swvdf</var>
+      <var>atmImp_Faxa_swndr Faxa_swndr</var>
+      <var>atmImp_Faxa_swvdr Faxa_swvdr</var>
+      <var>atmImp_Faxa_swndf Faxa_swndf</var>
+      <var>atmImp_Faxa_swvdf Faxa_swvdf</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -5144,11 +5348,11 @@
       <file first_year="$DATM_YR_START" last_year="$DATM_YR_END">$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.hx.atm.3h.avrg.%ymd-10800.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>atmImp_Faxa_rainc strm_Faxa_rainc</var>
-      <var>atmImp_Faxa_rainl strm_Faxa_rainl</var>
-      <var>atmImp_Faxa_snowc strm_Faxa_snowc</var>
-      <var>atmImp_Faxa_snowl strm_Faxa_snowl</var>
-      <var>atmImp_Faxa_lwdn  strm_Faxa_lwdn</var>
+      <var>atmImp_Faxa_rainc Faxa_rainc</var>
+      <var>atmImp_Faxa_rainl Faxa_rainl</var>
+      <var>atmImp_Faxa_snowc Faxa_snowc</var>
+      <var>atmImp_Faxa_snowl Faxa_snowl</var>
+      <var>atmImp_Faxa_lwdn  Faxa_lwdn</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -5179,15 +5383,15 @@
       <file first_year="$DATM_YR_START" last_year="$DATM_YR_END">$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.hx.atm.3h.avrg.%ymd-10800.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>atmImp_Sa_z       strm_Sa_z</var>
-      <var>atmImp_Sa_tbot    strm_Sa_tbot</var>
-      <var>atmImp_Sa_ptem    strm_Sa_ptem</var>
-      <var>atmImp_Sa_shum    strm_Sa_shum</var>
-      <var>atmImp_Sa_pbot    strm_Sa_pbot</var>
-      <var>atmImp_Sa_dens    strm_Sa_dens</var>
-      <var>atmImp_Sa_pslv    strm_Sa_pslv</var>
-      <var>atmImp_Sa_co2diag strm_co2diag</var>
-      <var>atmImp_Sa_co2prog strm_co2prog</var>
+      <var>atmImp_Sa_z       Sa_z</var>
+      <var>atmImp_Sa_tbot    Sa_tbot</var>
+      <var>atmImp_Sa_ptem    Sa_ptem</var>
+      <var>atmImp_Sa_shum    Sa_shum</var>
+      <var>atmImp_Sa_pbot    Sa_pbot</var>
+      <var>atmImp_Sa_dens    Sa_dens</var>
+      <var>atmImp_Sa_pslv    Sa_pslv</var>
+      <var>atmImp_Sa_co2diag Sa_co2diag</var>
+      <var>atmImp_Sa_co2prog Sa_co2prog</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -5218,8 +5422,8 @@
       <file first_year="$DATM_YR_START" last_year="$DATM_YR_END">$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.hx.atm.1h.avrg.%ymd-03600.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>atmImp_Sa_u  strm_Sa_u</var>
-      <var>atmImp_Sa_v  strm_Sa_v</var>
+      <var>atmImp_Sa_u  Sa_u</var>
+      <var>atmImp_Sa_v  Sa_v</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -5254,7 +5458,7 @@
       <file>$DIN_LOC_ROOT/atm/datm7/topo_forcing/topodata_0.9x1.25_USGS_070110_stream_c151201.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>TOPO strm_Sa_topo</var>
+      <var>TOPO Sa_topo</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>

@@ -7,10 +7,10 @@ set(SRCFILES atm_comp_nuopc.F90
              datm_datamode_gefs_mod.F90
              datm_datamode_era5_mod.F90
              datm_datamode_simple_mod.F90
-             datm_presaero_mod.F90
-             datm_ndep_mod.F90
-             datm_co2_mod.F90
-             datm_o3_mod.F90)
+             datm_pres_aero_mod.F90
+             datm_pres_ndep_mod.F90
+             datm_pres_co2_mod.F90
+             datm_pres_o3_mod.F90)
 
 foreach(FILE ${SRCFILES})
   if(EXISTS "${CASEROOT}/SourceMods/src.datm/${FILE}")

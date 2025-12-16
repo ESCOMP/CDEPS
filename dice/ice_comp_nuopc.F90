@@ -33,7 +33,6 @@ module cdeps_dice_comp
   use dshr_mod             , only : dshr_state_setscalar, dshr_set_runclock, dshr_log_clock_advance
   use dshr_methods_mod     , only : dshr_state_diagnose, chkerr, memcheck
   use dshr_strdata_mod     , only : shr_strdata_type, shr_strdata_init_from_config, shr_strdata_advance
-  use dshr_dfield_mod      , only : dfield_type, dshr_dfield_add, dshr_dfield_copy
   use dshr_fldlist_mod     , only : fldlist_type, dshr_fldlist_add, dshr_fldlist_realize
 
   use dice_datamode_ssmi_mod , only : dice_datamode_ssmi_advertise
@@ -96,7 +95,6 @@ module cdeps_dice_comp
   ! linked lists
   type(fldList_type) , pointer :: fldsImport => null()
   type(fldList_type) , pointer :: fldsExport => null()
-  type(dfield_type)  , pointer :: dfields    => null()
 
   ! model mask and model fraction
   real(r8), pointer            :: model_frac(:) => null()
@@ -108,7 +106,7 @@ module cdeps_dice_comp
   real(R8)                     :: dt                                  ! real model timestep
 
   logical                      :: diagnose_data = .true.
-  integer      , parameter     :: main_task=0                       ! task number of main task
+  integer      , parameter     :: main_task=0                         ! task number of main task
 #ifdef CESMCOUPLED
   character(*) , parameter     :: modName =  "(ice_comp_nuopc)"
 #else
@@ -504,17 +502,6 @@ contains
 
     if (first_time) then
 
-       ! Initialize dfields with export state data that has corresponding stream fieldi
-       select case (trim(datamode))
-       case('ssmi','ssmi_iaf')
-         call dshr_dfield_add(dfields, sdat, state_fld='Si_ifrac', strm_fld='Si_ifrac', &
-            state=exportState, logunit=logunit, mainproc=mainproc, rc=rc)
-         if (chkerr(rc,__LINE__,u_FILE_u)) return
-       case('cplhist')
-         call dice_init_dfields(importState, exportState, rc)
-         if (chkerr(rc,__LINE__,u_FILE_u)) return
-       end select
-
        ! Initialize datamode module ponters
        select case (trim(datamode))
        case('ssmi', 'ssmi_iaf')
@@ -550,17 +537,6 @@ contains
     call ESMF_TraceRegionEnter('dice_strdata_advance')
     call shr_strdata_advance(sdat, target_ymd, target_tod, logunit, 'dice', rc=rc)
     call ESMF_TraceRegionExit('dice_strdata_advance')
-
-    !--------------------
-    ! copy all fields from streams to export state as default
-    !--------------------
-
-    ! This automatically will update the fields in the export state
-
-    call ESMF_TraceRegionEnter('dice_dfield_copy')
-    call dshr_dfield_copy(dfields, sdat, rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_TraceRegionExit('dice_dfield_copy')
 
     !-------------------------------------------------
     ! Determine data model behavior based on the mode
@@ -601,46 +577,6 @@ contains
 
     call ESMF_TraceRegionExit('dice_datamode')
     call ESMF_TraceRegionExit('DICE_RUN')
-
-  contains
-    subroutine dice_init_dfields(importState, exportState, rc)
-      ! -----------------------------
-      ! Initialize dfields arrays
-      ! -----------------------------
-
-      ! input/output variables
-      type(ESMF_State)       , intent(inout) :: importState
-      type(ESMF_State)       , intent(inout) :: exportState
-      integer                , intent(out)   :: rc
-
-      ! local variables
-      integer                         :: n
-      integer                         :: fieldcount
-      type(ESMF_Field)                :: lfield
-      character(ESMF_MAXSTR) ,pointer :: lfieldnamelist(:)
-      character(*), parameter   :: subName = "(dice_init_dfields) "
-      !-------------------------------------------------------------------------------
-
-      rc = ESMF_SUCCESS
-
-      ! Initialize dfields data type (to map streams to export state fields)
-      ! Create dfields linked list - used for copying stream fields to export
-      ! state fields
-      call ESMF_StateGet(exportState, itemCount=fieldCount, rc=rc)
-      if (chkerr(rc,__LINE__,u_FILE_u)) return
-      allocate(lfieldnamelist(fieldCount))
-      call ESMF_StateGet(exportState, itemNameList=lfieldnamelist, rc=rc)
-      if (chkerr(rc,__LINE__,u_FILE_u)) return
-      do n = 1, fieldCount
-         call ESMF_StateGet(exportState, itemName=trim(lfieldNameList(n)), field=lfield, rc=rc)
-         if (chkerr(rc,__LINE__,u_FILE_u)) return
-         if (trim(lfieldnamelist(n)) /= flds_scalar_name) then
-            call dshr_dfield_add( dfields, sdat, trim(lfieldnamelist(n)), trim(lfieldnamelist(n)), exportState, &
-                 logunit, mainproc, rc)
-            if (chkerr(rc,__LINE__,u_FILE_u)) return
-         end if
-      end do
-    end subroutine dice_init_dfields
 
   end subroutine dice_comp_run
 

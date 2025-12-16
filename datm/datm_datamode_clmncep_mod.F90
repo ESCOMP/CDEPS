@@ -158,53 +158,53 @@ contains
     rc = ESMF_SUCCESS
 
     ! initialize stream pointers for module level export states
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Sa_wind'     , strm_Sa_wind     , rc)
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_wind'     , strm_Sa_wind     , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Sa_topo'     , strm_Sa_topo, rc)
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_topo'     , strm_Sa_topo, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Sa_z'        , strm_Sa_z        , rc)
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_z'        , strm_Sa_z        , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Sa_pbot'     , strm_Sa_pbot     , rc)
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_pbot'     , strm_Sa_pbot     , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Sa_tbot'     , strm_Sa_tbot     , rc)
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_tbot'     , strm_Sa_tbot     , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Sa_shum'     , strm_Sa_shum     , rc)
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_shum'     , strm_Sa_shum     , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Sa_tdew'     , strm_Sa_tdew     , rc)
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_tdew'     , strm_Sa_tdew     , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Sa_rh'       , strm_Sa_rh       , rc)
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_rh'       , strm_Sa_rh       , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Faxa_swdndf' , strm_Faxa_swdndf , rc)
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_swdndf' , strm_Faxa_swdndf , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Faxa_swdndr' , strm_Faxa_swdndr , rc)
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_swdndr' , strm_Faxa_swdndr , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Faxa_lwdn'   , strm_Faxa_lwdn   , rc)
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_lwdn'   , strm_Faxa_lwdn   , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Faxa_swdn'   , strm_Faxa_swdn   , rc)
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_swdn'   , strm_Faxa_swdn   , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Faxa_precn'  , strm_Faxa_precn  , rc)
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_precn'  , strm_Faxa_precn  , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! initialize stream pointers for module for bias correction
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Faxa_precsf'  , strm_Faxa_precsf   , rc)
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_precsf'  , strm_Faxa_precsf   , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! initialize stream pointers anomaly forcing
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Sa_u_af'      , strm_Sa_u_af      , rc)
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_u_af'      , strm_Sa_u_af      , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Sa_v_af'      , strm_Sa_v_af      , rc)
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_v_af'      , strm_Sa_v_af      , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Sa_shum_af'   , strm_Sa_shum_af   , rc)
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_shum_af'   , strm_Sa_shum_af   , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Sa_tbot_af'   , strm_Sa_tbot_af   , rc)
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_tbot_af'   , strm_Sa_tbot_af   , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Sa_pbot_af'   , strm_Sa_pbot_af   , rc)
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_pbot_af'   , strm_Sa_pbot_af   , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Faxa_prec_af' , strm_Faxa_prec_af , rc)
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_prec_af' , strm_Faxa_prec_af , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Faxa_swdn_af' , strm_Faxa_swdn_af , rc)
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_swdn_af' , strm_Faxa_swdn_af , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Faxa_lwdn_af' , strm_Faxa_lwdn_af , rc)
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_lwdn_af' , strm_Faxa_lwdn_af , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! initialize export state pointers

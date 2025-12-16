@@ -25,10 +25,12 @@ module dice_datamode_ssmi_mod
   ! restart fields
   real(r8), pointer, public :: water(:) => null()
 
+  ! stream pointer
+  real(r8), pointer :: strm_Si_ifrac(:)  => null()
+
   ! internal fields
   real(r8), pointer :: yc(:)      => null() ! mesh lats (degrees)
   integer , pointer :: imask(:)   => null()
-  !real(r8), pointer:: ifrac0(:)  => null()
 
   ! export fields
   real(r8), pointer ::  Si_imask(:)      => null()
@@ -223,6 +225,13 @@ contains
 
     lsize = sdat%model_lsize
 
+    ! Set pointer to stream data (required)
+    call shr_strdata_get_stream_pointer( sdat, 'Si_ifrac', strm_Si_ifrac, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (.not. associated(strm_Si_ifrac)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_Si_ifrac must be associated for ssmi mode')
+    end if
+
     ! Set Si_imask (this corresponds to the ocean mask)
     call dshr_state_getfldptr(exportState, fldname='Si_imask'    , fldptr1=Si_imask    , rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -395,6 +404,8 @@ contains
 
     rc = ESMF_SUCCESS
 
+    Si_ifrac(:) = strm_Si_ifrac(:)
+    
     lsize = size(Si_ifrac)
 
     if (first_time) then
@@ -411,7 +422,6 @@ contains
                 water(n) = 0.0_r8
              end if
           end do
-          ! iFrac0 = iFrac  ! previous step's ice fraction
        endif
 
        ! reset first time
@@ -537,8 +547,6 @@ contains
           !--- salt flux ---
           Fioi_salt(n) = 0.0_r8
        end if
-       ! !--- save ifrac for next timestep
-       ! iFrac0(n) = Si_ifrac(n)
     end do
 
     ! Compute outgoing aerosol fluxes

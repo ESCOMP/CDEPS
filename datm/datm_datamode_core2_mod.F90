@@ -185,25 +185,25 @@ contains
     end do
 
     ! get stream pointers
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Faxa_prec'  , strm_Faxa_prec  , rc) ! required
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_prec'  , strm_Faxa_prec  , rc) ! required
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Faxa_swdn'  , strm_Faxa_swdn  , rc) ! required
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_swdn'  , strm_Faxa_swdn  , rc) ! required
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Faxa_swnet' , strm_Faxa_swnet , rc) ! required
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_swnet' , strm_Faxa_swnet , rc) ! required
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Faxa_lwdn'  , strm_Faxa_lwdn  , rc) ! required
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_lwdn'  , strm_Faxa_lwdn  , rc) ! required
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Sa_pslv'    , strm_Sa_pslv    , rc) ! required
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_pslv'    , strm_Sa_pslv    , rc) ! required
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Sa_tbot'    , strm_Sa_tbot    , rc) ! required
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_tbot'    , strm_Sa_tbot    , rc) ! required
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Sa_u'       , strm_Sa_u       , rc) ! required
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_u'       , strm_Sa_u       , rc) ! required
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Sa_v'       , strm_Sa_v       , rc) ! required
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_v'       , strm_Sa_v       , rc) ! required
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'strm_Sa_shum'    , strm_Sa_shum    , rc) ! required
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_shum'    , strm_Sa_shum    , rc) ! required
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'strm_tarcf'      , strm_tarcf      , rc) ! required for CORE2_IAF
+    call shr_strdata_get_stream_pointer( sdat, 'tarcf'      , strm_tarcf      , rc) ! required for CORE2_IAF
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! get export state pointers
@@ -282,7 +282,7 @@ contains
     endif
     if (.not. associated(strm_tarcf)) then
        if (trim(datamode) == 'CORE2_IAF' ) then
-          call shr_log_error(trim(subname)//'strm_tarcf must be associated for CORE2_IAF', rc=rc)
+          call shr_log_error(trim(subname)//'tarcf must be associated for CORE2_IAF', rc=rc)
           return
        endif
     endif

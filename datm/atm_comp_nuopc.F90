@@ -37,7 +37,6 @@ module cdeps_datm_comp
   use dshr_mod         , only : dshr_state_setscalar, dshr_set_runclock, dshr_log_clock_advance
   use dshr_mod         , only : dshr_mesh_init, dshr_check_restart_alarm, dshr_restart_read
   use dshr_mod         , only : dshr_orbital_init, dshr_orbital_update
-  use dshr_dfield_mod  , only : dfield_type, dshr_dfield_add, dshr_dfield_copy
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add, dshr_fldlist_realize
 
   use datm_datamode_core2_mod   , only : datm_datamode_core2_advertise
@@ -68,21 +67,21 @@ module cdeps_datm_comp
   use datm_datamode_simple_mod  , only : datm_datamode_simple_init_pointers
   use datm_datamode_simple_mod  , only : datm_datamode_simple_advance
 
-  use datm_ndep_mod             , only : datm_ndep_advertise
-  use datm_ndep_mod             , only : datm_ndep_init_pointers
-  use datm_ndep_mod             , only : datm_ndep_advance
+  use datm_pres_ndep_mod        , only : datm_pres_ndep_advertise
+  use datm_pres_ndep_mod        , only : datm_pres_ndep_init_pointers
+  use datm_pres_ndep_mod        , only : datm_pres_ndep_advance
 
-  use datm_presaero_mod         , only : datm_presaero_advertise
-  use datm_presaero_mod         , only : datm_presaero_init_pointers
-  use datm_presaero_mod         , only : datm_presaero_advance
+  use datm_pres_presaero_mod    , only : datm_pres_presaero_advertise
+  use datm_pres_presaero_mod    , only : datm_pres_presaero_init_pointers
+  use datm_pres_presaero_mod    , only : datm_pres_presaero_advance
 
-  use datm_o3_mod               , only : datm_o3_advertise
-  use datm_o3_mod               , only : datm_o3_init_pointers
-  use datm_o3_mod               , only : datm_o3_advance
+  use datm_pres_o3_mod          , only : datm_pres_o3_advertise
+  use datm_pres_o3_mod          , only : datm_pres_o3_init_pointers
+  use datm_pres_o3_mod          , only : datm_pres_o3_advance
 
-  use datm_co2_mod              , only : datm_co2_advertise
-  use datm_co2_mod              , only : datm_co2_init_pointers
-  use datm_co2_mod              , only : datm_co2_advance
+  use datm_pres_co2_mod         , only : datm_pres_co2_advertise
+  use datm_pres_co2_mod         , only : datm_pres_co2_init_pointers
+  use datm_pres_co2_mod         , only : datm_pres_co2_advance
 
   implicit none
   private ! except
@@ -144,14 +143,13 @@ module cdeps_datm_comp
   ! linked lists
   type(fldList_type) , pointer :: fldsImport => null()
   type(fldList_type) , pointer :: fldsExport => null()
-  type(dfield_type)  , pointer :: dfields    => null()
 
   ! model mask and model fraction
   real(r8), pointer            :: model_frac(:) => null()
   integer , pointer            :: model_mask(:) => null()
 
   ! constants
-  integer                      :: idt                                 ! integer model timestep
+  integer                      :: idt                               ! integer model timestep
   logical                      :: diagnose_data = .true.
   integer          , parameter :: main_task   = 0                   ! task number of main task
 #ifdef CESMCOUPLED
@@ -384,16 +382,16 @@ contains
 
     ! Advertise fields that are not datamode specific
     if (flds_co2) then
-       call datm_co2_advertise(fldsExport, datamode)
+       call datm_pres_co2_advertise(fldsExport, datamode)
     end if
     if (flds_preso3) then
-       call datm_o3_advertise(fldsExport)
+       call datm_pres_o3_advertise(fldsExport)
     end if
     if (flds_presndep) then
-       call datm_ndep_advertise(fldsExport)
+       call datm_pres_ndep_advertise(fldsExport)
     end if
     if (flds_presaero) then
-       call datm_presaero_advertise(fldsExport)
+       call datm_pres_aero_advertise(fldsExport)
     end if
 
     ! Advertise fields that are datamode specific
@@ -638,32 +636,27 @@ contains
     !--------------------
 
     if (first_time) then
-       ! Initialize dfields arrays for export fields with no ungridded dimension
-       ! and that have a corresponding stream field
-       call datm_init_dfields(rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
        ! Initialize data pointers for co2 (non datamode specific)
        if (flds_co2) then
-          call datm_co2_init_pointers(exportState, sdat, rc=rc)
+          call datm_pres_co2_init_pointers(exportState, sdat, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end if
 
        ! Initialize data pointers for o3 (non datamode specific)
        if (flds_preso3) then
-          call datm_o3_init_pointers(exportState, sdat, rc=rc)
+          call datm_pres_o3_init_pointers(exportState, sdat, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end if
 
        ! Initialize data pointers for nitrogen deposition (non datamode specific and use of ungridded dimensions)
        if (flds_presndep) then
-          call datm_ndep_init_pointers(exportState, sdat, rc=rc)
+          call datm_pres_ndep_init_pointers(exportState, sdat, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end if
 
        ! Initialize data pointers for prescribed aerosols (non datamode specific and use of ungridded dimensions)
        if (flds_presaero) then
-          call datm_presaero_init_pointers(exportState, sdat, rc=rc)
+          call datm_pres_aero_init_pointers(exportState, sdat, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end if
 
@@ -685,7 +678,7 @@ contains
           call datm_datamode_era5_init_pointers(exportState, sdat, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('GEFS')
-          call datm_datamode_gefs_init_pointers(exportState, sdat, rc)
+          call datm_datamode_gefs_init_pointers(exportState, sdat, logunit, mainproc, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('SIMPLE')
           call datm_datamode_simple_init_pointers(exportState, sdat, rc)
@@ -726,34 +719,27 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_TraceRegionExit('datm_strdata_advance')
 
-    ! copy all fields from streams to export state as default
-    ! This automatically will update the fields in the export state
-    call ESMF_TraceRegionEnter('datm_dfield_copy')
-    call dshr_dfield_copy(dfields, sdat, rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_TraceRegionExit('datm_dfield_copy')
-
     ! update export state co2 if appropriate
     if (flds_co2) then
-       call datm_co2_advance()
+       call datm_pres_co2_advance()
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
     ! update export state o3 if appropriate
     if (flds_preso3) then
-       call datm_o3_advance()
+       call datm_pres_o3_advance()
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
     ! ungridded dimension output - update export state nitrogen deposition if appropriate
     if (flds_presndep) then
-       call datm_ndep_advance()
+       call datm_pres_ndep_advance()
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
     ! ungridded dimension output - upate prescribed aerosol if appropriate
     if (flds_presaero) then
-       call datm_presaero_advance()
+       call datm_pres_aero_advance()
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
@@ -816,49 +802,6 @@ contains
 
     call ESMF_TraceRegionExit('datm_datamode')
     call ESMF_TraceRegionExit('DATM_RUN')
-
-  !--------
-  contains
-  !--------
-
-    subroutine datm_init_dfields(rc)
-      ! -----------------------------
-      ! Initialize dfields arrays for export fields with no ungridded dimension
-      ! and that have a corresponding stream field
-      ! -----------------------------
-
-      ! input/output parameters
-      integer, intent(out)   :: rc
-
-      ! local variables
-      integer                         :: n
-      integer                         :: rank
-      integer                         :: fieldcount
-      type(ESMF_Field)                :: lfield
-      character(ESMF_MAXSTR) ,pointer :: lfieldnames(:)
-      character(*), parameter   :: subName = "(datm_init_dfields) "
-      !-------------------------------------------------------------------------------
-
-      rc = ESMF_SUCCESS
-
-      call ESMF_StateGet(exportState, itemCount=fieldCount, rc=rc)
-      if (chkerr(rc,__LINE__,u_FILE_u)) return
-      allocate(lfieldnames(fieldCount))
-      call ESMF_StateGet(exportState, itemNameList=lfieldnames, rc=rc)
-      if (chkerr(rc,__LINE__,u_FILE_u)) return
-      do n = 1, fieldCount
-         call ESMF_LogWrite(trim(subname)//': field name = '//trim(lfieldnames(n)), ESMF_LOGMSG_INFO)
-         call ESMF_StateGet(exportState, itemName=trim(lfieldnames(n)), field=lfield, rc=rc)
-         if (chkerr(rc,__LINE__,u_FILE_u)) return
-         call ESMF_FieldGet(lfield, rank=rank, rc=rc)
-         if (chkerr(rc,__LINE__,u_FILE_u)) return
-         if (rank == 1) then
-            call dshr_dfield_add( dfields, sdat, trim(lfieldnames(n)), trim(lfieldnames(n)), &
-                 exportState, logunit, mainproc, rc=rc)
-            if (ChkErr(rc,__LINE__,u_FILE_u)) return
-         end if
-      end do
-    end subroutine datm_init_dfields
 
   end subroutine datm_comp_run
 

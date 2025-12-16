@@ -26,16 +26,13 @@ module datm_datamode_cplhist_mod
   real(r8), pointer :: Sa_dens(:)         => null()
   real(r8), pointer :: Sa_pbot(:)         => null()
   real(r8), pointer :: Sa_pslv(:)         => null()
-
   real(r8), pointer :: Sa_u(:)            => null()
   real(r8), pointer :: Sa_v(:)            => null()
-
   real(r8), pointer :: Faxa_rainc(:)      => null()
   real(r8), pointer :: Faxa_rainl(:)      => null()
   real(r8), pointer :: Faxa_snowc(:)      => null()
   real(r8), pointer :: Faxa_snowl(:)      => null()
   real(r8), pointer :: Faxa_lwdn(:)       => null()
-
   real(r8), pointer :: Faxa_swndr(:)      => null()
   real(r8), pointer :: Faxa_swndf(:)      => null()
   real(r8), pointer :: Faxa_swvdr(:)      => null()
@@ -50,15 +47,12 @@ module datm_datamode_cplhist_mod
   real(r8), pointer :: strm_Sa_pbot(:)    => null()
   real(r8), pointer :: strm_Sa_dens(:)    => null()
   real(r8), pointer :: strm_Sa_pslv(:)    => null()
-
   real(r8), pointer :: strm_Sa_u(:)       => null()
   real(r8), pointer :: strm_Sa_v(:)       => null()
-
   real(r8), pointer :: strm_Faxa_swndr(:) => null()
   real(r8), pointer :: strm_Faxa_swvdr(:) => null()
   real(r8), pointer :: strm_Faxa_swndf(:) => null()
   real(r8), pointer :: strm_Faxa_swvdf(:) => null()
-
   real(r8), pointer :: strm_Faxa_rainc(:) => null()
   real(r8), pointer :: strm_Faxa_rainl(:) => null()
   real(r8), pointer :: strm_Faxa_snowc(:) => null()
@@ -155,12 +149,10 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Sa_dens'    , fldptr1=Sa_dens    , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
     call dshr_state_getfldptr(exportState, 'Sa_u'       , fldptr1=Sa_u       , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Sa_v'       , fldptr1=Sa_v       , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
     call dshr_state_getfldptr(exportState, 'Faxa_rainc' , fldptr1=Faxa_rainc , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Faxa_rainl' , fldptr1=Faxa_rainl , rc=rc)
@@ -171,7 +163,6 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Faxa_lwdn'  , fldptr1=Faxa_lwdn  , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
     call dshr_state_getfldptr(exportState, 'Faxa_swvdr' , fldptr1=Faxa_swvdr , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Faxa_swvdf' , fldptr1=Faxa_swvdf , rc=rc)
@@ -181,54 +172,104 @@ contains
     call dshr_state_getfldptr(exportState, 'Faxa_swndf' , fldptr1=Faxa_swndf , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    ! call dshr_state_getfldptr(exportState, 'Faxa_swnet' , fldptr1=Faxa_swnet , rc=rc) !???
-    ! if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
     ! Set pointers into stream data
 
-    call shr_strdata_get_stream_pointer(sdat, 'strm_Sa_z'   , strm_Sa_z   , rc)
+    call shr_strdata_get_stream_pointer(sdat, 'Sa_z', strm_Sa_z, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'strm_Sa_tbog', strm_Sa_tbot, rc)
+    call shr_strdata_get_stream_pointer(sdat, 'Sa_tbog', strm_Sa_tbot, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'strm_Sa_ptem', strm_Sa_ptem, rc)
+    call shr_strdata_get_stream_pointer(sdat, 'Sa_ptem', strm_Sa_ptem, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'strm_Sa_shum', strm_Sa_shum, rc)
+    call shr_strdata_get_stream_pointer(sdat, 'Sa_shum', strm_Sa_shum, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'strm_Sa_pbot', strm_Sa_pbot, rc)
+    call shr_strdata_get_stream_pointer(sdat, 'Sa_pbot', strm_Sa_pbot, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'strm_Sa_dens', strm_Sa_dens, rc)
+    call shr_strdata_get_stream_pointer(sdat, 'Sa_dens', strm_Sa_dens, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'strm_Sa_pslv', strm_Sa_pslv, rc)
+    call shr_strdata_get_stream_pointer(sdat, 'Sa_pslv', strm_Sa_pslv, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'strm_Sa_dens', strm_Sa_dens, rc)
+    call shr_strdata_get_stream_pointer(sdat, 'Sa_dens', strm_Sa_dens, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer(sdat, 'Sa_u', strm_Sa_u, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer(sdat, 'Sa_v', strm_Sa_v, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer(sdat, 'Faxa_rainc', strm_Faxa_rainc, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer(sdat, 'Faxa_rainl', strm_Faxa_rainl, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer(sdat, 'Faxa_snowc', strm_Faxa_snowc, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer(sdat, 'Faxa_snowl', strm_Faxa_snowl, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer(sdat, 'Faxa_lwdn', strm_Faxa_lwdn, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer(sdat, 'Faxa_swndr', strm_Faxa_swndr, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer(sdat, 'Faxa_swvdr', strm_Faxa_swvdr, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer(sdat, 'Faxa_swndf', strm_Faxa_swndf, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer(sdat, 'Faxa_swvdf', strm_Faxa_swvdf, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer(sdat, 'Faxa_lwdn', strm_Faxa_lwdn, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    call shr_strdata_get_stream_pointer(sdat, 'strm_Sa_u', strm_Sa_u, rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'strm_Sa_v', strm_Sa_v, rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    call shr_strdata_get_stream_pointer(sdat, 'strm_Faxa_rainc', strm_Faxa_rainc, rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'strm_Faxa_rainl', strm_Faxa_rainl, rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'strm_Faxa_snowc', strm_Faxa_snowc, rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'strm_Faxa_snowl', strm_Faxa_snowl, rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'strm_Faxa_lwdn', strm_Faxa_lwdn, rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    call shr_strdata_get_stream_pointer(sdat, 'strm_Faxa_swndr', strm_Faxa_swndr, rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'strm_Faxa_swvdr', strm_Faxa_swvdr, rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'strm_Faxa_swndf', strm_Faxa_swndf, rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'strm_Faxa_swvdf', strm_Faxa_swvdf, rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'strm_Faxa_lwdn', strm_Faxa_lwdn  , rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    ! error checks for stream pointers
+    if (.not. associated(strm_Sa_z)) then    
+       call shr_log_error(trim(subname)//'ERROR: strm_Sa_z must be associated for cplhist datamode')
+    end if
+    if (.not. associated(strm_Sa_tbot)) then    
+       call shr_log_error(trim(subname)//'ERROR: strm_Sa_tbot must be associated for cplhist datamode')
+    end if
+    if (.not. associated(strm_Sa_ptem)) then    
+       call shr_log_error(trim(subname)//'ERROR: strm_Sa_ptem must be associated for cplhist datamode')
+    end if
+    if (.not. associated(strm_Sa_shum)) then    
+       call shr_log_error(trim(subname)//'ERROR: strm_Sa_shum must be associated for cplhist datamode')
+    end if
+    if (.not. associated(strm_Sa_pbot)) then    
+       call shr_log_error(trim(subname)//'ERROR: strm_Sa_pbot must be associated for cplhist datamode')
+    end if
+    if (.not. associated(strm_Sa_dens)) then    
+       call shr_log_error(trim(subname)//'ERROR: strm_Sa_dens must be associated for cplhist datamode')
+    end if
+    if (.not. associated(strm_Sa_pslv)) then    
+       call shr_log_error(trim(subname)//'ERROR: strm_Sa_pslv must be associated for cplhist datamode')
+    end if
+    if (.not. associated(strm_Sa_u)) then       
+       call shr_log_error(trim(subname)//'ERROR: strm_Sa_u must be associated for cplhist datamode')
+    end if
+    if (.not. associated(strm_Sa_v)) then       
+       call shr_log_error(trim(subname)//'ERROR: strm_Sa_v must be associated for cplhist datamode')
+    end if
+    if (.not. associated(strm_Faxa_swndr)) then 
+       call shr_log_error(trim(subname)//'ERROR: strm_Faxa_swndr must be associated for cplhist datamode')
+    end if
+    if (.not. associated(strm_Faxa_swvdr)) then 
+       call shr_log_error(trim(subname)//'ERROR: strm_Faxa_swvdr must be associated for cplhist datamode')
+    end if
+    if (.not. associated(strm_Faxa_swndf)) then 
+       call shr_log_error(trim(subname)//'ERROR: strm_Faxa_swndf must be associated for cplhist datamode')
+    end if
+    if (.not. associated(strm_Faxa_swvdf)) then 
+       call shr_log_error(trim(subname)//'ERROR: strm_Faxa_swvdf must be associated for cplhist datamode')
+    end if
+    if (.not. associated(strm_Faxa_rainc)) then 
+       call shr_log_error(trim(subname)//'ERROR: strm_Faxa_rainc must be associated for cplhist datamode')
+    end if
+    if (.not. associated(strm_Faxa_rainl)) then 
+       call shr_log_error(trim(subname)//'ERROR: strm_Faxa_rainl must be associated for cplhist datamode')
+    end if
+    if (.not. associated(strm_Faxa_snowc)) then 
+       call shr_log_error(trim(subname)//'ERROR: strm_Faxa_snowc must be associated for cplhist datamode')
+    end if
+    if (.not. associated(strm_Faxa_snowl)) then 
+       call shr_log_error(trim(subname)//'ERROR: strm_Faxa_snowl must be associated for cplhist datamode')
+    end if
+    if (.not. associated(strm_Faxa_lwdn )) then 
+       call shr_log_error(trim(subname)//'ERROR: strm_Faxa_lwdn  must be associated for cplhist datamode')
+    end if
 
  end subroutine datm_datamode_cplhist_init_pointers
 
