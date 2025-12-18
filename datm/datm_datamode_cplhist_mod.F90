@@ -5,6 +5,7 @@ module datm_datamode_cplhist_mod
   use ESMF             , only : ESMF_StateGet
   use NUOPC            , only : NUOPC_Advertise
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
+  use shr_log_mod      , only : shr_log_error
   use dshr_methods_mod , only : dshr_state_getfldptr, chkerr
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_get_stream_pointer
   use dshr_strdata_mod , only : shr_strdata_type
@@ -218,60 +219,79 @@ contains
     ! error checks for stream pointers
     if (.not. associated(strm_Sa_z)) then    
        call shr_log_error(trim(subname)//'ERROR: strm_Sa_z must be associated for cplhist datamode')
+       return
     end if
     if (.not. associated(strm_Sa_tbot)) then    
        call shr_log_error(trim(subname)//'ERROR: strm_Sa_tbot must be associated for cplhist datamode')
+       return
     end if
     if (.not. associated(strm_Sa_ptem)) then    
        call shr_log_error(trim(subname)//'ERROR: strm_Sa_ptem must be associated for cplhist datamode')
+       return
     end if
     if (.not. associated(strm_Sa_shum)) then    
        call shr_log_error(trim(subname)//'ERROR: strm_Sa_shum must be associated for cplhist datamode')
+       return
     end if
     if (.not. associated(strm_Sa_pbot)) then    
        call shr_log_error(trim(subname)//'ERROR: strm_Sa_pbot must be associated for cplhist datamode')
+       return
     end if
     if (.not. associated(strm_Sa_dens)) then    
        call shr_log_error(trim(subname)//'ERROR: strm_Sa_dens must be associated for cplhist datamode')
+       return
     end if
     if (.not. associated(strm_Sa_pslv)) then    
        call shr_log_error(trim(subname)//'ERROR: strm_Sa_pslv must be associated for cplhist datamode')
+       return
     end if
     if (.not. associated(strm_Sa_u)) then       
        call shr_log_error(trim(subname)//'ERROR: strm_Sa_u must be associated for cplhist datamode')
+       return
     end if
     if (.not. associated(strm_Sa_v)) then       
        call shr_log_error(trim(subname)//'ERROR: strm_Sa_v must be associated for cplhist datamode')
+       return
     end if
     if (.not. associated(strm_Faxa_swndr)) then 
        call shr_log_error(trim(subname)//'ERROR: strm_Faxa_swndr must be associated for cplhist datamode')
+       return
     end if
     if (.not. associated(strm_Faxa_swvdr)) then 
        call shr_log_error(trim(subname)//'ERROR: strm_Faxa_swvdr must be associated for cplhist datamode')
+       return
     end if
     if (.not. associated(strm_Faxa_swndf)) then 
        call shr_log_error(trim(subname)//'ERROR: strm_Faxa_swndf must be associated for cplhist datamode')
+       return
     end if
     if (.not. associated(strm_Faxa_swvdf)) then 
        call shr_log_error(trim(subname)//'ERROR: strm_Faxa_swvdf must be associated for cplhist datamode')
+       return
     end if
     if (.not. associated(strm_Faxa_rainc)) then 
        call shr_log_error(trim(subname)//'ERROR: strm_Faxa_rainc must be associated for cplhist datamode')
+       return
     end if
     if (.not. associated(strm_Faxa_rainl)) then 
        call shr_log_error(trim(subname)//'ERROR: strm_Faxa_rainl must be associated for cplhist datamode')
+       return
     end if
     if (.not. associated(strm_Faxa_snowc)) then 
        call shr_log_error(trim(subname)//'ERROR: strm_Faxa_snowc must be associated for cplhist datamode')
+       return
     end if
     if (.not. associated(strm_Faxa_snowl)) then 
        call shr_log_error(trim(subname)//'ERROR: strm_Faxa_snowl must be associated for cplhist datamode')
+       return
     end if
     if (.not. associated(strm_Faxa_lwdn )) then 
        call shr_log_error(trim(subname)//'ERROR: strm_Faxa_lwdn  must be associated for cplhist datamode')
+       return
     end if
 
  end subroutine datm_datamode_cplhist_init_pointers
+
 
   !===============================================================================
   subroutine datm_datamode_cplhist_advance(mainproc, logunit, mpicom, rc)

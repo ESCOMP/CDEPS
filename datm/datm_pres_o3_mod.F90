@@ -60,13 +60,10 @@ contains
     call shr_strdata_get_stream_pointer(sdat, 'Sa_o3', strm_Sa_o3, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-
     ! Error checks
-    if (.not. associated(Sa_o3)) then
-       call shr_log_error(trim(subname)//'ERROR: Sa_o3 must be associated if flds_pres_o3 is .true.')
-    end if
     if (.not. associated(strm_Sa_o3)) then
        call shr_log_error(trim(subname)//'ERROR: strm_Sa_o3 must be associated if flds_pres_o3 is .true.')
+       return
     end if
 
   end subroutine datm_pres_o3_init_pointers

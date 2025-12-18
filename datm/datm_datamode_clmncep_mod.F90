@@ -160,7 +160,7 @@ contains
     ! initialize stream pointers for module level export states
     call shr_strdata_get_stream_pointer( sdat, 'Sa_wind'     , strm_Sa_wind     , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Sa_topo'     , strm_Sa_topo, rc)
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_topo'     , strm_Sa_topo     , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'Sa_z'        , strm_Sa_z        , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -250,16 +250,34 @@ contains
     ! Required stream pointers
     if (.not. associated(strm_Sa_wind)) then
        call shr_log_error(trim(subname)//'ERROR: strm_Sa_wind must be associated for clmncep datamode')
-    end if
-    if (.not. associated(strm_Sa_tbot)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_Sa_tbot must be associated for clmncep datamode')
+       return
     end if
     if (.not. associated(strm_Sa_topo)) then
        call shr_log_error(trim(subname)//'ERROR: strm_Sa_topo must be associated for clmncep datamode')
+       return
+    end if
+    if (.not. associated(strm_Sa_tbot)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_Sa_tbot must be associated for clmncep datamode')
+       return
     end if
     if (.not. associated(strm_Faxa_precn)) then
        call shr_log_error(trim(subname)//'ERROR: strm_Faxa_precn must be associated for clmncep datamode')
+       return
     end if
+    if ( .not. associated(strm_Sa_shum) .and. &
+         .not. associated(strm_Sa_rh)   .and. & 
+         .not. associated(strm_Sa_tdew)) then
+       call shr_log_error(subname//'ERROR: one of strm_Sa_shum, strm_Sa_rh or strm_Sa_tdew &
+            must for associated to compute specific humidity in clmncep datamode')
+       return
+    endif
+    if ( .not. associated(strm_Faxa_swdndf) .and. &
+         .not. associated(strm_Faxa_swdndr) .and. &
+         .not. associated(strm_Faxa_swdn)) then
+       call shr_log_error(subName//'ERROR: either strm_Faxa_swdndf and strm_faxa_swdndr .or strm_faxa_swdn &
+            must be associated for computing short-wave down in clmncep datamode')
+       return
+    endif
 
     ! determine anidrmax (see below for use)
     call ESMF_StateGet(importstate, 'Sx_anidr', itemFlag, rc=rc)
@@ -402,9 +420,6 @@ contains
           e = datm_esat(strm_Sa_tdew(n),tbot)
           qsat = (0.622_r8 * e)/(pbot - 0.378_r8 * e)
           Sa_shum(n) = qsat
-       else
-          call shr_log_error(subname//'ERROR: cannot compute shum', rc=rc)
-          return
        endif
 
        !--- density ---
@@ -443,9 +458,6 @@ contains
           Faxa_swvdr(n) = ratio_rvrf*swvdr
           swvdf = strm_Faxa_swdn(n) * 0.50_r8
           Faxa_swvdf(n) = (1._r8 - ratio_rvrf)*swvdf
-       else
-          call shr_log_error(subName//'ERROR: cannot compute short-wave down', rc=rc)
-          return
        endif
 
        !--- swnet: a diagnostic quantity ---

@@ -14,13 +14,13 @@ module datm_pres_aero_mod
   public :: datm_pres_aero_init_pointers
   public :: datm_pres_aero_advance
 
-  ! export state data
+  ! pointers to export state data
   real(r8), pointer :: Faxa_bcph(:,:)   => null()
   real(r8), pointer :: Faxa_ocph(:,:)   => null()
   real(r8), pointer :: Faxa_dstwet(:,:) => null()
   real(r8), pointer :: Faxa_dstdry(:,:) => null()
 
-  ! stream data
+  ! pointers to stream data
   real(r8), pointer :: strm_bcphidry(:) => null()
   real(r8), pointer :: strm_bcphodry(:) => null()
   real(r8), pointer :: strm_bcphiwet(:) => null()
@@ -86,77 +86,91 @@ contains
 
     ! Set module pointers into streams and check that they are associated
 
-    call shr_strdata_get_stream_pointer(sdat, 'Faxa_bcphidry' , strm_bcphidry , rc)
+    call shr_strdata_get_stream_pointer(sdat, 'Faxa_bcphidry' , strm_bcphidry, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'Faxa_bcphodry' , strm_bcphodry , rc)
+    call shr_strdata_get_stream_pointer(sdat, 'Faxa_bcphodry' , strm_bcphodry, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'Faxa_bcphiwet' , strm_bcphiwet , rc)
+    call shr_strdata_get_stream_pointer(sdat, 'Faxa_bcphiwet' , strm_bcphiwet, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'Faxa_ocphidry' , strm_ocphidry , rc)
+    call shr_strdata_get_stream_pointer(sdat, 'Faxa_ocphidry' , strm_ocphidry, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'Faxa_ocphodry' , strm_ocphodry , rc)
+    call shr_strdata_get_stream_pointer(sdat, 'Faxa_ocphodry' , strm_ocphodry, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'Faxa_ocphiwet' , strm_ocphiwet , rc)
+    call shr_strdata_get_stream_pointer(sdat, 'Faxa_ocphiwet' , strm_ocphiwet, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'Faxa_dstdry1'  , strm_dstdry1  , rc)
+    call shr_strdata_get_stream_pointer(sdat, 'Faxa_dstdry1'  , strm_dstdry1 , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'Faxa_dstdry2'  , strm_dstdry2  , rc)
+    call shr_strdata_get_stream_pointer(sdat, 'Faxa_dstdry2'  , strm_dstdry2 , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'Faxa_dstdry3'  , strm_dstdry3  , rc)
+    call shr_strdata_get_stream_pointer(sdat, 'Faxa_dstdry3'  , strm_dstdry3 , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'Faxa_dstdry4'  , strm_dstdry4  , rc)
+    call shr_strdata_get_stream_pointer(sdat, 'Faxa_dstdry4'  , strm_dstdry4 , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'Faxa_dstwet1'  , strm_dstwet1  , rc)
+    call shr_strdata_get_stream_pointer(sdat, 'Faxa_dstwet1'  , strm_dstwet1 , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'Faxa_dstwet2'  , strm_dstwet2  , rc)
+    call shr_strdata_get_stream_pointer(sdat, 'Faxa_dstwet2'  , strm_dstwet2 , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'Faxa_dstwet3'  , strm_dstwet3  , rc)
+    call shr_strdata_get_stream_pointer(sdat, 'Faxa_dstwet3'  , strm_dstwet3 , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'Faxa_dstwet4'  , strm_dstwet4  , rc)
+    call shr_strdata_get_stream_pointer(sdat, 'Faxa_dstwet4'  , strm_dstwet4 , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! error check for stream pointers
     if (.not. associated(strm_bcphidry)) then
        call shr_log_error(trim(subname)//'ERROR: strm_bcphidry must be associated if flds_presaero is .true.')
+       return
     end if
     if (.not. associated(strm_bcphodry)) then
        call shr_log_error(trim(subname)//'ERROR: strm_bcphodry must be associated if flds_presaero is .true.')
+       return
     end if
     if (.not. associated(strm_bcphiwet)) then
        call shr_log_error(trim(subname)//'ERROR: strm_bcphiwet must be associated if flds_presaero is .true.')
+       return
     end if
     if (.not. associated(strm_ocphidry)) then
        call shr_log_error(trim(subname)//'ERROR: strm_ocphidry must be associated if flds_presaero is .true.')
+       return
     end if
     if (.not. associated(strm_ocphodry)) then
        call shr_log_error(trim(subname)//'ERROR: strm_ocphodry must be associated if flds_presaero is .true.')
+       return
     end if
     if (.not. associated(strm_ocphiwet)) then
        call shr_log_error(trim(subname)//'ERROR: strm_ocphiwet must be associated if flds_presaero is .true.')
+       return
     end if
     if (.not. associated(strm_dstdry1)) then
        call shr_log_error(trim(subname)//'ERROR: strm_dstdry1 must be associated if flds_presaero is .true.')
+       return
     end if
     if (.not. associated(strm_dstdry2)) then
        call shr_log_error(trim(subname)//'ERROR: strm_dstdry2 must be associated if flds_presaero is .true.')
+       return
     end if
     if (.not. associated(strm_dstdry3)) then
        call shr_log_error(trim(subname)//'ERROR: strm_dstdry3 must be associated if flds_presaero is .true.')
+       return
     end if
     if (.not. associated(strm_dstdry4)) then
        call shr_log_error(trim(subname)//'ERROR: strm_dstdry4 must be associated if flds_presaero is .true.')
+       return
     end if
     if (.not. associated(strm_dstwet1)) then
        call shr_log_error(trim(subname)//'ERROR: strm_dstwet1 must be associated if flds_presaero is .true.')
+       return
     end if
     if (.not. associated(strm_dstwet2)) then
        call shr_log_error(trim(subname)//'ERROR: strm_dstwet2 must be associated if flds_presaero is .true.')
+       return
     end if
     if (.not. associated(strm_dstwet3)) then
        call shr_log_error(trim(subname)//'ERROR: strm_dstwet3 must be associated if flds_presaero is .true.')
+       return
     end if
     if (.not. associated(strm_dstwet4)) then
        call shr_log_error(trim(subname)//'ERROR: strm_dstwet4 must be associated if flds_presaero is .true.')
+       return
     end if
 
   end subroutine datm_pres_aero_init_pointers
