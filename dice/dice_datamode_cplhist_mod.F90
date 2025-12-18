@@ -1,5 +1,8 @@
 module dice_datamode_cplhist_mod
 
+  ! The dice cplhist datamode is only used by UFS currently and does not have
+  ! a corresponding entry in the cime_config/stream_defintition.xml file
+
   use ESMF             , only : ESMF_LOGMSG_INFO, ESMF_LogWrite, ESMF_SUCCESS
   use ESMF             , only : ESMF_TraceRegionEnter, ESMF_TraceRegionExit
   use ESMF             , only : ESMF_State, ESMF_StateGet, ESMF_Field
@@ -92,11 +95,15 @@ contains
   end subroutine dice_datamode_cplhist_advertise
 
   !===============================================================================
-  subroutine dice_datamode_cplhist_init_pointers(importState, exportState, sdat, rc)
+  subroutine dice_datamode_cplhist_init_pointers(importState, exportState, sdat, &
+       flds_scalar_name, logunit, mainproc, rc)
 
     ! input/output variables
     type(ESMF_State)       , intent(inout) :: importState
     type(ESMF_State)       , intent(inout) :: exportState
+    character(len=*)       , intent(in)    :: flds_scalar_name 
+    integer                , intent(in)    :: logunit
+    logical                , intent(in)    :: mainproc
     type(shr_strdata_type) , intent(in)    :: sdat
     integer                , intent(out)   :: rc
 

@@ -1,14 +1,14 @@
 module dlnd_datamode_rof_forcing_mod
 
    use ESMF                    , only : ESMF_SUCCESS, ESMF_LOGMSG_INFO, ESMF_LogWrite, ESMF_State
-   use ESMF                    , only : ESMF_StateItem_Flag
+   use ESMF                    , only : ESMF_TraceRegionExit, ESMF_TraceRegionEnter
    use NUOPC                   , only : NUOPC_Advertise
    use shr_kind_mod            , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
    use shr_string_mod          , only : shr_string_listGetNum, shr_string_listGetName
    use dshr_methods_mod        , only : dshr_state_getfldptr, chkerr
    use dshr_strdata_mod        , only : shr_strdata_type
    use dshr_fldlist_mod        , only : fldlist_type, dshr_fldlist_add
-   use dshr_dfield_mod         , only : dfield_type, dshr_dfield_add
+   use dshr_dfield_mod         , only : dfield_type, dshr_dfield_add, dshr_dfield_copy
    use shr_lnd2rof_tracers_mod , only : shr_lnd2rof_tracers_readnl
 
    implicit none
@@ -32,6 +32,8 @@ module dlnd_datamode_rof_forcing_mod
         (/'Flrl_rofsur', 'Flrl_rofsub','Flrl_rofgwl','Flrl_rofi  ','Flrl_irrig '/)
 
    integer :: ntracers_nonh2o
+
+   type(dfield_type), pointer :: dfields => null()
 
    character(*), parameter :: nullstr = 'null'
    character(*), parameter :: u_FILE_u = &
@@ -107,12 +109,11 @@ contains
 
    !===============================================================================
 
-   subroutine dlnd_datamode_rof_forcing_init_pointers(exportState, sdat, dfields, model_frac, logunit, mainproc, rc)
+   subroutine dlnd_datamode_rof_forcing_init_pointers(exportState, sdat, model_frac, logunit, mainproc, rc)
 
       ! input/output variables
       type(ESMF_State)      , intent(inout) :: exportState
       type(shr_strdata_type), intent(in)    :: sdat
-      type(dfield_type)     , pointer       :: dfields
       real(r8)              , intent(in)    :: model_frac(:)
       integer               , intent(in)    :: logunit
       logical               , intent(in)    :: mainproc
@@ -165,10 +166,11 @@ contains
    end subroutine dlnd_datamode_rof_forcing_init_pointers
 
    !===============================================================================
-   subroutine dlnd_datamode_rof_forcing_advance(exportState, rc)
+   subroutine dlnd_datamode_rof_forcing_advance(exportState, sdat, rc)
 
       ! input/output variables
       type(ESMF_State)      , intent(inout) :: exportState
+      type(shr_strdata_type), intent(in)    :: sdat 
       integer               , intent(out)   :: rc
 
       ! local variables
@@ -180,6 +182,13 @@ contains
       !-------------------------------------------------------------------------------
 
       rc = ESMF_SUCCESS
+
+      ! copy all fields from streams to export state as default
+      ! This automatically will update the fields in the export state
+      call ESMF_TraceRegionEnter('dlnd_dfield_copy')
+      call dshr_dfield_copy(dfields, sdat, rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      call ESMF_TraceRegionExit('dlnd_dfield_copy')
 
       if (ntracers_nonh2o > 0) then
          ! Set special value over masked points

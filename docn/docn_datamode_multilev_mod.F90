@@ -21,8 +21,8 @@ module docn_datamode_multilev_mod
   real(r8), pointer :: So_s_depth(:,:) => null()
 
   ! pointers to stream fields
-  real(r8), pointer :: stream_So_t_depth(:,:) => null()
-  real(r8), pointer :: stream_So_s_depth(:,:) => null()
+  real(r8), pointer :: strm_So_t_depth(:,:) => null()
+  real(r8), pointer :: strm_So_s_depth(:,:) => null()
 
   integer, parameter :: nlev_export = 30
   real(r8) :: vertical_levels(nlev_export) = (/  &
@@ -86,10 +86,20 @@ contains
 
     ! initialize pointers to stream fields
     ! this has the full set of leveles in the stream data
-    call shr_strdata_get_stream_pointer( sdat, 'So_t_depth', stream_So_t_depth, rc=rc)
+    call shr_strdata_get_stream_pointer( sdat, 'So_t_depth', strm_So_t_depth, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'So_s_depth', stream_So_s_depth, rc=rc)
+    call shr_strdata_get_stream_pointer( sdat, 'So_s_depth', strm_So_s_depth, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
+
+    ! error checks for stream pointers
+    if (.not. associated(strm_So_t_depth)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_So_t_depth must be associated for docn multilev_dom mode')
+       return
+    end if
+    if (.not. associated(strm_So_s_depth)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_So_s_depth must be associated for docn multilev_dom mode')
+       return
+    end if
 
     ! initialize pointers to export fields
     ! the export state has only nlev_export levels
@@ -154,21 +164,21 @@ contains
                    So_s_depth(ko,i) = shr_const_spval
                 else
                    ! Assume input T forcing is in degrees C
-                   if (stream_So_t_depth(ki+1,i) > 1.e10) then
-                      if (stream_So_t_depth(ki,i) > 1.e10) then
+                   if (strm_So_t_depth(ki+1,i) > 1.e10) then
+                      if (strm_So_t_depth(ki,i) > 1.e10) then
                          So_t_depth(ko,i) = shr_const_spval
                          So_s_depth(ko,i) = shr_const_spval
                       else
-                         So_t_depth(ko,i) = stream_So_t_depth(ki,i) + shr_const_tkfrz
-                         So_s_depth(ko,i) = stream_So_s_depth(ki,i)
+                         So_t_depth(ko,i) = strm_So_t_depth(ki,i) + shr_const_tkfrz
+                         So_s_depth(ko,i) = strm_So_s_depth(ki,i)
                       end if
                    else
-                      factor = (stream_So_t_depth(ki+1,i)-stream_So_t_depth(ki,i))/(stream_vlevs(ki+1)-stream_vlevs(ki))
-                      So_t_depth(ko,i) = stream_So_t_depth(ki,i) + (vertical_levels(ko)-stream_vlevs(ki))*factor
+                      factor = (strm_So_t_depth(ki+1,i)-strm_So_t_depth(ki,i))/(stream_vlevs(ki+1)-stream_vlevs(ki))
+                      So_t_depth(ko,i) = strm_So_t_depth(ki,i) + (vertical_levels(ko)-stream_vlevs(ki))*factor
                       So_t_depth(ko,i) = So_t_depth(ko,i) + shr_const_tkfrz
 
-                      factor = (stream_So_s_depth(ki+1,i)-stream_So_s_depth(ki,i))/(stream_vlevs(ki+1)-stream_vlevs(ki))
-                      So_s_depth(ko,i) = stream_So_s_depth(ki,i) + (vertical_levels(ko)-stream_vlevs(ki))*factor
+                      factor = (strm_So_s_depth(ki+1,i)-strm_So_s_depth(ki,i))/(stream_vlevs(ki+1)-stream_vlevs(ki))
+                      So_s_depth(ko,i) = strm_So_s_depth(ki,i) + (vertical_levels(ko)-stream_vlevs(ki))*factor
                    end if
                 end if
              end do

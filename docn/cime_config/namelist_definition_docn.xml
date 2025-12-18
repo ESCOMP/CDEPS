@@ -56,8 +56,6 @@
       to the data ocean model. They are normally found in the same file
       because the SST and ice fraction data are derived from the same
       observational data sets and are consistent with each other.
-      ==> dataMode = "iaf"
-      iaf is the interannually varying version of sstdata
       The ocean salinity is set to a constant reference salinity value.
       All other fields other than SST and ocean salinity are set to zero.
       ==> dataMode = "som"
@@ -75,8 +73,8 @@
       application.  A tool is available to derive valid SOM forcing.
 
       (1) map the xml variable DOCN_MODE => config variable docn_mode => namelist variable datamode
-        compset="_DOCN%DOM_"      => docn_mode=prescribed          => datamode=prescribed
-        compset="_DOCN%IAF_"      => docn_mode=interannual         => datamode=interannual
+        compset="_DOCN%DOM_"      => docn_mode=prescribed          => datamode=sstdata
+        compset="_DOCN%IAF_"      => docn_mode=interannual         => datamode=sstdata
         compset="_DOCN%SOM_"      => docn_mode=som                 => datamode=som
         compset="_DOCN%SOMAQP_"   => docn_mode=som_aquap           => datamode=som_aquap
         compset="_DOCN%AQP1_"     => docn_mode=sst_aquap1          => datamode=sst_aquap1
@@ -96,7 +94,6 @@
       <value docn_mode="prescribed">sstdata</value>
       <value docn_mode="som$">som</value>
       <value docn_mode="som_aquap">som_aquap</value>
-      <value docn_mode="interannual">iaf</value>
       <value docn_mode="sst_aquap1$">sst_aquap1</value>
       <value docn_mode="sst_aquap2$">sst_aquap2</value>
       <value docn_mode="sst_aquap3$">sst_aquap3</value>
