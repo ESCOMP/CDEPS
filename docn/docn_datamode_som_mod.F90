@@ -6,6 +6,7 @@ module docn_datamode_som_mod
   use ESMF             , only : ESMF_LogWrite
   use NUOPC            , only : NUOPC_Advertise
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
+  use shr_log_mod      , only : shr_log_error
   use shr_const_mod    , only : shr_const_cpsw, shr_const_rhosw, shr_const_TkFrz
   use shr_const_mod    , only : shr_const_TkFrzSw, shr_const_latice, shr_const_ocn_ref_sal
   use shr_const_mod    , only : shr_const_zsrflyr, shr_const_pi
@@ -47,9 +48,15 @@ module docn_datamode_som_mod
   real(r8), pointer :: Fioi_melth(:) => null()
   real(r8), pointer :: Foxx_rofi(:)  => null()
 
-  ! internal stream type
-  real(r8), pointer :: strm_h(:)    => null()
-  real(r8), pointer :: strm_qbot(:) => null()
+  ! pointers to stream fields
+  real(r8), pointer :: strm_So_t(:)    => null()
+  real(r8), pointer :: strm_So_s(:)    => null()
+  real(r8), pointer :: strm_So_u(:)    => null()
+  real(r8), pointer :: strm_So_v(:)    => null()
+  real(r8), pointer :: strm_So_dhdx(:) => null()
+  real(r8), pointer :: strm_So_dhdy(:) => null()
+  real(r8), pointer :: strm_So_h(:)    => null()
+  real(r8), pointer :: strm_So_qbot(:) => null()
 
   ! restart fields
   real(R8), public, pointer :: somtp(:)     ! SOM ocean temperature needed for restart
@@ -150,12 +157,6 @@ contains
 
     rc = ESMF_SUCCESS
 
-    ! initialize pointers to stream fields
-    call shr_strdata_get_stream_pointer( sdat, 'So_qbot', strm_qbot, rc=rc)
-    if (chkerr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'So_h'   , strm_h   , rc=rc)
-    if (chkerr(rc,__LINE__,u_FILE_u)) return
-
     ! initialize pointers to import fields
     call dshr_state_getfldptr(importState, 'Foxx_swnet' , fldptr1=Foxx_swnet , rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -204,6 +205,58 @@ contains
        So_fswpen(:) = swp
     end if
 
+    ! Initialize pointers to stream fields
+    call shr_strdata_get_stream_pointer( sdat, 'So_t'    , strm_So_t, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'So_s'    , strm_So_s, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'So_u'    , strm_So_u, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'So_v'    , strm_So_v, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'So_dhdx' , strm_So_dhdx, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'So_dhdy' , strm_So_dhdy, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'So_h'    , strm_So_h, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'So_qbot' , strm_So_qbot, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+
+    ! Error checks for stream pointers
+    if (.not. associated(strm_So_t)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_So_t must be associated for docn som mode')
+       return
+    end if
+    if (.not. associated(strm_So_s)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_So_s must be associated for docn som mode')
+       return
+    end if
+    if (.not. associated(strm_So_u)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_So_u must be associated for docn som mode')
+       return
+    end if
+    if (.not. associated(strm_So_v)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_So_v must be associated for docn som mode')
+       return
+    end if
+    if (.not. associated(strm_So_dhdx)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_So_dhdx must be associated for docn som mode')
+       return
+    end if
+    if (.not. associated(strm_So_dhdy)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_So_dhdy must be associated for docn som mode')
+       return
+    end if
+    if (.not. associated(strm_So_h)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_So_h must be associated for docn som mode')
+       return
+    end if
+    if (.not. associated(strm_So_qbot)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_So_qbot must be associated for docn som mode')
+       return
+    end if
+
     ! Set export state ocean fraction (So_omask)
     So_omask(:) = ocn_fraction(:)
 
@@ -240,6 +293,13 @@ contains
 
     rc = ESMF_SUCCESS
 
+    So_u(:)    = strm_So_u(:)
+    So_u(:)    = strm_So_v(:)
+    So_s(:)    = strm_So_s(:)
+    So_dhdx(:) = strm_So_dhdx(:)
+    So_dhdy(:) = strm_So_dhdy(:)
+    So_t(:)    = strm_So_t(:)
+
     lsize = size(So_t)
 
     if (first_time) then
@@ -273,16 +333,16 @@ contains
        end if
 
        allocate(tfreeze(lsize))
-       tfreeze(:) = shr_frz_freezetemp(So_s(:)) + TkFrz
+       tfreeze(:) = shr_frz_freezetemp(strm_So_s(:)) + TkFrz
        do n = 1,lsize
           if (So_omask(n) /= 0._r8) then
              ! compute new temp (last term is latent by prec and roff)
              So_t(n) = somtp(n) +  &
                   ( Foxx_swnet(n) + Foxx_lwup(n) + Faxa_lwdn(n) + Foxx_sen(n) + Foxx_lat(n) + &
-                  Fioi_melth(n) - strm_qbot(n) - (Faxa_snow(n)+Foxx_rofi(n))*latice) * dt/(cpsw*rhosw* strm_h(n))
+                    Fioi_melth(n) - strm_So_qbot(n) - (Faxa_snow(n)+Foxx_rofi(n))*latice ) * dt/(cpsw*rhosw* strm_So_h(n))
 
              ! compute ice formed or melt potential
-             Fioo_q(n) = (tfreeze(n) - So_t(n))*(cpsw*rhosw*strm_h(n))/dt ! ice formed q>0
+             Fioo_q(n) = (tfreeze(n) - So_t(n))*(cpsw*rhosw*strm_So_h(n))/dt ! ice formed q>0
 
              ! reset temp
              if (reset_temp) then
@@ -291,7 +351,7 @@ contains
 
              ! save somtp to restart file
              somtp(n) = So_t(n)
-             So_bldepth(n) = strm_h(n)
+             So_bldepth(n) = strm_So_h(n)
           endif
        end do
        deallocate(tfreeze)

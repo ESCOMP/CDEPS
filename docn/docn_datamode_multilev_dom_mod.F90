@@ -26,8 +26,9 @@ module docn_datamode_multilev_dom_mod
   real(r8), pointer :: So_s(:)         => null()
 
   ! pointers to stream fields
-  real(r8), pointer :: stream_So_t_depth(:,:) => null()
-  real(r8), pointer :: stream_So_s_depth(:,:) => null()
+  real(r8), pointer :: strm_So_t(:)
+  real(r8), pointer :: strm_So_t_depth(:,:) => null()
+  real(r8), pointer :: strm_So_s_depth(:,:) => null()
 
   integer, parameter :: nlev_export = 30
   real(r8) :: vertical_levels(nlev_export) = (/  &
@@ -66,10 +67,10 @@ contains
     call dshr_fldList_add(fldsExport, 'So_omask')
     call dshr_fldList_add(fldsExport, 'So_t_depth', ungridded_lbound=1, ungridded_ubound=nlev_export)
     call dshr_fldList_add(fldsExport, 'So_s_depth', ungridded_lbound=1, ungridded_ubound=nlev_export)
-    call dshr_fldList_add(fldsExport, 'So_t'                )
-    call dshr_fldList_add(fldsExport, 'So_s'                )
-    call dshr_fldList_add(fldsExport, 'So_u'                )
-    call dshr_fldList_add(fldsExport, 'So_v'                )
+    call dshr_fldList_add(fldsExport, 'So_t')
+    call dshr_fldList_add(fldsExport, 'So_s')
+    call dshr_fldList_add(fldsExport, 'So_u')
+    call dshr_fldList_add(fldsExport, 'So_v')
 
     fldlist => fldsExport ! the head of the linked list
     do while (associated(fldlist))
@@ -98,11 +99,30 @@ contains
 
     ! initialize pointers to stream fields
     ! this has the full set of leveles in the stream data
-    call shr_strdata_get_stream_pointer( sdat, 'So_t_depth', stream_So_t_depth, rc=rc)
+    call shr_strdata_get_stream_pointer( sdat, 'So_t', strm_So_t, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'So_s_depth', stream_So_s_depth, rc=rc)
+    call shr_strdata_get_stream_pointer( sdat, 'So_t_depth', strm_So_t_depth, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'So_s_depth', strm_So_s_depth, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
 
+    ! error checks for stream pointers
+    if (.not. associated(strm_So_t)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_So_t must be associated for docn multilev_dom mode')
+       return
+    end if
+    if (.not. associated(strm_So_t_depth)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_So_t_depth must be associated for docn multilev_dom mode')
+       return
+    end if
+    if (.not. associated(strm_So_s_depth)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_So_s_depth must be associated for docn multilev_dom mode')
+       return
+    end if
+
+    ! initialize pointers to export fields
+    call dshr_state_getfldptr(exportState, 'So_omask', fldptr1=So_omask   , rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'So_t', fldptr1=So_t, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'So_s', fldptr1=So_s, rc=rc)
@@ -111,14 +131,9 @@ contains
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'So_v', fldptr1=So_v, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
-
-    ! initialize pointers to export fields
-    ! the export state has only nlev_export levels
-    call dshr_state_getfldptr(exportState, 'So_omask'   , fldptr1=So_omask   , rc=rc)
+    call dshr_state_getfldptr(exportState, 'So_t_depth', fldptr2=So_t_depth , rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
-    call dshr_state_getfldptr(exportState, 'So_t_depth' , fldptr2=So_t_depth , rc=rc)
-    if (chkerr(rc,__LINE__,u_FILE_u)) return
-    call dshr_state_getfldptr(exportState, 'So_s_depth' , fldptr2=So_s_depth , rc=rc)
+    call dshr_state_getfldptr(exportState, 'So_s_depth', fldptr2=So_s_depth , rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
 
     ! Initialize export state pointers to non-zero
@@ -158,7 +173,7 @@ contains
 
     rc = ESMF_SUCCESS
 
-    So_t(:) = So_t(:) + TkFrz
+    So_t(:) = strm_So_t(:) + TkFrz
 
     ! Determine number of vertical levels for multi level stream
     nstreams = shr_strdata_get_stream_count(sdat)
@@ -190,21 +205,21 @@ contains
                    So_s_depth(ko,i) = shr_const_spval
                 else
                    ! Assume input T forcing is in degrees C
-                   if (stream_So_t_depth(ki+1,i) > 1.e10) then
-                      if (stream_So_t_depth(ki,i) > 1.e10) then
+                   if (strm_So_t_depth(ki+1,i) > 1.e10) then
+                      if (strm_So_t_depth(ki,i) > 1.e10) then
                          So_t_depth(ko,i) = shr_const_spval
                          So_s_depth(ko,i) = shr_const_spval
                       else
-                         So_t_depth(ko,i) = stream_So_t_depth(ki,i) + shr_const_tkfrz
-                         So_s_depth(ko,i) = stream_So_s_depth(ki,i)
+                         So_t_depth(ko,i) = strm_So_t_depth(ki,i) + shr_const_tkfrz
+                         So_s_depth(ko,i) = strm_So_s_depth(ki,i)
                       end if
                    else
-                      factor = (stream_So_t_depth(ki+1,i)-stream_So_t_depth(ki,i))/(stream_vlevs(ki+1)-stream_vlevs(ki))
-                      So_t_depth(ko,i) = stream_So_t_depth(ki,i) + (vertical_levels(ko)-stream_vlevs(ki))*factor
+                      factor = (strm_So_t_depth(ki+1,i)-strm_So_t_depth(ki,i))/(stream_vlevs(ki+1)-stream_vlevs(ki))
+                      So_t_depth(ko,i) = strm_So_t_depth(ki,i) + (vertical_levels(ko)-stream_vlevs(ki))*factor
                       So_t_depth(ko,i) = So_t_depth(ko,i) + shr_const_tkfrz
 
-                      factor = (stream_So_s_depth(ki+1,i)-stream_So_s_depth(ki,i))/(stream_vlevs(ki+1)-stream_vlevs(ki))
-                      So_s_depth(ko,i) = stream_So_s_depth(ki,i) + (vertical_levels(ko)-stream_vlevs(ki))*factor
+                      factor = (strm_So_s_depth(ki+1,i)-strm_So_s_depth(ki,i))/(stream_vlevs(ki+1)-stream_vlevs(ki))
+                      So_s_depth(ko,i) = strm_So_s_depth(ki,i) + (vertical_levels(ko)-stream_vlevs(ki))*factor
                    end if
                 end if
              end do

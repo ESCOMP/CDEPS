@@ -32,7 +32,6 @@ module cdeps_dlnd_comp
   use dshr_mod          , only : dshr_model_initphase, dshr_init, dshr_check_restart_alarm
   use dshr_mod          , only : dshr_state_setscalar, dshr_set_runclock, dshr_log_clock_advance
   use dshr_mod          , only : dshr_restart_read, dshr_restart_write, dshr_mesh_init
-  use dshr_dfield_mod   , only : dfield_type, dshr_dfield_add, dshr_dfield_copy
   use dshr_fldlist_mod  , only : fldlist_type, dshr_fldlist_add, dshr_fldlist_realize
 
   ! Datamode specialized modules
@@ -91,7 +90,6 @@ module cdeps_dlnd_comp
 
   ! linked lists
   type(fldList_type) , pointer :: fldsExport => null()
-  type(dfield_type)  , pointer :: dfields    => null()
 
   ! model mask and model fraction
   real(r8), pointer            :: model_frac(:) => null()
@@ -458,16 +456,16 @@ contains
     !--------------------
 
     if (first_time) then
-       ! Initialize datamode module pointers AND dfields
+       ! Initialize datamode module pointers and dfields
        select case (trim(datamode))
        case('glc_forcing_mct')
-          call dlnd_datamode_glc_forcing_init_pointers(exportState, sdat, dfields, model_frac, datamode, logunit, mainproc, rc)
+          call dlnd_datamode_glc_forcing_init_pointers(exportState, sdat, model_frac, datamode, logunit, mainproc, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('glc_forcing')
-          call dlnd_datamode_glc_forcing_init_pointers(exportState, sdat, dfields, model_frac, datamode, logunit, mainproc, rc)
+          call dlnd_datamode_glc_forcing_init_pointers(exportState, sdat, model_frac, datamode, logunit, mainproc, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('rof_forcing')
-          call dlnd_datamode_rof_forcing_init_pointers(exportState, sdat, dfields, model_frac, logunit, mainproc, rc)
+          call dlnd_datamode_rof_forcing_init_pointers(exportState, sdat, model_frac, logunit, mainproc, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end select
 
@@ -484,18 +482,11 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_TraceRegionExit('dlnd_strdata_advance')
 
-    ! copy all fields from streams to export state as default
-    ! This automatically will update the fields in the export state
-    call ESMF_TraceRegionEnter('dlnd_dfield_copy')
-    call dshr_dfield_copy(dfields, sdat, rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_TraceRegionExit('dlnd_dfield_copy')
-
     if (trim(datamode) == 'glc_forcing_mct' .or. trim(datamode) == 'glc_forcing' ) then
-       call dlnd_datamode_glc_forcing_advance(exportState, rc=rc)
+       call dlnd_datamode_glc_forcing_advance(exportState, sdat, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     else if (trim(datamode) == 'rof_forcing') then
-       call dlnd_datamode_rof_forcing_advance(exportState, rc=rc)
+       call dlnd_datamode_rof_forcing_advance(exportState, sdat, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
