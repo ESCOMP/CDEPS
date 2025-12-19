@@ -41,7 +41,6 @@ module datm_datamode_jra_mod
   real(r8), pointer :: Faxa_swvdr(:) => null()
   real(r8), pointer :: Faxa_swvdf(:) => null()
   real(r8), pointer :: Faxa_swnet(:) => null()
-  real(r8), pointer :: Faxa_ndep(:,:) => null()
 
   ! stream data
   real(r8), pointer :: strm_prec(:)  => null()
@@ -65,17 +64,12 @@ module datm_datamode_jra_mod
 contains
 !===============================================================================
 
-  subroutine datm_datamode_jra_advertise(exportState, fldsexport, flds_scalar_name, &
-       flds_co2, flds_wiso, flds_presaero, flds_presndep, rc)
+  subroutine datm_datamode_jra_advertise(exportState, fldsexport, flds_scalar_name, rc)
 
     ! input/output variables
     type(esmf_State)   , intent(inout) :: exportState
     type(fldlist_type) , pointer       :: fldsexport
     character(len=*)   , intent(in)    :: flds_scalar_name
-    logical            , intent(in)    :: flds_co2
-    logical            , intent(in)    :: flds_wiso
-    logical            , intent(in)    :: flds_presaero
-    logical            , intent(in)    :: flds_presndep
     integer            , intent(out)   :: rc
 
     ! local variables
@@ -107,27 +101,6 @@ contains
     call dshr_fldList_add(fldsExport, 'Faxa_swnet' )
     call dshr_fldList_add(fldsExport, 'Faxa_lwdn'  )
     call dshr_fldList_add(fldsExport, 'Faxa_swdn'  )
-
-    if (flds_co2) then
-       call dshr_fldList_add(fldsExport, 'Sa_co2prog')
-       call dshr_fldList_add(fldsExport, 'Sa_co2diag')
-    end if
-    if (flds_presaero) then
-       call dshr_fldList_add(fldsExport, 'Faxa_bcph'   , ungridded_lbound=1, ungridded_ubound=3)
-       call dshr_fldList_add(fldsExport, 'Faxa_ocph'   , ungridded_lbound=1, ungridded_ubound=3)
-       call dshr_fldList_add(fldsExport, 'Faxa_dstwet' , ungridded_lbound=1, ungridded_ubound=4)
-       call dshr_fldList_add(fldsExport, 'Faxa_dstdry' , ungridded_lbound=1, ungridded_ubound=4)
-    end if
-    if (flds_presndep) then
-       call dshr_fldList_add(fldsExport, 'Faxa_ndep', ungridded_lbound=1, ungridded_ubound=2)
-    end if
-    if (flds_wiso) then
-       call dshr_fldList_add(fldsExport, 'Faxa_rainc_wiso', ungridded_lbound=1, ungridded_ubound=3)
-       call dshr_fldList_add(fldsExport, 'Faxa_rainl_wiso', ungridded_lbound=1, ungridded_ubound=3)
-       call dshr_fldList_add(fldsExport, 'Faxa_snowc_wiso', ungridded_lbound=1, ungridded_ubound=3)
-       call dshr_fldList_add(fldsExport, 'Faxa_snowl_wiso', ungridded_lbound=1, ungridded_ubound=3)
-       call dshr_fldList_add(fldsExport, 'Faxa_shum_wiso' , ungridded_lbound=1, ungridded_ubound=3)
-    end if
 
     fldlist => fldsExport ! the head of the linked list
     do while (associated(fldlist))
@@ -217,13 +190,6 @@ contains
     call dshr_state_getfldptr(exportState, 'Faxa_swnet' , fldptr1=Faxa_swnet , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    call ESMF_StateGet(exportState, 'Faxa_ndep', itemFlag, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    if (itemflag /= ESMF_STATEITEM_NOTFOUND) then
-       call dshr_state_getfldptr(exportState, 'Faxa_ndep', fldptr2=Faxa_ndep, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    end if
-
     ! erro check
     if (.not. associated(strm_prec) .or. .not. associated(strm_swdn)) then
        call shr_log_error(trim(subname)//'ERROR: prec and swdn must be in streams for CORE_IAF_JRA', rc=rc)
@@ -292,11 +258,6 @@ contains
        avg_alb = ( 0.069 - 0.011*cos(2.0_R8*yc(n)*degtorad ) )
        Faxa_swnet(n) = strm_swdn(n)*(1.0_R8 - avg_alb)
     enddo   ! lsize
-
-    if (associated(Faxa_ndep)) then
-       ! convert ndep flux to units of kgN/m2/s (input is in gN/m2/s)
-       Faxa_ndep(:,:) = Faxa_ndep(:,:) / 1000._r8
-    end if
 
   end subroutine datm_datamode_jra_advance
 

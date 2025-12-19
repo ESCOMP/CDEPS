@@ -190,9 +190,11 @@
   optional stream nitrogen deposition
   - DATM_NDEP is set by the 4 character time prefix in config_component.xml
   ========================
+  presndep.clim_1850_cmip7
   presndep.clim_1850
   presndep.clim_2000
   presndep.clim_2010
+  presndep.hist_cmip7
   presndep.hist
   presndep.SSP1-2.6
   presndep.SSP2-4.5
@@ -4861,6 +4863,76 @@
   <!--  presndep forcing streams -->
   <!-- ===================-->
 
+  <stream_entry name="presndep.clim_1850_cmip7">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/ndep/cmip7/ndep_input4MIPs_surfaceFluxes_ESMFmesh_cdf5_c20251211.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/ndep/cmip7/ndep_input4MIPs_surfaceFluxes_CMIP_FZJ-CMIP-nitrogen-1-2_gn_185001-202212.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <!-- the following stream fields are in units of kg/m2/sec - so need no unit conversion -->
+      <var>drynhx  Faxandep_nhx_dry</var>
+      <var>wetnhx  Faxa_ndep_nhx_wet</var>
+      <var>drynoy  Faxa_ndep_noy_dry</var>
+      <var>wetnoy  Faxa_ndep_noy_wet</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1850</stream_year_first>
+    <stream_year_last>1850</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="presndep.hist_cmip7">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/ndep/cmip7/ndep_input4MIPs_surfaceFluxes_ESMFmesh_cdf5_c20251211.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/ndep/cmip7/ndep_input4MIPs_surfaceFluxes_CMIP_FZJ-CMIP-nitrogen-1-2_gn_185001-202212.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <!-- the following stream fields are in units of kg/m2/sec - so need no unit conversion -->
+      <var>drynhx  Faxa_ndep_nhx_dry</var>
+      <var>wetnhx  Faxa_ndep_nhx_wet</var>
+      <var>drynoy  Faxa_ndep_noy_dry</var>
+      <var>wetnoy  Faxa_ndep_noy_wet</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1850</stream_year_first>
+    <stream_year_last>2022</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
   <stream_entry name="presndep.clim_1850">
     <stream_meshfile>
       <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
@@ -4869,6 +4941,7 @@
       <file>$DIN_LOC_ROOT/lnd/clm2/ndepdata/fndep_clm_WACCM6_CMIP6piControl001_y21-50avg_1850monthly_0.95x1.25_c180802.nc</file>
     </stream_datafiles>
     <stream_datavars>
+      <!-- the following stream fields are in units of g/m2/sec - need conversion to kg/m2/sec-->
       <var>NDEP_NHx_month  Faxa_ndep_nhx</var>
       <var>NDEP_NOy_month  Faxa_ndep_noy</var>
     </stream_datavars>
@@ -4901,6 +4974,7 @@
       <file>$DIN_LOC_ROOT/lnd/clm2/ndepdata/fndep_clm_hist_b.e21.BWHIST.f09_g17.CMIP6-historical-WACCM.ensmean_1849-2015_monthly_0.9x1.25_c180926.nc</file>
     </stream_datafiles>
     <stream_datavars>
+      <!-- the following stream fields are in units of g/m2/sec - need conversion to kg/m2/sec-->
       <var>NDEP_NHx_month  Faxa_ndep_nhx</var>
       <var>NDEP_NOy_month  Faxa_ndep_noy</var>
     </stream_datavars>
@@ -4965,6 +5039,7 @@
       <file>$DIN_LOC_ROOT/lnd/clm2/ndepdata/fndep_clm_hist_b.e21.BWHIST.f09_g17.CMIP6-historical-WACCM.ensmean_1849-2015_monthly_0.9x1.25_c180926.nc</file>
     </stream_datafiles>
     <stream_datavars>
+      <!-- the following stream fields are in units of g/m2/sec - need conversion to kg/m2/sec-->
       <var>NDEP_NHx_month  Faxa_ndep_nhx</var>
       <var>NDEP_NOy_month  Faxa_ndep_noy</var>
     </stream_datavars>
@@ -4997,6 +5072,7 @@
       <file>$DIN_LOC_ROOT/lnd/clm2/ndepdata/fndep_clm_f09_g17.CMIP6-SSP1-2.6-WACCM_1849-2101_monthly_c191007.nc</file>
     </stream_datafiles>
     <stream_datavars>
+      <!-- the following stream fields are in units of g/m2/sec - need conversion to kg/m2/sec-->
       <var>NDEP_NHx_month  Faxa_ndep_nhx</var>
       <var>NDEP_NOy_month  Faxa_ndep_noy</var>
     </stream_datavars>
@@ -5029,6 +5105,7 @@
       <file>$DIN_LOC_ROOT/lnd/clm2/ndepdata/fndep_clm_f09_g17.CMIP6-SSP2-4.5-WACCM_1849-2101_monthly_c191007.nc</file>
     </stream_datafiles>
     <stream_datavars>
+      <!-- the following stream fields are in units of g/m2/sec - need conversion to kg/m2/sec-->
       <var>NDEP_NHx_month  Faxa_ndep_nhx</var>
       <var>NDEP_NOy_month  Faxa_ndep_noy</var>
     </stream_datavars>
@@ -5061,6 +5138,7 @@
       <file>$DIN_LOC_ROOT/lnd/clm2/ndepdata/fndep_clm_SSP370_b.e21.BWSSP370cmip6.f09_g17.CMIP6-SSP3-7.0-WACCM.002_1849-2101_monthly_0.9x1.25_c211216.nc</file>
     </stream_datafiles>
     <stream_datavars>
+      <!-- the following stream fields are in units of g/m2/sec - need conversion to kg/m2/sec-->
       <var>NDEP_NHx_month  Faxa_ndep_nhx</var>
       <var>NDEP_NOy_month  Faxa_ndep_noy</var>
     </stream_datavars>
@@ -5094,6 +5172,7 @@
       <file>$DIN_LOC_ROOT/lnd/clm2/ndepdata/fndep_clm_f09_g17.CMIP6-SSP5-8.5-WACCM_1849-2101_monthly_c191007.nc</file>
     </stream_datafiles>
     <stream_datavars>
+      <!-- the following stream fields are in units of g/m2/sec - need conversion to kg/m2/sec-->
       <var>NDEP_NHx_month  Faxa_ndep_nhx</var>
       <var>NDEP_NOy_month  Faxa_ndep_noy</var>
     </stream_datavars>

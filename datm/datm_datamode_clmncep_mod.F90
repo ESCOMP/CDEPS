@@ -28,12 +28,9 @@ module datm_datamode_clmncep_mod
   real(r8), pointer :: Sa_tbot(:)           => null()
   real(r8), pointer :: Sa_ptem(:)           => null()
   real(r8), pointer :: Sa_shum(:)           => null()
-! TODO: water isotope support
-!  real(r8), pointer :: Sa_shum_wiso(:,:)    => null() ! water isotopes
   real(r8), pointer :: Sa_dens(:)           => null()
   real(r8), pointer :: Sa_pbot(:)           => null()
   real(r8), pointer :: Sa_pslv(:)           => null()
-  real(r8), pointer :: Sa_o3(:)             => null()
   real(r8), pointer :: Faxa_lwdn(:)         => null()
   real(r8), pointer :: Faxa_rainc(:)        => null()
   real(r8), pointer :: Faxa_rainl(:)        => null()
@@ -44,7 +41,6 @@ module datm_datamode_clmncep_mod
   real(r8), pointer :: Faxa_swvdr(:)        => null()
   real(r8), pointer :: Faxa_swvdf(:)        => null()
   real(r8), pointer :: Faxa_swnet(:)        => null()
-  real(r8), pointer :: Faxa_ndep(:,:)       => null()
 
   ! stream data
   real(r8), pointer :: strm_z(:)         => null()
@@ -61,14 +57,6 @@ module datm_datamode_clmncep_mod
   real(r8), pointer :: strm_precc(:)     => null()
   real(r8), pointer :: strm_precl(:)     => null()
   real(r8), pointer :: strm_precn(:)     => null()
-
-  ! stream data - water isotopes
-  real(r8), pointer :: strm_rh_16O(:)    => null() ! water isoptopes
-  real(r8), pointer :: strm_rh_18O(:)    => null() ! water isoptopes
-  real(r8), pointer :: strm_rh_HDO(:)    => null() ! water isoptopes
-  real(r8), pointer :: strm_precn_16O(:) => null() ! water isoptopes
-  real(r8), pointer :: strm_precn_18O(:) => null() ! water isoptopes
-  real(r8), pointer :: strm_precn_HDO(:) => null() ! water isoptopes
 
   ! stream data bias correction
   real(r8), pointer :: strm_precsf(:)    => null()
@@ -100,7 +88,6 @@ module datm_datamode_clmncep_mod
   real(r8) , parameter :: stebol   = SHR_CONST_STEBOL   ! Stefan-Boltzmann constant ~ W/m^2/K^4
   real(r8) , parameter :: rdair    = SHR_CONST_RDAIR    ! dry air gas constant   ~ J/K/kg
 
-
   character(*), parameter :: nullstr = 'null'
   character(*), parameter :: u_FILE_u = &
        __FILE__
@@ -109,17 +96,11 @@ module datm_datamode_clmncep_mod
 contains
 !===============================================================================
 
-  subroutine datm_datamode_clmncep_advertise(exportState, fldsexport, flds_scalar_name, &
-       flds_co2, flds_wiso, flds_presaero, flds_presndep, flds_preso3, rc)
+  subroutine datm_datamode_clmncep_advertise(exportState, fldsexport, flds_scalar_name, rc)
 
     ! input/output variables
     type(esmf_State)   , intent(inout) :: exportState
     type(fldlist_type) , pointer       :: fldsexport
-    logical            , intent(in)    :: flds_co2
-    logical            , intent(in)    :: flds_wiso
-    logical            , intent(in)    :: flds_presaero
-    logical            , intent(in)    :: flds_presndep
-    logical            , intent(in)    :: flds_preso3
     character(len=*)   , intent(in)    :: flds_scalar_name
     integer            , intent(out)   :: rc
 
@@ -151,29 +132,6 @@ contains
     call dshr_fldList_add(fldsExport, 'Faxa_swnet' )
     call dshr_fldList_add(fldsExport, 'Faxa_lwdn'  )
     call dshr_fldList_add(fldsExport, 'Faxa_swdn'  )
-    if (flds_co2) then
-       call dshr_fldList_add(fldsExport, 'Sa_co2prog')
-       call dshr_fldList_add(fldsExport, 'Sa_co2diag')
-    end if
-    if (flds_preso3) then
-       call dshr_fldList_add(fldsExport, 'Sa_o3')
-    end if
-    if (flds_presaero) then
-       call dshr_fldList_add(fldsExport, 'Faxa_bcph'   , ungridded_lbound=1, ungridded_ubound=3)
-       call dshr_fldList_add(fldsExport, 'Faxa_ocph'   , ungridded_lbound=1, ungridded_ubound=3)
-       call dshr_fldList_add(fldsExport, 'Faxa_dstwet' , ungridded_lbound=1, ungridded_ubound=4)
-       call dshr_fldList_add(fldsExport, 'Faxa_dstdry' , ungridded_lbound=1, ungridded_ubound=4)
-    end if
-    if (flds_presndep) then
-       call dshr_fldList_add(fldsExport, 'Faxa_ndep', ungridded_lbound=1, ungridded_ubound=2)
-    end if
-    if (flds_wiso) then
-       call dshr_fldList_add(fldsExport, 'Faxa_rainc_wiso', ungridded_lbound=1, ungridded_ubound=3)
-       call dshr_fldList_add(fldsExport, 'Faxa_rainl_wiso', ungridded_lbound=1, ungridded_ubound=3)
-       call dshr_fldList_add(fldsExport, 'Faxa_snowc_wiso', ungridded_lbound=1, ungridded_ubound=3)
-       call dshr_fldList_add(fldsExport, 'Faxa_snowl_wiso', ungridded_lbound=1, ungridded_ubound=3)
-       call dshr_fldList_add(fldsExport, 'Faxa_shum_wiso' , ungridded_lbound=1, ungridded_ubound=3)
-    end if
 
     fldlist => fldsExport ! the head of the linked list
     do while (associated(fldlist))
@@ -302,20 +260,6 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Faxa_lwdn'  , fldptr1=Faxa_lwdn  , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    call ESMF_StateGet(exportstate, 'Faxa_ndep', itemFlag, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    if (itemflag /= ESMF_STATEITEM_NOTFOUND) then
-       call dshr_state_getfldptr(exportState, 'Faxa_ndep', fldptr2=Faxa_ndep, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    end if
-
-    call ESMF_StateGet(exportstate, 'Sa_o3', itemFlag, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    if (itemflag /= ESMF_STATEITEM_NOTFOUND) then
-       call dshr_state_getfldptr(exportState, 'Sa_o3', fldptr1=Sa_o3, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    end if
 
     ! error check
     if (.not. associated(strm_wind) .or. .not. associated(strm_tbot)) then
@@ -446,12 +390,6 @@ contains
           e = strm_rh(n) * 0.01_r8 * datm_esat(tbot,tbot)
           qsat = (0.622_r8 * e)/(pbot - 0.378_r8 * e)
           Sa_shum(n) = qsat
-          ! for isotopic tracer specific humidity, expect a delta, just keep the delta from the input file
-          ! if (associated(strm_rh_16O) .and. associated(strm_rh_18O) .and. associated(strm_rh_HDO)) then
-          !   Sa_shum_wiso(1,n) = strm_rh_16O(n)
-          !   Sa_shum_wiso(2,n) = strm_rh_18O(n)
-          !   Sa_shum_wiso(3,n) = strm_rh_HDO(n)
-          ! end if
        else if (associated(strm_tdew)) then
           if (tdewmax < 50.0_r8) strm_tdew(n) = strm_tdew(n) + tkFrz
           e = datm_esat(strm_tdew(n),tbot)
@@ -583,11 +521,6 @@ contains
        Faxa_swvdf(:) = Faxa_swvdf(:) * strm_swdn_af(:)
     endif
     ! bias correction / anomaly forcing ( end block )
-
-    if (associated(Faxa_ndep)) then
-       ! convert ndep flux to units of kgN/m2/s (input is in gN/m2/s)
-       Faxa_ndep(:,:) = Faxa_ndep(:,:) / 1000._r8
-    end if
 
   end subroutine datm_datamode_clmncep_advance
 

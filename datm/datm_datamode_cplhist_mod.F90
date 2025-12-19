@@ -24,8 +24,6 @@ module datm_datamode_cplhist_mod
   real(r8), pointer :: Sa_tbot(:)           => null()
   real(r8), pointer :: Sa_ptem(:)           => null()
   real(r8), pointer :: Sa_shum(:)           => null()
-  ! TODO: water isotope support
-  !  real(r8), pointer :: Sa_shum_wiso(:,:)    => null() ! water isotopes
   real(r8), pointer :: Sa_dens(:)           => null()
   real(r8), pointer :: Sa_pbot(:)           => null()
   real(r8), pointer :: Sa_pslv(:)           => null()
@@ -39,7 +37,6 @@ module datm_datamode_cplhist_mod
   real(r8), pointer :: Faxa_swvdr(:)        => null()
   real(r8), pointer :: Faxa_swvdf(:)        => null()
   real(r8), pointer :: Faxa_swnet(:)        => null()
-  real(r8), pointer :: Faxa_ndep(:,:)       => null()
 
   character(*), parameter :: nullstr = 'null'
   character(*), parameter :: u_FILE_u = &
@@ -49,16 +46,11 @@ module datm_datamode_cplhist_mod
 contains
 !===============================================================================
 
-  subroutine datm_datamode_cplhist_advertise(exportState, fldsexport, flds_scalar_name, &
-       flds_co2, flds_wiso, flds_presaero, flds_presndep, rc)
+  subroutine datm_datamode_cplhist_advertise(exportState, fldsexport, flds_scalar_name, rc)
 
     ! input/output variables
     type(esmf_State)   , intent(inout) :: exportState
     type(fldlist_type) , pointer       :: fldsexport
-    logical            , intent(in)    :: flds_co2
-    logical            , intent(in)    :: flds_wiso
-    logical            , intent(in)    :: flds_presaero
-    logical            , intent(in)    :: flds_presndep
     character(len=*)   , intent(in)    :: flds_scalar_name
     integer            , intent(out)   :: rc
 
@@ -90,26 +82,6 @@ contains
     call dshr_fldList_add(fldsExport, 'Faxa_swnet' )
     call dshr_fldList_add(fldsExport, 'Faxa_lwdn'  )
     call dshr_fldList_add(fldsExport, 'Faxa_swdn'  )
-    if (flds_co2) then
-       call dshr_fldList_add(fldsExport, 'Sa_co2prog')
-       call dshr_fldList_add(fldsExport, 'Sa_co2diag')
-    end if
-    if (flds_presaero) then
-       call dshr_fldList_add(fldsExport, 'Faxa_bcph'   , ungridded_lbound=1, ungridded_ubound=3)
-       call dshr_fldList_add(fldsExport, 'Faxa_ocph'   , ungridded_lbound=1, ungridded_ubound=3)
-       call dshr_fldList_add(fldsExport, 'Faxa_dstwet' , ungridded_lbound=1, ungridded_ubound=4)
-       call dshr_fldList_add(fldsExport, 'Faxa_dstdry' , ungridded_lbound=1, ungridded_ubound=4)
-    end if
-    if (flds_presndep) then
-       call dshr_fldList_add(fldsExport, 'Faxa_ndep', ungridded_lbound=1, ungridded_ubound=2)
-    end if
-    if (flds_wiso) then
-       call dshr_fldList_add(fldsExport, 'Faxa_rainc_wiso', ungridded_lbound=1, ungridded_ubound=3)
-       call dshr_fldList_add(fldsExport, 'Faxa_rainl_wiso', ungridded_lbound=1, ungridded_ubound=3)
-       call dshr_fldList_add(fldsExport, 'Faxa_snowc_wiso', ungridded_lbound=1, ungridded_ubound=3)
-       call dshr_fldList_add(fldsExport, 'Faxa_snowl_wiso', ungridded_lbound=1, ungridded_ubound=3)
-       call dshr_fldList_add(fldsExport, 'Faxa_shum_wiso' , ungridded_lbound=1, ungridded_ubound=3)
-    end if
 
     fldlist => fldsExport ! the head of the linked list
     do while (associated(fldlist))
@@ -177,13 +149,6 @@ contains
     call dshr_state_getfldptr(exportState, 'Faxa_lwdn'  , fldptr1=Faxa_lwdn  , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    call ESMF_StateGet(exportState, 'Faxa_ndep', itemFlag, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    if (itemflag /= ESMF_STATEITEM_NOTFOUND) then
-       call dshr_state_getfldptr(exportState, 'Faxa_ndep', fldptr2=Faxa_ndep, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    end if
-
  end subroutine datm_datamode_cplhist_init_pointers
 
   !===============================================================================
@@ -200,11 +165,6 @@ contains
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
-
-    if (associated(Faxa_ndep)) then
-       ! convert ndep flux to units of kgN/m2/s (assumes that input is in gN/m2/s)
-       Faxa_ndep(:,:) = Faxa_ndep(:,:) / 1000._r8
-    end if
 
   end subroutine datm_datamode_cplhist_advance
 
