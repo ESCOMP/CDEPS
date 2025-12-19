@@ -55,16 +55,6 @@
     <desc>colon delimited string of non water tracers to be sent from dlnd to the mediator - only used for DLND%%RCPL</desc>
   </entry>
 
-  <!-- <entry id="DLND_LND2ROF_NONH2O_NUMBER"> -->
-  <!--   <type>integer</type> -->
-  <!--   <default_value>0</default_value> -->
-  <!--   <group>run_component_dlnd</group> -->
-  <!--   <file>env_run.xml</file> -->
-  <!--   <desc>Number of liquid non-water lnd to rof tracers. This must be -->
-  <!--   consistent with DLND_LND2ROF_NONH2O and is currently -->
-  <!--   required by DLND to create the necessary stream field names.</desc> -->
-  <!-- </entry> -->
-
   <entry id="DLND_CPLHIST_DIR">
     <type>char</type>
     <default_value>UNSET</default_value>
