@@ -69,7 +69,7 @@ module cdeps_dlnd_comp
   integer                  :: flds_scalar_index_ny = 0
   integer                  :: mpicom                              ! mpi communicator
   integer                  :: my_task                             ! my task in mpi communicator mpicom
-  logical                  :: mainproc                            ! true of my_task == main_task
+  logical                  :: mainproc                            ! true if my_task == main_task
   integer                  :: inst_index                          ! number of current instance (ie. 1)
   character(len=16)        :: inst_suffix = ""                    ! char string associated with instance (ie. "_0001" or "")
   integer                  :: logunit                             ! logging unit number
