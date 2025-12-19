@@ -69,7 +69,6 @@ contains
     integer            , intent(out)   :: rc
 
     ! local variables
-    integer                         :: n
     type(fldlist_type), pointer :: fldList
     !-------------------------------------------------------------------------------
 
@@ -111,12 +110,12 @@ contains
     ! input/output variables
     type(ESMF_State)       , intent(inout) :: exportState
     type(shr_strdata_type) , intent(in)    :: sdat
-    integer                , intent(in)    :: logunit 
+    integer                , intent(in)    :: logunit
     logical                , intent(in)    :: mainproc
     integer                , intent(out)   :: rc
 
     ! local variables
-    integer                         :: n 
+    integer                         :: n
     integer                         :: fieldcount
     type(ESMF_Field)                :: lfield
     character(ESMF_MAXSTR) ,pointer :: lfieldnames(:)

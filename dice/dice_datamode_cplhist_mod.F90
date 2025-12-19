@@ -92,12 +92,16 @@ contains
   end subroutine dice_datamode_cplhist_advertise
 
   !===============================================================================
-  subroutine dice_datamode_cplhist_init_pointers(importState, exportState, sdat, rc)
+  subroutine dice_datamode_cplhist_init_pointers(importState, exportState, sdat, &
+       flds_scalar_name, logunit, mainproc, rc)
 
     ! input/output variables
     type(ESMF_State)       , intent(inout) :: importState
     type(ESMF_State)       , intent(inout) :: exportState
     type(shr_strdata_type) , intent(in)    :: sdat
+    character(len=*)       , intent(in)    :: flds_scalar_name
+    integer                , intent(in)    :: logunit
+    logical                , intent(in)    :: mainproc
     integer                , intent(out)   :: rc
 
     ! local variables
@@ -127,7 +131,7 @@ contains
           if (chkerr(rc,__LINE__,u_FILE_u)) return
        end if
     end do
-    
+
     ! initialize pointers to export fields
     call dshr_state_getfldptr(exportState,'Si_ifrac',fldptr1=Si_ifrac, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return

@@ -1,7 +1,6 @@
 module datm_pres_ndep_mod
 
   use ESMF             , only : ESMF_SUCCESS, ESMF_State, ESMF_StateItem_Flag
-  use ESMF             , only : ESMF_STATEITEM_NOTFOUND
   use shr_kind_mod     , only : r8=>shr_kind_r8
   use shr_log_mod      , only : shr_log_error
   use dshr_methods_mod , only : dshr_state_getfldptr, chkerr
@@ -55,7 +54,6 @@ contains
     integer                , intent(out)   :: rc
 
     ! local variables
-    type(ESMF_StateItem_Flag) :: itemFlag
     character(len=*), parameter :: subname='(datm_ndep_init_pointers): '
     !----------------------------------------------------------
 
@@ -104,7 +102,7 @@ contains
        ! assume data is in kgN/m2/s
        Faxa_ndep(1,:) = strm_ndep_nhx_dry(:) + strm_ndep_nhx_wet(:)
        Faxa_ndep(2,:) = strm_ndep_noy_dry(:) + strm_ndep_noy_wet(:)
-    else 
+    else
        ! convert ndep flux to units of kgN/m2/s (input is in gN/m2/s)
        Faxa_ndep(1,:) = strm_ndep_nhx(:) / 1000._r8
        Faxa_ndep(2,:) = strm_ndep_noy(:) / 1000._r8

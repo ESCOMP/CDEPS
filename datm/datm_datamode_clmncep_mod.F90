@@ -265,17 +265,17 @@ contains
        return
     end if
     if ( .not. associated(strm_Sa_shum) .and. &
-         .not. associated(strm_Sa_rh)   .and. & 
+         .not. associated(strm_Sa_rh)   .and. &
          .not. associated(strm_Sa_tdew)) then
-       call shr_log_error(subname//'ERROR: one of strm_Sa_shum, strm_Sa_rh or strm_Sa_tdew &
-            must for associated to compute specific humidity in clmncep datamode')
+       call shr_log_error(subname//'ERROR: one of strm_Sa_shum, strm_Sa_rh or strm_Sa_tdew ' &
+            //'must for associated to compute specific humidity in clmncep datamode')
        return
     endif
     if ( .not. associated(strm_Faxa_swdndf) .and. &
          .not. associated(strm_Faxa_swdndr) .and. &
          .not. associated(strm_Faxa_swdn)) then
-       call shr_log_error(subName//'ERROR: either strm_Faxa_swdndf and strm_faxa_swdndr .or strm_faxa_swdn &
-            must be associated for computing short-wave down in clmncep datamode')
+       call shr_log_error(subName//'ERROR: either strm_Faxa_swdndf and strm_faxa_swdndr .or strm_faxa_swdn ' &
+            //'must be associated for computing short-wave down in clmncep datamode')
        return
     endif
 

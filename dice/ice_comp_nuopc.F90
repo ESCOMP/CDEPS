@@ -278,7 +278,7 @@ contains
     endif
 
     ! Advertise import and export fields
-    if ( trim(datamode) == 'ssmi' .or. trim(datamode) == 'ssmi_iaf') then 
+    if ( trim(datamode) == 'ssmi' .or. trim(datamode) == 'ssmi_iaf') then
       call NUOPC_CompAttributeGet(gcomp, name='flds_i2o_per_cat', value=cvalue, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
       read(cvalue,*) flds_i2o_per_cat  ! module variable
@@ -508,7 +508,8 @@ contains
           call dice_datamode_ssmi_init_pointers(importState, exportState, sdat, flds_i2o_per_cat, rc)
           if (chkerr(rc,__LINE__,u_FILE_u)) return
        case('cplhist')
-          call dice_datamode_cplhist_init_pointers(importState,exportState,sdat,rc)
+          call dice_datamode_cplhist_init_pointers(importState,exportState, sdat, &
+               flds_scalar_name, logunit, mainproc, rc)
           if (chkerr(rc,__LINE__,u_FILE_u)) return
        end select
 
@@ -520,7 +521,7 @@ contains
           case('ssmi', 'ssmi_iaf')
              call dice_datamode_ssmi_restart_read(restfilm, rpfile, logunit, my_task, mpicom, sdat)
           case('cplhist')
-             call dice_datamode_cplhist_restart_read(restfilm, rpfile, logunit, my_task, mpicom, sdat) 
+             call dice_datamode_cplhist_restart_read(restfilm, rpfile, logunit, my_task, mpicom, sdat)
           end select
        end if
 
@@ -551,8 +552,8 @@ contains
             flux_swpf, flux_Qmin, flux_Qacc, flux_Qacc0, dt, logunit, restart_read, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('cplhist')
-       call dice_datamode_cplhist_advance(rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return 
+       call dice_datamode_cplhist_advance(sdat, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end select
 
     ! Write restarts if needed
