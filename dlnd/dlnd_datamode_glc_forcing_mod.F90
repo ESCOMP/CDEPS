@@ -4,6 +4,7 @@ module dlnd_datamode_glc_forcing_mod
    use ESMF             , only : ESMF_StateItem_Flag, ESMF_GridComp
    use NUOPC            , only : NUOPC_CompAttributeGet, NUOPC_Advertise
    use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
+   use shr_log_mod      , only : shr_log_error
    use dshr_methods_mod , only : dshr_state_getfldptr, chkerr
    use dshr_strdata_mod , only : shr_strdata_type
    use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
@@ -139,7 +140,9 @@ contains
             strm_flds_topo(n) = 'Sl_topo_elev'   // trim(nec_str)
             strm_flds_qice(n) = 'Flgl_qice_elev' // trim(nec_str)
          end do
-
+      else
+         call shr_log_error(subname//'ERROR illegal datamode = '//trim(datamode), rc=rc)
+         return
       end if
 
       ! The following maps stream input fields to export fields that have an ungridded dimension

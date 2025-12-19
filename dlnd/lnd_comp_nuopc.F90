@@ -469,6 +469,9 @@ contains
        case('rof_forcing')
           call dlnd_datamode_rof_forcing_init_pointers(exportState, sdat, dfields, model_frac, logunit, mainproc, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       case default
+          call shr_log_error(' ERROR illegal dlnd datamode = '//trim(datamode), rc=rc)
+          return
        end select
 
        first_time = .false.
@@ -497,6 +500,9 @@ contains
     else if (trim(datamode) == 'rof_forcing') then
        call dlnd_datamode_rof_forcing_advance(exportState, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    else
+       call shr_log_error(' ERROR illegal dlnd datamode = '//trim(datamode), rc=rc)
+       return
     end if
 
     call ESMF_TraceRegionExit('DLND_RUN')
