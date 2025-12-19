@@ -184,20 +184,6 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'Faxa_precn'     , strm_precn , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Faxa_rh_16O'    , strm_rh_16O, rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Faxa_rh_18O'    , strm_rh_18O   , rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Faxa_rh_HDO'    , strm_rh_HDO   , rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Faxa_precn_16O' , strm_precn_16O, rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Faxa_precn_18O' , strm_precn_18O, rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Faxa_precn_HDO' , strm_precn_HDO, rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Faxa_precn_HDO' , strm_precn_HDO, rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! initialize pointers for module level stream arrays for bias correction
     call shr_strdata_get_stream_pointer( sdat, 'Faxa_precsf'   , strm_precsf   , rc)

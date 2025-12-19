@@ -729,6 +729,30 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_TraceRegionExit('datm_strdata_advance')
 
+    ! update export state co2 if appropriate
+    if (flds_co2) then
+       call datm_pres_co2_advance()
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    end if
+
+    ! update export state o3 if appropriate
+    if (flds_preso3) then
+       call datm_pres_o3_advance()
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    end if
+
+    ! ungridded dimension output - update export state nitrogen deposition if appropriate
+    if (flds_presndep) then
+       call datm_pres_ndep_advance()
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    end if
+
+    ! ungridded dimension output - upate prescribed aerosol if appropriate
+    if (flds_presaero) then
+       call datm_pres_aero_advance()
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    end if
+
     ! copy all fields from streams to export state as default
     ! This automatically will update the fields in the export state
     call ESMF_TraceRegionEnter('datm_dfield_copy')
@@ -810,13 +834,10 @@ contains
       integer, intent(out)   :: rc
 
       ! local variables
-      integer                         :: n
-      character(CS)                   :: strm_flds2(2)
-      character(CS)                   :: strm_flds3(3)
-      character(CS)                   :: strm_flds4(4)
-      integer                         :: rank
-      integer                         :: fieldcount
-      type(ESMF_Field)                :: lfield
+      integer          :: n
+      integer          :: rank
+      integer          :: fieldcount
+      type(ESMF_Field) :: lfield
       character(ESMF_MAXSTR) ,pointer :: lfieldnames(:)
       character(*), parameter   :: subName = "(datm_init_dfields) "
       !-------------------------------------------------------------------------------
@@ -834,13 +855,13 @@ contains
          if (chkerr(rc,__LINE__,u_FILE_u)) return
          call ESMF_FieldGet(lfield, rank=rank, rc=rc)
          if (chkerr(rc,__LINE__,u_FILE_u)) return
-         if (rank == 1) then
+         ! Currently rank==2 fields are handled in datm_pres_aero_mod.F90, datm_pres_co2_mod.F90
+         ! and datm_pres_ndep_mod.F90
+         ! The rank one Sa_o3 field is handled in datm_pres_o3_mod.F90
+         if (rank == 1 .and. trim(lfieldnames(n)) /= 'Sa_o3') then
             call dshr_dfield_add( dfields, sdat, trim(lfieldnames(n)), trim(lfieldnames(n)), &
                  exportState, logunit, mainproc, rc=rc)
             if (ChkErr(rc,__LINE__,u_FILE_u)) return
-         else if (rank == 2) then
-          call shr_log_error(subName//'rank == 2 pointers no longer supported in datm_init_dfields')
-          return
          end if
       end do
     end subroutine datm_init_dfields
