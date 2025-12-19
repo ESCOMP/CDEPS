@@ -2017,7 +2017,35 @@ contains
     if (stream_nlev > 1) then
        allocate(compdof3d(stream_nlev*lsize))
        ! Assume that first 2 dimensions correspond to the compdof
-       gsize2d = dimlens(1)*dimlens(2)
+       if (trim(dimname) == 'time' .or. trim(dimname) == 'nt') then
+          if (ndims == 3) then
+             ! second dimension is lev and third dimension is time
+             gsize2d = dimlens(1)
+          else if (ndims == 4) then
+             ! third dimension is lev and fourth dimension is time
+             gsize2d = dimlens(1)*dimlens(2)
+          else
+             write(6,*)'ERROR: dimlens= ',dimlens
+             call shr_log_error(trim(subname)//' only ndims of 3 and 4 &
+                  total dimensions are currently supported for multiple level fields &
+                  with a time dimension', rc=rc)
+             return
+          end if
+       else
+          if (ndims == 2) then
+             ! second dimension is lev
+             gsize2d = dimlens(1)
+          else if (ndims == 3) then
+             ! third dimension is lev
+             gsize2d = dimlens(1)*dimlens(2)
+          else
+             write(6,*)'ERROR: dimlens= ',dimlens
+             call shr_log_error(trim(subname)//' only ndims of 2 and 3 &
+                  total dimensions are currently supported for multiple level fields &
+                  without a time dimension', rc=rc)
+             return
+          end if
+       end if
        cnt = 0
        do n = 1,stream_nlev
           do m = 1,size(compdof)
@@ -2036,7 +2064,8 @@ contains
        if (trim(dimname) == 'time' .or. trim(dimname) == 'nt') then
           if (sdat%mainproc) then
              write(sdat%stream(1)%logunit,F03) 'setting iodesc for : '//trim(fldname)// &
-                  ' with dimlens(1) = ',dimlens(1),' and the variable has a time dimension '
+                  ' with dimlens(1) = ',dimlens(1),&
+                  ' and the variable has a time dimension '//trim(dimname)
           end if
           call pio_initdecomp(sdat%pio_subsystem, pio_iovartype, (/dimlens(1)/), compdof, &
                per_stream%stream_pio_iodesc)
@@ -2044,7 +2073,7 @@ contains
           if (sdat%mainproc) then
              write(sdat%stream(1)%logunit,F00) 'setting iodesc for : '//trim(fldname)// &
                   ' with dimlens(1), dimlens(2) = ',dimlens(1),dimlens(2),&
-                  ' variable has no time dimension '
+                  ' and the variable has no time dimension '
           end if
           call pio_initdecomp(sdat%pio_subsystem, pio_iovartype, (/dimlens(1),dimlens(2)/), compdof, &
                per_stream%stream_pio_iodesc)
@@ -2052,20 +2081,23 @@ contains
 
     else if (ndims == 3) then
        rcode = pio_inq_dimname(pioid, dimids(ndims), dimname)
-       if (stream_nlev > 1) then
-          write(sdat%stream(1)%logunit,F01) 'setting iodesc for : '//trim(fldname)// &
-               ' with dimlens(1), dimlens(2), dimlens(3) = ',dimlens(1),dimlens(2), dimlens(3), &
-               ' variable has no time dimension '//trim(dimname)
-          call pio_initdecomp(sdat%pio_subsystem, pio_iovartype, (/dimlens(1),dimlens(2),dimlens(3)/), compdof3d, &
-               per_stream%stream_pio_iodesc)
-       else if (trim(dimname) == 'time' .or. trim(dimname) == 'nt') then
+       if (trim(dimname) == 'time' .or. trim(dimname) == 'nt') then
           if (sdat%mainproc) then
              write(sdat%stream(1)%logunit,F01) 'setting iodesc for : '//trim(fldname)// &
                   ' with dimlens(1), dimlens(2) = ',dimlens(1),dimlens(2),&
-                  ' variable as time dimension '//trim(dimname)
+                  ' and the variable has a time dimension '//trim(dimname)
           end if
           call pio_initdecomp(sdat%pio_subsystem, pio_iovartype, (/dimlens(1),dimlens(2)/), compdof, &
                per_stream%stream_pio_iodesc)
+       else
+          if (sdat%mainproc) then
+             write(sdat%stream(1)%logunit,F01) 'setting iodesc for : '//trim(fldname)// &
+                  ' with dimlens(1), dimlens(2), dimlens(3) = ',dimlens(1),dimlens(2), dimlens(3), &
+                  ' and the variable has no time dimension '
+          end if
+          call pio_initdecomp(sdat%pio_subsystem, pio_iovartype, (/dimlens(1),dimlens(2),dimlens(3)/), compdof3d, &
+               per_stream%stream_pio_iodesc)
+
        end if
 
     else if (ndims == 4) then
@@ -2074,13 +2106,13 @@ contains
           if (sdat%mainproc) then
              write(sdat%stream(1)%logunit,F02) 'setting iodesc for : '//trim(fldname)// &
                   ' with dimlens(1), dimlens(2),dimlens(3) = ',dimlens(1),dimlens(2),dimlens(3),&
-                  ' variable has time dimension '
+                  ' and the variable has a time dimension '//trim(dimname)
           end if
           call pio_initdecomp(sdat%pio_subsystem, pio_iovartype, (/dimlens(1),dimlens(2),dimlens(3)/), compdof3d, &
                per_stream%stream_pio_iodesc)
        else
           write(6,*)'ERROR: dimlens= ',dimlens
-          call shr_log_error(trim(subname)//' dimlens = 4 assumes a time dimension', rc=rc)
+          call shr_log_error(trim(subname)//' dimlens = 4 assumes a time dimension and vertical levels', rc=rc)
           return
        end if
 
