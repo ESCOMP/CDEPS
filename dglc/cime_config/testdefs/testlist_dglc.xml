@@ -30,7 +30,6 @@
 
   <test compset="DATAMODELTEST" grid="f10_f10_ais8gris4_mg37" name="SMS_D_Ld3">
     <machines>
-      <machine name="derecho" compiler="gnu" category="aux_cdeps"/>
       <machine name="derecho" compiler="gnu" category="aux_cdeps_noresm"/>
     </machines>
     <options>
