@@ -19,8 +19,8 @@ jobs:
       CPPFLAGS: "-I/usr/include -I/usr/local/include "
       LDFLAGS: "-L/usr/lib/x86_64-linux-gnu "
       # Versions of all dependencies can be updated here - these match tag names in the github repo
-      ESMF_VERSION: v8.6.1
-      ParallelIO_VERSION: pio2_6_2
+      ESMF_VERSION: v8.9.0
+      ParallelIO_VERSION: pio2_6_6
     steps:
       - id: checkout-CDEPS
         uses: actions/checkout@v4
@@ -49,7 +49,7 @@ jobs:
           enable_fortran: True
           install_prefix: ${GITHUB_WORKSPACE}/pio
       - name: Install ESMF
-        uses: esmf-org/install-esmf-action@v1
+        uses: esmf-org/install-esmf-action@v1.0.2
         env:
           ESMF_COMPILER: gfortran
           ESMF_BOPT: g
