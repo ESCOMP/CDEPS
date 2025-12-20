@@ -33,7 +33,6 @@ CONTAINS
 
     !----- local -----
     type(ESMF_VM)      :: vm
-    integer            :: i                      ! Indices
     integer            :: unitn                  ! namelist unit number
     integer            :: ierr                   ! error code
     logical            :: exists                 ! if file exists or not
