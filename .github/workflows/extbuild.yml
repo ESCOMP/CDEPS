@@ -39,8 +39,8 @@ jobs:
         id: cache-PARALLELIO
         uses: actions/cache@v4
         with:
-          path: ${GITHUB_WORKSPACE}/pio
-          key: ${{ runner.os }}-${{ env.ParallelIO_VERSION }}-parallelio2
+          path: /home/runner/work/CDEPS/CDEPS/pio
+          key: ${{ runner.os }}-${{ env.ParallelIO_VERSION }}-parallelio
       - name: Build ParallelIO
         if: steps.cache-PARALLELIO.outputs.cache-hit != 'true'
         uses: NCAR/ParallelIO/.github/actions/parallelio_cmake@9390e30e29d4ebbfbef0fc72162cacd9e8f25e4e
