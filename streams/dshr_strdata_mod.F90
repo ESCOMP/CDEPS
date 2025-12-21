@@ -2127,7 +2127,8 @@ contains
                   per_stream%stream_pio_iodesc)
           else
              write(6,*)'ERROR: dimlens= ',dimlens
-             call shr_log_error(trim(subname)//' the third dimension of a 3d field must be either time or a vertical level')
+             call shr_log_error(trim(subname)//&
+                  ' the third dimension of a 3d field must be either time or a vertical level', rc-rc)
              return
           end if
        end if
@@ -2146,13 +2147,13 @@ contains
                per_stream%stream_pio_iodesc)
        else
           write(6,*)'ERROR: dimlens= ',dimlens
-          call shr_log_error(trim(subname)//' dimlens = 4 assumes a time dimension and a vertical dimension')
+          call shr_log_error(trim(subname)//' dimlens = 4 assumes a time dimension and a vertical dimension', rc=rc)
           return
        end if
 
     else
        write(6,*)'ERROR: dimlens= ',dimlens
-       call shr_log_error(trim(subname)//' only ndims of 2 and 3 and 4 are currently supported')
+       call shr_log_error(trim(subname)//' only ndims of 2 and 3 and 4 are currently supported', rc=rc)
        return
     end if
 
@@ -2183,9 +2184,7 @@ contains
     integer :: logunit
     logical :: mainproc
     logical :: found
-    integer :: logunit
-    logical :: mainproc
-    character(len=*), parameter :: subname='(shr_strdata_get_stream_pointer_1d)'
+    character(len=*), parameter :: subname='(shr_strdata_get_stream_pointer_1d) '
     character(*)    , parameter :: F00 = "('(shr_strdata_get_stream_pointer_1d) ',8a)"
     ! ----------------------------------------------
 
@@ -2251,9 +2250,7 @@ contains
     integer :: logunit
     logical :: mainproc
     logical :: found
-    integer :: logunit
-    logical :: mainproc
-    character(len=*), parameter :: subname='(shr_strdata_get_stream_pointer_2d)'
+    character(len=*), parameter :: subname='(shr_strdata_get_stream_pointer_2d) '
     character(*)    , parameter :: F00 = "('(shr_strdata_get_stream_pointer_2d) ',8a)"
     ! ----------------------------------------------
 
