@@ -14,7 +14,7 @@ module dshr_methods_mod
   use ESMF         , only : ESMF_TraceRegionEnter, ESMF_TraceRegionExit
   use shr_kind_mod , only : r8=>shr_kind_r8, cs=>shr_kind_cs, cl=>shr_kind_cl
   use shr_log_mod  , only : shr_log_error
-  
+
   implicit none
   public
 
@@ -54,6 +54,7 @@ contains
     integer          ,          intent(out)             :: rc
 
     ! local variables
+    integer                     :: ni, nj
     type(ESMF_Field)            :: lfield
     integer                     :: itemCount
     character(len=*), parameter :: subname='(dshr_state_getfldptr)'
@@ -74,7 +75,9 @@ contains
         if (chkerr(rc,__LINE__,u_FILE_u)) return
       else
         ! the call to just returns if it cannot find the field
-        call ESMF_LogWrite(trim(subname)//" Could not find the field: "//trim(fldname)//" just returning", ESMF_LOGMSG_INFO)
+         call ESMF_LogWrite(trim(subname)//" Could not find the field: "//trim(fldname)//&
+              " just returning", ESMF_LOGMSG_INFO)
+        return
       end if
     else
       call ESMF_StateGet(State, itemName=trim(fldname), field=lfield, rc=rc)
@@ -82,6 +85,19 @@ contains
 
       call dshr_field_getfldptr(lfield, fldptr1=fldptr1, fldptr2=fldptr2, rc=rc)
       if (chkerr(rc,__LINE__,u_FILE_u)) return
+    end if
+
+    ! Initialize pointer value
+    if (present(fldptr1)) then
+       do ni = 1,size(fldptr1)
+          fldptr1(ni) = huge(1._r8)
+       end do
+    else if (present(fldptr2)) then
+       do nj = 1,size(fldptr2, dim=2)
+          do ni = 1,size(fldptr2, dim=1)
+             fldptr2(ni,nj) = huge(1._r8)
+          end do
+       end do
     end if
 
   end subroutine dshr_state_getfldptr

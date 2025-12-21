@@ -82,14 +82,14 @@ contains
     call shr_strdata_get_stream_pointer( sdat, 'Faxa_ndep_noy', strm_ndep_noy, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    ! error checks
+    ! determine use_cmip_ndep module variable
     if (associated(strm_ndep_nhx_dry) .and. associated(strm_ndep_nhx_wet) .and. &
         associated(strm_ndep_noy_dry) .and. associated(strm_ndep_noy_wet)) then
        use_cmip7_ndep = .true.
     else if (associated(strm_ndep_nhx) .and. associated(strm_ndep_noy)) then
        use_cmip7_ndep = .false.
     else
-       call shr_log_error('datm_ndep_advance: ERROR: no associated stream pointers for ndep forcing')
+       call shr_log_error('datm_ndep_advance: ERROR: no associated stream pointers for ndep forcing', rc=rc)
        return
     end if
 

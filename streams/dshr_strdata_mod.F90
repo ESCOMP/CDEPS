@@ -45,7 +45,6 @@ module dshr_strdata_mod
   use dshr_methods_mod , only : dshr_fldbun_getfldptr, dshr_fldbun_getfieldN, dshr_fldbun_fldchk, chkerr
   use dshr_methods_mod , only : dshr_fldbun_diagnose, dshr_fldbun_regrid, dshr_field_getfldptr
   use shr_sys_mod      , only : shr_sys_abort
-
   use pio              , only : file_desc_t, iosystem_desc_t, io_desc_t, var_desc_t
   use pio              , only : pio_openfile, pio_closefile, pio_nowrite
   use pio              , only : pio_seterrorhandling, pio_initdecomp, pio_freedecomp
@@ -2099,83 +2098,139 @@ contains
   end subroutine shr_strdata_set_stream_iodesc
 
   !===============================================================================
-  subroutine shr_strdata_get_stream_pointer_1d(sdat, strm_fld, strm_ptr, rc)
+  subroutine shr_strdata_get_stream_pointer_1d(sdat, strm_fld, strm_ptr, &
+       rc, requirePointer, errmsg)
 
     ! Set a pointer, strm_ptr, for field, strm_fld, into sdat fldbun_model field bundle
 
     ! input/output variables
-    type(shr_strdata_type) , intent(in)    :: sdat
-    character(len=*)       , intent(in)    :: strm_fld
-    real(r8)               , pointer       :: strm_ptr(:)
-    integer                , intent(out)   :: rc
+    type(shr_strdata_type)     , intent(in)    :: sdat
+    character(len=*)           , intent(in)    :: strm_fld
+    real(r8)                   , pointer       :: strm_ptr(:)
+    integer                    , intent(out)   :: rc
+    logical,          optional , intent(in)    :: requirePointer
+    character(len=*), optional , intent(in)    :: errmsg
 
     ! local variables
-    integer :: ns, nf
+    integer :: ns, nf, ni
+    integer :: logunit
+    logical :: mainproc
     logical :: found
-    character(len=*), parameter :: subname='(shr_strdata_get_stream_pointer_1d)'
+    character(len=*), parameter :: subname='(shr_strdata_get_stream_pointer_1d) '
     character(*)    , parameter :: F00 = "('(shr_strdata_get_stream_pointer_1d) ',8a)"
     ! ----------------------------------------------
 
     rc = ESMF_SUCCESS
 
+    logunit = sdat%stream(1)%logunit
+    mainproc = sdat%mainproc
+    found = .false.
+
     ! loop over all input streams and determine if the strm_fld is in the field bundle of the target stream
-    do ns = 1, shr_strdata_get_stream_count(sdat)
-       found = .false.
-       ! Check if requested stream field is read in - and if it is then point into the stream field bundle
-       do nf = 1,size(sdat%pstrm(ns)%fldlist_model)
+    stream_loop: do ns = 1, shr_strdata_get_stream_count(sdat)
+       ! Check if requested stream field is read in - and if it is set pointer
+       fld_loop: do nf = 1,size(sdat%pstrm(ns)%fldlist_model)
           if (trim(strm_fld) == trim(sdat%pstrm(ns)%fldlist_model(nf))) then
              call dshr_fldbun_getfldptr(sdat%pstrm(ns)%fldbun_model, trim(sdat%pstrm(ns)%fldlist_model(nf)), &
                   fldptr1=strm_ptr, rc=rc)
              if (chkerr(rc,__LINE__,u_FILE_u)) return
-             if (sdat%mainproc) then
-                write(sdat%stream(1)%logunit,F00)' strm_ptr is allocated for stream field strm_'//trim(strm_fld)
-             end if
              found = .true.
-             exit
+             exit stream_loop
           end if
+       end do fld_loop
+    end do stream_loop
+
+    if (found) then
+       ! If pointer found, preset value
+       if (mainproc) then
+          write(logunit,F00)' strm_ptr is allocated and preset to huge for stream field strm_'//trim(strm_fld)
+       end if
+       do ni = 1,size(strm_ptr)
+          strm_ptr(ni) = huge(1._r8)
        end do
-       if (found) exit
-    end do
+    else
+       ! What to do if fldbun pointer is not found
+       if (present(requirePointer)) then
+          if (requirePointer) then
+             if (present(errmsg)) then
+                if (sdat%mainproc) write(sdat%stream(1)%logunit,F00) trim(errmsg)
+             end if
+             call shr_log_error(subName//"ERROR: pointer not found for "//trim(strm_fld), rc=rc)
+             return
+          end if
+       end if
+    end if
+
   end subroutine shr_strdata_get_stream_pointer_1d
 
   !===============================================================================
-  subroutine shr_strdata_get_stream_pointer_2d(sdat, strm_fld, strm_ptr, rc)
+  subroutine shr_strdata_get_stream_pointer_2d(sdat, strm_fld, strm_ptr, &
+       rc, requirePointer, errmsg)
 
     ! Set a pointer, strm_ptr, for field, strm_fld, into sdat fldbun_model field bundle
 
     ! input/output variables
-    type(shr_strdata_type) , intent(in)    :: sdat
-    character(len=*)       , intent(in)    :: strm_fld
-    real(r8)               , pointer       :: strm_ptr(:,:)
-    integer                , intent(out)   :: rc
+    type(shr_strdata_type)     , intent(in)    :: sdat
+    character(len=*)           , intent(in)    :: strm_fld
+    real(r8)                   , pointer       :: strm_ptr(:,:)
+    integer                    , intent(out)   :: rc
+    logical,          optional , intent(in)    :: requirePointer
+    character(len=*), optional , intent(in)    :: errmsg
 
     ! local variables
-    integer :: ns, nf
+    integer :: ns, nf, ni, nj
+    integer :: logunit
+    logical :: mainproc
     logical :: found
-    character(len=*), parameter :: subname='(shr_strdata_get_stream_pointer_2d)'
+    character(len=*), parameter :: subname='(shr_strdata_get_stream_pointer_2d) '
     character(*)    , parameter :: F00 = "('(shr_strdata_get_stream_pointer_2d) ',8a)"
     ! ----------------------------------------------
 
     rc = ESMF_SUCCESS
 
+    logunit = sdat%stream(1)%logunit
+    mainproc = sdat%mainproc
+    found = .false.
+
     ! loop over all input streams and determine if the strm_fld is in the field bundle of the target stream
-    do ns = 1, shr_strdata_get_stream_count(sdat)
-       found = .false.
-       ! Check if requested stream field is read in - and if it is then point into the stream field bundle
-       do nf = 1,size(sdat%pstrm(ns)%fldlist_model)
+    stream_loop: do ns = 1, shr_strdata_get_stream_count(sdat)
+       ! Check if requested stream field is read in - and if it is set pointer
+       fld_loop: do nf = 1,size(sdat%pstrm(ns)%fldlist_model)
           if (trim(strm_fld) == trim(sdat%pstrm(ns)%fldlist_model(nf))) then
              call dshr_fldbun_getfldptr(sdat%pstrm(ns)%fldbun_model, trim(sdat%pstrm(ns)%fldlist_model(nf)), &
                   fldptr2=strm_ptr, rc=rc)
              if (chkerr(rc,__LINE__,u_FILE_u)) return
-             if (sdat%mainproc) then
-                write(sdat%stream(1)%logunit,F00)' strm_ptr is allocated for stream field strm_'//trim(strm_fld)
-             end if
              found = .true.
-             exit
+             exit stream_loop
           end if
+       end do fld_loop
+    end do stream_loop
+
+    if (found) then
+       ! If pointer found, preset value
+       if (mainproc) then
+          write(logunit,F00)' strm_ptr is allocated and preset to huge for stream field strm_'//trim(strm_fld)
+       end if
+       do nj = 1,size(strm_ptr, dim=2)
+          do ni = 1,size(strm_ptr, dim=1)
+             strm_ptr(ni,nj) = huge(1._r8)
+          end do
        end do
-       if (found) exit
-    end do
+    else
+       ! What to do if fldbun pointer is not found
+       if (present(requirePointer)) then
+          if (requirePointer) then
+             if (present(errmsg)) then
+                if (mainproc) then
+                   write(logunit,F00) trim(errmsg)
+                end if
+             end if
+             call shr_log_error(subName//"ERROR: pointer not found for "//trim(strm_fld), rc=rc)
+             return
+          end if
+       end if
+    end if
+
   end subroutine shr_strdata_get_stream_pointer_2d
 
 end module dshr_strdata_mod
