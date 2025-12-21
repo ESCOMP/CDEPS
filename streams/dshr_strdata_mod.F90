@@ -2031,9 +2031,9 @@ contains
              gsize2d = dimlens(1)*dimlens(2)
           else
              write(6,*)'ERROR: dimlens= ',dimlens
-             call shr_log_error(trim(subname)//' only ndims of 3 and 4 &
-                  total dimensions are currently supported for multiple level fields &
-                  with a time dimension', rc=rc)
+             call shr_log_error(trim(subname)//' only ndims of 3 and 4 '//&
+                  ' total dimensions are currently supported for multiple level fields '// &
+                  ' with a time dimension', rc=rc)
              return
           end if
        else
@@ -2045,9 +2045,9 @@ contains
              gsize2d = dimlens(1)*dimlens(2)
           else
              write(6,*)'ERROR: dimlens= ',dimlens
-             call shr_log_error(trim(subname)//' only ndims of 2 and 3 &
-                  total dimensions are currently supported for multiple level fields &
-                  without a time dimension', rc=rc)
+             call shr_log_error(trim(subname)//' only ndims of 2 and 3'// &
+                  ' total dimensions are currently supported for multiple level fields'// &
+                  ' without a time dimension', rc=rc)
              return
           end if
        end if
@@ -2087,7 +2087,7 @@ contains
        else
           if (mainproc) then
              write(logunit,F01) 'setting iodesc for 2d: '//trim(fldname)// &
-                  ' with dimlens(1),dimlens(2) = ',dimlens(1),dimlens(2),&
+                  ' with dimlens(1),dimlens(2) = ',dimlens(1),dimlens(2), &
                   ' and the variable has no time or vertical dimension '
           end if
           call pio_initdecomp(sdat%pio_subsystem, pio_iovartype, (/dimlens(1),dimlens(2)/), compdof, &
@@ -2128,7 +2128,7 @@ contains
           else
              write(6,*)'ERROR: dimlens= ',dimlens
              call shr_log_error(trim(subname)//&
-                  ' the third dimension of a 3d field must be either time or a vertical level', rc-rc)
+                  ' the third dimension of a 3d field must be either time or a vertical level', rc=rc)
              return
           end if
        end if
