@@ -4868,7 +4868,7 @@
       <meshfile>$DIN_LOC_ROOT/atm/ndep/cmip7/ndep_input4MIPs_surfaceFluxes_ESMFmesh_cdf5_c20251211.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file>$DIN_LOC_ROOT/atm/ndep/cmip7/ndep_input4MIPs_surfaceFluxes_CMIP_FZJ-CMIP-nitrogen-1-2_gn_185001-202212.nc</file>
+      <file>$DIN_LOC_ROOT/atm/ndep/cmip7/ndep_input4MIPs_surfaceFluxes_CMIP_FZJ-CMIP-nitrogen-1-2_gn_185001-185012-clim_c20251222.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <!-- the following stream fields are in units of kg/m2/sec - so need no unit conversion -->
@@ -4903,7 +4903,7 @@
       <meshfile>$DIN_LOC_ROOT/atm/ndep/cmip7/ndep_input4MIPs_surfaceFluxes_ESMFmesh_cdf5_c20251211.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file>$DIN_LOC_ROOT/atm/ndep/cmip7/ndep_input4MIPs_surfaceFluxes_CMIP_FZJ-CMIP-nitrogen-1-2_gn_185001-202212.nc</file>
+      <file>$DIN_LOC_ROOT/atm/ndep/cmip7/ndep_input4MIPs_surfaceFluxes_CMIP_FZJ-CMIP-nitrogen-1-2_gn_185001-202212_c20251222.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <!-- the following stream fields are in units of kg/m2/sec - so need no unit conversion -->
