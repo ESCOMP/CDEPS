@@ -2032,9 +2032,9 @@ contains
              gsize2d = dimlens(1)*dimlens(2)
           else
              write(6,*)'ERROR: dimlens= ',dimlens
-             call shr_log_error(trim(subname)//' only ndims of 3 and 4 &
-                  total dimensions are currently supported for multiple level fields &
-                  with a time dimension', rc=rc)
+             call shr_log_error(trim(subname)//' only ndims of 3 and 4 '//&
+                  ' total dimensions are currently supported for multiple level fields '// &
+                  ' with a time dimension', rc=rc)
              return
           end if
        else
@@ -2046,9 +2046,9 @@ contains
              gsize2d = dimlens(1)*dimlens(2)
           else
              write(6,*)'ERROR: dimlens= ',dimlens
-             call shr_log_error(trim(subname)//' only ndims of 2 and 3 &
-                  total dimensions are currently supported for multiple level fields &
-                  without a time dimension', rc=rc)
+             call shr_log_error(trim(subname)//' only ndims of 2 and 3 '// &
+                  ' total dimensions are currently supported for multiple level fields '// &
+                  ' without a time dimension', rc=rc)
              return
           end if
        end if
