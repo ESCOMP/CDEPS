@@ -103,7 +103,6 @@ module dshr_stream_mod
      type(iosystem_desc_t), pointer :: pio_subsystem
      integer           :: pio_iotype
      integer           :: pio_ioformat
-     integer           :: logunit                               ! stdout log unit
      logical           :: init         = .false.                ! has stream been initialized
      integer           :: nFiles       = 0                      ! number of data files
      integer           :: yearFirst    = -1                     ! first year to use in t-axis (yyyymmdd)
@@ -138,6 +137,10 @@ module dshr_stream_mod
   !----- parameters -----
   integer                  :: debug = 0            ! edit/turn-on for debug write statements
   real(R8)     , parameter :: spd = shr_const_cday ! seconds per day
+
+  integer :: logout
+  logical :: mainproc
+
   character(*) , parameter :: u_FILE_u = &
        __FILE__
 
@@ -148,9 +151,10 @@ contains
 #ifndef DISABLE_FoX
   subroutine shr_stream_init_from_xml(streamfilename, streamdat, isroot_task, logunit, &
                                       pio_subsystem, io_type, io_format, compname, rc)
+
     use FoX_DOM, only : extractDataContent, destroy, Node, NodeList, parseFile, getElementsByTagname
     use FoX_DOM, only : getLength, item
-    use ESMF, only : ESMF_VM, ESMF_VMGetCurrent, ESMF_VMBroadCast, ESMF_SUCCESS
+    use ESMF   , only : ESMF_VM, ESMF_VMGetCurrent, ESMF_VMBroadCast, ESMF_SUCCESS
 
     ! ---------------------------------------------------------------------
     ! The xml format of a stream txt file will look like the following
@@ -206,7 +210,11 @@ contains
 
     nstrms = 0
 
-    if (isroot_task) then
+    ! Set module variables logout and mainproc
+    logout = logunit
+    mainproc = isroot_task
+
+    if (mainproc) then
 
        Sdoc => parseFile(streamfilename, iostat=status)
        if (status /= 0) then
@@ -216,7 +224,7 @@ contains
        streamlist => getElementsByTagname(Sdoc, "stream_info")
        nstrms = getLength(streamlist)
 
-       ! allocate an array of shr_streamtype objects on just isroot_task
+       ! allocate an array of shr_streamtype objects on just mainproc
        allocate(streamdat(nstrms))
 
        ! fill in non-default values for the streamdat attributes
@@ -365,7 +373,7 @@ contains
     call ESMF_VMBroadCast(vm, tmp, 1, 0, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     nstrms = tmp(1)
-    if (.not. isroot_task) then
+    if (.not. mainproc) then
        allocate(streamdat(nstrms))
     endif
 
@@ -385,7 +393,7 @@ contains
        streamdat(i)%yearLast  = tmp(4)
        streamdat(i)%yearAlign = tmp(5)
        streamdat(i)%offset    = tmp(6)
-       if(.not. isroot_task) then
+       if(.not. mainproc) then
           allocate(streamdat(i)%file(streamdat(i)%nfiles))
           allocate(streamdat(i)%varlist(streamdat(i)%nvars))
        endif
@@ -432,9 +440,6 @@ contains
        streamdat(i)%pio_iotype = io_type
        streamdat(i)%pio_ioformat = io_format
 #endif
-       ! Set logunit
-       streamdat(i)%logunit = logunit
-
        call shr_stream_getCalendar(streamdat(i), 1, streamdat(i)%calendar)
 
        ! Error check
@@ -445,7 +450,6 @@ contains
        ! initialize flag that stream has been set
        streamdat(i)%init = .true.
     enddo
-
 
   end subroutine shr_stream_init_from_xml
 
@@ -459,7 +463,7 @@ contains
        stream_yearFirst, stream_yearLast, stream_yearAlign, &
        stream_offset, stream_taxmode, stream_tintalgo, stream_dtlimit, &
        stream_fldlistFile, stream_fldListModel, stream_fileNames, &
-       logunit, compname, stream_src_mask_val, stream_dst_mask_val)
+       logunit, compname, isroot_task, stream_src_mask_val, stream_dst_mask_val)
 
     ! --------------------------------------------------------
     ! set values of stream datatype independent of a reading in a stream text file
@@ -486,6 +490,7 @@ contains
     character(*)                ,intent(in)              :: stream_filenames(:)    ! stream data filenames (full pathnamesa)
     integer                     ,intent(in)              :: logunit                ! stdout unit
     character(len=*)            ,intent(in)              :: compname               ! component name (e.g. ATM, OCN...)
+    logical                     ,intent(in)              :: isroot_task            ! mainproc
     integer                     ,optional, intent(in)    :: stream_src_mask_val    ! source mask value
     integer                     ,optional, intent(in)    :: stream_dst_mask_val    ! destination mask value
 
@@ -496,6 +501,12 @@ contains
     character(CS)          :: calendar ! stream calendar
     character(*),parameter :: subName = '(shr_stream_init_from_inline) '
     ! --------------------------------------------------------
+
+    ! Set module variagble logout
+    logout = logunit
+
+    ! Set module variable mainproc
+    mainproc = isroot_task
 
     ! Assume only 1 stream
     allocate(streamdat(1))
@@ -548,9 +559,6 @@ contains
        streamdat(1)%varlist(n)%nameinmodel = trim(stream_fldlistModel(n))
     end do
 
-    ! Initialize logunit
-    streamdat(:)%logunit = logunit
-
     ! Get stream calendar
     call shr_stream_getCalendar(streamdat(1), 1, calendar)
     streamdat(1)%calendar = trim(calendar)
@@ -565,13 +573,14 @@ contains
   end subroutine shr_stream_init_from_inline
 
   !===============================================================================
-  subroutine shr_stream_init_from_esmfconfig(streamfilename, streamdat, logunit,   &
+
+  subroutine shr_stream_init_from_esmfconfig(streamfilename, streamdat, logunit,  &
                             pio_subsystem, io_type, io_format, rc)
 
-    use esmf             , only : ESMF_VM, ESMF_VMGetCurrent, ESMF_VMBroadCast
-    use esmf             , only : ESMF_SUCCESS, ESMF_ConfigCreate, ESMF_ConfigLoadFile
-    use esmf             , only : ESMF_ConfigGetLen, ESMF_ConfigGetAttribute
-    use esmf             , only : ESMF_Config, ESMF_MAXSTR
+    use esmf , only : ESMF_VM, ESMF_VMGetCurrent, ESMF_VMBroadCast, ESMF_VMGet
+    use esmf , only : ESMF_SUCCESS, ESMF_ConfigCreate, ESMF_ConfigLoadFile
+    use esmf , only : ESMF_ConfigGetLen, ESMF_ConfigGetAttribute
+    use esmf , only : ESMF_Config, ESMF_MAXSTR
 
     !!---------------------------------------------------------------------
     !! The configuration file is a text file that can have following entries
@@ -609,20 +618,27 @@ contains
     type(ESMF_VM)            :: vm
     type(ESMF_Config)        :: cf
     integer                  :: i, n, nstrms
+    integer                  :: myid
     character(2)             :: mystrm
-    character(*),parameter   :: subName = '(shr_stream_init_from_esmfconfig)'
     character(len=ESMF_MAXSTR), allocatable :: strm_tmpstrings(:)
-    character(*) , parameter :: u_FILE_u = __FILE__
-
+    character(*), parameter  :: u_FILE_u = __FILE__
+    character(*), parameter  :: subName = '(shr_stream_init_from_esmfconfig)'
     ! ---------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
 
-    nstrms = 0
+    ! Set module variable logout
+    logout = logunit
 
-    ! allocate streamdat instance on all tasks
+    ! Set module variable mainproc
     call ESMF_VMGetCurrent(vm, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMGet(vm, localPet=myid, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    mainproc = (myid == 0)
+
+    ! allocate streamdat instance on all tasks
+    nstrms = 0
 
     ! set ESMF config
     cf =  ESMF_ConfigCreate(rc=RC)
@@ -633,7 +649,7 @@ contains
     nstrms = ESMF_ConfigGetLen(config=CF, label='stream_info:', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    ! allocate an array of shr_stream_streamtype objects on just isroot_task
+    ! allocate an array of shr_stream_streamtype objects on just mainproc
     if( nstrms > 0 ) then
       allocate(streamdat(nstrms))
     else
@@ -746,8 +762,6 @@ contains
       streamdat(i)%pio_subsystem => pio_subsystem
       streamdat(i)%pio_iotype = io_type
       streamdat(i)%pio_ioformat = io_format
-      ! Set logunit
-      streamdat(i)%logunit = logunit
 
       call shr_stream_getCalendar(streamdat(i), 1, streamdat(i)%calendar)
 
@@ -770,8 +784,9 @@ contains
     streamdat(:)%init = .true.
 
   end subroutine shr_stream_init_from_esmfconfig
+
   !===============================================================================
-  subroutine shr_stream_findBounds(strm, mDateIn, secIn, isroot_task, &
+  subroutine shr_stream_findBounds(strm, mDateIn, secIn, &
        mDateLB, dDateLB, secLB, n_lb, fileLB,  mDateUB, dDateUB, secUB, n_ub, fileUB)
 
     !-------------------------------------------------------------------------------
@@ -788,7 +803,6 @@ contains
     type(shr_stream_streamType) ,intent(inout):: strm        ! data stream to query
     integer                     ,intent(in)   :: mDateIn     ! model date (yyyymmdd)
     integer                     ,intent(in)   :: secIn       ! elapsed sec on model date
-    logical                     ,intent(in)   :: isroot_task ! is mpi task root communicator task
     integer                     ,intent(out)  :: mDateLB     ! model date    of LB
     integer                     ,intent(out)  :: dDateLB     ! data  date    of LB
     integer                     ,intent(out)  :: secLB       ! elap sec      of LB
@@ -823,15 +837,10 @@ contains
     logical  :: cycle         ! is cycling on or off
     logical  :: limit         ! is limiting on or off
     character(*),parameter :: subName = '(shr_stream_findBounds) '
-    character(*),parameter :: F00   = "('(shr_stream_findBounds) ',8a)"
-    character(*),parameter :: F01   = "('(shr_stream_findBounds) ',a,i9.8,a)"
-    character(*),parameter :: F02   = "('(shr_stream_findBounds) ',a,2i9.8,i6,i5,1x,a)"
-    character(*),parameter :: F03   = "('(shr_stream_findBounds) ',a,i4)"
-    character(*),parameter :: F04   = "('(shr_stream_findBounds) ',2a,i4)"
     !-------------------------------------------------------------------------------
 
-    if (debug>0 .and. isroot_task) then
-       write(strm%logunit,F02) "DEBUG: ---------- enter ------------------"
+    if (debug>0 .and. mainproc) then
+       write(logout,'(a,a)') trim(subname),"DEBUG: ---------- enter ------------------"
     end if
 
     if ( .not. strm%init ) then
@@ -865,23 +874,26 @@ contains
     n = 0
     if (cycle) then
        dYear  = yrFirst + modulo(mYear-yrAlign+(2*nYears),nYears)   ! current data year
-       if(debug>0 .and. isroot_task) then
-          write(strm%logunit, *) trim(subname), ' dyear, yrfirst, myear, yralign, nyears =', dyear, yrfirst, myear, yralign, nyears
+       if(debug>0 .and. mainproc) then
+          write(logout,'(2a,4(2x,i0))') trim(subname), ' dyear, yrfirst, myear, yralign, nyears =', &
+               dyear, yrfirst, myear, yralign, nyears
        endif
     else
        dYear  = yrFirst + mYear - yrAlign
     endif
 
     if (dYear < 0) then
-       write(strm%logunit,*) trim(subName),' ERROR: dyear lt zero = ',dYear
+       if (mainproc) then
+          write(logout,'(2a,2x,i0)') trim(subName),' ERROR: dyear lt zero = ',dYear
+       end if
        call shr_sys_abort(trim(subName)//' ERROR: dyear lt zero')
     endif
 
     dDateIn = dYear*10000 + modulo(mDateIn,10000) ! mDateIn mapped to range of data years
     rDateIn = dDateIn + secIn/spd                 ! dDateIn + fraction of a day
-    if (debug>0 .and. isroot_task) then
-       write(strm%logunit,'(a,2(i8,2x),2(f20.4,2x))') 'mYear,dYear,dDateIn,rDateIn  = ',mYear,dYear,dDateIn,rDateIn
-       write(strm%logunit,'(a,2(i8,2x),2(f20.4,2x))') 'yrFirst,yrLast,yrAlign,nYears= ',yrFirst,yrLast,yrAlign,nYears
+    if (debug>0 .and. mainproc) then
+       write(logout,'(a,2(i8,2x),2(f20.4,2x))') 'mYear,dYear,dDateIn,rDateIn  = ',mYear,dYear,dDateIn,rDateIn
+       write(logout,'(a,2(i8,2x),2(f20.4,2x))') 'yrFirst,yrLast,yrAlign,nYears= ',yrFirst,yrLast,yrAlign,nYears
     endif
 
     !----------------------------------------------------------------------------
@@ -891,7 +903,7 @@ contains
     if (.not. strm%found_lvd) then
        A:    do k=1,strm%nFiles
           if (.not. strm%file(k)%haveData) then
-             call shr_stream_readtCoord(strm, k, isroot_task, rCode)
+             call shr_stream_readtCoord(strm, k, rCode)
              if ( rCode /= 0 )then
                 call shr_sys_abort(trim(subName)//" ERROR: readtCoord1")
              end if
@@ -911,12 +923,14 @@ contains
        else
           !--- LVD is in or beyond yearFirst, verify it is not beyond yearLast ---
           if ( dDateL <= strm%file(strm%k_lvd)%date(strm%n_lvd) ) then
-             write(strm%logunit,F00)  "ERROR: LVD not found, all data is after yearLast"
+             if (mainproc) then
+                write(logout,'(2a)') trim(subname)," ERROR: LVD not found, all data is after yearLast"
+             end if
              call shr_sys_abort(trim(subName)//" ERROR: LVD not found, all data is after yearLast")
           end if
        end if
-       if (debug>1 .and. isroot_task ) then
-          if (strm%found_lvd) write(strm%logunit,F01) " found LVD = ",strm%file(k)%date(n)
+       if (debug>1 .and. mainproc) then
+          if (strm%found_lvd) write(logout,'(2a,2x,i0)') trim(subname)," found LVD = ",strm%file(k)%date(n)
        end if
     end if
 
@@ -925,7 +939,9 @@ contains
        n = strm%n_lvd
        rDatelvd = strm%file(k)%date(n) + strm%file(k)%secs(n)/spd ! LVD date + frac day
     else
-       write(strm%logunit,F00)  "ERROR: LVD not found yet"
+       if (mainproc) then
+          write(logout,'(2a)') trim(subname)," ERROR: LVD not found yet"
+       end if
        call shr_sys_abort(trim(subName)//" ERROR: LVD not found yet")
     endif
 
@@ -936,8 +952,8 @@ contains
     else
        rDategvd = 99991231.0
     endif
-    if (debug>0 .and. isroot_task) then
-       write(strm%logunit,'(a,3(f20.4,2x))') 'rDateIn,rDatelvd,rDategvd = ',rDateIn,rDatelvd,rDategvd
+    if (debug>0 .and. mainproc) then
+       write(logout,'(2a,3(f20.4,2x))') trim(subname),' rDateIn,rDatelvd,rDategvd = ',rDateIn,rDatelvd,rDategvd
     endif
 
     !-----------------------------------------------------------
@@ -949,7 +965,9 @@ contains
 
     if (rDateIn < rDatelvd) then
        if (limit) then
-          write(strm%logunit,*)  trim(subName)," ERROR: limit on and rDateIn lt rDatelvd",rDateIn,rDatelvd
+          if (mainproc) then
+             write(logout,'(2a,2(i0,2x))') trim(subName)," ERROR: limit on and rDateIn lt rDatelvd",rDateIn,rDatelvd
+          end if
           call shr_sys_abort(trim(subName)//" ERROR: rDateIn lt rDatelvd limit true")
        endif
 
@@ -979,7 +997,7 @@ contains
              B: do k=strm%nFiles,1,-1
                 !--- read data for file number k ---
                 if (.not. strm%file(k)%haveData) then
-                   call shr_stream_readtCoord(strm, k, isroot_task, rCode)
+                   call shr_stream_readtCoord(strm, k, rCode)
                    if ( rCode /= 0 )then
                       call shr_sys_abort(trim(subName)//" ERROR: readtCoord2")
                    end if
@@ -991,8 +1009,8 @@ contains
                       strm%n_gvd = n
                       strm%found_gvd = .true.
                       rDategvd = strm%file(k)%date(n) + strm%file(k)%secs(n)/spd ! GVD date + frac day
-                      if (debug>1 .and. isroot_task) then
-                         write(strm%logunit,F01) " found GVD ",strm%file(k)%date(n)
+                      if (debug>1 .and. mainproc) then
+                         write(logout,'(2a,i0)') trim(subname)," found GVD ",strm%file(k)%date(n)
                       end if
                       exit B
                    end if
@@ -1001,7 +1019,9 @@ contains
           end if
 
           if (.not. strm%found_gvd) then
-             write(strm%logunit,F00)  "ERROR: GVD not found1"
+             if (mainproc) then
+                write(logout,'(2a)') trim(subname)," ERROR: GVD not found1"
+             end if
              call shr_sys_abort(trim(subName)//" ERROR: GVD not found1")
           endif
 
@@ -1035,7 +1055,9 @@ contains
 
     else if (strm%found_gvd .and. rDateIn >= rDategvd) then
        if (limit) then
-          write(strm%logunit,*) trim(subName)," ERROR: limit on and rDateIn >= rDategvd",rDateIn,rDategvd
+          if (mainproc) then
+             write(logout,'(2a,2(d13.5,2x))') trim(subName)," ERROR: limit on and rDateIn >= rDategvd",rDateIn,rDategvd
+          end if
           call shr_sys_abort(trim(subName)//" ERROR: rDateIn >= rDategvd limit true")
        endif
 
@@ -1089,7 +1111,7 @@ contains
        C:    do k=strm%k_lvd,strm%nFiles
           !--- read data for file number k ---
           if (.not. strm%file(k)%haveData) then
-             call shr_stream_readtCoord(strm, k, isroot_task, rCode)
+             call shr_stream_readtCoord(strm, k, rCode)
              if ( rCode /= 0 )then
                 call shr_sys_abort(trim(subName)//" ERROR: readtCoord3")
              end if
@@ -1135,7 +1157,9 @@ contains
 
           if (strm%found_gvd .and. rDateIn >= rDategvd) then
              if (limit) then
-                write(strm%logunit,*) trim(subName)," ERROR: limit on and rDateIn >= rDategvd",rDateIn,rDategvd
+                if (mainproc) then
+                   write(logout,'(2a,2(d13.5,2x))') trim(subName)," ERROR: limit on and rDateIn >= rDategvd",rDateIn,rDategvd
+                end if
                 call shr_sys_abort(trim(subName)//" ERROR: rDateIn >= rDategvd limit true")
              endif
 
@@ -1209,7 +1233,9 @@ contains
                    call shr_cal_date2ymd(dDateUB,yy,mm,dd)
                    yy = yy + (mYear-dYear)
                    if(mm == 2 .and. dd==29 .and. .not. shr_cal_leapyear(yy)) then
-                      if(isroot_task) write(strm%logunit, *) 'Found leapyear mismatch', myear, dyear, yy
+                      if (mainproc) then
+                         write(logout,'(2a,3(i0,2x))') trim(subname),' Found leapyear mismatch', myear, dyear, yy
+                      end if
                       mm = 3
                       dd = 1
                    endif
@@ -1228,14 +1254,13 @@ contains
   end subroutine shr_stream_findBounds
 
   !===============================================================================
-  subroutine shr_stream_readTCoord(strm, k, isroot_task, rc)
+  subroutine shr_stream_readTCoord(strm, k, rc)
 
     ! Read in time coordinates with possible offset (require that time coordinate is 'time')
 
     ! input/output parameters:
     type(shr_stream_streamType) ,intent(inout) :: strm ! data stream to query
     integer                     ,intent(in)    :: k    ! stream file index
-    logical                     ,intent(in)    :: isroot_task
     integer,optional            ,intent(out)   :: rc   ! return code
 
     ! local variables
@@ -1266,8 +1291,8 @@ contains
 
     ! open file if needed
     if (.not. pio_file_is_open(strm%file(k)%fileid)) then
-       if (debug>1 .and. isroot_task) then
-          write(strm%logunit, '(a)') trim(subname)//' opening stream filename = '//trim(filename)
+       if (debug>1 .and. mainproc) then
+          write(logout, '(2a)') trim(subname),' opening stream filename = '//trim(filename)
        end if
        rcode = pio_openfile(strm%pio_subsystem, strm%file(k)%fileid, strm%pio_iotype, filename, pio_nowrite)
     endif
@@ -1327,8 +1352,8 @@ contains
     deallocate(tvar)
 
     ! close file
-    if (debug>1 .and. isroot_task) then
-       write(strm%logunit, '(a)') trim(subname)//' closing stream filename = '//trim(filename)
+    if (debug>1 .and. mainproc) then
+       write(logout, '(2a)') trim(subname),' closing stream filename = '//trim(filename)
     end if
     call pio_closefile(strm%file(k)%fileid)
 
@@ -1347,7 +1372,9 @@ contains
           call shr_cal_advDateInt(offin,'seconds',din,sin,dout,sout,calendar)
           strm%file(k)%date(n) = dout
           strm%file(k)%secs(n) = sout
-          ! write(strm%logunit,*) 'debug ',n,strm%offset,din,sin,dout,sout
+          ! if (mainproc) then
+          !     write(logout,'(2a,6(i0,2x))') 'debug ',n,strm%offset,din,sin,dout,sout
+          ! end if
        enddo
     endif
 
@@ -1376,9 +1403,7 @@ contains
       integer :: date2,secs2 ! date and seconds for next time coord
       logical :: checkIt     ! have data / do comparison
       character(*),parameter :: subName = '(shr_stream_verifyTCoord) '
-      character(*),parameter :: F00   = "('(shr_stream_verifyTCoord) ',8a)"
-      character(*),parameter :: F01   = "('(shr_stream_verifyTCoord) ',a,2i7)"
-      character(*),parameter :: F02   = "('(shr_stream_verifyTCoord) ',a,2i9.8)"
+
       !-------------------------------------------------------------------------------
       ! Notes:
       !   o checks that dates are increasing (must not decrease)
@@ -1390,17 +1415,19 @@ contains
       !-------------------------------------------------------------------------------
 
       rc = 0
-      if (debug>1 .and. isroot_task) then
-         write(strm%logunit,F01) "checking t-coordinate data   for file k =",k
+      if (debug>1 .and. mainproc) then
+         write(logout,'(2a,i0)') trim(subname)," checking t-coordinate data   for file k =",k
       end if
 
       if ( .not. strm%file(k)%haveData) then
          rc = 1
-         write(strm%logunit,F01) "Don't have data for file ",k
+         if (mainproc) then
+            write(logout,'(2a,i0)') trim(subname)," ERROR: do not have data for file ",k
+         end if
          call shr_sys_abort(subName//"ERROR: can't check -- file not read.")
       end if
 
-      do n=1,strm%file(k)%nt+1
+      stream_file_times:do n=1,strm%file(k)%nt+1
          checkIt = .false.
 
          !--- do we have data for two consecutive dates? ---
@@ -1414,7 +1441,9 @@ contains
                   date2 = strm%file(k  )%date(n)
                   secs2 = strm%file(k  )%secs(n)
                   checkIt = .true.
-                  if (debug>1 .and. isroot_task) write(strm%logunit,F01) "comparing with previous file for file k =",k
+                  if (debug>1 .and. mainproc) then
+                     write(logout,'(2a,i0)') trim(subname)," comparing with previous file for file k =",k
+                  end if
                end if
             end if
          else if (n==strm%file(k)%nt+1) then
@@ -1427,7 +1456,9 @@ contains
                   date2 = strm%file(k+1)%date(1)
                   secs2 = strm%file(k+1)%secs(1)
                   checkIt = .true.
-                  if (debug>1 .and. isroot_task) write(strm%logunit,F01) "comparing with next     file for file k =",k
+                  if (debug>1 .and. mainproc) then
+                     write(logout,'(2a,i0)') trim(subname)," comparing with next     file for file k =",k
+                  end if
                end if
             end if
          else
@@ -1443,28 +1474,35 @@ contains
          if (checkIt) then
             if ( date1 > date2 ) then
                rc = 1
-               write(strm%logunit,F01) "ERROR: calendar dates must be increasing"
-               write(strm%logunit,F02) "date(n), date(n+1) = ",date1,date2
+               if (mainproc) then
+                  write(logout,'(2a)') trim(subname)," ERROR: calendar dates must be increasing"
+                  write(logout,'(2a,2(i0,2x))') trim(subname)," date(n), date(n+1) = ",date1,date2
+               end if
                call shr_sys_abort(subName//"ERROR: calendar dates must be increasing")
             else if ( date1 == date2 ) then
                if ( secs1 >= secs2 ) then
                   rc = 1
-                  write(strm%logunit,F01) "ERROR: elapsed seconds on a date must be strickly increasing"
-                  write(strm%logunit,F02) "secs(n), secs(n+1) = ",secs1,secs2
+                  if (mainproc) then
+                     write(logout,'(2a)') trim(subname), "ERROR: elapsed seconds on a date must be strickly increasing"
+                     write(logout,'(2a,2(i0,2x))') trim(subname)," secs(n), secs(n+1) = ",secs1,secs2
+                  end if
                   call shr_sys_abort(subName//"ERROR: elapsed seconds must be increasing")
                end if
             end if
             if ( secs1 < 0 .or. spd < secs1 ) then
                rc = 1
-               write(strm%logunit,F01) "ERROR: elapsed seconds out of valid range [0,spd]"
-               write(strm%logunit,F02) "secs(n) = ",secs1
+               if (mainproc) then
+                  write(logout,'(2a)') trim(subname)," ERROR: elapsed seconds out of valid range [0,spd]"
+                  write(logout,'(2a,i0)') trim(subname), " secs(n) = ",secs1
+               end if
                call shr_sys_abort(subName//"ERROR: elapsed seconds out of range")
             end if
          end if
-      end do
+      end do stream_file_times
 
-      if (debug>0 .and. isroot_task) write(strm%logunit,F01) "data is OK (non-decreasing)  for file k =",k
-
+      if (debug>0 .and. mainproc) then
+         write(logout,'(2a,i0)') trim(subname)," data is OK (non-decreasing)  for file k =",k
+      end if
     end subroutine verifyTCoord
 
   end subroutine shr_stream_readTCoord
@@ -1521,8 +1559,10 @@ contains
 
   !===============================================================================
   subroutine shr_stream_getCalendar(strm, k, calendar)
+
     use pio, only : PIO_set_log_level, PIO_OFFSET_KIND
     use ESMF, only: ESMF_VM, ESMF_VMGet, ESMF_VMGetCurrent
+
     ! Returns calendar name
 
     ! input/output parameters:
@@ -1531,15 +1571,12 @@ contains
     character(*)                ,intent(out)   :: calendar ! calendar name
 
     ! local
-    type(ESMF_VM)          :: vm
-    integer                :: myid
     integer                :: vid, n
     character(CX)          :: fileName
     character(CL)          :: lcal
     integer(PIO_OFFSET_KIND) :: attlen
     integer                :: old_handle
     integer                :: rCode
-    integer :: rc
     character(*),parameter :: subName = '(shr_stream_getCalendar) '
     !-------------------------------------------------------------------------------
 
@@ -1547,23 +1584,21 @@ contains
     calendar = ' '
     if (k > strm%nfiles) call shr_sys_abort(subname//' ERROR: k gt nfiles')
 
-    call ESMF_VMGetCurrent(vm, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    call ESMF_VMGet(vm, localPet=myid, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
     fileName  = strm%file(k)%name
 
     if (.not. pio_file_is_open(strm%file(k)%fileid)) then
-       if(myid == 0) write(strm%logunit, '(a)') trim(subname)//' opening stream filename = '//trim(filename)
+       if (mainproc) then
+          write(logout,'(2a)') trim(subname),' opening stream filename = '//trim(filename)
+       end if
        rcode = pio_openfile(strm%pio_subsystem, strm%file(k)%fileid, strm%pio_iotype, trim(filename))
-    else if(myid == 0) then
-       write(strm%logunit, '(a)') trim(subname)//' reading stream filename = '//trim(filename)
+    else
+       if (mainproc) then
+          write(logout,'(2a)') trim(subname),' reading stream filename = '//trim(filename)
+       end if
     endif
 
     rCode = pio_inq_varid(strm%file(k)%fileid, 'time', vid)
-    if(vid .lt. 0) then
+    if (vid .lt. 0) then
        call shr_sys_abort(subName//"ERROR: time variable id incorrect")
     endif
     call pio_seterrorhandling(strm%file(k)%fileid, PIO_BCAST_ERROR, old_handle)
@@ -1579,15 +1614,19 @@ contains
     if(n>0) then
        if (ichar(lcal(n:n)) == 0 ) lcal(n:n) = ' '
     else
-       write(strm%logunit,*) 'calendar attribute to time variable not found in file, using default noleap'
+       if (mainproc) then
+          write(logout,'(2a)') trim(subname),&
+               'calendar attribute to time variable not found in file, using default noleap'
+       end if
        call shr_sys_abort(subName//"ERROR: calendar attribute not found in file "//trim(filename))
        lcal = trim(shr_cal_noleap)
     endif
     call shr_string_leftalign_and_convert_tabs(lcal)
     calendar = trim(shr_cal_calendarName(trim(lcal)))
 
-
-    if(myid == 0) write(strm%logunit, '(a)') trim(subname)//' closing stream filename = '//trim(filename)
+    if (mainproc) then
+       write(logout, '(2a)') trim(subname),' closing stream filename = '//trim(filename)
+    end if
     call pio_closefile(strm%file(k)%fileid)
 
   end subroutine shr_stream_getCalendar
@@ -1646,7 +1685,6 @@ contains
     integer                :: n      ! loop index
     logical                :: found  ! file name found?
     character(*),parameter :: subName = '(shr_stream_getNextFileName) '
-    character(*),parameter :: F00   = "('(shr_stream_getNextFileName) ',8a)"
     !-------------------------------------------------------------------------------
 
     rCode = 0
@@ -1661,7 +1699,9 @@ contains
     end do
     if (.not. found) then
        rCode = 1
-       write(strm%logunit,F00) "ERROR: input file name is not in stream: ",trim(fn)
+       if (mainproc) then
+          write(logout,'(3a)') trim(subname)," ERROR: input file name is not in stream file: ",trim(fn)
+       end if
        call shr_sys_abort(subName//"ERROR: file name not in stream: "//trim(fn))
     end if
 
@@ -1696,7 +1736,7 @@ contains
     integer                :: n     ! loop index
     logical                :: found ! file name found?
     character(*),parameter :: subName = '(shr_stream_getPrevFileName) '
-    character(*),parameter :: F00   = "('(shr_stream_getPrevFileName) ',8a)"
+    !-------------------------------------------------------------------------------
 
     !-------------------------------------------------------------------------------
     ! Note: will wrap-around data loop if lvd & gvd are known
@@ -1715,7 +1755,9 @@ contains
     end do
     if (.not. found) then
        rCode = 1
-       write(strm%logunit,F00) "ERROR: input file name is not in stream: ",trim(fn)
+       if (mainproc) then
+          write(logout,'(3a)') trim(subname)," ERROR: input file name is not in stream: ",trim(fn)
+       end if
        call shr_sys_abort(subName//"ERROR: file name not in stream: "//trim(fn))
     end if
 
@@ -1765,9 +1807,8 @@ contains
     integer              :: n, k, maxnfiles=0
     integer              :: maxnt = 0
     integer, allocatable :: tmp(:)
-    integer              :: logunit
     character(len=CX)    :: fname, rfname, rsfname
-
+    character(*),parameter :: subName = '(shr_stream_restIO) '
     !-------------------------------------------------------------------------------
 
     if (mode .eq. 'define') then
@@ -1775,7 +1816,6 @@ contains
        rcode = pio_def_dim(pioid, 'strlen',   CX, dimid_str)
        do k=1,size(streams)
           ! maxnfiles is the maximum number of files across all streams
-          logunit = streams(k)%logunit
           if (streams(k)%nfiles > maxnfiles) then
              maxnfiles = streams(k)%nfiles
           endif
@@ -1964,28 +2004,35 @@ contains
        rcode = pio_inq_varid(pioid, 'timeofday', tvarid)
        rcode = pio_inq_varid(pioid, 'haveData' , hdvarid)
        do k=1,size(streams)
-          logunit = streams(k)%logunit
           do n=1,streams(k)%nfiles
 
              ! read in filename
              rcode = pio_get_var(pioid, varid, (/1,n,k/), fname)
-             
+
              if(trim(fname) /= trim(streams(k)%file(n)%name)) then
-                write(logunit,*) 'Filename does not match restart record, checking realpath'
+                if (mainproc) then
+                   write(logout,'(2a)') trim(subname),'Filename does not match restart record, checking realpath'
+                end if
                 call shr_file_get_real_path(fname, rfname)
                 call shr_file_get_real_path(trim(streams(k)%file(n)%name), rsfname)
                 if (trim(rfname) /= trim(rsfname)) then
-                   write(logunit,*) 'Filename path does not match restartfile, checking filename'
+                   if (mainproc) then
+                      write(logout,'(2a)') trim(subname),'Filename path does not match restartfile, checking filename'
+                   end if
                    rfname = fname(index(fname,'/',.true.):)
                    rsfname = streams(k)%file(n)%name(index(streams(k)%file(n)%name, '/',.true.):)
                    if (trim(rfname) /= trim(rsfname)) then
-                      write(logunit,*) trim(rfname), '<>', trim(rsfname)
-                      write(logunit,'(a)')' fname = '//trim(fname)
-                      write(logunit,'(a,i8,2x,i8,2x,a)')' k,n,streams(k)%file(n)%name = ',k,n,trim(streams(k)%file(n)%name)
+                      if (mainproc) then
+                         write(logout,'(2a)') trim(subname),trim(rfname), '<>', trim(rsfname)
+                         write(logout,'(2a)') trim(subname),' fname = '//trim(fname)
+                         write(logout,'(2a,i8,2x,i8,2x,a)') trim(subname),' k,n,streams(k)%file(n)%name = ',&
+                              k,n,trim(streams(k)%file(n)%name)
+                      end if
                       call shr_sys_abort('ERROR reading in filename')
                    endif
                 endif
              endif
+
              ! read in nt
              allocate(tmp(1))
              rcode = pio_get_var(pioid, ntvarid, (/n,k/), tmp(1))
@@ -2040,35 +2087,31 @@ contains
     ! input/output parameters:
     type(shr_stream_streamType),intent(in) :: strm      ! data stream
 
-    !----- local -----
-    integer   :: k ! generic loop index
-    integer   :: logunit
-    character(*),parameter :: F00   = "('(shr_stream_dataDump) ',8a)"
-    character(*),parameter :: F01   = "('(shr_stream_dataDump) ',a,3i5)"
-    character(*),parameter :: F02   = "('(shr_stream_dataDump) ',a,365i9.8)"
-    character(*),parameter :: F03   = "('(shr_stream_dataDump) ',a,365i6)"
+    ! local variables
+    integer   :: nf,nt ! generic loop indices
+    character(*),parameter   :: subName = '(shr_stream_dataDump) '
     !-------------------------------------------------------------------------------
 
-    logunit = strm%logunit
-
-    if (debug > 0) then
-       write(logunit,F00) "dump internal data for debugging..."
-       write(logunit,F01) "nFiles        = ", strm%nFiles
-       do k=1,strm%nFiles
-          write(logunit,F01) "data for file k = ",k
-          write(logunit,F00)    "* file(k)%name    = ", trim(strm%file(k)%name)
-          if ( strm%file(k)%haveData ) then
-             write(logunit,F01) "* file(k)%nt      = ", strm%file(k)%nt
-             write(logunit,F02) "* file(k)%date(:) = ", strm%file(k)%date(:)
-             write(logunit,F03) "* file(k)%Secs(:) = ", strm%file(k)%secs(:)
+    if (debug > 0 .and. mainproc) then
+       write(logout,'(2a)') trim(subname),"dump internal data for debugging..."
+       write(logout,'(2a,i0)') trim(subname)," nFiles        = ", strm%nFiles
+       do nf = 1,strm%nFiles
+          write(logout,'(2a,i0)') trim(subname)," data for file nf = ",nf
+          write(logout,'(2a)')    trim(subname)," file(nf)%name    = ", trim(strm%file(nf)%name)
+          if ( strm%file(nf)%haveData ) then
+             write(logout,'(2a,i0)') trim(subname)," file(nf)%nt      = ", strm%file(nf)%nt
+             do nt = 1, size(strm%file(nf)%date)
+                write(logout,'(2a,2(i0,2x))') trim(subname)," file(nf)%date(nt) = ",nt,strm%file(nf)%date(nt)
+                write(logout,'(2a,2(i0,2x))') trim(subname)," file(nf)%secs(nt) = ",nt,strm%file(nf)%secs(nt)
+             end do
           else
-             write(logunit,F00) "* time coord data not read in yet for this file"
+             write(logout,'(2a)') trim(subname),' time coord data not read in yet for this file'
           end if
        end do
-       write(logunit,F01) "yearF/L/A    = ", strm%yearFirst,strm%yearLast,strm%yearAlign
-       write(logunit,F01) "offset       = ", strm%offset
-       write(logunit,F00) "taxMode      = ", trim(strm%taxMode)
-       write(logunit,F00) "meshfile     = ", trim(strm%meshfile)
+       write(logout,'(2a,3(2x,i0))') trim(subname),"yearF/L/A    = ",strm%yearFirst,strm%yearLast,strm%yearAlign
+       write(logout,'(2a,i0)')       trim(subname),"offset       = ",strm%offset
+       write(logout,'(3a)')          trim(subname),"taxMode      = ",trim(strm%taxMode)
+       write(logout,'(3a)')          trim(subname),"meshfile     = ",trim(strm%meshfile)
     end if
 
   end subroutine shr_stream_dataDump

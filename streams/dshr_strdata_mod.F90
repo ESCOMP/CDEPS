@@ -58,7 +58,10 @@ module dshr_strdata_mod
   implicit none
   private
 
+  ! Public data types
   public  :: shr_strdata_type
+
+  ! Public routines
   public  :: shr_strdata_init_from_config
   public  :: shr_strdata_init_from_inline
   public  :: shr_strdata_setOrbs
@@ -69,16 +72,17 @@ module dshr_strdata_mod
   public  :: shr_strdata_get_stream_fieldbundle
   public  :: shr_strdata_print
 
-  private :: shr_strdata_init_model_domain
-  private :: shr_strdata_get_stream_nlev
-  private :: shr_strdata_readLBUB
-
   interface shr_strdata_get_stream_pointer
      module procedure shr_strdata_get_stream_pointer_1d
      module procedure shr_strdata_get_stream_pointer_2d
   end interface shr_strdata_get_stream_pointer
 
-  ! public data members:
+  ! Private routines
+  private :: shr_strdata_init_model_domain
+  private :: shr_strdata_get_stream_nlev
+  private :: shr_strdata_readLBUB
+
+  ! Public data members:
   integer                              :: debug = 0  ! local debug flag
   character(len=*) ,parameter, public  :: shr_strdata_nullstr = 'null'
   character(len=*) ,parameter          :: shr_strdata_unset = 'NOT_SET'
@@ -141,6 +145,8 @@ module dshr_strdata_mod
 
   type(ESMF_Field) :: field_vector_dst ! needed for vector fields
 
+  integer :: logout ! log unit for mainproc output
+
   real(r8)         ,parameter :: deg2rad = SHR_CONST_PI/180.0_r8
   character(*)     ,parameter :: u_FILE_u = &
        __FILE__
@@ -200,7 +206,11 @@ contains
     character(len=*), parameter  :: subname='(shr_strdata_init_from_config)'
     ! ----------------------------------------------
     rc = ESMF_SUCCESS
+
     call ESMF_LogWrite(subname//' called', ESMF_LOGMSG_INFO)
+
+    ! Set module variable logout
+    logout = logunit
 
 #ifdef CESMCOUPLED
     ! Initialize sdat  pio
@@ -218,10 +228,10 @@ contains
     sdat%mainproc = (localPet == main_task)
 
 #ifdef DISABLE_FoX
-    call shr_stream_init_from_esmfconfig(streamfilename, sdat%stream, logunit, &
+    call shr_stream_init_from_esmfconfig(streamfilename, sdat%stream, logout, &
          sdat%pio_subsystem, sdat%io_type, sdat%io_format, rc=rc)
 #else
-    call shr_stream_init_from_xml(streamfilename, sdat%stream, sdat%mainproc, logunit, &
+    call shr_stream_init_from_xml(streamfilename, sdat%stream, sdat%mainproc, logout, &
          sdat%pio_subsystem, sdat%io_type, sdat%io_format, trim(compname), rc=rc)
 #endif
 
@@ -279,8 +289,12 @@ contains
 
     rc = ESMF_SUCCESS
 
-    ! Initialize sdat%logunit and sdat%mainproc
+    ! Set module variable logout
+    logout = logunit
+
+    ! Initialize sdat%mainproc
     sdat%mainproc = (my_task == main_task)
+
 #ifdef CESMCOUPLED
     ! Initialize sdat pio
     sdat%pio_subsystem => shr_pio_getiosys(trim(compname))
@@ -307,7 +321,7 @@ contains
          stream_yearFirst, stream_yearLast, stream_yearAlign, &
          stream_offset, stream_taxmode, stream_tintalgo, stream_dtlimit, &
          stream_fldlistFile, stream_fldListModel, stream_fileNames, &
-         logunit, trim(compname), src_mask, dst_mask)
+         logout, trim(compname), sdat%mainproc, src_mask, dst_mask)
 
     ! Now finish initializing sdat
     call shr_strdata_init(sdat, model_clock, stream_name, rc)
@@ -428,7 +442,7 @@ contains
        if (filename /= 'none' .and. mainproc) then
           inquire(file=trim(filename),exist=fileExists)
           if (.not. fileExists) then
-             call shr_log_error(subName//"ERROR: file does not exist: "//trim(fileName), rc=rc)
+             call shr_log_error(trim(subname)//"ERROR: file does not exist: "//trim(fileName), rc=rc)
              return
           end if
        endif
@@ -460,8 +474,8 @@ contains
           sdat%pstrm(ns)%stream_ub = 2
           allocate(sdat%pstrm(ns)%fldbun_data(2))
           if (mainproc) then
-             write(sdat%stream(1)%logunit,'(a,i8)') trim(subname)//" Creating field bundle array fldbun_data of size 2 for stream ",&
-                  ns
+             write(logout,'(2a,i0)') trim(subname), &
+                  " Creating field bundle array fldbun_data of size 2 for stream ",ns
           end if
        else if(sdat%stream(ns)%readmode=='full_file') then
           ! TODO: add this in
@@ -487,7 +501,8 @@ contains
              if (chkerr(rc,__LINE__,u_FILE_u)) return
              if (mainproc) then
                 if (i == 1) then
-                   write(sdat%stream(1)%logunit,'(a,i8)') "    adding field "//trim(sdat%pstrm(ns)%fldlist_model(nfld))//&
+                   write(logout,'(2a,i8)') trim(subname),&
+                        "    adding field "//trim(sdat%pstrm(ns)%fldlist_model(nfld))//&
                         " to fldbun_data for stream ",ns
                 end if
              end if
@@ -638,7 +653,7 @@ contains
                ungriddedLbound=(/1/), ungriddedUbound=(/2/), gridToFieldMap=(/2/), rc=rc)
           if (chkerr(rc,__LINE__,u_FILE_u)) return
           if (mainproc) then
-             write(sdat%stream(1)%logunit,'(a,i8)') "creating ESMF stream vector field with names" //&
+             write(logout,'(2a,i8)') trim(subname)," creating ESMF stream vector field with names" //&
                   trim(stream_vector_names)//" for stream ",ns
           end if
        end if
@@ -664,7 +679,7 @@ contains
        else
           call shr_strdata_print(sdat, 'stream_data')
        end if
-       write(sdat%stream(1)%logunit,*) ' successfully initialized sdat'
+       write(logout,'(2a)') trim(subname),' successfully initialized sdat'
     endif
   end subroutine shr_strdata_init
 
@@ -724,9 +739,9 @@ contains
        call pio_closefile(pioid)
     end if
     if (sdat%mainproc) then
-       write(sdat%stream(1)%logunit,*) trim(subname)//' stream_nlev = ',stream_nlev
+       write(logout,'(2a,2x,i0)') trim(subname),' stream_nlev = ',stream_nlev
        if (stream_nlev /= 1) then
-          write(sdat%stream(1)%logunit,*)' stream vertical levels = ',sdat%pstrm(stream_index)%stream_vlevs
+          write(logout,'(3a)') trim(subname),' stream vertical levels = ',sdat%pstrm(stream_index)%stream_vlevs
        end if
     end if
 
@@ -901,11 +916,12 @@ contains
     integer          ,parameter         :: tadj = 2
     character(len=*) ,parameter         :: timname = "_strd_adv"
     character(*)     ,parameter         :: subname = "(shr_strdata_advance) "
-    character(*)     ,parameter         :: F00  = "('(shr_strdata_advance) ',a)"
-    character(*)     ,parameter         :: F01  = "('(shr_strdata_advance) ',a,a,i4,2(f10.5,2x))"
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
+
+    ! Note that input variable logunit is no longer used, but is kept in place here for
+    ! backwards compatibility
 
     nullify(dataptr1d)
     nullify(dataptr1d_ub)
@@ -927,7 +943,7 @@ contains
     lstr = trim(istr)
     ! To avoid an unused dummy variable warning
     if(present(timers)) then
-       write(sdat%stream(1)%logunit,*) trim(subname),'optional variable timers present but unused'
+       write(logout,'(2a)') trim(subname),'optional variable timers present but unused'
     endif
     call ESMF_TraceRegionEnter(trim(lstr)//trim(timname)//'_total')
 
@@ -972,15 +988,15 @@ contains
           case ('full_file')
              ! TODO: need to put in capability to read all stream data at once
           case default
-             write(logunit,F00) "ERROR: Unsupported readmode : ", trim(sdat%stream(ns)%readmode)
+             write(logout,'(2a)') "ERROR: Unsupported readmode : ", trim(sdat%stream(ns)%readmode)
              call shr_log_error(subName//"ERROR: Unsupported readmode: "//trim(sdat%stream(ns)%readmode), rc=rc)
              return
           end select
 
           if (debug > 0 .and. sdat%mainproc) then
-             write(sdat%stream(1)%logunit,*) trim(subname),' newData flag = ',ns,newData(ns)
-             write(sdat%stream(1)%logunit,*) trim(subname),' LB ymd,tod = ',ns,sdat%pstrm(ns)%ymdLB,sdat%pstrm(ns)%todLB
-             write(sdat%stream(1)%logunit,*) trim(subname),' UB ymd,tod = ',ns,sdat%pstrm(ns)%ymdUB,sdat%pstrm(ns)%todUB
+             write(logout,'(2a,2x,i0,2x,l4)') trim(subname),' newData flag = ',ns,newData(ns)
+             write(logout,'(2a,2x,2(i0,2x))') trim(subname),' LB ymd,tod = ',ns,sdat%pstrm(ns)%ymdLB,sdat%pstrm(ns)%todLB
+             write(logout,'(2a,2x,2(i0,2x))') trim(subname),' UB ymd,tod = ',ns,sdat%pstrm(ns)%ymdUB,sdat%pstrm(ns)%todUB
           endif
 
           ! ---------------------------------------------------------
@@ -999,7 +1015,7 @@ contains
                 else if (.not. ( trim(sdat%model_calendar) == trim(shr_cal_gregorian)) .and. &
                   (trim(sdat%stream(ns)%calendar) == trim(shr_cal_noleap))) then
                    ! case (3), abort
-                   write(logunit,*) trim(subname),' ERROR: mismatch calendar ', &
+                   write(logout,'(3a)') trim(subname),' ERROR: mismatch calendar ', &
                         trim(sdat%model_calendar),':',trim(sdat%stream(ns)%calendar)
                    call shr_log_error(trim(subname)//' ERROR: mismatch calendar ', rc=rc)
                    return
@@ -1037,7 +1053,8 @@ contains
                 if(sdat%stream(ns)%dtlimit == -1) then
                    sdat%pstrm(ns)%override_annual_cycle = .true.
                    if(sdat%mainproc) then
-                      write(logunit,*) trim(subname),' WARNING: Stream ',ns,' is not cycling on annual boundaries, and dtlimit check has been overridden'
+                      write(logout,'(2a,2x,i0,a)') trim(subname),' WARNING: Stream ',&
+                           ns,' is not cycling on annual boundaries, and dtlimit check has been overridden'
                    endif
                 else
                    dtime = abs(real(dday,r8) + real(sdat%pstrm(ns)%todUB-sdat%pstrm(ns)%todLB,r8)/shr_const_cDay)
@@ -1047,18 +1064,14 @@ contains
 
                    if ((sdat%pstrm(ns)%dtmax/sdat%pstrm(ns)%dtmin) > sdat%stream(ns)%dtlimit) then
                       if (sdat%mainproc) then
-                         write(sdat%stream(1)%logunit,'(a,i8)') trim(subname),' ERROR: for stream ',ns
-                         write(sdat%stream(1)%logunit,'(a,i8)') trim(subname),' ERROR: dday = ',dday
-                         write(sdat%stream(1)%logunit,'(a,4(f15.5,2x))') trim(subName),' ERROR: dtime, dtmax, dtmin, dtlimit = ',&
+                         write(logout,'(2a,i0)')          trim(subname),' ERROR: for stream ',ns
+                         write(logout,'(3a)')             trim(subname),' ERROR: calendar = ',trim(calendar)
+                         write(logout,'(2a,i0)')          trim(subname),' ERROR: dday = ',dday
+                         write(logout,'(2a,4(f15.5,2x))') trim(subName),' ERROR: dtime, dtmax, dtmin, dtlimit = ',&
                               dtime, sdat%pstrm(ns)%dtmax, sdat%pstrm(ns)%dtmin, sdat%stream(ns)%dtlimit
-                         write(sdat%stream(1)%logunit,'(a,4(i10,2x))') trim(subName),' ERROR: ymdLB, todLB, ymdUB, todUB = ', &
+                         write(logout,'(a,4(i0,2x))')     trim(subName),' ERROR: ymdLB, todLB, ymdUB, todUB = ', &
                               sdat%pstrm(ns)%ymdLB, sdat%pstrm(ns)%todLB, sdat%pstrm(ns)%ymdUB, sdat%pstrm(ns)%todUB
                       end if
-                      write(6,*) trim(subname),' ERROR: for stream ',ns, ' and calendar ',trim(calendar)
-                      write(6,*) trim(subName),' ERROR: dtime, dtmax, dtmin, dtlimit = ',&
-                           dtime, sdat%pstrm(ns)%dtmax, sdat%pstrm(ns)%dtmin, sdat%stream(ns)%dtlimit
-                      write(6,*) trim(subName),' ERROR: ymdLB, todLB, ymdUB, todUB = ', &
-                           sdat%pstrm(ns)%ymdLB, sdat%pstrm(ns)%todLB, sdat%pstrm(ns)%ymdUB, sdat%pstrm(ns)%todUB
                       call shr_log_error(trim(subName)//' ERROR dt limit for stream, see atm.log output', rc=rc)
                       return
                    endif
@@ -1091,11 +1104,11 @@ contains
              call ESMF_TraceRegionEnter(trim(lstr)//trim(timname)//'_coszenC')
              call shr_tInterp_getCosz(coszen, sdat%model_lon, sdat%model_lat, ymdmod(ns), todmod, &
                   sdat%eccen, sdat%mvelpp, sdat%lambm0, sdat%obliqr, sdat%stream(ns)%calendar, &
-                  sdat%mainproc, sdat%stream(1)%logunit)
+                  sdat%mainproc, logout)
              call ESMF_TraceRegionExit(trim(lstr)//trim(timname)//'_coszenC')
              if (debug > 0 .and. sdat%mainproc) then
                 do n = 1,size(coszen)
-                   write(sdat%stream(1)%logunit,'(a,i4,2x,2(i18,2x),i8,d20.10)')' stream,ymdmod,todmod,n,coszen= ',&
+                   write(logout,'(a,i4,2x,2(i18,2x),i8,d20.10)')' stream,ymdmod,todmod,n,coszen= ',&
                         ns, ymd, tod, n, coszen(n)
                 end do
              end if
@@ -1110,11 +1123,12 @@ contains
                 call shr_tInterp_getAvgCosz(sdat%tavCoszen, sdat%model_lon, sdat%model_lat,  &
                      sdat%pstrm(ns)%ymdLB, sdat%pstrm(ns)%todLB,  sdat%pstrm(ns)%ymdUB, sdat%pstrm(ns)%todUB,  &
                      sdat%eccen, sdat%mvelpp, sdat%lambm0, sdat%obliqr, sdat%modeldt, &
-                     sdat%stream(ns)%calendar, sdat%mainproc, sdat%stream(1)%logunit, rc=rc)
+                     sdat%stream(ns)%calendar, sdat%mainproc, logout, rc=rc)
                 call ESMF_TraceRegionExit(trim(lstr)//trim(timname)//'_coszenN')
                 if (debug > 0 .and. sdat%mainproc) then
                    do n = 1,size(coszen)
-                      write(sdat%stream(1)%logunit,'(a,i4,2x,4(i18,2x),i8,d20.10)')' stream,lbymd,lbsec,ubymd,ubsec,newdata,n,tavgCoszen= ',&
+                      write(logout,'(2a,i4,2x,4(i18,2x),i8,d20.10)') trim(subname), &
+                           ' stream,lbymd,lbsec,ubymd,ubsec,newdata,n,tavgCoszen= ',&
                            ns, sdat%pstrm(ns)%ymdLB, sdat%pstrm(ns)%todLB, sdat%pstrm(ns)%ymdUB, sdat%pstrm(ns)%todUB, &
                            n, sdat%tavCoszen(n)
                    end do
@@ -1166,11 +1180,11 @@ contains
              call ESMF_TraceRegionEnter(trim(lstr)//trim(timname)//'_tint')
              call shr_tInterp_getFactors(sdat%pstrm(ns)%ymdlb, sdat%pstrm(ns)%todlb, &
                   sdat%pstrm(ns)%ymdub, sdat%pstrm(ns)%todub, &
-                  ymdmod(ns), todmod, flb, fub, calendar=sdat%stream(ns)%calendar, logunit=sdat%stream(1)%logunit, &
+                  ymdmod(ns), todmod, flb, fub, calendar=sdat%stream(ns)%calendar, logunit=logout, &
                   algo=trim(sdat%stream(ns)%tinterpalgo), rc=rc)
              if (chkerr(rc,__LINE__,u_FILE_u)) return
              if (debug > 0 .and. sdat%mainproc) then
-                write(sdat%stream(1)%logunit,'(a,i4,2(f10.5,2x))') &
+                write(logout,'(a,i4,2(f10.5,2x))') &
                      trim(subname)//' non-cosz-interp stream, flb, fub= ',ns,flb,fub
              endif
              do nf = 1,size(sdat%pstrm(ns)%fldlist_model)
@@ -1271,39 +1285,32 @@ contains
     ! local variables
     integer  :: ns
     character(*),parameter :: subName = "(shr_strdata_print) "
-    character(*),parameter ::   F00 = "('(shr_strdata_print) ',8a)"
-    character(*),parameter ::   F01 = "('(shr_strdata_print) ',a,i6,a)"
-    character(*),parameter ::   F02 = "('(shr_strdata_print) ',a,es13.6)"
-    character(*),parameter ::   F03 = "('(shr_strdata_print) ',a,i2,a,a)"
-    character(*),parameter ::   F04 = "('(shr_strdata_print) ',a)"
-    character(*),parameter ::   F05 = "('(shr_strdata_print) ',a,i2,a,es13.6)"
-    character(*),parameter ::   F06 = "('(shr_strdata_print) ',a,i2,a,i1)"
-    character(*),parameter ::   F90 = "('(shr_strdata_print) ',58('-'))"
     !-------------------------------------------------------------------------------
 
-    write(sdat%stream(1)%logunit,*)
-    write(sdat%stream(1)%logunit,F90)
-    write(sdat%stream(1)%logunit,F00) "name        = ",trim(name)
-    write(sdat%stream(1)%logunit,F00) "calendar    = ",trim(sdat%model_calendar)
-    write(sdat%stream(1)%logunit,F02) "eccen       = ",sdat%eccen
-    write(sdat%stream(1)%logunit,F02) "mvelpp      = ",sdat%mvelpp
-    write(sdat%stream(1)%logunit,F02) "lambm0      = ",sdat%lambm0
-    write(sdat%stream(1)%logunit,F02) "obliqr      = ",sdat%obliqr
-    write(sdat%stream(1)%logunit,F01) "pio_iotype  = ",sdat%io_type
-    write(sdat%stream(1)%logunit,F01) "nstreams    = ",shr_strdata_get_stream_count(sdat)
-    write(sdat%stream(1)%logunit,F04) "Per stream information "
+    write(logout,*)
+    write(logout,'(a)') '------------------------------------------------------'
+    write(logout,'(2a)')           trim(subname),"name        = ",trim(name)
+    write(logout,'(3a)')           trim(subname),"calendar    = ",trim(sdat%model_calendar)
+    write(logout,'(2a,2x,es13.6)') trim(subname),"eccen       = ",sdat%eccen
+    write(logout,'(2a,2x,es13.6)') trim(subname),"mvelpp      = ",sdat%mvelpp
+    write(logout,'(2a,2x,es13.6)') trim(subname),"lambm0      = ",sdat%lambm0
+    write(logout,'(2a,2x,es13.6)') trim(subname),"obliqr      = ",sdat%obliqr
+    write(logout,'(3a)')           trim(subname),"pio_iotype  = ",sdat%io_type
+    write(logout,'(2a,2x,i0)')     trim(subname),"nstreams    = ",shr_strdata_get_stream_count(sdat)
+    write(logout,'(2a)')           trim(subname),"Per stream information "
     do ns = 1, shr_strdata_get_stream_count(sdat)
-       write(sdat%stream(1)%logunit,F03) "  taxMode (",ns,") = ",trim(sdat%stream(ns)%taxmode)
-       write(sdat%stream(1)%logunit,F05) "  dtlimit (",ns,") = ",sdat%stream(ns)%dtlimit
-       write(sdat%stream(1)%logunit,F03) "  mapalgo (",ns,") = ",trim(sdat%stream(ns)%mapalgo)
-       write(sdat%stream(1)%logunit,F03) "  tintalgo(",ns,") = ",trim(sdat%stream(ns)%tinterpalgo)
-       write(sdat%stream(1)%logunit,F03) "  readmode(",ns,") = ",trim(sdat%stream(ns)%readmode)
-       write(sdat%stream(1)%logunit,F03) "  vectors (",ns,") = ",trim(sdat%stream(ns)%stream_vectors)
-       write(sdat%stream(1)%logunit,F06) "  src_mask(",ns,") = ",sdat%stream(ns)%src_mask_val
-       write(sdat%stream(1)%logunit,F06) "  dst_mask(",ns,") = ",sdat%stream(ns)%dst_mask_val
-       write(sdat%stream(1)%logunit,F01) " "
+       write(logout,'(3a)')             trim(subname),"  taxMode (",ns,") = ",trim(sdat%stream(ns)%taxmode)
+       write(logout,'(2a,i0,a,es13.6)') trim(subname),"  dtlimit (",ns,") = ",sdat%stream(ns)%dtlimit
+       write(logout,'(2a,i0,2a)')       trim(subname),"  tintalgo(",ns,") = ",trim(sdat%stream(ns)%tinterpalgo)
+       write(logout,'(2a,i0,2a)')       trim(subname),"  mapalgo (",ns,") = ",trim(sdat%stream(ns)%mapalgo)
+       write(logout,'(2a,i0,2a)')       trim(subname),"  readmode(",ns,") = ",trim(sdat%stream(ns)%readmode)
+       write(logout,'(2a,i0,2a)')       trim(subname),"  vectors (",ns,") = ",trim(sdat%stream(ns)%stream_vectors)
+       write(logout,'(2a,i0,a,i0)')     trim(subname),"  src_mask(",ns,") = ",sdat%stream(ns)%src_mask_val
+       write(logout,'(2a,i0,a,i0)')     trim(subname),"  dst_mask(",ns,") = ",sdat%stream(ns)%dst_mask_val
+       write(logout,'(2a)')             trim(subname)," "
     end do
-    write(sdat%stream(1)%logunit,F90)
+    write(logout,'(a)') '------------------------------------------------------'
+    write(logout,*)
 
   end subroutine shr_strdata_print
 
@@ -1339,8 +1346,6 @@ contains
     character(CX)                        :: filename_prev
     logical                              :: find_bounds
     character(*), parameter              :: subname = '(shr_strdata_readLBUB) '
-    character(*), parameter              :: F00   = "('(shr_strdata_readLBUB) ',8a)"
-    character(*), parameter              :: F01   = "('(shr_strdata_readLBUB) ',a,5i8)"
     !-------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -1374,25 +1379,29 @@ contains
     ! if model current date is outside of model lower or upper bound - find the stream bounds
     find_bounds = (rDateM < rDateLB .or. rDateM >= rDateUB)
     if (debug > 0 .and. sdat%mainproc) then
-       write(sdat%stream(1)%logunit,'(a,i4,2x,6(i18,2x),l7)')' stream,lbymd,lbsec,mdate,msec,ubymd,ubsec,newdata= ',ns,&
+       write(logout,'(a,i4,2x,6(i18,2x),l7)') trim(subname),&
+            ' stream,lbymd,lbsec,mdate,msec,ubymd,ubsec,newdata= ',ns,&
             sdat%pstrm(ns)%ymdLB,sdat%pstrm(ns)%todLB, &
             mdate,msec, &
             sdat%pstrm(ns)%ymdUB,sdat%pstrm(ns)%todUB,find_bounds
-       write(sdat%stream(1)%logunit,'(a,i4,2x,3(f20.3,2x),l7)')' stream,rdateLB,rdateM,rdateUB,newdata= ',&
+       write(logout,'(a,i4,2x,3(f20.3,2x),l7)') trim(subname), &
+            ' stream,rdateLB,rdateM,rdateUB,newdata= ',&
             ns,rdateLB,rdateM,rdateUB,find_bounds
     end if
     if (find_bounds) then
        call ESMF_TraceRegionEnter(trim(istr)//'_fbound')
-       call shr_stream_findBounds(stream, mDate, mSec,  sdat%mainproc, &
+       call shr_stream_findBounds(stream, mDate, mSec, &
             sdat%pstrm(ns)%ymdLB, dDateLB, sdat%pstrm(ns)%todLB, n_lb, filename_lb, &
             sdat%pstrm(ns)%ymdUB, dDateUB, sdat%pstrm(ns)%todUB, n_ub, filename_ub)
        call ESMF_TraceRegionExit(trim(istr)//'_fbound')
        if (debug > 0 .and. sdat%mainproc) then
-          write(sdat%stream(1)%logunit,'(a,i4,2x,6(i18,2x),l7)')' stream,lbymd,lbsec,mdate,msec,ubymd,ubsec,newdata= ',ns,&
+          write(logout,'(a,i4,2x,6(i18,2x),l7)') trim(subname), &
+               ' stream,lbymd,lbsec,mdate,msec,ubymd,ubsec,newdata= ',ns,&
                sdat%pstrm(ns)%ymdLB,sdat%pstrm(ns)%todLB,&
                mdate,msec, &
                sdat%pstrm(ns)%ymdUB,sdat%pstrm(ns)%todUB
-          write(sdat%stream(1)%logunit,'(a,i4,2x,3(f20.3,2x),l7)')' stream,rdateLB,rdateM,rdateUB,newdata= ',&
+          write(logout,'(a,i4,2x,3(f20.3,2x),l7)') trim(subname), &
+               ' stream,rdateLB,rdateM,rdateUB,newdata= ',&
                ns,rdateLB,rdateM,rdateUB,find_bounds
        end if
     endif
@@ -1495,10 +1504,8 @@ contains
     character(CS)            :: uname, vname
     integer                  :: i, lev
     logical                  :: checkflag = .false.
-    character(*), parameter  :: subname = '(shr_strdata_readstrm) '
-    character(*), parameter  :: F00   = "('(shr_strdata_readstrm) ',8a)"
-    character(*), parameter  :: F02   = "('(shr_strdata_readstrm) ',2a,i8)"
     character(CL)            :: errmsg
+    character(*), parameter  :: subname = '(shr_strdata_readstrm) '
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -1530,10 +1537,14 @@ contains
     else
        ! otherwise close the old file if open and open new file
        if (fileopen) then
-          if (sdat%mainproc) write(sdat%stream(1)%logunit,F00) 'close  : ',trim(currfile)
+          if (sdat%mainproc) then
+             write(logout,'(3a)') trim(subname),' closing  : ',trim(currfile)
+          end if
           call pio_closefile(pioid)
        endif
-       if (sdat%mainproc) write(sdat%stream(1)%logunit,F00) 'opening   : ',trim(filename)
+       if (sdat%mainproc) then
+          write(logout,'(3a)') trim(subname),' opening   : ',trim(filename)
+       end if
        rcode = pio_openfile(sdat%pio_subsystem, pioid, sdat%io_type, trim(filename), pio_nowrite)
        call shr_stream_setCurrFile(stream, fileopen=.true., currfile=trim(filename), currpioid=pioid)
     endif
@@ -1546,7 +1557,9 @@ contains
 
     if (ESMF_MeshIsCreated(per_stream%stream_mesh)) then
        if (.not. per_stream%stream_pio_iodesc_set) then
-          if (sdat%mainproc) write(sdat%stream(1)%logunit,F00) 'setting pio descriptor : ',trim(filename)
+          if (sdat%mainproc) then
+             write(logout,'(3a)') trim(subname),' setting pio descriptor : ',trim(filename)
+          end if
           call shr_strdata_set_stream_iodesc(sdat, per_stream, trim(per_stream%fldlist_stream(1)), &
                pioid, rc=rc)
           if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -1577,7 +1590,7 @@ contains
 
     call ESMF_TraceRegionEnter(trim(istr)//'_readpio')
     if (sdat%mainproc) then
-       write(sdat%stream(1)%logunit,F02) 'reading file ' // trim(boundstr) //': ',trim(filename), nt
+       write(logout,'(3a,i0)') trim(subname),'reading file ' // trim(boundstr) //': ',trim(filename),nt
     endif
 
     if (ESMF_FieldIsCreated(per_stream%field_stream_vector)) then
@@ -1640,8 +1653,9 @@ contains
        call PIO_seterrorhandling(pioid, old_error_handle)
 
        if (debug>0 .and. sdat%mainproc)  then
-          write(sdat%stream(1)%logunit,F02)' reading '//&
-               trim(per_stream%fldlist_stream(nf))//' into '//trim(per_stream%fldlist_model(nf)),&
+          write(logout,'(3a,2x,i0)') trim(subname),&
+               ' reading '//trim(per_stream%fldlist_stream(nf))//&
+               ' into '//trim(per_stream%fldlist_model(nf)), &
                ' at time index: ',nt
        end if
 
@@ -1666,7 +1680,7 @@ contains
                 ! Single point streams are not allowed to have missing values
                 if (stream%mapalgo == 'none' .and. any(data_real2d == fillvalue_r4)) then
                    write(errmsg,*) ' ERROR: _Fillvalue found in stream input variable: '// trim(per_stream%fldlist_stream(nf))
-                   if(sdat%mainproc) write(sdat%stream(1)%logunit,*) trim(errmsg)
+                   if(sdat%mainproc) write(logout,'(2a)') trim(subname),trim(errmsg)
                    call shr_log_error(errmsg, rc=rc)
                    return
                 endif
@@ -1701,7 +1715,7 @@ contains
                 ! Single point streams are not allowed to have missing values
                 if (stream%mapalgo == 'none' .and. any(data_real1d == fillvalue_r4)) then
                    write(errmsg,*) ' ERROR: _Fillvalue found in stream input variable: '// trim(per_stream%fldlist_stream(nf))
-                   if(sdat%mainproc) write(sdat%stream(1)%logunit,*) trim(errmsg)
+                   if(sdat%mainproc) write(logout,'(2a)') trim(subname),trim(errmsg)
                    call shr_log_error(errmsg, rc=rc)
                    return
                 endif
@@ -1771,7 +1785,7 @@ contains
                 ! Single point streams are not allowed to have missing values
                 if (stream%mapalgo == 'none' .and. any(data_dbl1d == fillvalue_r8)) then
                    write(errmsg,*) ' ERROR: _Fillvalue found in stream input variable: '// trim(per_stream%fldlist_stream(nf))
-                   call shr_log_error(errmsg, rc=rc)
+                   call shr_log_error(trim(subname)//trim(errmsg), rc=rc)
                    return
                 endif
                 do n = 1,size(dataptr1d)
@@ -1975,16 +1989,11 @@ contains
     integer, allocatable    :: dimlens(:)
     type(ESMF_DistGrid)     :: distGrid
     integer                 :: lsize
-    integer                 :: logunit
     logical                 :: mainproc
     integer, pointer        :: compdof(:)
     integer, pointer        :: compdof3d(:)
     integer                 :: rCode ! pio return code (only used when pio error handling is PIO_BCAST_ERROR)
     character(*), parameter :: subname = '(shr_strdata_set_stream_iodesc) '
-    character(*), parameter :: F00  = "('(shr_strdata_set_stream_iodesc) ',a,i8,2x,i8,2x,a)"
-    character(*), parameter :: F01  = "('(shr_strdata_set_stream_iodesc) ',a,i8,2x,i8,2x,a)"
-    character(*), parameter :: F02  = "('(shr_strdata_set_stream_iodesc) ',a,i8,2x,i8,2x,i8,2x,a)"
-    character(*), parameter :: F03  = "('(shr_strdata_set_stream_iodesc) ',a,i8,2x,a)"
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -1993,8 +2002,7 @@ contains
     nullify(compdof)
     nullify(compdof3d)
 
-    ! set logunit and mainproc
-    logunit = sdat%stream(1)%logunit
+    ! set mainproc
     mainproc = sdat%mainproc
 
     ! set the number of vertical levels to a local variable
@@ -2031,7 +2039,6 @@ contains
              ! third dimension is lev and fourth dimension is time
              gsize2d = dimlens(1)*dimlens(2)
           else
-             write(6,*)'ERROR: dimlens= ',dimlens
              call shr_log_error(trim(subname)//' only ndims of 3 and 4 '//&
                   ' total dimensions are currently supported for multiple level fields '// &
                   ' with a time dimension', rc=rc)
@@ -2045,7 +2052,6 @@ contains
              ! third dimension is lev
              gsize2d = dimlens(1)*dimlens(2)
           else
-             write(6,*)'ERROR: dimlens= ',dimlens
              call shr_log_error(trim(subname)//' only ndims of 2 and 3 '// &
                   ' total dimensions are currently supported for multiple level fields '// &
                   ' without a time dimension', rc=rc)
@@ -2071,15 +2077,14 @@ contains
        rcode = pio_inq_dimname(pioid, dimids(ndims), dimname)
        if ((trim(dimname) == 'time' .or. trim(dimname) == 'nt')) then
           if (mainproc) then
-             write(logunit,F03) 'setting iodesc for 2d: '//trim(fldname)// &
-                  ' with dimlens(1) = ',dimlens(1),&
-                  ' and dimlens(2) is a time dimension '
+             write(logout,'(2a,2(i0,2x),a)') trim(subname),' setting iodesc for 2d: '//trim(fldname)// &
+                  ' with dimlens(1) = ',dimlens(1),' and dimlens(2) is a time dimension '
           end if
           call pio_initdecomp(sdat%pio_subsystem, pio_iovartype, (/dimlens(1)/), compdof, &
                per_stream%stream_pio_iodesc)
        else if (stream_nlev > 1) then
           if (mainproc) then
-             write(logunit,F01) 'setting iodesc for 2d: '//trim(fldname)// &
+             write(logout,'(2a,2x,i0,2x,i0,a)') trim(subname),' setting iodesc for 2d: '//trim(fldname)// &
                   ' with dimlens(1),dimlens(2) = ',dimlens(1),dimlens(2), &
                   ' and dimlens(2) is a vertical dimension'
           end if
@@ -2087,7 +2092,7 @@ contains
                per_stream%stream_pio_iodesc)
        else
           if (mainproc) then
-             write(logunit,F01) 'setting iodesc for 2d: '//trim(fldname)// &
+             write(logout,'(2a,2x,2(i0,2x),a)') trim(subname),' setting iodesc for 2d: '//trim(fldname)// &
                   ' with dimlens(1),dimlens(2) = ',dimlens(1),dimlens(2),&
                   ' and the variable has no time or vertical dimension '
           end if
@@ -2102,16 +2107,18 @@ contains
        if (trim(dimname) == 'time' .or. trim(dimname) == 'nt') then
           if (stream_nlev > 1) then
              if (mainproc) then
-                write(logunit,F01) 'setting iodesc for 3d: '//trim(fldname)// &
-                     ' with dimlens(1),dimlens(2) = ',dimlens(1),dimlens(2),&
+                write(logout,'(2a,2x,2(i0,2x),a)') trim(subname), &
+                     'setting iodesc for 3d: '//trim(fldname)//' with dimlens(1),dimlens(2) = ', &
+                     dimlens(1),dimlens(2), &
                      ' where dimlen(2) is a vertical dimension and dimlen(3) is time dimension '
              end if
              call pio_initdecomp(sdat%pio_subsystem, pio_iovartype, (/dimlens(1),dimlens(2)/), compdof3d, &
                   per_stream%stream_pio_iodesc)
           else
              if (mainproc) then
-                write(logunit,F01) 'setting iodesc for 3d: '//trim(fldname)// &
-                     ' with dimlens(1),dimlens(2) = ',dimlens(1),dimlens(2),&
+                write(logout,'(2a,2x,2(i0,2x),a)') trim(subname),&
+                     ' setting iodesc for 3d: '//trim(fldname)//' with dimlens(1),dimlens(2) = ', &
+                     dimlens(1),dimlens(2), &
                      ' and dimlen(3) is a time dimension '
              end if
              call pio_initdecomp(sdat%pio_subsystem, pio_iovartype, (/dimlens(1),dimlens(2)/), compdof, &
@@ -2120,15 +2127,16 @@ contains
        else
           if (stream_nlev > 1) then
              if (mainproc) then
-                write(logunit,F01) 'setting iodesc for 3d: '//trim(fldname)// &
-                     ' with dimlens(1), dimlens(2), dimlens(3) = ',dimlens(1),dimlens(2), dimlens(3), &
+                write(logout,'(2a,2x,3(i0,2x),a)') trim(subname), &
+                     ' setting iodesc for 3d: '//trim(fldname)//' with dimlens(1), dimlens(2), dimlens(3) = ',&
+                     dimlens(1),dimlens(2), dimlens(3), &
                      ' where dimlens(3) is a vertical dimension'
              end if
              call pio_initdecomp(sdat%pio_subsystem, pio_iovartype, (/dimlens(1),dimlens(2),dimlens(3)/), compdof3d, &
                   per_stream%stream_pio_iodesc)
           else
-             write(6,*)'ERROR: dimlens= ',dimlens
-             call shr_log_error(trim(subname)//' the third dimension of a 3d field must be either time or a vertical level', rc=rc)
+             call shr_log_error(trim(subname)//&
+                  ' the third dimension of a 3d field must be either time or a vertical level', rc=rc)
              return
           end if
        end if
@@ -2139,20 +2147,19 @@ contains
        rcode = pio_inq_dimname(pioid, dimids(ndims), dimname)
        if (stream_nlev > 1 .and. (trim(dimname) == 'time' .or. trim(dimname) == 'nt')) then
           if (mainproc) then
-             write(logunit,F02) 'setting iodesc for 4d: '//trim(fldname)// &
-                  ' with dimlens(1), dimlens(2),dimlens(3) = ',dimlens(1),dimlens(2),dimlens(3),&
+             write(logout,'(2a,2s,3(i0,2x),a)') trim(subname), &
+                  ' setting iodesc for 4d: '//trim(fldname)//' with dimlens(1), dimlens(2),dimlens(3) = ',&
+                  dimlens(1),dimlens(2),dimlens(3), &
                   ' where dimlens(3) is a vertical dimension and dimlens(4) is a time dimension '
           end if
           call pio_initdecomp(sdat%pio_subsystem, pio_iovartype, (/dimlens(1),dimlens(2),dimlens(3)/), compdof3d, &
                per_stream%stream_pio_iodesc)
        else
-          write(6,*)'ERROR: dimlens= ',dimlens
           call shr_log_error(trim(subname)//' dimlens = 4 assumes a time dimension and a vertical dimension', rc=rc)
           return
        end if
 
     else
-       write(6,*)'ERROR: dimlens= ',dimlens
        call shr_log_error(trim(subname)//' only ndims of 2 and 3 and 4 are currently supported', rc=rc)
        return
     end if
@@ -2179,15 +2186,12 @@ contains
     ! local variables
     integer :: ns, nf
     logical :: found
-    integer :: logunit
     logical :: mainproc
     character(len=*), parameter :: subname='(shr_strdata_get_stream_pointer_1d)'
-    character(*)    , parameter :: F00 = "('(shr_strdata_get_stream_pointer_1d) ',8a)"
     ! ----------------------------------------------
 
     rc = ESMF_SUCCESS
 
-    logunit = sdat%stream(1)%logunit
     mainproc = sdat%mainproc
 
     ! loop over all input streams and determine if the strm_fld is in the field bundle of the target stream
@@ -2200,7 +2204,7 @@ contains
                   fldptr1=strm_ptr, rc=rc)
              if (chkerr(rc,__LINE__,u_FILE_u)) return
              if (mainproc) then
-                write(logunit,F00)' strm_ptr is allocated for stream field strm_'//trim(strm_fld)
+                write(logout,'(2a)') trim(subname),' strm_ptr is allocated for stream field strm_'//trim(strm_fld)
              end if
              found = .true.
              exit
@@ -2224,15 +2228,12 @@ contains
     ! local variables
     integer :: ns, nf
     logical :: found
-    integer :: logunit
     logical :: mainproc
     character(len=*), parameter :: subname='(shr_strdata_get_stream_pointer_2d)'
-    character(*)    , parameter :: F00 = "('(shr_strdata_get_stream_pointer_2d) ',8a)"
     ! ----------------------------------------------
 
     rc = ESMF_SUCCESS
 
-    logunit = sdat%stream(1)%logunit
     mainproc = sdat%mainproc
 
     ! loop over all input streams and determine if the strm_fld is in the field bundle of the target stream
@@ -2245,7 +2246,7 @@ contains
                   fldptr2=strm_ptr, rc=rc)
              if (chkerr(rc,__LINE__,u_FILE_u)) return
              if (mainproc) then
-                write(logunit,F00)' strm_ptr is allocated for stream field strm_'//trim(strm_fld)
+                write(logout,'(2a)') trim(subname),' strm_ptr is allocated for stream field strm_'//trim(strm_fld)
              end if
              found = .true.
              exit
