@@ -71,9 +71,9 @@ module cdeps_datm_comp
   use datm_pres_ndep_mod        , only : datm_pres_ndep_init_pointers
   use datm_pres_ndep_mod        , only : datm_pres_ndep_advance
 
-  use datm_pres_presaero_mod    , only : datm_pres_presaero_advertise
-  use datm_pres_presaero_mod    , only : datm_pres_presaero_init_pointers
-  use datm_pres_presaero_mod    , only : datm_pres_presaero_advance
+  use datm_pres_aero_mod        , only : datm_pres_aero_advertise
+  use datm_pres_aero_mod        , only : datm_pres_aero_init_pointers
+  use datm_pres_aero_mod        , only : datm_pres_aero_advance
 
   use datm_pres_o3_mod          , only : datm_pres_o3_advertise
   use datm_pres_o3_mod          , only : datm_pres_o3_init_pointers
@@ -764,7 +764,7 @@ contains
             target_ymd, target_tod, sdat%model_calendar, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('GEFS')
-       call datm_datamode_gefs_advance(exportstate, mainproc, logunit, mpicom, &
+       call datm_datamode_gefs_advance(exportstate, sdat, mainproc, logunit, mpicom, &
             target_ymd, target_tod, sdat%model_calendar, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('SIMPLE')

@@ -37,32 +37,36 @@ module cdeps_docn_comp
   use nuopc_shr_methods, only : shr_get_rpointer_name
 
   ! Datamode specialized modules
-  use docn_datamode_copyall_mod          , only : docn_datamode_copyall_advertise
-  use docn_datamode_copyall_mod          , only : docn_datamode_copyall_init_pointers
-  use docn_datamode_copyall_mod          , only : docn_datamode_copyall_advance
-  use docn_datamode_iaf_mod              , only : docn_datamode_iaf_advertise
-  use docn_datamode_iaf_mod              , only : docn_datamode_iaf_init_pointers
-  use docn_datamode_iaf_mod              , only : docn_datamode_iaf_advance
+  use docn_datamode_dom_mod              , only : docn_datamode_dom_advertise
+  use docn_datamode_dom_mod              , only : docn_datamode_dom_init_pointers
+  use docn_datamode_dom_mod              , only : docn_datamode_dom_advance
+
   use docn_datamode_som_mod              , only : docn_datamode_som_advertise
   use docn_datamode_som_mod              , only : docn_datamode_som_init_pointers
   use docn_datamode_som_mod              , only : docn_datamode_som_advance
   use docn_datamode_som_mod              , only : docn_datamode_som_restart_read
   use docn_datamode_som_mod              , only : docn_datamode_som_restart_write
+
   use docn_datamode_aquaplanet_mod       , only : docn_datamode_aquaplanet_advertise
   use docn_datamode_aquaplanet_mod       , only : docn_datamode_aquaplanet_init_pointers
   use docn_datamode_aquaplanet_mod       , only : docn_datamode_aquaplanet_advance
+
   use docn_datamode_cplhist_mod          , only : docn_datamode_cplhist_advertise
   use docn_datamode_cplhist_mod          , only : docn_datamode_cplhist_init_pointers
   use docn_datamode_cplhist_mod          , only : docn_datamode_cplhist_advance
+
   use docn_datamode_multilev_cplhist_mod , only : docn_datamode_multilev_cplhist_advertise
   use docn_datamode_multilev_cplhist_mod , only : docn_datamode_multilev_cplhist_init_pointers
   use docn_datamode_multilev_cplhist_mod , only : docn_datamode_multilev_cplhist_advance
+
   use docn_datamode_multilev_dom_mod     , only : docn_datamode_multilev_dom_advertise
   use docn_datamode_multilev_dom_mod     , only : docn_datamode_multilev_dom_init_pointers
   use docn_datamode_multilev_dom_mod     , only : docn_datamode_multilev_dom_advance
+
   use docn_datamode_multilev_mod         , only : docn_datamode_multilev_advertise
   use docn_datamode_multilev_mod         , only : docn_datamode_multilev_init_pointers
   use docn_datamode_multilev_mod         , only : docn_datamode_multilev_advance
+
   use docn_import_data_mod               , only : docn_import_data_advertise
 
   implicit none
@@ -301,7 +305,6 @@ contains
 
     ! Validate datamode
     if ( trim(datamode) == 'sstdata'            .or. & ! read stream, no import data
-         trim(datamode) == 'iaf'                .or. & ! read stream, needs import data?
          trim(datamode) == 'sst_aquap_file'     .or. & ! read stream, no import data
          trim(datamode) == 'som'                .or. & ! read stream, needs import data
          trim(datamode) == 'som_aquap'          .or. & ! read stream, needs import data
@@ -326,10 +329,7 @@ contains
        call docn_datamode_som_advertise(importState, exportState, fldsImport, fldsExport, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     else if (trim(datamode) == 'sstdata' .or. trim(datamode) == 'sst_aquap_file') then
-       call docn_datamode_copyall_advertise(exportState, fldsExport, flds_scalar_name, rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    else if (trim(datamode) == 'iaf') then
-       call docn_datamode_iaf_advertise(importState, exportState, fldsImport, fldsExport, flds_scalar_name, rc)
+       call docn_datamode_dom_advertise(exportState, fldsExport, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     else if (trim(datamode) == 'cplhist') then
        call docn_datamode_cplhist_advertise(exportState, fldsExport, flds_scalar_name, rc)
@@ -551,19 +551,10 @@ contains
 
     if (first_time) then
 
-       if (trim(datamode) /= 'multilev_cplhist') then
-          ! with multilev_cplhist we explicitly create initilize dfields
-          ! within the rpointer call
-          call docn_init_dfields(importState, exportState, rc=rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       endif
        ! Initialize datamode module pointers
        select case (trim(datamode))
        case('sstdata', 'sst_aquap_file')
-          call docn_datamode_copyall_init_pointers(exportState, model_frac, rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       case('iaf')
-          call docn_datamode_iaf_init_pointers(importState, exportState, model_frac, rc)
+          call docn_datamode_dom_init_pointers(exportState, sdat, model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('som', 'som_aquap')
           call docn_datamode_som_init_pointers(importState, exportState, sdat, model_frac, rc)
@@ -573,7 +564,7 @@ contains
           call  docn_datamode_aquaplanet_init_pointers(exportState, model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('cplhist')
-          call docn_datamode_cplhist_init_pointers(exportState, model_frac, rc)
+          call docn_datamode_cplhist_init_pointers(exportState, sdat, model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('multilev')
           call docn_datamode_multilev_init_pointers(exportState, sdat,  model_frac, rc)
@@ -582,11 +573,11 @@ contains
           call docn_datamode_multilev_dom_init_pointers(exportState, sdat,  model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('multilev_cplhist')
+          ! Note that there is no call to docn_init_dfields since the
+          ! initialization of dfields is done in the above routine
           call docn_datamode_multilev_cplhist_init_pointers(dfields, &
                exportState, sdat,  model_frac, logunit, mainproc, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-          ! Note that there is no call to docn_init_dfields since the
-          ! initialization of dfields is done in the above routine
        end select
 
        ! Read restart if needed
@@ -595,7 +586,7 @@ contains
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
           select case (trim(datamode))
-          case('sstdata', 'sst_aquap_file', 'iaf', 'cplhist', 'multilev', 'mulitilev_dom', 'multilev_cplhist')
+          case('sstdata', 'sst_aquap_file', 'cplhist', 'multilev', 'mulitilev_dom', 'multilev_cplhist')
              call dshr_restart_read(restfilm, rpfile, logunit, my_task, mpicom, sdat, rc)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
           case('som', 'som_aquap')
@@ -617,22 +608,10 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_TraceRegionExit('docn_strdata_advance')
 
-    ! Copy all fields from streams to export state as default
-    ! This automatically will update the fields in the export state
-    call ESMF_TraceRegionEnter('docn_dfield_copy')
-    if (.not. aquaplanet) then
-       call dshr_dfield_copy(dfields, sdat, rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    endif
-    call ESMF_TraceRegionExit('docn_dfield_copy')
-
     ! Perform data mode specific calculations
     select case (trim(datamode))
     case('sstdata','sst_aquap_file')
-       call  docn_datamode_copyall_advance(rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    case('iaf')
-       call  docn_datamode_iaf_advance(rc)
+       call  docn_datamode_dom_advance(rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('som','som_aquap')
        call docn_datamode_som_advance(importState, exportState, clock, restart_read, datamode, rc)
@@ -663,21 +642,20 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
        select case (trim(datamode))
-       case('sstdata', 'sst_aquap_file', 'iaf', 'cplhist', 'multilev', 'mulitilev_dom', 'multilev_cplhist')
+       case('sstdata', 'sst_aquap_file', 'cplhist', 'multilev', 'mulitilev_dom', 'multilev_cplhist')
           call dshr_restart_write(rpfile, case_name, 'docn', inst_suffix, target_ymd, target_tod, logunit, &
                my_task, sdat, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('som', 'som_aquap')
           call docn_datamode_som_restart_write(rpfile, case_name, inst_suffix, target_ymd, target_tod, &
                logunit, my_task, sdat)
-          case('sst_aquap_analytic', 'sst_aquap_constant')
-             ! Do nothing
-          case default
-             call shr_log_error(subName//'datamode '//trim(datamode)//' not recognized', rc=rc)
-             return
-          end select
-
-       endif
+       case('sst_aquap_analytic', 'sst_aquap_constant')
+          ! Do nothing
+       case default
+          call shr_log_error(subName//'datamode '//trim(datamode)//' not recognized', rc=rc)
+          return
+       end select
+    endif
 
     call ESMF_TraceRegionExit('DOCN_RUN')
 
@@ -686,57 +664,6 @@ contains
        call dshr_state_diagnose(exportState, flds_scalar_name, subname//':ES',rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
-
-  contains
-
-    subroutine docn_init_dfields(importState, exportState, rc)
-      ! -----------------------------
-      ! Initialize dfields arrays
-      ! -----------------------------
-
-      ! input/output variables
-      type(ESMF_State)       , intent(inout) :: importState
-      type(ESMF_State)       , intent(inout) :: exportState
-      integer                , intent(out)   :: rc
-
-      ! local variables
-      integer                         :: n
-      integer                         :: fieldcount
-      integer                         :: dimcount
-      type(ESMF_Field)                :: lfield
-      character(ESMF_MAXSTR) ,pointer :: lfieldnamelist(:)
-      character(ESMF_MAXSTR)          :: fieldname(1)
-      character(*), parameter   :: subName = "(docn_init_dfields) "
-      !-------------------------------------------------------------------------------
-
-      rc = ESMF_SUCCESS
-
-      ! Initialize dfields data type (to map streams to export state fields)
-      ! Create dfields linked list - used for copying stream fields to export state fields
-      call ESMF_StateGet(exportState, itemCount=fieldCount, rc=rc)
-      if (chkerr(rc,__LINE__,u_FILE_u)) return
-      allocate(lfieldnamelist(fieldCount))
-      call ESMF_StateGet(exportState, itemNameList=lfieldnamelist, rc=rc)
-      if (chkerr(rc,__LINE__,u_FILE_u)) return
-      do n = 1, fieldCount
-         call ESMF_StateGet(exportState, itemName=trim(lfieldNameList(n)), field=lfield, rc=rc)
-         if (chkerr(rc,__LINE__,u_FILE_u)) return
-         if (trim(lfieldnamelist(n)) /= flds_scalar_name) then
-            call ESMF_FieldGet(lfield, dimcount=dimCount, rc=rc)
-            if (chkerr(rc,__LINE__,u_FILE_u)) return
-            if (dimcount == 2) then
-               fieldname(1) = trim(lfieldnamelist(n))
-               call dshr_dfield_add( dfields, sdat, trim(lfieldnamelist(n)), fieldname, exportState, &
-                    logunit, mainproc, rc)
-               if (chkerr(rc,__LINE__,u_FILE_u)) return
-            else
-               call dshr_dfield_add( dfields, sdat, trim(lfieldnamelist(n)), trim(lfieldnamelist(n)), exportState, &
-                    logunit, mainproc, rc)
-               if (chkerr(rc,__LINE__,u_FILE_u)) return
-            endif
-         end if
-      end do
-    end subroutine docn_init_dfields
 
   end subroutine docn_comp_run
 

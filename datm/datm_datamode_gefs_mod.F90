@@ -1,7 +1,7 @@
 module datm_datamode_gefs_mod
 
-  use ESMF             , only : ESMF_State, ESMF_SUCCESS, ESMF_LogWrite, ESMF_LOGMSG_INFO
-  use ESMF             , only : ESMF_StateGet, ESMF_Field
+  use ESMF             , only : ESMF_SUCCESS, ESMF_LogWrite, ESMF_LOGMSG_INFO, ESMF_MAXSTR
+  use ESMF             , only : ESMF_State, ESMF_StateGet, ESMF_Field
   use ESMF             , only : ESMF_TraceRegionEnter, ESMF_TraceRegionExit, ESMF_GridCompGet
   use NUOPC            , only : NUOPC_Advertise
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
@@ -70,9 +70,6 @@ contains
 
     ! local variables
     integer                         :: n
-    integer                         :: fieldcount
-    type(ESMF_Field)                :: lfield
-    character(ESMF_MAXSTR) ,pointer :: lfieldnames(:)
     type(fldlist_type), pointer :: fldList
     !-------------------------------------------------------------------------------
 
@@ -119,6 +116,10 @@ contains
     integer                , intent(out)   :: rc
 
     ! local variables
+    integer                         :: n 
+    integer                         :: fieldcount
+    type(ESMF_Field)                :: lfield
+    character(ESMF_MAXSTR) ,pointer :: lfieldnames(:)
     character(len=*), parameter :: subname='(datm_init_pointers): '
     !-------------------------------------------------------------------------------
 
@@ -185,10 +186,14 @@ contains
   end subroutine datm_datamode_gefs_init_pointers
 
   !===============================================================================
-  subroutine datm_datamode_gefs_advance(exportstate, mainproc, logunit, mpicom, target_ymd, target_tod, model_calendar, rc)
+  subroutine datm_datamode_gefs_advance(exportstate, sdat, mainproc, logunit, mpicom, &
+       target_ymd, target_tod, model_calendar, rc)
+
     use ESMF, only: ESMF_VMGetCurrent, ESMF_VMAllReduce, ESMF_REDUCE_MAX, ESMF_VM
+
     ! input/output variables
     type(ESMF_State)       , intent(inout) :: exportState
+    type(shr_strdata_type) , intent(in)    :: sdat
     logical                , intent(in)    :: mainproc
     integer                , intent(in)    :: logunit
     integer                , intent(in)    :: mpicom

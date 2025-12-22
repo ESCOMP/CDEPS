@@ -1,13 +1,14 @@
 module dlnd_datamode_glc_forcing_mod
 
    use ESMF             , only : ESMF_SUCCESS, ESMF_LOGMSG_INFO, ESMF_LogWrite, ESMF_State
+   use ESMF             , only : ESMF_TraceRegionExit, ESMF_TraceRegionEnter
    use ESMF             , only : ESMF_StateItem_Flag, ESMF_GridComp
    use NUOPC            , only : NUOPC_CompAttributeGet, NUOPC_Advertise
    use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
    use dshr_methods_mod , only : dshr_state_getfldptr, chkerr
    use dshr_strdata_mod , only : shr_strdata_type
    use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
-   use dshr_dfield_mod  , only : dfield_type, dshr_dfield_add
+   use dshr_dfield_mod  , only : dfield_type, dshr_dfield_add, dshr_dfield_copy
    use glc_elevclass_mod, only : glc_elevclass_as_string, glc_elevclass_init
 
    implicit none
@@ -21,6 +22,8 @@ module dlnd_datamode_glc_forcing_mod
    real(r8), pointer :: lfrac(:)
 
    integer :: glc_nec
+
+   type(dfield_type), pointer :: dfields => null()
 
    character(*), parameter :: nullstr = 'null'
    character(*), parameter :: u_FILE_u = &
@@ -86,12 +89,11 @@ contains
    end subroutine dlnd_datamode_glc_forcing_advertise
 
    !===============================================================================
-   subroutine dlnd_datamode_glc_forcing_init_pointers(exportState, sdat, dfields, model_frac, datamode, logunit, mainproc, rc)
+   subroutine dlnd_datamode_glc_forcing_init_pointers(exportState, sdat, model_frac, datamode, logunit, mainproc, rc)
 
       ! input/output variables
       type(ESMF_State)      , intent(inout) :: exportState
       type(shr_strdata_type), intent(in)    :: sdat
-      type(dfield_type)     , pointer       :: dfields
       real(r8)              , intent(in)    :: model_frac(:)
       character(len=*)      , intent(in)    :: datamode
       integer               , intent(in)    :: logunit
@@ -160,10 +162,11 @@ contains
    end subroutine dlnd_datamode_glc_forcing_init_pointers
 
    !===============================================================================
-   subroutine dlnd_datamode_glc_forcing_advance(exportState, rc)
+   subroutine dlnd_datamode_glc_forcing_advance(exportState, sdat, rc)
 
       ! input/output variables
       type(ESMF_State)      , intent(inout) :: exportState
+      type(shr_strdata_type), intent(in)    :: sdat 
       integer               , intent(out)   :: rc
 
       ! local variables
@@ -173,6 +176,13 @@ contains
       !-------------------------------------------------------------------------------
 
       rc = ESMF_SUCCESS
+
+      ! copy all fields from streams to export state as default
+      ! This automatically will update the fields in the export state
+      call ESMF_TraceRegionEnter('dlnd_dfield_copy')
+      call dshr_dfield_copy(dfields, sdat, rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      call ESMF_TraceRegionExit('dlnd_dfield_copy')
 
       ! Set special value over masked points
       call dshr_state_getfldptr(exportState, 'Sl_tsrf_elev', fldptr2=fldptr2, rc=rc)

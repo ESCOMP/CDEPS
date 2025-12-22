@@ -3,10 +3,11 @@ module docn_datamode_cplhist_mod
   use ESMF             , only : ESMF_State, ESMF_LOGMSG_INFO, ESMF_LogWrite, ESMF_SUCCESS
   use NUOPC            , only : NUOPC_Advertise
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
+  use shr_log_mod      , only : shr_log_error
   use shr_const_mod    , only : shr_const_TkFrz, shr_const_pi, shr_const_ocn_ref_sal
   use dshr_methods_mod , only : dshr_state_getfldptr, dshr_fldbun_getfldptr, chkerr
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
-  use dshr_strdata_mod , only : shr_strdata_type
+  use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_get_stream_pointer
 
   implicit none
   private ! except
@@ -15,12 +16,18 @@ module docn_datamode_cplhist_mod
   public  :: docn_datamode_cplhist_init_pointers
   public  :: docn_datamode_cplhist_advance
 
-  ! export fields
+  ! export field pointers
   real(r8), pointer :: So_omask(:)  => null()    ! real ocean fraction sent to mediator
   real(r8), pointer :: So_t(:)      => null()
   real(r8), pointer :: So_u(:)      => null()
   real(r8), pointer :: So_v(:)      => null()
   real(r8), pointer :: So_bldepth(:) => null()
+
+  ! stream field pointers
+  real(r8), pointer :: strm_So_bldepth(:) => null()
+  real(r8), pointer :: strm_So_t(:)       => null()
+  real(r8), pointer :: strm_So_u(:)       => null()
+  real(r8), pointer :: strm_So_v(:)       => null()
 
   real(r8) , parameter :: tkfrz   = shr_const_tkfrz       ! freezing point, fresh water (kelvin)
   real(r8) , parameter :: ocnsalt = shr_const_ocn_ref_sal ! ocean reference salinity
@@ -66,12 +73,13 @@ contains
   end subroutine docn_datamode_cplhist_advertise
 
   !===============================================================================
-  subroutine docn_datamode_cplhist_init_pointers(exportState, ocn_fraction, rc)
+  subroutine docn_datamode_cplhist_init_pointers(exportState, sdat, ocn_fraction, rc)
 
     ! input/output variables
-    type(ESMF_State) , intent(inout) :: exportState
-    real(r8)         , intent(in)    :: ocn_fraction(:)
-    integer          , intent(out)   :: rc
+    type(ESMF_State)       , intent(inout) :: exportState
+    type(shr_strdata_type) , intent(in)    :: sdat
+    real(r8)               , intent(in)    :: ocn_fraction(:)
+    integer                , intent(out)   :: rc
 
     ! local variables
     character(len=*), parameter :: subname='(docn_init_pointers): '
@@ -91,7 +99,35 @@ contains
     call dshr_state_getfldptr(exportState, 'So_bldepth', fldptr1=So_bldepth, allowNullReturn=.true., rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
 
-    !Allocation depends on exchanged fields, so check before filling arrays with values here
+    ! initialize stream pointers
+    call shr_strdata_get_stream_pointer( sdat, 'So_t', strm_So_t, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'So_u', strm_So_u, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'So_v', strm_So_v, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'So_bldepth', strm_So_bldepth, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    ! Error checks
+    if (.not. associated(strm_So_t)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_So_t must be associated for docn cplhist mode')
+       return
+    end if
+    if (.not. associated(strm_So_u)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_So_u must be associated for docn cplhist mode')
+       return
+    end if
+    if (.not. associated(strm_So_v)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_So_v must be associated for docn cplhist mode')
+       return
+    end if
+    if (.not. associated(strm_So_bldepth)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_So_bldepth must be associated for docn cplhist mode')
+       return
+    end if
+
+    ! Allocation depends on exchanged fields, so check before filling arrays with values here
     if (associated(So_u)) So_u(:) = 0.0_r8
     if (associated(So_v)) So_v(:) = 0.0_r8
     if (associated(So_t)) So_t(:) = TkFrz
@@ -115,13 +151,18 @@ contains
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
+   
+    So_t(:) = strm_So_t(:)
+    So_u(:) = strm_So_u(:)
+    So_v(:) = strm_So_v(:)
+    So_bldepth(:) = strm_So_bldepth(:)
 
-    !If need unit conversion for So_t (C-->K),
-    !use existing nml variable sst_constant_value to signal units of input
-    !i.e., 0-->Celsius, 273.15-->K
-    
+    ! If need unit conversion for So_t (C-->K),
+    ! use existing nml variable sst_constant_value to signal units of input
+    ! i.e., 0-->Celsius, 273.15-->K
+
     if (present(sst_constant_value)) then
-      if(sst_constant_value .GT. 230.0_r8) then !interpret input SST in K
+      if (sst_constant_value > 230.0_r8) then !interpret input SST in K
         units_CToK = .false. !in K already, don't convert
       endif
     endif
