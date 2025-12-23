@@ -213,7 +213,6 @@ contains
     ! Set module variables logout and mainproc
     logout = logunit
     mainproc = isroot_task
-
     if (mainproc) then
 
        Sdoc => parseFile(streamfilename, iostat=status)
@@ -378,7 +377,7 @@ contains
     endif
 
     ! broadcast the contents of streamdat from the main task  to all tasks
-    do i=1,nstrms
+    loop_over_streams: do i=1,nstrms
        tmp(1) = streamdat(i)%nfiles
        tmp(2) = streamdat(i)%nvars
        tmp(3) = streamdat(i)%yearFirst
@@ -440,7 +439,13 @@ contains
        streamdat(i)%pio_iotype = io_type
        streamdat(i)%pio_ioformat = io_format
 #endif
+       if (mainproc) then
+          write(logout,'(2a,i0)') trim(subname),' getting calendar for stream ',i
+       end if
        call shr_stream_getCalendar(streamdat(i), 1, streamdat(i)%calendar)
+       if (mainproc) then
+          write(logout,'(2a,i0,2a)') trim(subname),' calendar for stream ',i,' is ',trim(streamdat(i)%calendar)
+       end if
 
        ! Error check
        if (trim(streamdat(i)%taxmode) == shr_stream_taxis_extend .and. streamdat(i)%dtlimit < 1.e10) then
@@ -449,7 +454,7 @@ contains
        end if
        ! initialize flag that stream has been set
        streamdat(i)%init = .true.
-    enddo
+    enddo loop_over_streams
 
   end subroutine shr_stream_init_from_xml
 
@@ -464,6 +469,8 @@ contains
        stream_offset, stream_taxmode, stream_tintalgo, stream_dtlimit, &
        stream_fldlistFile, stream_fldListModel, stream_fileNames, &
        logunit, compname, isroot_task, stream_src_mask_val, stream_dst_mask_val)
+
+    use ESMF, only : ESMF_VM, ESMF_VMGetCurrent
 
     ! --------------------------------------------------------
     ! set values of stream datatype independent of a reading in a stream text file
@@ -495,18 +502,24 @@ contains
     integer                     ,optional, intent(in)    :: stream_dst_mask_val    ! destination mask value
 
     ! local variables
-    integer                :: n
-    integer                :: nfiles
-    integer                :: nvars
-    character(CS)          :: calendar ! stream calendar
+    integer       :: n
+    integer       :: nfiles
+    integer       :: nvars
+    character(CS) :: calendar ! stream calendar
     character(*),parameter :: subName = '(shr_stream_init_from_inline) '
     ! --------------------------------------------------------
 
     ! Set module variagble logout
     logout = logunit
 
-    ! Set module variable mainproc
+    ! Initialize module variable mainproc
     mainproc = isroot_task
+
+    ! call ESMF_VMGetCurrent(vm, rc=rc)
+    ! if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    ! call ESMF_VMGet(vm, localPet=localPet, rc=rc)
+    ! if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    ! mainproc = (localPet == main_task)
 
     ! Assume only 1 stream
     allocate(streamdat(1))
@@ -1587,13 +1600,13 @@ contains
     fileName  = strm%file(k)%name
 
     if (.not. pio_file_is_open(strm%file(k)%fileid)) then
-       if (mainproc) then
-          write(logout,'(2a)') trim(subname),' opening stream filename = '//trim(filename)
+       if (debug>0 .and. mainproc) then
+          write(logout,'(3x,2a)') trim(subname),' opening stream filename = '//trim(filename)
        end if
        rcode = pio_openfile(strm%pio_subsystem, strm%file(k)%fileid, strm%pio_iotype, trim(filename))
     else
-       if (mainproc) then
-          write(logout,'(2a)') trim(subname),' reading stream filename = '//trim(filename)
+       if (debug>0 .and. mainproc) then
+          write(logout,'(3x,2a)') trim(subname),' reading stream filename = '//trim(filename)
        end if
     endif
 
@@ -1614,7 +1627,7 @@ contains
     if(n>0) then
        if (ichar(lcal(n:n)) == 0 ) lcal(n:n) = ' '
     else
-       if (mainproc) then
+       if (debug>0 .and. mainproc) then
           write(logout,'(2a)') trim(subname),&
                'calendar attribute to time variable not found in file, using default noleap'
        end if
@@ -1624,8 +1637,8 @@ contains
     call shr_string_leftalign_and_convert_tabs(lcal)
     calendar = trim(shr_cal_calendarName(trim(lcal)))
 
-    if (mainproc) then
-       write(logout, '(2a)') trim(subname),' closing stream filename = '//trim(filename)
+    if (debug>0 .and. mainproc) then
+       write(logout, '(3x,2a)') trim(subname),' closing stream filename = '//trim(filename)
     end if
     call pio_closefile(strm%file(k)%fileid)
 
@@ -2092,7 +2105,7 @@ contains
     character(*),parameter   :: subName = '(shr_stream_dataDump) '
     !-------------------------------------------------------------------------------
 
-    if (debug > 0 .and. mainproc) then
+    if (debug>0 .and. mainproc) then
        write(logout,'(2a)') trim(subname),"dump internal data for debugging..."
        write(logout,'(2a,i0)') trim(subname)," nFiles        = ", strm%nFiles
        do nf = 1,strm%nFiles
