@@ -2170,7 +2170,7 @@ contains
        rcode = pio_inq_dimname(pioid, dimids(ndims), dimname)
        if (stream_nlev > 1 .and. (trim(dimname) == 'time' .or. trim(dimname) == 'nt')) then
           if (mainproc) then
-             write(logout,'(2a,2s,3(i0,2x),a)') trim(subname), &
+             write(logout,'(2a,2x,3(i0,2x),a)') trim(subname), &
                   ' setting iodesc for 4d: '//trim(fldname)//' with dimlens(1), dimlens(2),dimlens(3) = ',&
                   dimlens(1),dimlens(2),dimlens(3), &
                   ' where dimlens(3) is a vertical dimension and dimlens(4) is a time dimension '
