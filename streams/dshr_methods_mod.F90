@@ -41,6 +41,8 @@ contains
 
   subroutine dshr_state_getfldptr(State, fldname, fldptr1, fldptr2, allowNullReturn, rc)
 
+    use shr_infnan_mod, only: nan => shr_infnan_nan, assignment(=)
+
     ! ----------------------------------------------
     ! Get pointer to a state field
     ! ----------------------------------------------
@@ -50,7 +52,7 @@ contains
     character(len=*) ,          intent(in)              :: fldname
     real(R8)         , pointer, intent(inout), optional :: fldptr1(:)
     real(R8)         , pointer, intent(inout), optional :: fldptr2(:,:)
-    logical          ,          intent(in),optional     :: allowNullReturn
+    logical          ,          intent(in)   , optional :: allowNullReturn
     integer          ,          intent(out)             :: rc
 
     ! local variables
@@ -90,12 +92,12 @@ contains
     ! Initialize pointer value
     if (present(fldptr1)) then
        do ni = 1,size(fldptr1)
-          fldptr1(ni) = huge(1._r8)
+          fldptr1(ni) = nan
        end do
     else if (present(fldptr2)) then
        do nj = 1,size(fldptr2, dim=2)
           do ni = 1,size(fldptr2, dim=1)
-             fldptr2(ni,nj) = huge(1._r8)
+             fldptr2(ni,nj) = nan
           end do
        end do
     end if
