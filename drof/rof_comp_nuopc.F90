@@ -4,7 +4,6 @@ module rof_comp_nuopc
 module cdeps_drof_comp
 #endif
 
-
   !----------------------------------------------------------------------------
   ! This is the NUOPC cap for DROF
   !----------------------------------------------------------------------------
@@ -29,8 +28,8 @@ module cdeps_drof_comp
   use shr_cal_mod      , only : shr_cal_ymd2date
   use shr_log_mod      , only : shr_log_setLogUnit, shr_log_error
   use dshr_methods_mod , only : dshr_state_getfldptr, dshr_state_diagnose, chkerr, memcheck
-  use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_advance, shr_strdata_get_stream_domain
-  use dshr_strdata_mod , only : shr_strdata_init_from_config
+  use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_advance
+  use dshr_strdata_mod , only : shr_strdata_init_from_config, shr_strdata_get_stream_pointer
   use dshr_mod         , only : dshr_model_initphase, dshr_init
   use dshr_mod         , only : dshr_state_setscalar, dshr_set_runclock, dshr_check_restart_alarm
   use dshr_mod         , only : dshr_restart_read, dshr_restart_write, dshr_mesh_init
@@ -95,9 +94,13 @@ module cdeps_drof_comp
   real(r8), pointer            :: model_frac(:) => null()
   integer , pointer            :: model_mask(:) => null()
 
-  ! module pointer arrays
+  ! export state pointer arrays
   real(r8), pointer            :: Forr_rofl(:) => null()
   real(r8), pointer            :: Forr_rofi(:) => null()
+
+  ! stream pointer arrays
+  real(r8), pointer :: strm_Forr_rofl(:) => null() ! always required
+  real(r8), pointer :: strm_Forr_rofi(:) => null() ! sometimes present in stream
 
   character(*) , parameter     :: u_FILE_u = &
        __FILE__
@@ -412,6 +415,16 @@ contains
        if (chkerr(rc,__LINE__,u_FILE_u)) return
        call dshr_state_getfldptr(exportState, 'Forr_rofi' , fldptr1=Forr_rofi , rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
+
+       ! Initialize module pointers
+       call shr_strdata_get_stream_pointer( sdat, 'Forr_rofl', strm_Forr_rofl, requirePointer=.true., &
+            errmsg=trim(subname)//'ERROR: strm_Forr_rofl must be associated for drof', rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call shr_strdata_get_stream_pointer( sdat, 'Forr_rofi', strm_Forr_rofi, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       if (.not. associated(strm_Forr_rofi)) then
+          Forr_rofi(:) = 0._r8
+       end if
 
        ! Read restart if needed
        if (restart_read .and. .not. skip_restart_read) then
