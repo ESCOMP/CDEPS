@@ -602,7 +602,9 @@ contains
   !===============================================================================
   subroutine datm_comp_run(gcomp, importState, exportState, target_ymd, target_tod, target_mon, &
        orbEccen, orbMvelpp, orbLambm0, orbObliqr, restart_write, rc)
+
     use nuopc_shr_methods, only : shr_get_rpointer_name
+
     ! ----------------------------------
     ! run method for datm model
     ! ----------------------------------
@@ -754,22 +756,19 @@ contains
        call datm_datamode_jra_advance(exportstate, target_ymd, target_tod, sdat%model_calendar, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('CLMNCEP')
-       call datm_datamode_clmncep_advance(mainproc, logunit, mpicom, rc)
+       call datm_datamode_clmncep_advance(mainproc, logunit, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('CPLHIST')
-       call datm_datamode_cplhist_advance(mainproc, logunit, mpicom, rc)
+       call datm_datamode_cplhist_advance(rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('ERA5')
-       call datm_datamode_era5_advance(exportstate, mainproc, logunit, mpicom, &
-            target_ymd, target_tod, sdat%model_calendar, rc)
+       call datm_datamode_era5_advance(exportstate, mainproc, logunit, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('GEFS')
-       call datm_datamode_gefs_advance(exportstate, sdat, mainproc, logunit, mpicom, &
-            target_ymd, target_tod, sdat%model_calendar, rc)
+       call datm_datamode_gefs_advance(exportstate, sdat, mainproc, logunit, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('SIMPLE')
-       call datm_datamode_simple_advance(target_ymd, target_tod, target_mon, &
-            sdat%model_calendar, rc)
+       call datm_datamode_simple_advance(target_ymd, target_tod, target_mon, sdat%model_calendar, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end select
 

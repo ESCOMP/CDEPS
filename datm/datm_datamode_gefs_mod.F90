@@ -111,12 +111,12 @@ contains
     ! input/output variables
     type(ESMF_State)       , intent(inout) :: exportState
     type(shr_strdata_type) , intent(in)    :: sdat
-    integer                , intent(in)    :: logunit 
+    integer                , intent(in)    :: logunit
     logical                , intent(in)    :: mainproc
     integer                , intent(out)   :: rc
 
     ! local variables
-    integer                         :: n 
+    integer                         :: n
     integer                         :: fieldcount
     type(ESMF_Field)                :: lfield
     character(ESMF_MAXSTR) ,pointer :: lfieldnames(:)
@@ -186,8 +186,8 @@ contains
   end subroutine datm_datamode_gefs_init_pointers
 
   !===============================================================================
-  subroutine datm_datamode_gefs_advance(exportstate, sdat, mainproc, logunit, mpicom, &
-       target_ymd, target_tod, model_calendar, rc)
+  subroutine datm_datamode_gefs_advance(exportstate, sdat, mainproc, logunit, rc)
+
 
     use ESMF, only: ESMF_VMGetCurrent, ESMF_VMAllReduce, ESMF_REDUCE_MAX, ESMF_VM
 
@@ -196,10 +196,6 @@ contains
     type(shr_strdata_type) , intent(in)    :: sdat
     logical                , intent(in)    :: mainproc
     integer                , intent(in)    :: logunit
-    integer                , intent(in)    :: mpicom
-    integer                , intent(in)    :: target_ymd
-    integer                , intent(in)    :: target_tod
-    character(len=*)       , intent(in)    :: model_calendar
     integer                , intent(out)   :: rc
 
     ! local variables

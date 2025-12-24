@@ -7,7 +7,6 @@ module datm_datamode_era5_mod
   use shr_log_mod      , only : shr_log_error
   use dshr_methods_mod , only : dshr_state_getfldptr, chkerr
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_get_stream_pointer
-  use dshr_strdata_mod , only : shr_strdata_type
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
 
   implicit none
@@ -160,29 +159,29 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer(sdat, 'Sa_pslv', strm_Sa_pslv, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'Faxa_swdn', strm_Faxa_swdn, rc=rc) 
+    call shr_strdata_get_stream_pointer(sdat, 'Faxa_swdn', strm_Faxa_swdn, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'Faxa_swvdr', strm_Faxa_swvdr, rc=rc) 
+    call shr_strdata_get_stream_pointer(sdat, 'Faxa_swvdr', strm_Faxa_swvdr, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'Faxa_swndr', strm_Faxa_swndr, rc=rc) 
+    call shr_strdata_get_stream_pointer(sdat, 'Faxa_swndr', strm_Faxa_swndr, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'Faxa_swvdf', strm_Faxa_swvdf, rc=rc) 
+    call shr_strdata_get_stream_pointer(sdat, 'Faxa_swvdf', strm_Faxa_swvdf, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'Faxa_swndf', strm_Faxa_swndf, rc=rc) 
+    call shr_strdata_get_stream_pointer(sdat, 'Faxa_swndf', strm_Faxa_swndf, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'Faxa_swnet', strm_Faxa_swnet, rc=rc) 
+    call shr_strdata_get_stream_pointer(sdat, 'Faxa_swnet', strm_Faxa_swnet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'Faxa_lwdn', strm_Faxa_lwdn, rc=rc) 
+    call shr_strdata_get_stream_pointer(sdat, 'Faxa_lwdn', strm_Faxa_lwdn, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'Faxa_lwnet', strm_Faxa_lwnet, rc=rc) 
+    call shr_strdata_get_stream_pointer(sdat, 'Faxa_lwnet', strm_Faxa_lwnet, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'Faxa_sen', strm_Faxa_sen, rc=rc) 
+    call shr_strdata_get_stream_pointer(sdat, 'Faxa_sen', strm_Faxa_sen, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'Faxa_lat', strm_Faxa_lat, rc=rc) 
+    call shr_strdata_get_stream_pointer(sdat, 'Faxa_lat', strm_Faxa_lat, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'Faxa_taux', strm_Faxa_taux, rc=rc) 
+    call shr_strdata_get_stream_pointer(sdat, 'Faxa_taux', strm_Faxa_taux, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'Faxa_tauy', strm_Faxa_tauy, rc=rc) 
+    call shr_strdata_get_stream_pointer(sdat, 'Faxa_tauy', strm_Faxa_tauy, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! get export state pointers
@@ -238,149 +237,109 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Error checks
-    if (.not. associated(strm_Sa_tdew)) then  
+    if (.not. associated(strm_Sa_tdew)) then
        call shr_log_error(trim(subname)//'ERROR: strm_Sa_pslv must be associated for era5 datamode')
        return
     end if
-    if (associated(Sa_wspd10m)) then
-       if (.not. associated(strm_Sa_u10m)) then
-          call shr_log_error(trim(subname)//'ERROR: strm_Sa_u10m must be associated for era5 datamode')
-          return
-       end if
-       if (.not. associated(strm_Sa_v10m)) then
-          call shr_log_error(trim(subname)//'ERROR: strm_Sa_v10m must be associated for era5 datamode')
-          return
-       end if
+
+    if (associated(Sa_wspd10m) .and. .not. associated(strm_Sa_u10m)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_Sa_u10m must be associated for era5 datamode', rc=rc)
+       return
     end if
-    if (associated(Sa_t2m)) then
-       if (.not. associated(strm_Sa_t2m)) then
-          call shr_log_error(trim(subname)//'ERROR: strm_Sa_t2m must be associated for era5 datamode')
-          return
-       end if
+    if (associated(Sa_wspd10m) .and. .not. associated(strm_Sa_v10m)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_Sa_v10m must be associated for era5 datamode', rc=rc)
+       return
     end if
-    if (associated(Sa_t2m) .and. associated(Sa_pslv) .and. associated(Sa_q2m)) then
-       if (.not. associated(strm_Sa_pslv)) then  
-          call shr_log_error(trim(subname)//'ERROR: strm_Sa_pslv must be associated for era5 datamode')
-          return
-       end if
+    if (associated(Sa_t2m) .and. .not. associated(strm_Sa_t2m)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_Sa_t2m must be associated for era5 datamode', rc=rc)
+       return
+    end if
+    if (associated(Sa_t2m) .and. associated(Sa_pslv) .and. associated(Sa_q2m) .and. .not. associated(strm_Sa_pslv)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_Sa_pslv must be associated for era5 datamode', rc=rc)
+       return
     end if
     if (associated(Faxa_swdn)) then
        if (.not. associated(strm_Faxa_swdn)) then
-          call shr_log_error(trim(subname)//'ERROR: strm_Faxa_swdn must be associated for era5 datamode')
+          call shr_log_error(trim(subname)//'ERROR: strm_Faxa_swdn must be associated for era5 datamode', rc=rc)
           return
        end if
     end if
-    if ( associated(Faxa_swvdr) .or. &
-         associated(Faxa_swndr) .or. &
-         associated(Faxa_swvdf) .or. &
-         associated(Faxa_swndf)) then
+    if ( associated(Faxa_swvdr) .or. associated(Faxa_swndr) .or. associated(Faxa_swvdf) .or. associated(Faxa_swndf)) then
        if (.not. associated(strm_Faxa_swdn)) then
-          call shr_log_error(trim(subname)//'ERROR: strm_Faxa_swdn must be associated for era5 datamode')
+          call shr_log_error(trim(subname)//'ERROR: strm_Faxa_swdn must be associated for era5 datamode', rc=rc)
           return
        end if
     end if
-    if (associated(Faxa_swvdr)) then
-       if (.not. associated(strm_Faxa_swvdr)) then
-          call shr_log_error(trim(subname)//'ERROR: strm_Faxa_swvdr must be associated for era5 datamode')
-          return
+    if (associated(Faxa_swvdr) .and. .not. associated(strm_Faxa_swvdr)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_Faxa_swvdr must be associated for era5 datamode', rc=rc)
+       return
        end if
     end if
-    if (associated(Faxa_swndr)) then
-       if (.not. associated(strm_Faxa_swndr)) then
-          call shr_log_error(trim(subname)//'ERROR: strm_Faxa_swndr must be associated for era5 datamode')
-          return
-       end if
+    if (associated(Faxa_swndr) .and. .not. associated(strm_Faxa_swndr)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_Faxa_swndr must be associated for era5 datamode', rc=rc)
+       return
     end if
-    if (associated(Faxa_swvdf)) then
-       if (.not. associated(strm_Faxa_swvdf)) then
-          call shr_log_error(trim(subname)//'ERROR: strm_Faxa_swvdf must be associated for era5 datamode')
-          return
-       end if
+    if (associated(Faxa_swvdf) .and. .not. associated(strm_Faxa_swvdf)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_Faxa_swvdf must be associated for era5 datamode', rc=rc)
+       return
     end if
-    if (associated(Faxa_swndf)) then
-       if (.not. associated(strm_Faxa_swndf)) then
-          call shr_log_error(trim(subname)//'ERROR: strm_Faxa_swndf must be associated for era5 datamode')
-          return
-       end if
+    if (associated(Faxa_swndf) .and. not. associated(strm_Faxa_swndf)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_Faxa_swndf must be associated for era5 datamode', rc=rc)
+       return
     end if
-    if (associated(Faxa_lwdn)) then
-       if (.not. associated(strm_Faxa_lwdn)) then
-          call shr_log_error(trim(subname)//'ERROR: strm_Faxa_lwdn must be associated for era5 datamode')
-          return
-       end if
+    if (associated(Faxa_lwdn) .and. .not. associated(strm_Faxa_lwdn)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_Faxa_lwdn must be associated for era5 datamode', rc=rc)
+       return
     end if
-    if (associated(Faxa_lwnet)) then
-       if (.not. associated(strm_Faxa_lwnet)) then
-          call shr_log_error(trim(subname)//'ERROR: strm_Faxa_lwnet must be associated for era5 datamode')
-          return
-       end if
+    if (associated(Faxa_lwnet) .and. .not. associated(strm_Faxa_lwnet)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_Faxa_lwnet must be associated for era5 datamode', rc=rc)
+       return
     end if
-    if (associated(Faxa_swnet)) then
-       if (.not. associated(strm_Faxa_swnet)) then
-          call shr_log_error(trim(subname)//'ERROR: strm_Faxa_swnet must be associated for era5 datamode')
-          return
-       end if
+    if (associated(Faxa_swnet) .and. .not. associated(strm_Faxa_swnet)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_Faxa_swnet must be associated for era5 datamode', rc=rc)
+       return
     end if
-    if (associated(Faxa_sen)) then
-       if (.not. associated(strm_Faxa_sen)) then
-          call shr_log_error(trim(subname)//'ERROR: strm_Faxa_sen must be associated for era5 datamode')
-          return
-       end if
+    if (associated(Faxa_sen) .and. .not. associated(strm_Faxa_sen)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_Faxa_sen must be associated for era5 datamode', rc=rc)
+       return
     end if
-    if (associated(Faxa_lat)) then
-       if (.not. associated(strm_Faxa_lat)) then
-          call shr_log_error(trim(subname)//'ERROR: strm_Faxa_lat must be associated for era5 datamode')
-          return
-       end if
+    if (associated(Faxa_lat) .and. .not. associated(strm_Faxa_lat)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_Faxa_lat must be associated for era5 datamode', rc=rc)
+       return
     end if
-    if (associated(Faxa_rain)) then
-       if (.not. associated(strm_Faxa_rain)) then
-          call shr_log_error(trim(subname)//'ERROR: strm_Faxa_rain must be associated for era5 datamode')
-          return
-       end if
+    if (associated(Faxa_rain) .and. .not. associated(strm_Faxa_rain)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_Faxa_rain must be associated for era5 datamode', rc=rc)
+       return
     end if
-    if (associated(Faxa_rainc)) then
-       if (.not. associated(strm_Faxa_rainc)) then
-          call shr_log_error(trim(subname)//'ERROR: strm_Faxa_rainc must be associated for era5 datamode')
-          return
-       end if
+    if (associated(Faxa_rainc) .and. .not. associated(strm_Faxa_rainc)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_Faxa_rainc must be associated for era5 datamode', rc=rc)
+       return
     end if
-    if (associated(Faxa_rainl)) then
-       if (.not. associated(strm_Faxa_rainl)) then
-          call shr_log_error(trim(subname)//'ERROR: strm_Faxa_rainl must be associated for era5 datamode')
-          return
-       end if
+    if (associated(Faxa_rainl) .and. .not. associated(strm_Faxa_rainl)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_Faxa_rainl must be associated for era5 datamode', rc=rc)
+       return
     end if
-    if (associated(Faxa_snowc)) then
-       if (.not. associated(strm_Faxa_snowc)) then
-          call shr_log_error(trim(subname)//'ERROR: strm_Faxa_snowc must be associated for era5 datamode')
-          return
-       end if
+    if (associated(Faxa_snowc) .and. .not. associated(strm_Faxa_snowc)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_Faxa_snowc must be associated for era5 datamode', rc=rc)
+       return
     end if
-    if (associated(Faxa_snowl)) then
-       if (.not. associated(strm_Faxa_snowl)) then
-          call shr_log_error(trim(subname)//'ERROR: strm_Faxa_snowl must be associated for era5 datamode')
-          return
-       end if
+    if (associated(Faxa_snowl) .and. .not. associated(strm_Faxa_snowl)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_Faxa_snowl must be associated for era5 datamode', rc=rc)
+       return
     end if
-    if (associated(Faxa_taux)) then
-       if (.not. associated(strm_Faxa_taux)) then
-          call shr_log_error(trim(subname)//'ERROR: strm_Faxa_taux must be associated for era5 datamode')
-          return
-       end if
+    if (associated(Faxa_taux) .and. .not. associated(strm_Faxa_taux)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_Faxa_taux must be associated for era5 datamode', rc=rc)
+       return
     end if
-    if (associated(Faxa_tauy)) then
-       if (.not. associated(strm_Faxa_tauy)) then
-          call shr_log_error(trim(subname)//'ERROR: strm_Faxa_tauy must be associated for era5 datamode')
-          return
-       end if
+    if (associated(Faxa_tauy) .and. .not. associated(strm_Faxa_tauy)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_Faxa_tauy must be associated for era5 datamode', rc=rc)
+       return
     end if
 
   end subroutine datm_datamode_era5_init_pointers
 
   !===============================================================================
-  subroutine datm_datamode_era5_advance(exportstate, mainproc, logunit, mpicom, &
-       target_ymd, target_tod, model_calendar, rc)
+  subroutine datm_datamode_era5_advance(exportstate, mainproc, logunit, rc)
 
     use ESMF, only: ESMF_VMGetCurrent, ESMF_VMAllReduce, ESMF_REDUCE_MAX, ESMF_VM
 
@@ -388,10 +347,6 @@ contains
     type(ESMF_State)       , intent(inout) :: exportState
     logical                , intent(in)    :: mainproc
     integer                , intent(in)    :: logunit
-    integer                , intent(in)    :: mpicom
-    integer                , intent(in)    :: target_ymd
-    integer                , intent(in)    :: target_tod
-    character(len=*)       , intent(in)    :: model_calendar
     integer                , intent(out)   :: rc
 
     ! local variables

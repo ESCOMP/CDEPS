@@ -1,15 +1,14 @@
 module datm_datamode_jra_mod
 
-  use ESMF             , only : ESMF_State, ESMF_StateGet, ESMF_SUCCESS, ESMF_LogWrite, ESMF_LOGMSG_INFO
-  use ESMF             , only : ESMF_MeshGet
-  use ESMF             , only : ESMF_StateItem_Flag, ESMF_STATEITEM_NOTFOUND, operator(/=)
+  use ESMF             , only : ESMF_SUCCESS, ESMF_LogWrite, ESMF_LOGMSG_INFO
+  use ESMF             , only : ESMF_State, ESMF_StateGet, ESMF_MeshGet
   use NUOPC            , only : NUOPC_Advertise
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
   use shr_log_mod      , only : shr_log_error
   use shr_cal_mod      , only : shr_cal_date2julian
   use shr_const_mod    , only : shr_const_tkfrz, shr_const_pi, shr_const_rdair
   use dshr_strdata_mod , only : shr_strdata_get_stream_pointer, shr_strdata_type
-  use dshr_methods_mod , only : dshr_state_getfldptr, dshr_fldbun_getfldptr, dshr_fldbun_regrid, chkerr
+  use dshr_methods_mod , only : dshr_state_getfldptr, chkerr
   use dshr_strdata_mod , only : shr_strdata_type
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
 
@@ -128,18 +127,15 @@ contains
 
     ! local variables
     integer           :: n
-    integer           :: lsize
     integer           :: spatialDim         ! number of dimension in mesh
     integer           :: numOwnedElements   ! size of mesh
     real(r8), pointer :: ownedElemCoords(:) ! mesh lat and lons
-    type(ESMF_StateItem_Flag) :: itemFlag
     character(len=*), parameter :: subname='(datm_init_pointers): '
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
 
-    lsize = sdat%model_lsize
-
+    ! determine yc
     call ESMF_MeshGet(sdat%model_mesh, spatialDim=spatialDim, numOwnedElements=numOwnedElements, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     allocate(ownedElemCoords(spatialDim*numOwnedElements))
@@ -150,25 +146,36 @@ contains
        yc(n) = ownedElemCoords(2*n)
     end do
 
-    ! Stream pointers
-    call shr_strdata_get_stream_pointer( sdat, 'Sa_tbot'   , strm_Sa_tbot   , rc) ! required
+    ! initialize stream pointers
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_prec'  , strm_Faxa_prec  , requirePointer=.true., &
+         errmsg=trim(subname)//'ERROR: strm_Faxa_prec must be associated for jra datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Sa_pslv'   , strm_Sa_pslv   , rc) ! required
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_swdn'  , strm_Faxa_swdn  , requirePointer=.true., &
+         errmsg=trim(subname)//'ERROR: strm_Faxa_swdn must be associated for jra datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Sa_u'      , strm_Sa_u      , rc) ! required
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_swnet' , strm_Faxa_swnet , requirePointer=.true., &
+         errmsg=trim(subname)//'ERROR: strm_Faxa_swnet must be associated for jra datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Sa_v'      , strm_Sa_v      , rc) ! required
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_lwdn'  , strm_Faxa_lwdn  , requirePointer=.true., &
+         errmsg=trim(subname)//'ERROR: strm_Faxa_lwdn must be associated for jra datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Sa_shum'   , strm_Sa_shum   , rc) ! required
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_pslv'    , strm_Sa_pslv    , requirePointer=.true., &
+         errmsg=trim(subname)//'ERROR: strm_Sa_pslv must be associated for jra datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Faxa_prec' , strm_Faxa_prec , rc) ! required
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_tbot'    , strm_Sa_tbot    , requirePointer=.true., &
+         errmsg=trim(subname)//'ERROR: strm_Sa_tbot must be associated for jra datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Faxa_lwdn' , strm_Faxa_lwdn , rc) ! required
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_u'       , strm_Sa_u       , requirePointer=.true., &
+         errmsg=trim(subname)//'ERROR: strm_Sa_u must be associated for jra datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Faxa_swdn' , strm_Faxa_swdn , rc) ! required
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_v'       , strm_Sa_v       , requirePointer=.true., &
+         errmsg=trim(subname)//'ERROR: strm_Sa_v must be associated for jra datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_shum'    , strm_Sa_shum    , requirePointer=.true., &
+         errmsg=trim(subname)//'ERROR: strm_Sa_shum must be associated for jra datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    ! Export state pointers
+    ! initialize export state pointers
     call dshr_state_getfldptr(exportState, 'Sa_u'       , fldptr1=Sa_u       , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Sa_v'       , fldptr1=Sa_v       , rc=rc)
@@ -210,40 +217,6 @@ contains
     call dshr_state_getfldptr(exportState, 'Faxa_swnet' , fldptr1=Faxa_swnet , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    ! error check
-    if (.not. associated(strm_Sa_tbot)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_Sa_tbot required for CORE_IAF_JRA', rc=rc)
-       return
-    endif
-    if (.not. associated(strm_Sa_pslv)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_Sa_pslv required for CORE_IAF_JRA', rc=rc)
-       return
-    endif
-    if (.not. associated(strm_Sa_u)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_Sa_u required for CORE_IAF_JRA', rc=rc)
-       return
-    endif
-    if (.not. associated(strm_Sa_v)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_Sa_v required for CORE_IAF_JRA', rc=rc)
-       return
-    endif
-    if (.not. associated(strm_Sa_shum)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_Sa_shum required for CORE_IAF_JRA', rc=rc)
-       return
-    endif
-    if (.not. associated(strm_Faxa_prec)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_Faxa_prec required for CORE_IAF_JRA', rc=rc)
-       return
-    endif
-    if (.not. associated(strm_Faxa_lwdn)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_Faxa_lwdn required for CORE_IAF_JRA', rc=rc)
-       return
-    endif
-    if (.not. associated(strm_Faxa_swdn)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_Faxa_swdn required for CORE_IAF_JRA', rc=rc)
-       return
-    endif
-
   end subroutine datm_datamode_jra_init_pointers
 
   !===============================================================================
@@ -279,8 +252,8 @@ contains
        ! Set export fields as copies directly from streams
        Sa_pslv(n) = strm_Sa_pslv(n)
        Sa_tbot(n) = strm_Sa_tbot(n)
-       Sa_u(n)    = strm_Sa_u(n)   
-       Sa_v(n)    = strm_Sa_v(n)   
+       Sa_u(n)    = strm_Sa_u(n)
+       Sa_v(n)    = strm_Sa_v(n)
        Sa_shum(n) = strm_Sa_shum(n)
 
        ! Set Sa_pbot from Sa_pslv

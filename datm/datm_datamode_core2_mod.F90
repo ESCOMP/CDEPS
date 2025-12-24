@@ -167,44 +167,43 @@ contains
 
     rc = ESMF_SUCCESS
 
-    lsize = sdat%model_lsize
-
-    ! allocate module arrays
-    allocate(windFactor(lsize))
-    allocate(winddFactor(lsize))
-    allocate(qsatFactor(lsize))
-
-    call ESMF_MeshGet(sdat%model_mesh, spatialDim=spatialDim, numOwnedElements=numOwnedElements, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    allocate(ownedElemCoords(spatialDim*numOwnedElements))
-    allocate(yc(numOwnedElements))
-    call ESMF_MeshGet(sdat%model_mesh, ownedElemCoords=ownedElemCoords)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    do n = 1,numOwnedElements
-       yc(n) = ownedElemCoords(2*n)
-    end do
-
     ! get stream pointers
-    call shr_strdata_get_stream_pointer( sdat, 'Faxa_prec'  , strm_Faxa_prec  , rc) ! required
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_prec'  , strm_Faxa_prec  , requirePointer=.true., &
+         errmsg=trim(subname)//'ERROR: strm_Faxa_prec must be associated for core2 datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Faxa_swdn'  , strm_Faxa_swdn  , rc) ! required
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_swdn'  , strm_Faxa_swdn  , requirePointer=.true., &
+         errmsg=trim(subname)//'ERROR: strm_Faxa_swdn must be associated for core2 datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Faxa_swnet' , strm_Faxa_swnet , rc) ! required
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_swnet' , strm_Faxa_swnet , requirePointer=.true., &
+         errmsg=trim(subname)//'ERROR: strm_Faxa_swnet must be associated for core2 datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Faxa_lwdn'  , strm_Faxa_lwdn  , rc) ! required
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_lwdn'  , strm_Faxa_lwdn  , requirePointer=.true., &
+         errmsg=trim(subname)//'ERROR: strm_Faxa_lwdn must be associated for core2 datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Sa_pslv'    , strm_Sa_pslv    , rc) ! required
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_pslv'    , strm_Sa_pslv    , requirePointer=.true., &
+         errmsg=trim(subname)//'ERROR: strm_Sa_pslv must be associated for core2 datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Sa_tbot'    , strm_Sa_tbot    , rc) ! required
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_tbot'    , strm_Sa_tbot    , requirePointer=.true., &
+         errmsg=trim(subname)//'ERROR: strm_Sa_tbot must be associated for core2 datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Sa_u'       , strm_Sa_u       , rc) ! required
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_u'       , strm_Sa_u       , requirePointer=.true., &
+         errmsg=trim(subname)//'ERROR: strm_Sa_u must be associated for core2 datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Sa_v'       , strm_Sa_v       , rc) ! required
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_v'       , strm_Sa_v       , requirePointer=.true., &
+         errmsg=trim(subname)//'ERROR: strm_Sa_v must be associated for core2 datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Sa_shum'    , strm_Sa_shum    , rc) ! required
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_shum'    , strm_Sa_shum    , requirePointer=.true., &
+         errmsg=trim(subname)//'ERROR: strm_Sa_shum must be associated for core2 datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'tarcf'      , strm_tarcf      , rc) ! required for CORE2_IAF
+
+    call shr_strdata_get_stream_pointer( sdat, 'tarcf', strm_tarcf, rc) ! required for CORE2_IAF
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (trim(datamode) == 'CORE2_IAF' ) then
+       if (.not. associated(strm_tarcf)) then
+          call shr_log_error(trim(subname)//'tarcf must be associated for CORE2_IAF', rc=rc)
+          return
+       endif
+    endif
 
     ! get export state pointers
     call dshr_state_getfldptr(exportState, 'Sa_z'       , fldptr1=Sa_z       , rc=rc)
@@ -248,46 +247,23 @@ contains
     call dshr_state_getfldptr(exportState, 'Faxa_lwdn'  , fldptr1=Faxa_lwdn  , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    if (.not. associated(strm_Faxa_prec)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_Faxa_prec must be associated for CORE2', rc=rc)
-       return
-    endif
-    if (.not. associated(strm_Faxa_swdn)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_Faxa_swdn must be associated for CORE2', rc=rc)
-       return
-    endif
-    if (.not. associated(strm_Faxa_swnet)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_Faxa_swnet must be associated for CORE2', rc=rc)
-       return
-    endif
-    if (.not. associated(strm_Faxa_lwdn)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_Faxa_lwdn must be associated for CORE2', rc=rc)
-       return
-    endif
-    if (.not. associated(strm_Sa_pslv)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_Sa_pslv must be associated for CORE2', rc=rc)
-       return
-    endif
-    if (.not. associated(strm_Sa_tbot)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_Sa_tbot must be associated for CORE2', rc=rc)
-       return
-    endif
-    if (.not. associated(strm_Sa_u)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_Sa_u must be associated for CORE2', rc=rc)
-       return
-    endif
-    if (.not. associated(strm_Sa_v)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_Sa_v must be associated for CORE2', rc=rc)
-       return
-    endif
-    if (.not. associated(strm_tarcf)) then
-       if (trim(datamode) == 'CORE2_IAF' ) then
-          call shr_log_error(trim(subname)//'tarcf must be associated for CORE2_IAF', rc=rc)
-          return
-       endif
-    endif
+    ! create yc
+    call ESMF_MeshGet(sdat%model_mesh, spatialDim=spatialDim, numOwnedElements=numOwnedElements, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    allocate(ownedElemCoords(spatialDim*numOwnedElements))
+    allocate(yc(numOwnedElements))
+    call ESMF_MeshGet(sdat%model_mesh, ownedElemCoords=ownedElemCoords)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    do n = 1,numOwnedElements
+       yc(n) = ownedElemCoords(2*n)
+    end do
+    deallocate(ownedElemCoords)
 
     ! create adjustment factor arrays
+    lsize = sdat%model_lsize
+    allocate(windFactor(lsize))
+    allocate(winddFactor(lsize))
+    allocate(qsatFactor(lsize))
     call datm_get_adjustment_factors(sdat, factorFn_mesh, factorFn_data, windFactor, winddFactor, qsatFactor, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
