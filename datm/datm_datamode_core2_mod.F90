@@ -161,7 +161,6 @@ contains
     integer           :: spatialDim         ! number of dimension in mesh
     integer           :: numOwnedElements   ! size of mesh
     real(r8), pointer :: ownedElemCoords(:) ! mesh lat and lons
-    type(ESMF_StateItem_Flag) :: itemFlag
     character(len=*), parameter :: subname='(datm_init_pointers): '
     !-------------------------------------------------------------------------------
 
@@ -247,6 +246,19 @@ contains
     call dshr_state_getfldptr(exportState, 'Faxa_lwdn'  , fldptr1=Faxa_lwdn  , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
+    if (.not. associated(strm_Faxa_prec) .or. .not. associated(strm_Faxa_swdn)) then
+       call shr_log_error(trim(subname)//'ERROR: either strm_Faxa_prec or strm_Faxa_swd '//&
+            ' must be in streams for CORE2', rc=rc)
+       return
+    endif
+
+    if (trim(datamode) == 'CORE2_IAF' ) then
+       if (.not. associated(strm_tarcf)) then
+          call shr_log_error(trim(subname)//'strm_tarcf must be in an input stream for CORE2_IAF', rc=rc)
+          return
+       endif
+    endif
+
     ! create yc
     call ESMF_MeshGet(sdat%model_mesh, spatialDim=spatialDim, numOwnedElements=numOwnedElements, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -258,6 +270,7 @@ contains
        yc(n) = ownedElemCoords(2*n)
     end do
     deallocate(ownedElemCoords)
+
 
     ! create adjustment factor arrays
     lsize = sdat%model_lsize

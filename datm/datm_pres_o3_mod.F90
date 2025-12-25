@@ -1,9 +1,7 @@
 module datm_pres_o3_mod
 
-  use ESMF             , only : ESMF_SUCCESS, ESMF_State, ESMF_StateItem_Flag
-  use ESMF             , only : ESMF_STATEITEM_NOTFOUND
+  use ESMF             , only : ESMF_SUCCESS, ESMF_State
   use shr_kind_mod     , only : r8=>shr_kind_r8
-  use shr_log_mod      , only : shr_log_error
   use dshr_methods_mod , only : dshr_state_getfldptr, chkerr
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_get_stream_pointer
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
@@ -55,16 +53,10 @@ contains
     call dshr_state_getfldptr(exportState, 'Sa_o3', fldptr1=Sa_o3, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    ! Get pointer to stream data that will be used below - if the
-    ! following stream fields are not in any sdat streams, then a null value is returned
-    call shr_strdata_get_stream_pointer(sdat, 'Sa_o3', strm_Sa_o3, rc)
+    ! Get pointer to stream data that will be used below
+    call shr_strdata_get_stream_pointer(sdat, 'Sa_o3', strm_Sa_o3, requirePointer=.true., &
+         errmsg=trim(subname)//'ERROR: strm_Sa_o3 must be associated if flds_pres_o3 is .true.', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    ! Error checks
-    if (.not. associated(strm_Sa_o3)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_Sa_o3 must be associated if flds_pres_o3 is .true.')
-       return
-    end if
 
   end subroutine datm_pres_o3_init_pointers
 

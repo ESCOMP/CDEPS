@@ -662,6 +662,10 @@ contains
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end if
 
+       ! Initialize dfields
+       call datm_init_dfields(rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
        ! Initialize datamode module pointers
        select case (trim(datamode))
        case('CORE2_NYF','CORE2_IAF')
@@ -777,12 +781,12 @@ contains
        call shr_get_rpointer_name(gcomp, 'atm', target_ymd, target_tod, rpfile, 'write', rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        select case (trim(datamode))
-       case('CORE2_NYF','CORE2_IAF','CORE_IAF_JRA', &
-            'CORE_RYF6162_JRA','CORE_RYF8485_JRA' , &
-            'CORE_RYF9091_JRA','CORE_RYF0304_JRA' , &
+       case('CORE2_NYF','CORE2_IAF','CORE_IAF_JRA',&
+            'CORE_RYF6162_JRA','CORE_RYF8485_JRA' ,&
+            'CORE_RYF9091_JRA','CORE_RYF0304_JRA' ,&
             'CLMNCEP','CPLHIST','ERA5','GEFS','SIMPLE')
-          call dshr_restart_write(rpfile, case_name, 'datm', inst_suffix, target_ymd, target_tod, logunit, &
-               my_task, sdat, rc)
+          call dshr_restart_write(rpfile, case_name, 'datm', inst_suffix, &
+               target_ymd, target_tod, logunit, my_task, sdat, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case default
           call shr_log_error(subName//'datamode '//trim(datamode)//' not recognized', rc=rc)

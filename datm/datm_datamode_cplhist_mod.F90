@@ -18,7 +18,7 @@ module datm_datamode_cplhist_mod
   public  :: datm_datamode_cplhist_init_pointers
   public  :: datm_datamode_cplhist_advance
 
-  ! export state data
+  ! export state data pointers
 
   real(r8), pointer :: Sa_z(:)            => null()
   real(r8), pointer :: Sa_tbot(:)         => null()
@@ -39,7 +39,7 @@ module datm_datamode_cplhist_mod
   real(r8), pointer :: Faxa_swvdr(:)      => null()
   real(r8), pointer :: Faxa_swvdf(:)      => null()
 
-  ! stream data
+  ! stream data pointers
 
   real(r8), pointer :: strm_Sa_z   (:)    => null()
   real(r8), pointer :: strm_Sa_tbot(:)    => null()
@@ -60,7 +60,6 @@ module datm_datamode_cplhist_mod
   real(r8), pointer :: strm_Faxa_snowl(:) => null()
   real(r8), pointer :: strm_Faxa_lwdn (:) => null()
 
-  character(*), parameter :: nullstr = 'null'
   character(*), parameter :: u_FILE_u = &
        __FILE__
 
@@ -106,9 +105,6 @@ contains
     call dshr_fldList_add(fldsExport, 'Faxa_snowl' )
     call dshr_fldList_add(fldsExport, 'Faxa_lwdn'  )
 
-    !call dshr_fldList_add(fldsExport, 'Faxa_swnet' ) !???
-    !call dshr_fldList_add(fldsExport, 'Faxa_swdn'  ) !???
-
     fldlist => fldsExport ! the head of the linked list
     do while (associated(fldlist))
        call NUOPC_Advertise(exportState, standardName=fldlist%stdname, rc=rc)
@@ -129,7 +125,6 @@ contains
     integer                , intent(out)   :: rc
 
     ! local variables
-    type(ESMF_StateItem_Flag) :: itemFlag
     character(len=*), parameter :: subname='(datm_init_pointers): '
     !-------------------------------------------------------------------------------
 

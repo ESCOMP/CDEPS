@@ -1,9 +1,7 @@
 module datm_pres_co2_mod
 
-  use ESMF             , only : ESMF_SUCCESS, ESMF_State, ESMF_StateItem_Flag
-  use ESMF             , only : ESMF_STATEITEM_NOTFOUND
+  use ESMF             , only : ESMF_SUCCESS, ESMF_State
   use shr_kind_mod     , only : r8=>shr_kind_r8, cl=>shr_kind_cl
-  use shr_log_mod      , only : shr_log_error
   use dshr_methods_mod , only : dshr_state_getfldptr, chkerr
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_get_stream_pointer
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
@@ -64,29 +62,21 @@ contains
     ! Get pointer to export state
     call dshr_state_getfldptr(exportState, 'Sa_co2diag', fldptr1=Sa_co2diag, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    if (.not. associated(Sa_co2diag)) then
-       call shr_log_error(trim(subname)//'ERROR: Sa_co2diag must be associated if flds_co2 is .true.')
-    end if
+
     call dshr_state_getfldptr(exportState, 'Sa_co2prog', fldptr1=Sa_co2prog, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    if (.not. associated(Sa_co2prog)) then
-       call shr_log_error(trim(subname)//'ERROR: Sa_co2prog must be associated if flds_co2 is .true.')
-       return
-    end if
 
     ! Get pointer to stream data that will be used below - if the
     ! following stream fields are not in any sdat streams, then a null value is returned
-    call shr_strdata_get_stream_pointer(sdat, 'Sa_co2diag', strm_Sa_co2diag, rc)
+    call shr_strdata_get_stream_pointer(sdat, 'Sa_co2diag', strm_Sa_co2diag, requirePointer=.true., &
+         errmsg=trim(subname)//'strm_Sa_co2diag must be associated if flds_co2 is .true.', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    if (.not. associated(strm_Sa_co2diag)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_Sa_co2diag must be associated if flds_co2 is .true.')
-    end if
+
     if (datamode == 'CPLHIST') then
-       call shr_strdata_get_stream_pointer(sdat, 'Sa_co2prog', strm_Sa_co2prog, rc)
-       if (.not. associated(strm_Sa_co2prog)) then
-          call shr_log_error(trim(subname)//'ERROR: strm_Sa_co2prog must be associated if flds_co2 is .true.')
-          return
-       end if
+       call shr_strdata_get_stream_pointer(sdat, 'Sa_co2prog', strm_Sa_co2prog, requirePointer=.true., &
+            errmsg=trim(subname)//'strm_Sa_co2prog must be associated if flds_co2 is .true. '// &
+            ' and datamode is CPLHIST', rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
   end subroutine datm_pres_co2_init_pointers

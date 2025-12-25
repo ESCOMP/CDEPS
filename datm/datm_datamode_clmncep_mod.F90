@@ -43,13 +43,13 @@ module datm_datamode_clmncep_mod
   real(r8), pointer :: Faxa_swvdf(:) => null()
   real(r8), pointer :: Faxa_swnet(:) => null()
 
-  ! import state data
+  ! import state data pointers
   real(r8), pointer :: Sx_avsdr(:)   => null()
   real(r8), pointer :: Sx_anidr(:)   => null()
   real(r8), pointer :: Sx_avsdf(:)   => null()
   real(r8), pointer :: Sx_anidf(:)   => null()
 
-  ! stream data
+  ! stream data pointers
   real(r8), pointer :: strm_Sa_topo(:)      => null()
   real(r8), pointer :: strm_Sa_z(:)         => null()
   real(r8), pointer :: strm_Sa_tbot(:)      => null()
@@ -157,77 +157,6 @@ contains
 
     rc = ESMF_SUCCESS
 
-    ! initialize stream pointers for export state
-    call shr_strdata_get_stream_pointer( sdat, 'Sa_wind'     , strm_Sa_wind, requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Sa_wind must be associated for datm clmncep datamode', rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Sa_topo'     , strm_Sa_topo, requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Sa_topo must be associated for datm clmncep datamode', rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Sa_tbot'     , strm_Sa_tbot, requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Sa_tbot must be associated for datm clmncep datamode', rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Faxa_precn'  , strm_Faxa_precn, requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Faxa_precn must be associated for datm clmncep datamode', rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    call shr_strdata_get_stream_pointer( sdat, 'Sa_pbot'     , strm_Sa_pbot     , rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Sa_z'        , strm_Sa_z        , rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Sa_shum'     , strm_Sa_shum     , rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Sa_tdew'     , strm_Sa_tdew     , rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Sa_rh'       , strm_Sa_rh       , rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Faxa_swdndf' , strm_Faxa_swdndf , rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Faxa_swdndr' , strm_Faxa_swdndr , rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Faxa_lwdn'   , strm_Faxa_lwdn   , rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Faxa_swdn'   , strm_Faxa_swdn   , rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    ! additional error checks on stream pointers for export state
-    if ( .not. associated(strm_Sa_shum) .and. &
-         .not. associated(strm_Sa_rh)   .and. &
-         .not. associated(strm_Sa_tdew)) then
-       call shr_log_error(subname//'ERROR: one of strm_Sa_shum, strm_Sa_rh or strm_Sa_tdew '// &
-            'must for associated to compute specific humidity in clmncep datamode', rc=rc)
-       return
-    endif
-    if ( .not. associated(strm_Faxa_swdndf) .and. &
-         .not. associated(strm_Faxa_swdndr) .and. &
-         .not. associated(strm_Faxa_swdn)) then
-       call shr_log_error(subName//'ERROR: either strm_Faxa_swdndf and strm_faxa_swdndr .or strm_faxa_swdn '//&
-            'must be associated for computing short-wave down in clmncep datamode', rc=rc)
-       return
-    endif
-
-    ! initialize stream pointers for module for bias correction
-    call shr_strdata_get_stream_pointer( sdat, 'Faxa_precsf'  , strm_Faxa_precsf   , rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    ! initialize stream pointers anomaly forcing
-    call shr_strdata_get_stream_pointer( sdat, 'Sa_u_af'      , strm_Sa_u_af      , rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Sa_v_af'      , strm_Sa_v_af      , rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Sa_shum_af'   , strm_Sa_shum_af   , rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Sa_tbot_af'   , strm_Sa_tbot_af   , rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Sa_pbot_af'   , strm_Sa_pbot_af   , rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Faxa_prec_af' , strm_Faxa_prec_af , rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Faxa_swdn_af' , strm_Faxa_swdn_af , rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Faxa_lwdn_af' , strm_Faxa_lwdn_af , rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
     ! initialize export state pointers
     call dshr_state_getfldptr(exportState, 'Sa_z'       , fldptr1=Sa_z       , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -268,7 +197,7 @@ contains
     call dshr_state_getfldptr(exportState, 'Faxa_lwdn'  , fldptr1=Faxa_lwdn  , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    ! determine anidrmax (see below for use)
+    ! import data pointers (to determine anidrmax (see below for use))
     call ESMF_StateGet(importstate, 'Sx_anidr', itemFlag, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (itemflag /= ESMF_STATEITEM_NOTFOUND) then
@@ -282,6 +211,78 @@ contains
        call dshr_state_getfldptr(importState, 'Sx_avsdf', fldptr1=Sx_avsdf, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
+
+    ! required stream data pointers
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_wind'     , strm_Sa_wind, requirePointer=.true., &
+         errmsg=trim(subname)//'ERROR: strm_Sa_wind must be associated for datm clmncep datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_topo'     , strm_Sa_topo, requirePointer=.true., &
+         errmsg=trim(subname)//'ERROR: strm_Sa_topo must be associated for datm clmncep datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_tbot'     , strm_Sa_tbot, requirePointer=.true., &
+         errmsg=trim(subname)//'ERROR: strm_Sa_tbot must be associated for datm clmncep datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_precn'  , strm_Faxa_precn, requirePointer=.true., &
+         errmsg=trim(subname)//'ERROR: strm_Faxa_precn must be associated for datm clmncep datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    ! optional stream data pointers
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_pbot'     , strm_Sa_pbot     , rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_z'        , strm_Sa_z        , rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_shum'     , strm_Sa_shum     , rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_tdew'     , strm_Sa_tdew     , rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_rh'       , strm_Sa_rh       , rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_swdndf' , strm_Faxa_swdndf , rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_swdndr' , strm_Faxa_swdndr , rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_lwdn'   , strm_Faxa_lwdn   , rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_swdn'   , strm_Faxa_swdn   , rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    if ( .not. associated(strm_Sa_shum) .and. &
+         .not. associated(strm_Sa_rh)   .and. &
+         .not. associated(strm_Sa_tdew)) then
+       call shr_log_error(subname//'ERROR: one of strm_Sa_shum, strm_Sa_rh or strm_Sa_tdew '// &
+            'must for associated to compute specific humidity in clmncep datamode', rc=rc)
+       return
+    endif
+    if ( .not. associated(strm_Faxa_swdndf) .and. &
+         .not. associated(strm_Faxa_swdndr) .and. &
+         .not. associated(strm_Faxa_swdn)) then
+       call shr_log_error(subName//'ERROR: either strm_Faxa_swdndf and strm_faxa_swdndr .or strm_faxa_swdn '//&
+            'must be associated for computing short-wave down in clmncep datamode', rc=rc)
+       return
+    endif
+
+    ! initialize stream pointers for module for bias correction
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_precsf'  , strm_Faxa_precsf   , rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    ! initialize stream pointers anomaly forcing
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_u_af'      , strm_Sa_u_af      , rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_v_af'      , strm_Sa_v_af      , rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_shum_af'   , strm_Sa_shum_af   , rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_tbot_af'   , strm_Sa_tbot_af   , rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_pbot_af'   , strm_Sa_pbot_af   , rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_prec_af' , strm_Faxa_prec_af , rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_swdn_af' , strm_Faxa_swdn_af , rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_lwdn_af' , strm_Faxa_lwdn_af , rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
 
   end subroutine datm_datamode_clmncep_init_pointers
 
