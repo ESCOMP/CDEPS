@@ -5,9 +5,8 @@ module dlnd_datamode_glc_forcing_mod
    use NUOPC            , only : NUOPC_CompAttributeGet, NUOPC_Advertise
    use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
    use dshr_methods_mod , only : dshr_state_getfldptr, chkerr
-   use dshr_strdata_mod , only : shr_strdata_type
+   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_get_stream_pointer
    use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
-   use dshr_dfield_mod  , only : dfield_type, dshr_dfield_add
    use glc_elevclass_mod, only : glc_elevclass_as_string, glc_elevclass_init
 
    implicit none
@@ -17,8 +16,19 @@ module dlnd_datamode_glc_forcing_mod
    public :: dlnd_datamode_glc_forcing_init_pointers
    public :: dlnd_datamode_glc_forcing_advance
 
-   ! module pointer arrays
+   ! export state pointer
    real(r8), pointer :: lfrac(:)
+   real(r8), pointer :: Sl_tsrf_elev(:,:)
+   real(r8), pointer :: Sl_topo_elev(:,:)
+   real(r8), pointer :: Flgl_qice_elev(:,:)
+
+   ! stream pointers (1d)
+   type, public :: stream_pointer_type
+      real(r8), pointer :: strm_ptr(:)
+   end type stream_pointer_type
+   type(stream_pointer_type), allocatable :: strm_Sl_tsrf_elev(:)
+   type(stream_pointer_type), allocatable :: strm_Sl_topo_elev(:)
+   type(stream_pointer_type), allocatable :: strm_Flgl_qice_elev(:)
 
    integer :: glc_nec
 
@@ -30,7 +40,8 @@ module dlnd_datamode_glc_forcing_mod
 contains
 !===============================================================================
 
-   subroutine dlnd_datamode_glc_forcing_advertise(gcomp, exportState, fldsExport, flds_scalar_name, logunit, mainproc, rc)
+   subroutine dlnd_datamode_glc_forcing_advertise(gcomp, exportState, fldsExport, flds_scalar_name, &
+        logunit, mainproc, rc)
 
       ! determine export state to advertise to mediator
 
@@ -86,24 +97,19 @@ contains
    end subroutine dlnd_datamode_glc_forcing_advertise
 
    !===============================================================================
-   subroutine dlnd_datamode_glc_forcing_init_pointers(exportState, sdat, dfields, model_frac, datamode, logunit, mainproc, rc)
+   subroutine dlnd_datamode_glc_forcing_init_pointers(exportState, sdat, model_frac, datamode, rc)
 
       ! input/output variables
       type(ESMF_State)      , intent(inout) :: exportState
       type(shr_strdata_type), intent(in)    :: sdat
-      type(dfield_type)     , pointer       :: dfields
       real(r8)              , intent(in)    :: model_frac(:)
       character(len=*)      , intent(in)    :: datamode
-      integer               , intent(in)    :: logunit
-      logical               , intent(in)    :: mainproc
       integer               , intent(out)   :: rc
 
       ! local variables
-      integer                     :: n
-      character(len=2)            :: nec_str
-      character(CS), allocatable  :: strm_flds_topo(:)
-      character(CS), allocatable  :: strm_flds_tsrf(:)
-      character(CS), allocatable  :: strm_flds_qice(:)
+      integer          :: ng
+      character(len=2) :: nec_str
+      character(CS)    :: strm_fld
       character(len=*), parameter :: subname='(dlnd_datamode_glc_forcing_init_pointers): '
       !-------------------------------------------------------------------------------
 
@@ -113,85 +119,79 @@ contains
       call dshr_state_getfldptr(exportState, fldname='Sl_lfrin', fldptr1=lfrac, rc=rc)
       if (chkerr(rc,__LINE__,u_FILE_u)) return
       lfrac(:) = model_frac(:)
+      call dshr_state_getfldptr(exportState, 'Sl_tsrf_elev', fldptr2=Sl_tsrf_elev, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      call dshr_state_getfldptr(exportState, 'Sl_topo_elev', fldptr2=Sl_topo_elev, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
+      call dshr_state_getfldptr(exportState, 'Flgl_qice_elev', fldptr2=Flgl_qice_elev, rc=rc)
+      if (chkerr(rc,__LINE__,u_FILE_u)) return
 
-      ! Create stream-> export state mapping
-      ! Note that strm_flds is the model name for the stream field
-      ! Note that state_fld is the model name for the export field
+      ! Obtain pointers to stream fields
 
-      if (trim(datamode) == 'glc_forcing_mct') then
-         allocate(strm_flds_tsrf(0:glc_nec))
-         allocate(strm_flds_topo(0:glc_nec))
-         allocate(strm_flds_qice(0:glc_nec))
-         do n = 0,glc_nec
-            write(nec_str, '(i2.2)') n
-            strm_flds_tsrf(n) = 'Sl_tsrf_elev'   // trim(nec_str)
-            strm_flds_topo(n) = 'Sl_topo_elev'   // trim(nec_str)
-            strm_flds_qice(n) = 'Flgl_qice_elev' // trim(nec_str)
-         end do
+      allocate(strm_Sl_tsrf_elev(glc_nec+1))
+      allocate(strm_Sl_topo_elev(glc_nec+1))
+      allocate(strm_Flgl_qice_elev(glc_nec+1))
 
-      else if (trim(datamode) == 'glc_forcing' ) then
-         allocate(strm_flds_tsrf(1:glc_nec+1))
-         allocate(strm_flds_topo(1:glc_nec+1))
-         allocate(strm_flds_qice(1:glc_nec+1))
-         do n = 1,glc_nec+1
-            write(nec_str, '(i0)') n
-            strm_flds_tsrf(n) = 'Sl_tsrf_elev'   // trim(nec_str)
-            strm_flds_topo(n) = 'Sl_topo_elev'   // trim(nec_str)
-            strm_flds_qice(n) = 'Flgl_qice_elev' // trim(nec_str)
-         end do
+      do ng = 1,glc_nec+1
+         if (trim(datamode) == 'glc_forcing_mct') then
+            write(nec_str,'(i2.2)') ng-1
+         else
+            write(nec_str,'(i0)') ng
+         end if
+         strm_fld = 'Sl_tsrf_elev'//trim(nec_str)
+         call shr_strdata_get_stream_pointer( sdat, trim(strm_fld), strm_Sl_tsrf_elev(ng)%strm_ptr, requirePointer=.true., &
+              errmsg=trim(subname)//'ERROR: '//trim(strm_fld)//' must be associated for dlnd glc_forcing datamode', rc=rc)
+         if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-      end if
+         strm_fld = 'Sl_topo_elev'//trim(nec_str)
+         call shr_strdata_get_stream_pointer( sdat, trim(strm_fld), strm_Sl_topo_elev(ng)%strm_ptr, requirePointer=.true., &
+              errmsg=trim(subname)//'ERROR: '//trim(strm_fld)//' must be associated for dlnd glc_forcing datamode', rc=rc)
+         if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-      ! The following maps stream input fields to export fields that have an ungridded dimension
-      call dshr_dfield_add(dfields, sdat, state_fld='Sl_tsrf_elev', strm_flds=strm_flds_tsrf, state=exportState, &
-           logunit=logunit, mainproc=mainproc, rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
-      call dshr_dfield_add(dfields, sdat, state_fld='Sl_topo_elev', strm_flds=strm_flds_topo, state=exportState, &
-           logunit=logunit, mainproc=mainproc, rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
-      call dshr_dfield_add(dfields, sdat, state_fld='Flgl_qice_elev', strm_flds=strm_flds_qice, state=exportState, &
-           logunit=logunit, mainproc=mainproc, rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-      deallocate(strm_flds_tsrf)
-      deallocate(strm_flds_topo)
-      deallocate(strm_flds_qice)
+         strm_fld = 'Flgl_qice_elev'//trim(nec_str)
+         call shr_strdata_get_stream_pointer( sdat, trim(strm_fld), strm_Flgl_qice_elev(ng)%strm_ptr, requirePointer=.true., &
+              errmsg=trim(subname)//'ERROR: '//trim(strm_fld)//' must be associated for dlnd glc_forcing datamode', rc=rc)
+         if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      end do
 
    end subroutine dlnd_datamode_glc_forcing_init_pointers
 
    !===============================================================================
-   subroutine dlnd_datamode_glc_forcing_advance(exportState, rc)
-
-      ! input/output variables
-      type(ESMF_State)      , intent(inout) :: exportState
-      integer               , intent(out)   :: rc
+   subroutine dlnd_datamode_glc_forcing_advance()
 
       ! local variables
-      integer           :: n
-      real(r8), pointer :: fldptr2(:,:)
-      character(len=*), parameter :: subname='(dlnd_datamode_glc_forcing_advance): '
+      integer :: ni,ng
+      Character(len=*), parameter :: subname='(dlnd_datamode_glc_forcing_advance): '
       !-------------------------------------------------------------------------------
 
-      rc = ESMF_SUCCESS
-
       ! Set special value over masked points
-      call dshr_state_getfldptr(exportState, 'Sl_tsrf_elev', fldptr2=fldptr2, rc=rc)
-      if (chkerr(rc,__LINE__,u_FILE_u)) return
-      do n = 1,size(fldptr2,dim=2)
-         if (lfrac(n) == 0._r8) fldptr2(:,n) = 1.e30_r8
-      end do
+      ! Note that the inner dimension is the elevation class
 
-      call dshr_state_getfldptr(exportState, 'Sl_topo_elev', fldptr2=fldptr2, rc=rc)
-      if (chkerr(rc,__LINE__,u_FILE_u)) return
-      do n = 1,size(fldptr2,dim=2)
-         if (lfrac(n) == 0._r8) fldptr2(:,n) = 1.e30_r8
-      end do
+      elev_class_loop: do ng = 1,glc_nec+1
+         do ni = 1,size(Sl_tsrf_elev,dim=2)
+            if (lfrac(ni) == 0._r8) then
+               Sl_tsrf_elev(ng,ni) = 1.e30_r8
+            else
+               Sl_tsrf_elev(ng,ni) = strm_Sl_tsrf_elev(ng)%strm_ptr(ni)
+            end if
+         end do
 
-      call dshr_state_getfldptr(exportState, 'Flgl_qice_elev', fldptr2=fldptr2, rc=rc)
-      if (chkerr(rc,__LINE__,u_FILE_u)) return
-      do n = 1,size(fldptr2,dim=2)
-         if (lfrac(n) == 0._r8) fldptr2(:,n) = 1.e30_r8
-      end do
+         do ni = 1,size(Sl_topo_elev,dim=2)
+            if (lfrac(ni) == 0._r8) then
+               Sl_topo_elev(ng,ni) = 1.e30_r8
+            else
+               Sl_topo_elev(ng,ni) = strm_Sl_topo_elev(ng)%strm_ptr(ni)
+            end if
+         end do
+
+         do ni = 1,size(Flgl_qice_elev,dim=2)
+            if (lfrac(ni) == 0._r8) then
+               Flgl_qice_elev(ng,ni) = 1.e30_r8
+            else
+               Flgl_qice_elev(ng,ni) = strm_Flgl_qice_elev(ng)%strm_ptr(ni)
+            end if
+         end do
+      end do elev_class_loop
 
    end subroutine dlnd_datamode_glc_forcing_advance
 
