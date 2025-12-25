@@ -36,7 +36,7 @@ module datm_datamode_cplhist_mod
   real(r8), pointer :: Faxa_swndf(:)        => null()
   real(r8), pointer :: Faxa_swvdr(:)        => null()
   real(r8), pointer :: Faxa_swvdf(:)        => null()
-  real(r8), pointer :: Faxa_swnet(:)        => null()
+  real(r8), pointer :: Faxa_ndep(:,:)       => null()
 
   character(*), parameter :: nullstr = 'null'
   character(*), parameter :: u_FILE_u = &
@@ -79,7 +79,6 @@ contains
     call dshr_fldList_add(fldsExport, 'Faxa_swvdr' )
     call dshr_fldList_add(fldsExport, 'Faxa_swndf' )
     call dshr_fldList_add(fldsExport, 'Faxa_swvdf' )
-    call dshr_fldList_add(fldsExport, 'Faxa_swnet' )
     call dshr_fldList_add(fldsExport, 'Faxa_lwdn'  )
     call dshr_fldList_add(fldsExport, 'Faxa_swdn'  )
 
@@ -142,8 +141,6 @@ contains
     call dshr_state_getfldptr(exportState, 'Faxa_swndr' , fldptr1=Faxa_swndr , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Faxa_swndf' , fldptr1=Faxa_swndf , rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call dshr_state_getfldptr(exportState, 'Faxa_swnet' , fldptr1=Faxa_swnet , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Faxa_lwdn'  , fldptr1=Faxa_lwdn  , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
