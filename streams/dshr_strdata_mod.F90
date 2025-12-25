@@ -2279,25 +2279,12 @@ contains
 
     ! local variables
     integer :: ns, nf, ni, nj
-<<<<<<< HEAD
-    integer :: logunit
-    logical :: mainproc
     logical :: found
     character(len=*), parameter :: subname='(shr_strdata_get_stream_pointer_2d) '
-    character(*)    , parameter :: F00 = "('(shr_strdata_get_stream_pointer_2d) ',8a)"
-=======
-    logical :: found
-    character(len=*), parameter :: subname='(shr_strdata_get_stream_pointer_2d) '
->>>>>>> mvertens/feature/fix_unstructured_multilev_input
     ! ----------------------------------------------
 
     rc = ESMF_SUCCESS
 
-<<<<<<< HEAD
-    logunit = sdat%stream(1)%logunit
-    mainproc = sdat%mainproc
-=======
->>>>>>> mvertens/feature/fix_unstructured_multilev_input
     found = .false.
 
     ! loop over all input streams and determine if the strm_fld is in the field bundle of the target stream
@@ -2317,20 +2304,12 @@ contains
     if (found) then
        ! If pointer found, preset value
        if (mainproc) then
-<<<<<<< HEAD
-          write(logunit,F00)' strm_ptr is allocated and preset to huge for stream field strm_'//trim(strm_fld)
-       end if
-       do nj = 1,size(strm_ptr, dim=2)
-          do ni = 1,size(strm_ptr, dim=1)
-             strm_ptr(ni,nj) = huge(1._r8)
-=======
           write(logout,'(2a)') trim(subname), &
                ' strm_ptr is allocated and preset to nan for stream field strm_'//trim(strm_fld)
        end if
        do nj = 1,size(strm_ptr, dim=2)
           do ni = 1,size(strm_ptr, dim=1)
              strm_ptr(ni,nj) = nan
->>>>>>> mvertens/feature/fix_unstructured_multilev_input
           end do
        end do
     else
@@ -2339,11 +2318,7 @@ contains
           if (requirePointer) then
              if (present(errmsg)) then
                 if (mainproc) then
-<<<<<<< HEAD
-                   write(logunit,F00) trim(errmsg)
-=======
                    write(logout,'(2a)') trim(subname),trim(errmsg)
->>>>>>> mvertens/feature/fix_unstructured_multilev_input
                 end if
              end if
              call shr_log_error(subName//"ERROR: pointer not found for "//trim(strm_fld), rc=rc)
