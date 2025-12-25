@@ -2,10 +2,10 @@ module docn_datamode_cplhist_mod
 
   use ESMF             , only : ESMF_State, ESMF_LOGMSG_INFO, ESMF_LogWrite, ESMF_SUCCESS
   use NUOPC            , only : NUOPC_Advertise
-  use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
+  use shr_kind_mod     , only : r8=>shr_kind_r8
   use shr_log_mod      , only : shr_log_error
   use shr_const_mod    , only : shr_const_TkFrz, shr_const_pi, shr_const_ocn_ref_sal
-  use dshr_methods_mod , only : dshr_state_getfldptr, dshr_fldbun_getfldptr, chkerr
+  use dshr_methods_mod , only : dshr_state_getfldptr, chkerr
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_get_stream_pointer
 
@@ -87,11 +87,13 @@ contains
 
     rc = ESMF_SUCCESS
 
-    ! initialize pointers to export fields
+    ! initialize pointers to required export fields
     call dshr_state_getfldptr(exportState, 'So_omask' , fldptr1=So_omask , rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'So_t'     , fldptr1=So_t     , rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
+
+    ! initialize pointers to optional export fields
     call dshr_state_getfldptr(exportState, 'So_u'     , fldptr1=So_u     , allowNullReturn=.true., rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'So_v'     , fldptr1=So_v     , allowNullReturn=.true., rc=rc)
@@ -99,38 +101,36 @@ contains
     call dshr_state_getfldptr(exportState, 'So_bldepth', fldptr1=So_bldepth, allowNullReturn=.true., rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
 
-    ! initialize stream pointers
-    call shr_strdata_get_stream_pointer( sdat, 'So_t', strm_So_t, rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'So_u', strm_So_u, rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'So_v', strm_So_v, rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'So_bldepth', strm_So_bldepth, rc)
+    ! initialize pointers to required stream fields
+    call shr_strdata_get_stream_pointer( sdat, 'So_t', strm_So_t, requirePointer=.true., &
+         errmsg=trim(subname)//'ERROR: strm_So_t must be associated for docn cplhist datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    ! Error checks
-    if (.not. associated(strm_So_t)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_So_t must be associated for docn cplhist mode')
+    ! initialize pointers to optional stream fields
+    call shr_strdata_get_stream_pointer( sdat, 'So_u', strm_So_u, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'So_v', strm_So_v, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'So_bldepth', strm_So_bldepth, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    if (associated(So_u) .and. .not. associate(strm_So_u)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_So_u must be associated for docn cplhist mode', rc=rc)
        return
     end if
-    if (.not. associated(strm_So_u)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_So_u must be associated for docn cplhist mode')
+    if (associated(So_v) .and. .not. associate(strm_So_v)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_So_v must be associated for docn cplhist mode', rc=rc)
        return
     end if
-    if (.not. associated(strm_So_v)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_So_v must be associated for docn cplhist mode')
-       return
-    end if
-    if (.not. associated(strm_So_bldepth)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_So_bldepth must be associated for docn cplhist mode')
+    if (associated(Sobldepth) .and. .not. associate(strm_Sobldepth)) then
+       call shr_log_error(trim(subname)//'ERROR: strm_Sobldepth must be associated for docn cplhist mode', rc=rc)
        return
     end if
 
     ! Allocation depends on exchanged fields, so check before filling arrays with values here
+    So_t(:) = TkFrz
     if (associated(So_u)) So_u(:) = 0.0_r8
     if (associated(So_v)) So_v(:) = 0.0_r8
-    if (associated(So_t)) So_t(:) = TkFrz
     if (associated(So_bldepth)) So_bldepth(:) = 0.0_r8
 
     ! Set export state ocean fraction (So_omask)
@@ -151,11 +151,16 @@ contains
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
-   
-    So_t(:) = strm_So_t(:)
-    So_u(:) = strm_So_u(:)
-    So_v(:) = strm_So_v(:)
-    So_bldepth(:) = strm_So_bldepth(:)
+
+    if (associate(So_u)) then
+       So_u(:) = strm_So_u(:)
+    end if
+    if (associate(So_v)) then
+       So_v(:) = strm_So_v(:)
+    end if
+    if (associate(So_bldepth)) then
+       So_bldepth(:) = strm_So_bldepth(:)
+    end if
 
     ! If need unit conversion for So_t (C-->K),
     ! use existing nml variable sst_constant_value to signal units of input
@@ -167,6 +172,7 @@ contains
       endif
     endif
 
+    So_t(:) = strm_So_t(:)
     if (units_CToK) then
       So_t(:) = So_t(:) + TkFrz
     endif

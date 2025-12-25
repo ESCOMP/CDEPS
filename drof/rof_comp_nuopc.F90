@@ -22,19 +22,15 @@ module cdeps_drof_comp
   use NUOPC_Model      , only : model_label_SetRunClock => label_SetRunClock
   use NUOPC_Model      , only : model_label_Finalize    => label_Finalize
   use NUOPC_Model      , only : NUOPC_ModelGet, SetVM
-  use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
-  use shr_kind_mod     , only : cx=>shr_kind_cx
-  use shr_const_mod    , only : SHR_CONST_SPVAL
+  use shr_kind_mod     , only : r8=>shr_kind_r8, cl=>shr_kind_cl, cs=>shr_kind_cs, cx=>shr_kind_cx
   use shr_cal_mod      , only : shr_cal_ymd2date
   use shr_log_mod      , only : shr_log_setLogUnit, shr_log_error
-  use dshr_methods_mod , only : dshr_state_getfldptr, dshr_state_diagnose, chkerr, memcheck
-  use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_advance
-  use dshr_strdata_mod , only : shr_strdata_init_from_config, shr_strdata_get_stream_pointer
+  use dshr_methods_mod , only : state_diagnose, chkerr, memcheck
+  use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_advance, shr_strdata_init_from_config
   use dshr_mod         , only : dshr_model_initphase, dshr_init
   use dshr_mod         , only : dshr_state_setscalar, dshr_set_runclock, dshr_check_restart_alarm
   use dshr_mod         , only : dshr_restart_read, dshr_restart_write, dshr_mesh_init
-  use dshr_dfield_mod  , only : dfield_type, dshr_dfield_add, dshr_dfield_copy
-  use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add, dshr_fldlist_realize
+  use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_realize
   use nuopc_shr_methods, only : shr_get_rpointer_name
 
   implicit none
@@ -42,6 +38,7 @@ module cdeps_drof_comp
 
   public  :: SetServices
   public  :: SetVM
+
   private :: InitializeAdvertise
   private :: InitializeRealize
   private :: ModelAdvance
@@ -53,33 +50,33 @@ module cdeps_drof_comp
   !--------------------------------------------------------------------------
 
   type(shr_strdata_type)       :: sdat
-  type(ESMF_Mesh)              :: model_mesh                          ! model mesh
+  type(ESMF_Mesh)              :: model_mesh                  ! model mesh
   character(len=CS)            :: flds_scalar_name = ''
   integer                      :: flds_scalar_num = 0
   integer                      :: flds_scalar_index_nx = 0
   integer                      :: flds_scalar_index_ny = 0
-  integer                      :: mpicom                              ! mpi communicator
-  integer                      :: my_task                             ! my task in mpi communicator mpicom
-  logical                      :: mainproc                          ! true of my_task == main_task
-  character(len=16)            :: inst_suffix = ""                    ! char string associated with instance (ie. "_0001" or "")
-  integer                      :: logunit                             ! logging unit number
+  integer                      :: mpicom                      ! mpi communicator
+  integer                      :: my_task                     ! my task in mpi communicator mpicom
+  logical                      :: mainproc                    ! true of my_task == main_task
+  character(len=16)            :: inst_suffix = ""            ! char string associated with instance (ie. "_0001" or "")
+  integer                      :: logunit                     ! logging unit number
   logical                      :: restart_read
-  character(CL)                :: case_name                           ! case name
+  character(CL)                :: case_name                   ! case name
   character(*) , parameter     :: nullstr = 'null'
-                                                                      ! drof_in namelist input
-  character(CX)                :: streamfilename = nullstr            ! filename to obtain stream info from
-  character(CX)                :: nlfilename = nullstr                ! filename to obtain namelist info from
-  character(CL)                :: dataMode = nullstr                  ! flags physics options wrt input data
-  character(CX)                :: model_meshfile = nullstr            ! full pathname to model meshfile
-  character(CX)                :: model_maskfile = nullstr            ! full pathname to obtain mask from
-  character(CX)                :: restfilm = nullstr                  ! model restart file namelist
+                                                              ! drof_in namelist input
+  character(CX)                :: streamfilename = nullstr    ! filename to obtain stream info from
+  character(CX)                :: nlfilename = nullstr        ! filename to obtain namelist info from
+  character(CL)                :: dataMode = nullstr          ! flags physics options wrt input data
+  character(CX)                :: model_meshfile = nullstr    ! full pathname to model meshfile
+  character(CX)                :: model_maskfile = nullstr    ! full pathname to obtain mask from
+  character(CX)                :: restfilm = nullstr          ! model restart file namelist
   integer                      :: nx_global
   integer                      :: ny_global
-  logical                      :: skip_restart_read = .false.         ! true => skip restart read
-  logical                      :: export_all = .false.                ! true => export all fields, do not check connected or not
+  logical                      :: skip_restart_read = .false. ! true => skip restart read
+  logical                      :: export_all = .false.        ! true => export all fields, do not check connected or not
 
   logical                      :: diagnose_data = .true.
-  integer      , parameter     :: main_task=0                       ! task number of main task
+  integer      , parameter     :: main_task=0                 ! task number of main task
 #ifdef CESMCOUPLED
   character(*) , parameter     :: modName =  "(rof_comp_nuopc)"
 #else
@@ -88,19 +85,6 @@ module cdeps_drof_comp
 
   ! linked lists
   type(fldList_type) , pointer :: fldsExport => null()
-  type(dfield_type)  , pointer :: dfields    => null()
-
-  ! model mask and model fraction
-  real(r8), pointer            :: model_frac(:) => null()
-  integer , pointer            :: model_mask(:) => null()
-
-  ! export state pointer arrays
-  real(r8), pointer            :: Forr_rofl(:) => null()
-  real(r8), pointer            :: Forr_rofi(:) => null()
-
-  ! stream pointer arrays
-  real(r8), pointer :: strm_Forr_rofl(:) => null() ! always required
-  real(r8), pointer :: strm_Forr_rofi(:) => null() ! sometimes present in stream
 
   character(*) , parameter     :: u_FILE_u = &
        __FILE__
@@ -156,7 +140,9 @@ contains
   !===============================================================================
 
   subroutine InitializeAdvertise(gcomp, importState, exportState, clock, rc)
+
     use shr_nl_mod, only:  shr_nl_find_group_name
+
     ! input/output variables
     type(ESMF_GridComp)  :: gcomp
     type(ESMF_State)     :: importState, exportState
@@ -169,12 +155,9 @@ contains
     integer           :: ierr       ! error code
     type(fldlist_type), pointer :: fldList
     type(ESMF_VM)     :: vm
-    integer :: bcasttmp(4)
+    integer           :: bcasttmp(4)
     character(len=*),parameter :: subname=trim(modName)//':(InitializeAdvertise) '
-    character(*)    ,parameter :: F00 = "('(" // trim(modName) // ") ',8a)"
-    character(*)    ,parameter :: F01 = "('(" // trim(modName) // ") ',a,2x,i8)"
-    character(*)    ,parameter :: F02 = "('(" // trim(modName) // ") ',a,l6)"
-    !-------------------------------------------------------------------------------
+    !--------------------------------
 
     namelist / drof_nml / datamode, model_meshfile, model_maskfile, &
          restfilm, nx_global, ny_global, skip_restart_read, export_all
@@ -203,24 +186,26 @@ contains
        close(nu)
        if (ierr > 0) then
           rc = ierr
+          write(logunit,'(a,i0)') trim(subname),' ERROR: reading input namelist, '//trim(nlfilename)//' iostat=',ierr
           call shr_log_error(subName//': namelist read error '//trim(nlfilename), rc=rc)
           return
        end if
 
        ! write namelist input to standard out
-       write(logunit,F00)' datamode       = ',trim(datamode)
-       write(logunit,F00)' model_meshfile = ',trim(model_meshfile)
-       write(logunit,F00)' model_maskfile = ',trim(model_maskfile)
-       write(logunit,F01)' nx_global = ',nx_global
-       write(logunit,F01)' ny_global = ',ny_global
-       write(logunit,F00)' restfilm = ',trim(restfilm)
-       write(logunit,F02)' skip_restart_read = ',skip_restart_read
-       write(logunit,F02)' export_all = ', export_all
+       write(logunit,'(3a)')    trim(subname),' datamode          = ',trim(datamode)
+       write(logunit,'(3a)')    trim(subname),' model_meshfile    = ',trim(model_meshfile)
+       write(logunit,'(3a)')    trim(subname),' model_maskfile    = ',trim(model_maskfile)
+       write(logunit,'(2a,i0)') trim(subname),' nx_global         = ',nx_global
+       write(logunit,'(2a,i0)') trim(subname),' ny_global         = ',ny_global
+       write(logunit,'(3a)')    trim(subname),' restfilm          = ',trim(restfilm)
+       write(logunit,'(2a,l6)') trim(subname),' skip_restart_read = ',skip_restart_read
+       write(logunit,'(2a,l6)') trim(subname),' export_all        = ',export_all
+
        bcasttmp = 0
        bcasttmp(1) = nx_global
        bcasttmp(2) = ny_global
-       if(skip_restart_read) bcasttmp(3) = 1
-       if(export_all) bcasttmp(4) = 1
+       if (skip_restart_read) bcasttmp(3) = 1
+       if (export_all) bcasttmp(4) = 1
     end if
 
     ! broadcast namelist input
@@ -237,6 +222,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_VMBroadcast(vm, bcasttmp, 3, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
     nx_global = bcasttmp(1)
     ny_global = bcasttmp(2)
     skip_restart_read = (bcasttmp(3) == 1)
@@ -244,23 +230,17 @@ contains
 
     ! Validate datamode
     if (trim(datamode) == 'copyall') then
-       if (mainproc) write(logunit,*) 'drof datamode = ',trim(datamode)
+       if (mainproc) then
+          write(logunit,'(2a)') trim(subname),'drof datamode = ',trim(datamode)
+       end if
     else
        call shr_log_error(' ERROR illegal drof datamode = '//trim(datamode), rc=rc)
        return
     end if
 
-    call dshr_fldList_add(fldsExport, trim(flds_scalar_name))
-    call dshr_fldlist_add(fldsExport, "Forr_rofl")
-    call dshr_fldlist_add(fldsExport, "Forr_rofi")
-
-    fldlist => fldsExport ! the head of the linked list
-    do while (associated(fldlist))
-       call NUOPC_Advertise(exportState, standardName=fldlist%stdname, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call ESMF_LogWrite('(drof_comp_advertise): Fr_rof '//trim(fldList%stdname), ESMF_LOGMSG_INFO)
-       fldList => fldList%next
-    enddo
+    ! Advertise export fields
+    call drof_datamode_copyall_advertise(exportState, fldsexport, flds_scalar_name, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine InitializeAdvertise
 
@@ -280,9 +260,8 @@ contains
     integer         :: current_mon  ! model month
     integer         :: current_day  ! model day
     integer         :: current_tod  ! model sec into model date
-    character(len=*), parameter :: F00   = "('" // trim(modName) // ": ')',8a)"
     character(len=*), parameter :: subname=trim(modName)//':(InitializeRealize) '
-    !-------------------------------------------------------------------------------
+    !--------------------------------
 
     rc = ESMF_SUCCESS
 
@@ -345,12 +324,13 @@ contains
     integer                 :: day           ! day in month
     logical                 :: restart_write ! restart alarm is ringing
     character(len=*),parameter :: subname=trim(modName)//':(ModelAdvance) '
-    !-------------------------------------------------------------------------------
+    !--------------------------------
 
     rc = ESMF_SUCCESS
 
     call memcheck(subname, 5, mainproc)
     call shr_log_setLogUnit(logunit)
+
     ! query the Component for its clock, importState and exportState
     call NUOPC_ModelGet(gcomp, modelClock=clock, importState=importState, exportState=exportState, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -365,7 +345,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_cal_ymd2date(yr, mon, day, next_ymd)
 
-    ! write restart if alarm is ringing
+    ! determine if restart if alarm is ringing
     restart_write = dshr_check_restart_alarm(clock, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
@@ -391,11 +371,13 @@ contains
     integer          , intent(out)   :: rc
 
     ! local variables
-    logical :: first_time = .true.
-    integer :: n
+    logical           :: first_time = .true.
+    integer           :: n
     character(len=CL) :: rpfile
     character(*), parameter :: subName = "(drof_comp_run) "
-    !-------------------------------------------------------------------------------
+    !--------------------------------
+
+    rc = ESMF_SUCESS
 
     call ESMF_TraceRegionEnter('DROF_RUN')
 
@@ -404,27 +386,12 @@ contains
     !--------------------
 
     if (first_time) then
-       ! Initialize dfields
-       call dshr_dfield_add(dfields, sdat, 'Forr_rofl', 'Forr_rofl', exportState, logunit, mainproc, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call dshr_dfield_add(dfields, sdat, 'Forr_rofi', 'Forr_rofi', exportState, logunit, mainproc, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-       ! Initialize module ponters
-       call dshr_state_getfldptr(exportState, 'Forr_rofl' , fldptr1=Forr_rofl , rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       call dshr_state_getfldptr(exportState, 'Forr_rofi' , fldptr1=Forr_rofi , rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-
-       ! Initialize module pointers
-       call shr_strdata_get_stream_pointer( sdat, 'Forr_rofl', strm_Forr_rofl, requirePointer=.true., &
-            errmsg=trim(subname)//'ERROR: strm_Forr_rofl must be associated for drof', rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call shr_strdata_get_stream_pointer( sdat, 'Forr_rofi', strm_Forr_rofi, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       if (.not. associated(strm_Forr_rofi)) then
-          Forr_rofi(:) = 0._r8
-       end if
+       ! Initialize stream and export state pointers
+       select case (trim(datamode))
+       case('copyall')
+          call drof_datamode_copyall_init_pointers(exportState, rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       end select
 
        ! Read restart if needed
        if (restart_read .and. .not. skip_restart_read) then
@@ -444,29 +411,20 @@ contains
     ! time and spatially interpolate to model time and grid
     call ESMF_TraceRegionEnter('drof_strdata_advance')
     call shr_strdata_advance(sdat, target_ymd, target_tod, logunit, 'drof', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_TraceRegionExit('drof_strdata_advance')
 
-    ! copy all fields from streams to export state as default
-    ! This automatically will update the fields in the export state
-    call ESMF_TraceRegionEnter('drof_dfield_copy')
-    call dshr_dfield_copy(dfields,  sdat, rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_TraceRegionExit('drof_dfield_copy')
-
-    ! determine data model behavior based on the mode
+    ! perform data mode specific calculations
     call ESMF_TraceRegionEnter('drof_datamode')
     select case (trim(datamode))
     case('copyall')
-       ! zero out "special values" of export fields
-       do n = 1, size(Forr_rofl)
-          if (abs(Forr_rofl(n)) > 1.0e28) Forr_rofl(n) = 0.0_r8
-          if (abs(Forr_rofi(n)) > 1.0e28) Forr_rofi(n) = 0.0_r8
-       enddo
+       call drof_datamode_copyall_advance()
     end select
 
     ! write restarts if needed
     if (restart_write) then
-       if(trim(datamode) .eq. 'copyall') then
+       select case (trim(datamode))
+       case('copyall')
           call shr_get_rpointer_name(gcomp, 'rof', target_ymd, target_tod, rpfile, 'write', rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           call dshr_restart_write(rpfile, case_name, 'drof', inst_suffix, target_ymd, target_tod, &
@@ -481,15 +439,17 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
-    call ESMF_TraceRegionExit('drof_datamode')
     call ESMF_TraceRegionExit('DROF_RUN')
 
   end subroutine drof_comp_run
 
   !===============================================================================
   subroutine ModelFinalize(gcomp, rc)
+
     type(ESMF_GridComp)  :: gcomp
     integer, intent(out) :: rc
+    !--------------------------------
+
     rc = ESMF_SUCCESS
     if (mainproc) then
        write(logunit,*)

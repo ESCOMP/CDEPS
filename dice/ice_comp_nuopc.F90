@@ -278,7 +278,7 @@ contains
     endif
 
     ! Advertise import and export fields
-    if ( trim(datamode) == 'ssmi' .or. trim(datamode) == 'ssmi_iaf') then 
+    if ( trim(datamode) == 'ssmi' .or. trim(datamode) == 'ssmi_iaf') then
       call NUOPC_CompAttributeGet(gcomp, name='flds_i2o_per_cat', value=cvalue, rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
       read(cvalue,*) flds_i2o_per_cat  ! module variable
@@ -519,9 +519,10 @@ contains
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           select case (trim(datamode))
           case('ssmi', 'ssmi_iaf')
-             call dice_datamode_ssmi_restart_read(restfilm, rpfile, logunit, my_task, mpicom, sdat)
+             call dice_datamode_ssmi_restart_read(restfilm, rpfile, logunit, my_task, mpicom, sdat, rc)
+             if (ChkErr(rc,__LINE__,u_FILE_u)) return
           case('cplhist')
-             call dice_datamode_cplhist_restart_read(restfilm, rpfile, logunit, my_task, mpicom, sdat) 
+             call dice_datamode_cplhist_restart_read(restfilm, rpfile, logunit, my_task, mpicom, sdat)
           end select
        end if
 
@@ -553,7 +554,7 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('cplhist')
        call dice_datamode_cplhist_advance(sdat, rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return 
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end select
 
     ! Write restarts if needed
@@ -563,7 +564,8 @@ contains
        select case (trim(datamode))
        case('ssmi', 'ssmi_iaf')
           call dice_datamode_ssmi_restart_write(rpfile, case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, my_task, sdat)
+               logunit, my_task, sdat, rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case ('cplhist')
           call dice_datamode_cplhist_restart_write(rpfile, case_name, inst_suffix, target_ymd, target_tod, &
                logunit, my_task, sdat)
