@@ -51,7 +51,7 @@ module datm_datamode_jra_mod
   real(r8), pointer :: strm_Faxa_lwdn(:) => null()
   real(r8), pointer :: strm_Faxa_swdn(:) => null()
 
-  ! othe module arrays
+  ! other module arrays
   real(R8), pointer :: yc(:) ! array of model latitudes
 
   ! constants
@@ -248,22 +248,20 @@ contains
     cosfactor = cos((2.0_R8*SHR_CONST_PI*rday)/365 - phs_c0)
 
     do n = 1,lsize
-       Sa_z(n) = 10.0_R8
 
        ! Set export fields as copies directly from streams
        Sa_pslv(n)   = strm_Sa_pslv(n)
+       Sa_pbot(n)   = strm_Sa_pslv(n)
        Sa_tbot(n)   = strm_Sa_tbot(n)
+       Sa_ptem(n)   = strm_Sa_tbot(n)
        Sa_u(n)      = strm_Sa_u(n)
        Sa_v(n)      = strm_Sa_v(n)
        Sa_shum(n)   = strm_Sa_shum(n)
        Faxa_swdn(n) = strm_Faxa_swdn(n)
        Faxa_lwdn(n) = strm_Faxa_lwdn(n)
 
-       ! Set Sa_pbot from Sa_pslv
-       Sa_pbot(n) = Sa_pslv(n)
-
-       ! Set Sa_ptem from Sa_tbot
-       Sa_ptem(n) = Sa_tbot(n)
+       ! Set Sa_z to a constant
+       Sa_z(n) = 10.0_R8
 
        ! Set Sa_u10m and Sa_v10m to Sa_u and Sa_v
        Sa_u10m(n) = Sa_u(n)

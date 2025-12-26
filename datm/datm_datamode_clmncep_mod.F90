@@ -12,6 +12,7 @@ module datm_datamode_clmncep_mod
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_get_stream_pointer
   use dshr_strdata_mod , only : shr_strdata_type
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
+  use shr_const_mod    , only : SHR_CONST_SPVAL
 
   implicit none
   private ! except
@@ -221,9 +222,6 @@ contains
     call shr_strdata_get_stream_pointer( sdat, 'Sa_wind'     , strm_Sa_wind, requirePointer=.true., &
          errmsg=trim(subname)//'ERROR: strm_Sa_wind must be associated for datm clmncep datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Sa_topo'     , strm_Sa_topo, requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Sa_topo must be associated for datm clmncep datamode', rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'Sa_tbot'     , strm_Sa_tbot, requirePointer=.true., &
          errmsg=trim(subname)//'ERROR: strm_Sa_tbot must be associated for datm clmncep datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -232,6 +230,8 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! optional stream data pointers
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_topo'     , strm_Sa_topo     , rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'Sa_pbot'     , strm_Sa_pbot     , rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'Sa_z'        , strm_Sa_z        , rc)
@@ -322,8 +322,14 @@ contains
 
     lsize = size(Sa_u)
 
+    ! Direct copies of stream fields
     Sa_tbot(:) = strm_Sa_tbot(:)
     Faxa_swdn(:) = strm_Faxa_swdn(:)
+    if (associated(strm_Sa_topo)) then
+       Sa_topo(:) = strm_Sa_topo(:)
+    else
+       Sa_topo(:) = SHR_CONST_SPVAL
+    end if
 
     if (first_time) then
        call ESMF_VMGetCurrent(vm, rc=rc)
@@ -363,10 +369,7 @@ contains
        first_time = .false.
     end if
 
-
     do n = 1,lsize
-       !--- topography ---
-       Sa_topo(n) = strm_Sa_topo(n)
 
        !--- bottom layer height ---
        if (.not. associated(strm_Sa_z)) then
