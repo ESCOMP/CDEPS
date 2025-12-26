@@ -91,6 +91,7 @@ module cdeps_dice_comp
   integer                      :: nx_global
   integer                      :: ny_global
   logical                      :: export_all = .false.                ! true => export all fields, do not check connected or not
+  logical                      :: first_call = .true.
 
   ! linked lists
   type(fldList_type) , pointer :: fldsImport => null()
@@ -100,6 +101,7 @@ module cdeps_dice_comp
   real(r8), pointer            :: model_frac(:) => null()
   integer , pointer            :: model_mask(:) => null()
   logical                      :: valid_ice = .true.                  ! used for single column logic (ocn mask > 0)
+
 
   ! constants
   logical                      :: flds_i2o_per_cat                    ! .true. if select per ice thickness
@@ -181,10 +183,6 @@ contains
     real(r8)          :: rbcasttmp(3)
     type(ESMF_VM)     :: vm
     character(len=*),parameter  :: subname=trim(modName)//':(InitializeAdvertise) '
-    character(*)    ,parameter :: F00 = "('(" // trim(modName) // ") ',8a)"
-    character(*)    ,parameter :: F01 = "('(" // trim(modName) // ") ',a,2x,i8)"
-    character(*)    ,parameter :: F02 = "('(" // trim(modName) // ") ',a,l6)"
-    character(*)    ,parameter :: F03 = "('(" // trim(modName) // ") ',a,d13.5)"
     !-------------------------------------------------------------------------------
 
     namelist / dice_nml /  datamode, &
@@ -208,7 +206,7 @@ contains
     mainproc = (my_task == main_task)
 
     ! Read dice_nml from nlfilename
-    if (my_task == main_task) then
+    if (mainproc) then
        nlfilename = "dice_in"//trim(inst_suffix)
        open (newunit=nu,file=trim(nlfilename),status="old",action="read")
        call shr_nl_find_group_name(nu, 'dice_nml', status=ierr)
@@ -222,17 +220,18 @@ contains
        end if
 
        ! write namelist input to standard out
-       write(logunit,F00)' datamode       = ',trim(datamode)
-       write(logunit,F00)' model_meshfile = ',trim(model_meshfile)
-       write(logunit,F00)' model_maskfile = ',trim(model_maskfile)
-       write(logunit,F01)' nx_global  = ',nx_global
-       write(logunit,F01)' ny_global  = ',ny_global
-       write(logunit,F03)' flux_swpf  = ',flux_swpf
-       write(logunit,F03)' flux_Qmin  = ',flux_Qmin
-       write(logunit,F02)' flux_Qacc  = ',flux_Qacc
-       write(logunit,F03)' flux_Qacc0 = ',flux_Qacc0
-       write(logunit,F00)' restfilm = ',trim(restfilm)
-       write(logunit,F02)' export_all = ',export_all
+       write(logunit,'(3a)')       trim(subname),' datamode       = ',trim(datamode)
+       write(logunit,'(3a)')       trim(subname),' model_meshfile = ',trim(model_meshfile)
+       write(logunit,'(3a)')       trim(subname),' model_maskfile = ',trim(model_maskfile)
+       write(logunit,'(2a,i0)')    trim(subname),' nx_global      = ',nx_global
+       write(logunit,'(2a,i0)')    trim(subname),' ny_global      = ',ny_global
+       write(logunit,'(2a,d13.5)') trim(subname),' flux_swpf      = ',flux_swpf
+       write(logunit,'(2a,d13.5)') trim(subname),' flux_Qmin      = ',flux_Qmin
+       write(logunit,'(2a,l6)')    trim(subname),' flux_Qacc      = ',flux_Qacc
+       write(logunit,'(2a,d13.5)') trim(subname),' flux_Qacc0     = ',flux_Qacc0
+       write(logunit,'(3a)')       trim(subname),' restfilm       = ',trim(restfilm)
+       write(logunit,'(2a,l6)')    trim(subname),' export_all     = ',export_all
+
        bcasttmp = 0
        bcasttmp(1) = nx_global
        bcasttmp(2) = ny_global
@@ -270,23 +269,20 @@ contains
     flux_Qacc0 = rbcasttmp(3)
 
     ! Validate datamode
-    if ( trim(datamode) == 'ssmi' .or. trim(datamode) == 'ssmi_iaf' .or. trim(datamode) == 'cplhist') then
-       if (my_task == main_task) write(logunit,*) ' dice datamode = ',trim(datamode)
-    else
+    select case (trim(datamode))
+    case('ssmi','ssmi_iaf','cplhist')
+       if (mainproc) write(logunit,'(3a)') trim(subname),' dice datamode = ',trim(datamode)
+    case default
        call shr_log_error(' ERROR illegal dice datamode = '//trim(datamode), rc=rc)
        return
-    endif
+    end select
 
     ! Advertise import and export fields
-    if ( trim(datamode) == 'ssmi' .or. trim(datamode) == 'ssmi_iaf') then
-      call NUOPC_CompAttributeGet(gcomp, name='flds_i2o_per_cat', value=cvalue, rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
-      read(cvalue,*) flds_i2o_per_cat  ! module variable
-    endif
-
-    !datamode already validated
     select case (trim(datamode))
     case('ssmi','ssmi_iaf')
+       call NUOPC_CompAttributeGet(gcomp, name='flds_i2o_per_cat', value=cvalue, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       read(cvalue,*) flds_i2o_per_cat  ! module variable
        call dice_datamode_ssmi_advertise(importState, exportState, fldsimport, fldsexport, &
             flds_scalar_name, flds_i2o_per_cat, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -407,6 +403,7 @@ contains
 
   !===============================================================================
   subroutine ModelAdvance(gcomp, rc)
+
     ! input/output variables
     type(ESMF_GridComp)  :: gcomp
     integer, intent(out) :: rc
@@ -487,7 +484,6 @@ contains
     integer          , intent(out)   :: rc
 
     ! local variables
-    logical :: first_time = .true.
     character(len=CL) :: rpfile
     character(*), parameter :: subName = "(dice_comp_run) "
     !-------------------------------------------------------------------------------
@@ -500,7 +496,7 @@ contains
     ! first time initialization
     !--------------------
 
-    if (first_time) then
+    if (first_call) then
 
        ! Initialize datamode module ponters
        select case (trim(datamode))
@@ -526,8 +522,7 @@ contains
           end select
        end if
 
-       ! reset first_time
-       first_time = .false.
+       first_call = .false.
     end if
 
     !--------------------
@@ -590,7 +585,7 @@ contains
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
-    if (my_task == main_task) then
+    if (mainproc) then
        write(logunit,*)
        write(logunit,*) 'dice : end of main integration loop'
        write(logunit,*)

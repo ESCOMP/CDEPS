@@ -24,7 +24,7 @@ module dlnd_datamode_glc_forcing_mod
 
    ! stream pointers (1d)
    type, public :: stream_pointer_type
-      real(r8), pointer :: strm_ptr(:)
+      real(r8), pointer :: ptr(:)
    end type stream_pointer_type
    type(stream_pointer_type), allocatable :: strm_Sl_tsrf_elev(:)
    type(stream_pointer_type), allocatable :: strm_Sl_topo_elev(:)
@@ -139,17 +139,17 @@ contains
             write(nec_str,'(i0)') ng
          end if
          strm_fld = 'Sl_tsrf_elev'//trim(nec_str)
-         call shr_strdata_get_stream_pointer( sdat, trim(strm_fld), strm_Sl_tsrf_elev(ng)%strm_ptr, requirePointer=.true., &
+         call shr_strdata_get_stream_pointer( sdat, trim(strm_fld), strm_Sl_tsrf_elev(ng)%ptr, requirePointer=.true., &
               errmsg=trim(subname)//'ERROR: '//trim(strm_fld)//' must be associated for dlnd glc_forcing datamode', rc=rc)
          if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
          strm_fld = 'Sl_topo_elev'//trim(nec_str)
-         call shr_strdata_get_stream_pointer( sdat, trim(strm_fld), strm_Sl_topo_elev(ng)%strm_ptr, requirePointer=.true., &
+         call shr_strdata_get_stream_pointer( sdat, trim(strm_fld), strm_Sl_topo_elev(ng)%ptr, requirePointer=.true., &
               errmsg=trim(subname)//'ERROR: '//trim(strm_fld)//' must be associated for dlnd glc_forcing datamode', rc=rc)
          if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
          strm_fld = 'Flgl_qice_elev'//trim(nec_str)
-         call shr_strdata_get_stream_pointer( sdat, trim(strm_fld), strm_Flgl_qice_elev(ng)%strm_ptr, requirePointer=.true., &
+         call shr_strdata_get_stream_pointer( sdat, trim(strm_fld), strm_Flgl_qice_elev(ng)%ptr, requirePointer=.true., &
               errmsg=trim(subname)//'ERROR: '//trim(strm_fld)//' must be associated for dlnd glc_forcing datamode', rc=rc)
          if (ChkErr(rc,__LINE__,u_FILE_u)) return
       end do
@@ -172,7 +172,7 @@ contains
             if (lfrac(ni) == 0._r8) then
                Sl_tsrf_elev(ng,ni) = 1.e30_r8
             else
-               Sl_tsrf_elev(ng,ni) = strm_Sl_tsrf_elev(ng)%strm_ptr(ni)
+               Sl_tsrf_elev(ng,ni) = strm_Sl_tsrf_elev(ng)%ptr(ni)
             end if
          end do
 
@@ -180,7 +180,7 @@ contains
             if (lfrac(ni) == 0._r8) then
                Sl_topo_elev(ng,ni) = 1.e30_r8
             else
-               Sl_topo_elev(ng,ni) = strm_Sl_topo_elev(ng)%strm_ptr(ni)
+               Sl_topo_elev(ng,ni) = strm_Sl_topo_elev(ng)%ptr(ni)
             end if
          end do
 
@@ -188,7 +188,7 @@ contains
             if (lfrac(ni) == 0._r8) then
                Flgl_qice_elev(ng,ni) = 1.e30_r8
             else
-               Flgl_qice_elev(ng,ni) = strm_Flgl_qice_elev(ng)%strm_ptr(ni)
+               Flgl_qice_elev(ng,ni) = strm_Flgl_qice_elev(ng)%ptr(ni)
             end if
          end do
       end do elev_class_loop

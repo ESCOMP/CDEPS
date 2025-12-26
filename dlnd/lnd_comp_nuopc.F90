@@ -7,6 +7,7 @@ module cdeps_dlnd_comp
   !----------------------------------------------------------------------------
   ! This is the NUOPC cap for DLND
   !----------------------------------------------------------------------------
+
   use ESMF              , only : ESMF_VM, ESMF_VMBroadcast, ESMF_GridCompGet
   use ESMF              , only : ESMF_Mesh, ESMF_GridComp, ESMF_SUCCESS, ESMF_LOGMSG_INFO
   use ESMF              , only : ESMF_LogWrite, ESMF_TraceRegionExit, ESMF_TraceRegionEnter
@@ -86,6 +87,7 @@ module cdeps_dlnd_comp
   integer                  :: ny_global                           ! global ny dimension of model mesh
   logical                  :: skip_restart_read = .false.         ! true => skip restart read in continuation
   logical                  :: export_all = .false.                ! true => export all fields, do not check connected or not
+  logical                  :: first_call = .true.
 
   ! linked lists
   type(fldList_type) , pointer :: fldsExport => null()
@@ -102,6 +104,7 @@ module cdeps_dlnd_comp
 #else
   character(*) , parameter     :: modName =  "(cdeps_dlnd_comp)"
 #endif
+
   character(*) , parameter     :: u_FILE_u = &
        __FILE__
 
@@ -194,7 +197,6 @@ contains
        nlfilename = "dlnd_in"//trim(inst_suffix)
        open (newunit=nu, file=trim(nlfilename), status="old", action="read")
        call shr_nl_find_group_name(nu, 'dlnd_nml', status=ierr)
-
        read (nu,nml=dlnd_nml,iostat=ierr)
        close(nu)
        if (ierr > 0) then
@@ -202,6 +204,7 @@ contains
           call shr_log_error(subName//': namelist read error '//trim(nlfilename), rc=rc)
           return
        end if
+
        bcasttmp = 0
        bcasttmp(1) = nx_global
        bcasttmp(2) = ny_global
@@ -222,6 +225,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_VMBroadcast(vm, bcasttmp, 3, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
     nx_global = bcasttmp(1)
     ny_global = bcasttmp(2)
     skip_restart_read = (bcasttmp(3) == 1)
@@ -240,23 +244,23 @@ contains
     endif
 
     ! Validate sdat datamode
-    if ( trim(datamode) == 'glc_forcing_mct' .or. &
-         trim(datamode) == 'glc_forcing'     .or. &
-         trim(datamode) == 'rof_forcing') then
-       if (my_task == main_task) write(logunit,*) 'dlnd datamode = ',trim(datamode)
-    else
+    select case (trim(datamode))
+    case('glc_forcing_mct','glc_forcing','rof_forcing')
+       if (my_task == main_task) write(logunit,'(3a)') trim(subname),' dlnd datamode = ',trim(datamode)
+    case default
        call shr_log_error(' ERROR illegal dlnd datamode = '//trim(datamode), rc=rc)
        return
-    end if
+    end select
 
     ! Advertise the export fields
-    if (trim(datamode) == 'glc_forcing' .or. trim(datamode) == 'glc_forcing_mct') then
+    select case (trim(datamode))
+    case('glc_forcing_mct','glc_forcing')
        call dlnd_datamode_glc_forcing_advertise(gcomp, exportState, fldsExport, flds_scalar_name, logunit, mainproc, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    else if (trim(datamode) == 'rof_forcing') then
+    case('rof_forcing')
        call dlnd_datamode_rof_forcing_advertise(exportState, fldsExport, flds_scalar_name, logunit, mainproc, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    end if
+    end select
 
   end subroutine InitializeAdvertise
 
@@ -438,9 +442,6 @@ contains
     integer          , intent(in)    :: target_ymd       ! model date
     integer          , intent(in)    :: target_tod       ! model sec into model date
     integer          , intent(out)   :: rc
-
-    ! local variables
-    logical :: first_time = .true.
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -451,7 +452,7 @@ contains
     ! First time initialization
     !--------------------
 
-    if (first_time) then
+    if (first_call) then
        ! Initialize datamode export state and stream pointers
        select case (trim(datamode))
        case('glc_forcing_mct','glc_forcing')
@@ -462,7 +463,7 @@ contains
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end select
 
-       first_time = .false.
+       first_call = .false.
     end if
 
     !--------------------

@@ -84,25 +84,7 @@ contains
 
     rc = ESMF_SUCCESS
 
-    ! initialize pointers to stream fields
-    ! this has the full set of leveles in the stream data
-    call shr_strdata_get_stream_pointer( sdat, 'So_t_depth', strm_So_t_depth, rc=rc)
-    if (chkerr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'So_s_depth', strm_So_s_depth, rc=rc)
-    if (chkerr(rc,__LINE__,u_FILE_u)) return
-
-    ! error checks for stream pointers
-    if (.not. associated(strm_So_t_depth)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_So_t_depth must be associated for docn multilev_dom mode')
-       return
-    end if
-    if (.not. associated(strm_So_s_depth)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_So_s_depth must be associated for docn multilev_dom mode')
-       return
-    end if
-
-    ! initialize pointers to export fields
-    ! the export state has only nlev_export levels
+    ! Set export state pointers (has only nlev_export levels)
     call dshr_state_getfldptr(exportState, 'So_omask'   , fldptr1=So_omask   , rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'So_t_depth' , fldptr2=So_t_depth , rc=rc)
@@ -110,11 +92,17 @@ contains
     call dshr_state_getfldptr(exportState, 'So_s_depth' , fldptr2=So_s_depth , rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
 
+    ! Set stream pointers (this has the full set of leveles in the stream data)
+    call shr_strdata_get_stream_pointer( sdat, 'So_t_depth', strm_So_t_depth, &
+         errmsg=trim(subname)//'ERROR: strm_So_t_depth must be associated for docn multilev datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'So_s_depth', strm_So_s_depth, &
+         errmsg=trim(subname)//'ERROR: strm_So_s_depth must be associated for docn multilev datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
     ! Initialize export state pointers to non-zero
     So_t_depth(:,:) = shr_const_TkFrz
     So_s_depth(:,:) = shr_const_ocn_ref_sal
-
-    ! Set export state ocean fraction (So_omask)
     So_omask(:) = ocn_fraction(:)
 
   end subroutine docn_datamode_multilev_init_pointers
@@ -123,9 +111,9 @@ contains
   subroutine docn_datamode_multilev_advance(sdat, logunit, mainproc, rc)
 
     ! input/output variables
-    type(shr_strdata_type) , intent(in) :: sdat
-    integer                , intent(in) :: logunit
-    logical                , intent(in) :: mainproc
+    type(shr_strdata_type) , intent(in)  :: sdat
+    integer                , intent(in)  :: logunit
+    logical                , intent(in)  :: mainproc
     integer                , intent(out) :: rc
 
     ! local variables
@@ -134,8 +122,8 @@ contains
     integer  :: stream_index
     logical  :: level_found
     real(r8) :: factor
+    logical  ::  first_time = .true.
     real(r8), allocatable :: stream_vlevs(:)
-    logical :: first_time = .true.
     character(len=*), parameter :: subname='(docn_datamode_multilev): '
     !-------------------------------------------------------------------------------
 
@@ -189,7 +177,6 @@ contains
           return
        end if
     end do
-
     first_time = .false.
 
   end subroutine docn_datamode_multilev_advance

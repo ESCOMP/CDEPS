@@ -29,7 +29,7 @@ module dlnd_datamode_rof_forcing_mod
 
    ! stream field pointers
    type, public :: stream_pointer_type
-      real(r8), pointer :: strm_ptr(:)
+      real(r8), pointer :: ptr(:)
    end type stream_pointer_type
    type(stream_pointer_type), allocatable :: strm_Flrl_rofsur_nonh2o_2d(:) ! 2dple nonh2o tracers
    real(r8), pointer :: strm_Flrl_rofsur_nonh2o_1d(:) ! onlyl 1 nonh2o tracer
@@ -161,7 +161,7 @@ contains
          do nf = 1,ntracers_nonh2o
             write(nchar,'(i2.2)') nf
             strm_fld = trim('Flrl_rofsur_nonh2o') // trim(nchar)
-            call shr_strdata_get_stream_pointer( sdat, trim(strm_fld), strm_Flrl_rofsur_nonh2o_2d(nf)%strm_ptr, &
+            call shr_strdata_get_stream_pointer( sdat, trim(strm_fld), strm_Flrl_rofsur_nonh2o_2d(nf)%ptr, &
                  requirePointer=.true., &
                  errmsg=trim(subname)//'ERROR: '//trim(strm_fld)//&
                  ' must be associated for dlnd rof_forcing datamode', rc=rc)
@@ -209,7 +209,7 @@ contains
                if (lfrac(ni) == 0._r8) then
                   Flrl_rofsur_nonh2o_2d(nf,ni) = 1.e30_r8
                else
-                  Flrl_rofsur_nonh2o_2d(nf,ni) = strm_Flrl_rofsur_nonh2o_2d(nf)%strm_ptr(ni)
+                  Flrl_rofsur_nonh2o_2d(nf,ni) = strm_Flrl_rofsur_nonh2o_2d(nf)%ptr(ni)
                end if
             end do
          end do

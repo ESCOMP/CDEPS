@@ -69,7 +69,6 @@ contains
     integer            , intent(out)   :: rc
 
     ! local variables
-    integer                         :: n
     type(fldlist_type), pointer :: fldList
     !-------------------------------------------------------------------------------
 

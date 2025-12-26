@@ -39,8 +39,6 @@ module docn_datamode_multilev_dom_mod
   real(r8) , parameter :: tkfrz   = shr_const_tkfrz       ! freezing point, fresh water (kelvin)
   real(r8) , parameter :: ocnsalt = shr_const_ocn_ref_sal ! ocean reference salinity
 
-  ! constants
-  character(*) , parameter :: nullstr = 'null'
   character(*) , parameter :: u_FILE_u = &
        __FILE__
 
@@ -97,29 +95,6 @@ contains
 
     rc = ESMF_SUCCESS
 
-    ! initialize pointers to stream fields
-    ! this has the full set of leveles in the stream data
-    call shr_strdata_get_stream_pointer( sdat, 'So_t', strm_So_t, rc=rc)
-    if (chkerr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'So_t_depth', strm_So_t_depth, rc=rc)
-    if (chkerr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'So_s_depth', strm_So_s_depth, rc=rc)
-    if (chkerr(rc,__LINE__,u_FILE_u)) return
-
-    ! error checks for stream pointers
-    if (.not. associated(strm_So_t)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_So_t must be associated for docn multilev_dom mode')
-       return
-    end if
-    if (.not. associated(strm_So_t_depth)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_So_t_depth must be associated for docn multilev_dom mode')
-       return
-    end if
-    if (.not. associated(strm_So_s_depth)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_So_s_depth must be associated for docn multilev_dom mode')
-       return
-    end if
-
     ! initialize pointers to export fields
     call dshr_state_getfldptr(exportState, 'So_omask', fldptr1=So_omask   , rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -135,6 +110,18 @@ contains
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'So_s_depth', fldptr2=So_s_depth , rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
+
+    ! initialize pointers to stream fields
+    ! this has the full set of leveles in the stream data
+    call shr_strdata_get_stream_pointer( sdat, 'So_t', strm_So_t, &
+         errmsg=trim(subname)//'ERROR: strm_So_t must be associated for docn multilev_dom datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'So_t_depth', strm_So_t_depth, &
+         errmsg=trim(subname)//'ERROR: strm_So_t_depth must be associated for docn multilev_dom datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'So_s_depth', strm_So_s_depth, &
+         errmsg=trim(subname)//'ERROR: strm_So_t_depth must be associated for docn multilev_dom datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Initialize export state pointers to non-zero
     So_t_depth(:,:) = shr_const_TkFrz
@@ -173,6 +160,7 @@ contains
 
     rc = ESMF_SUCCESS
 
+    ! Set ocean sst
     So_t(:) = strm_So_t(:) + TkFrz
 
     ! Determine number of vertical levels for multi level stream

@@ -7,6 +7,7 @@ module cdeps_drof_comp
   !----------------------------------------------------------------------------
   ! This is the NUOPC cap for DROF
   !----------------------------------------------------------------------------
+
   use ESMF             , only : ESMF_VM, ESMF_VMBroadcast, ESMF_GridCompGet
   use ESMF             , only : ESMF_Mesh, ESMF_GridComp, ESMF_Time, ESMF_TimeInterval
   use ESMF             , only : ESMF_State, ESMF_Clock, ESMF_SUCCESS, ESMF_LOGMSG_INFO
@@ -25,7 +26,7 @@ module cdeps_drof_comp
   use shr_kind_mod     , only : r8=>shr_kind_r8, cl=>shr_kind_cl, cs=>shr_kind_cs, cx=>shr_kind_cx
   use shr_cal_mod      , only : shr_cal_ymd2date
   use shr_log_mod      , only : shr_log_setLogUnit, shr_log_error
-  use dshr_methods_mod , only : state_diagnose, chkerr, memcheck
+  use dshr_methods_mod , only : dshr_state_diagnose, chkerr, memcheck
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_advance, shr_strdata_init_from_config
   use dshr_mod         , only : dshr_model_initphase, dshr_init
   use dshr_mod         , only : dshr_state_setscalar, dshr_set_runclock, dshr_check_restart_alarm
@@ -74,8 +75,9 @@ module cdeps_drof_comp
   integer                      :: ny_global
   logical                      :: skip_restart_read = .false. ! true => skip restart read
   logical                      :: export_all = .false.        ! true => export all fields, do not check connected or not
-
   logical                      :: diagnose_data = .true.
+  logical                      :: first_call = .true.
+
   integer      , parameter     :: main_task=0                 ! task number of main task
 #ifdef CESMCOUPLED
   character(*) , parameter     :: modName =  "(rof_comp_nuopc)"
@@ -85,6 +87,10 @@ module cdeps_drof_comp
 
   ! linked lists
   type(fldList_type) , pointer :: fldsExport => null()
+
+  ! grid mask and fraction
+  real(r8), pointer :: model_frac(:) ! currently not used
+  integer , pointer :: model_mask(:) ! currently not used
 
   character(*) , parameter     :: u_FILE_u = &
        __FILE__
@@ -153,7 +159,6 @@ contains
     integer           :: inst_index ! number of current instance (ie. 1)
     integer           :: nu         ! unit number
     integer           :: ierr       ! error code
-    type(fldlist_type), pointer :: fldList
     type(ESMF_VM)     :: vm
     integer           :: bcasttmp(4)
     character(len=*),parameter :: subname=trim(modName)//':(InitializeAdvertise) '
@@ -186,7 +191,8 @@ contains
        close(nu)
        if (ierr > 0) then
           rc = ierr
-          write(logunit,'(a,i0)') trim(subname),' ERROR: reading input namelist, '//trim(nlfilename)//' iostat=',ierr
+          write(logunit,'(a,i0)') trim(subname), &
+               ' ERROR: reading input namelist, '//trim(nlfilename)//' iostat=',ierr
           call shr_log_error(subName//': namelist read error '//trim(nlfilename), rc=rc)
           return
        end if
@@ -229,14 +235,15 @@ contains
     export_all = (bcasttmp(4) == 1)
 
     ! Validate datamode
-    if (trim(datamode) == 'copyall') then
+    select case (trim(datamode))
+    case('copyall')
        if (mainproc) then
           write(logunit,'(2a)') trim(subname),'drof datamode = ',trim(datamode)
        end if
-    else
+    case default
        call shr_log_error(' ERROR illegal drof datamode = '//trim(datamode), rc=rc)
        return
-    end if
+    end select
 
     ! Advertise export fields
     call drof_datamode_copyall_advertise(exportState, fldsexport, flds_scalar_name, rc)
@@ -371,13 +378,11 @@ contains
     integer          , intent(out)   :: rc
 
     ! local variables
-    logical           :: first_time = .true.
-    integer           :: n
     character(len=CL) :: rpfile
     character(*), parameter :: subName = "(drof_comp_run) "
     !--------------------------------
 
-    rc = ESMF_SUCESS
+    rc = ESMF_SUCCESS
 
     call ESMF_TraceRegionEnter('DROF_RUN')
 
@@ -385,7 +390,7 @@ contains
     ! First time initialization
     !--------------------
 
-    if (first_time) then
+    if (first_call) then
        ! Initialize stream and export state pointers
        select case (trim(datamode))
        case('copyall')
@@ -401,7 +406,7 @@ contains
           if (chkerr(rc,__LINE__,u_FILE_u)) return
        end if
 
-       first_time = .false.
+       first_call = .false.
     end if
 
     !--------------------
@@ -420,6 +425,7 @@ contains
     case('copyall')
        call drof_datamode_copyall_advance()
     end select
+    call ESMF_TraceRegionExit('drof_datamode')
 
     ! write restarts if needed
     if (restart_write) then
@@ -430,7 +436,7 @@ contains
           call dshr_restart_write(rpfile, case_name, 'drof', inst_suffix, target_ymd, target_tod, &
                logunit, my_task, sdat, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       endif
+       end select
     end if
 
     ! write diagnostics

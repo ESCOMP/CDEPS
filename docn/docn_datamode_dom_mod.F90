@@ -7,7 +7,7 @@ module docn_datamode_dom_mod
   use shr_const_mod    , only : shr_const_TkFrz, shr_const_pi, shr_const_ocn_ref_sal
   use dshr_methods_mod , only : dshr_state_getfldptr, dshr_fldbun_getfldptr, chkerr
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
-  use dshr_strdata_mod , only : shr_strdata_type
+  use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_get_stream_pointer
 
   implicit none
   private ! except
@@ -97,14 +97,9 @@ contains
     if (chkerr(rc,__LINE__,u_FILE_u)) return
 
     ! initialize pointer to stream field
-    call shr_strdata_get_stream_pointer( sdat, 'So_t', strm_So_t, rc)
+    call shr_strdata_get_stream_pointer( sdat, 'So_t', strm_So_t, &
+         errmsg=trim(subname)//'ERROR: strm_So_t must be associated for docn dom datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    ! Error checks
-    if (.not. associated(strm_So_t)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_So_t must be associated for docn iaf mode')
-       return
-    end if
 
     ! Initialize value of export state
     So_omask(:) = ocn_fraction(:)
@@ -127,7 +122,8 @@ contains
 
     rc = ESMF_SUCCESS
 
-    So_t(:) = So_t(:) + TkFrz
+    ! Assume stream sst data is in degrees C
+    So_t(:) = strm_So_t(:) + TkFrz
 
   end subroutine docn_datamode_dom_advance
 

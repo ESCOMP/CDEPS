@@ -3,13 +3,11 @@ module datm_datamode_jra_mod
   use ESMF             , only : ESMF_SUCCESS, ESMF_LogWrite, ESMF_LOGMSG_INFO
   use ESMF             , only : ESMF_State, ESMF_StateGet, ESMF_MeshGet
   use NUOPC            , only : NUOPC_Advertise
-  use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
-  use shr_log_mod      , only : shr_log_error
+  use shr_kind_mod     , only : r8=>shr_kind_r8
   use shr_cal_mod      , only : shr_cal_date2julian
   use shr_const_mod    , only : shr_const_tkfrz, shr_const_pi, shr_const_rdair
   use dshr_strdata_mod , only : shr_strdata_get_stream_pointer, shr_strdata_type
   use dshr_methods_mod , only : dshr_state_getfldptr, chkerr
-  use dshr_strdata_mod , only : shr_strdata_type
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
 
   implicit none
@@ -41,7 +39,7 @@ module datm_datamode_jra_mod
   real(r8), pointer :: Faxa_swvdf(:) => null()
   real(r8), pointer :: Faxa_swnet(:) => null()
 
-  ! stream data
+  ! stream data pointers
   real(r8), pointer :: strm_Sa_tbot(:)   => null()
   real(r8), pointer :: strm_Sa_pslv(:)   => null()
   real(r8), pointer :: strm_Sa_u(:)      => null()
@@ -146,35 +144,6 @@ contains
        yc(n) = ownedElemCoords(2*n)
     end do
 
-    ! initialize stream pointers
-    call shr_strdata_get_stream_pointer( sdat, 'Faxa_prec'  , strm_Faxa_prec  , requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Faxa_prec must be associated for jra datamode', rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Faxa_swdn'  , strm_Faxa_swdn  , requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Faxa_swdn must be associated for jra datamode', rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Faxa_swnet' , strm_Faxa_swnet , requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Faxa_swnet must be associated for jra datamode', rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Faxa_lwdn'  , strm_Faxa_lwdn  , requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Faxa_lwdn must be associated for jra datamode', rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Sa_pslv'    , strm_Sa_pslv    , requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Sa_pslv must be associated for jra datamode', rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Sa_tbot'    , strm_Sa_tbot    , requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Sa_tbot must be associated for jra datamode', rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Sa_u'       , strm_Sa_u       , requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Sa_u must be associated for jra datamode', rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Sa_v'       , strm_Sa_v       , requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Sa_v must be associated for jra datamode', rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Sa_shum'    , strm_Sa_shum    , requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Sa_shum must be associated for jra datamode', rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
     ! initialize export state pointers
     call dshr_state_getfldptr(exportState, 'Sa_u'       , fldptr1=Sa_u       , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -217,11 +186,31 @@ contains
     call dshr_state_getfldptr(exportState, 'Faxa_swnet' , fldptr1=Faxa_swnet , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    ! erro check
-    if (.not. associated(strm_prec) .or. .not. associated(strm_swdn)) then
-       call shr_log_error(trim(subname)//'ERROR: prec and swdn must be in streams for CORE_IAF_JRA', rc=rc)
-       return
-    endif
+    ! initialize stream pointers
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_prec' , strm_Faxa_prec  , requirePointer=.true., &
+         errmsg=trim(subname)//'ERROR: strm_Faxa_prec must be associated for jra datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_swdn' , strm_Faxa_swdn  , requirePointer=.true., &
+         errmsg=trim(subname)//'ERROR: strm_Faxa_swdn must be associated for jra datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_lwdn' , strm_Faxa_lwdn  , requirePointer=.true., &
+         errmsg=trim(subname)//'ERROR: strm_Faxa_lwdn must be associated for jra datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_pslv'   , strm_Sa_pslv    , requirePointer=.true., &
+         errmsg=trim(subname)//'ERROR: strm_Sa_pslv must be associated for jra datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_tbot'   , strm_Sa_tbot    , requirePointer=.true., &
+         errmsg=trim(subname)//'ERROR: strm_Sa_tbot must be associated for jra datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_u'      , strm_Sa_u       , requirePointer=.true., &
+         errmsg=trim(subname)//'ERROR: strm_Sa_u must be associated for jra datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_v'      , strm_Sa_v       , requirePointer=.true., &
+         errmsg=trim(subname)//'ERROR: strm_Sa_v must be associated for jra datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_shum'   , strm_Sa_shum    , requirePointer=.true., &
+         errmsg=trim(subname)//'ERROR: strm_Sa_shum must be associated for jra datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine datm_datamode_jra_init_pointers
 

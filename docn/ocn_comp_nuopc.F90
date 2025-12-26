@@ -23,8 +23,7 @@ module cdeps_docn_comp
   use NUOPC_Model      , only : model_label_SetRunClock => label_SetRunClock
   use NUOPC_Model      , only : model_label_Finalize    => label_Finalize
   use NUOPC_Model      , only : NUOPC_ModelGet, SetVM
-  use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
-  use shr_kind_mod     , only : cx=>shr_kind_cx
+  use shr_kind_mod     , only : r8=>shr_kind_r8, cl=>shr_kind_cl, cs=>shr_kind_cs, cx=>shr_kind_cx
   use shr_cal_mod      , only : shr_cal_ymd2date
   use shr_log_mod      , only : shr_log_setLogUnit, shr_log_error
   use dshr_methods_mod , only : dshr_state_diagnose, chkerr, memcheck
@@ -32,7 +31,6 @@ module cdeps_docn_comp
   use dshr_mod         , only : dshr_model_initphase, dshr_init, dshr_mesh_init, dshr_restart_read
   use dshr_mod         , only : dshr_state_setscalar, dshr_set_runclock, dshr_check_restart_alarm
   use dshr_mod         , only : dshr_restart_write
-  use dshr_dfield_mod  , only : dfield_type, dshr_dfield_add, dshr_dfield_copy
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_realize
   use nuopc_shr_methods, only : shr_get_rpointer_name
 
@@ -93,7 +91,7 @@ module cdeps_docn_comp
   integer                      :: flds_scalar_index_ny = 0
   integer                      :: mpicom           ! mpi communicator
   integer                      :: my_task          ! my task in mpi communicator mpicom
-  logical                      :: mainproc       ! true of my_task == main_task
+  logical                      :: mainproc         ! true of my_task == main_task
   character(len=16)            :: inst_suffix = "" ! char string associated with instance (ie. "_0001" or "")
   integer                      :: logunit          ! logging unit number
   logical                      :: restart_read     ! start from restart
@@ -113,16 +111,18 @@ module cdeps_docn_comp
   integer                      :: ny_global
   logical                      :: skip_restart_read = .false.         ! true => skip restart read in continuation run
   logical                      :: export_all = .false.                ! true => export all fields, do not check connected or not
+  logical                      :: first_call = .true.
 
   ! linked lists
   type(fldList_type) , pointer :: fldsImport => null()
   type(fldList_type) , pointer :: fldsExport => null()
-  type(dfield_type)  , pointer :: dfields    => null()
 
   ! model mask and model fraction
   real(r8), pointer            :: model_frac(:) => null()
   integer , pointer            :: model_mask(:) => null()
   logical                      :: valid_ocn = .true. ! used for single column logic
+
+  ! first call in run phse
 
   ! constants
   logical                      :: aquaplanet = .false.
@@ -204,10 +204,6 @@ contains
     real(r8)          :: rtmp(1)
     type(ESMF_VM)     :: vm
     character(len=*),parameter :: subname=trim(module_name)//':(InitializeAdvertise) '
-    character(*)    ,parameter :: F00 = "('(" // trim(module_name) // ") ',8a)"
-    character(*)    ,parameter :: F01 = "('(" // trim(module_name) // ") ',a,2x,i8)"
-    character(*)    ,parameter :: F02 = "('(" // trim(module_name) // ") ',a,l6)"
-    character(*)    ,parameter :: F03 = "('(" // trim(module_name) // ") ',a,f8.5,2x,f8.5)"
     !-------------------------------------------------------------------------------
 
     namelist / docn_nml / datamode, &
@@ -229,8 +225,7 @@ contains
     ! Determine logical mainproc
     mainproc = (my_task == main_task)
 
-    if (my_task == main_task) then
-
+    if (mainproc) then
        ! Read docn_nml from nlfilename
        nlfilename = "docn_in"//trim(inst_suffix)
        open (newunit=nu,file=trim(nlfilename),status="old",action="read")
@@ -238,23 +233,26 @@ contains
        read (nu,nml=docn_nml,iostat=ierr)
        close(nu)
        if (ierr > 0) then
-          write(logunit,F00) 'ERROR: reading input namelist, '//trim(nlfilename)//' iostat=',ierr
+          if (mainproc) then
+             write(logunit,'(2a,i0)') trim(subname), &
+                  'ERROR: reading input namelist, '//trim(nlfilename)//' iostat=',ierr
+          end if
           call shr_log_error(subName//': namelist read error '//trim(nlfilename), rc=rc)
           return
        end if
 
        ! write namelist input to standard out
-       write(logunit,F00)' case_name         = ',trim(case_name)
-       write(logunit,F00)' datamode          = ',trim(datamode)
-       write(logunit,F00)' model_meshfile    = ',trim(model_meshfile)
-       write(logunit,F00)' model_maskfile    = ',trim(model_maskfile)
-       write(logunit,F01)' nx_global         = ',nx_global
-       write(logunit,F01)' ny_global         = ',ny_global
-       write(logunit,F00)' restfilm          = ',trim(restfilm)
-       write(logunit,F02)' skip_restart_read = ',skip_restart_read
-       write(logunit,F00)' import_data_fields = ',trim(import_data_fields)
-       write(logunit,*)  ' sst_constant_value = ',sst_constant_value
-       write(logunit,F02)' export_all        = ', export_all
+       write(logunit,'(3a)')        trim(subname),' case_name          = ',trim(case_name)
+       write(logunit,'(3a)')        trim(subname),' datamode           = ',trim(datamode)
+       write(logunit,'(3a)')        trim(subname),' model_meshfile     = ',trim(model_meshfile)
+       write(logunit,'(3a)')        trim(subname),' model_maskfile     = ',trim(model_maskfile)
+       write(logunit,'(2a,i0)')     trim(subname),' nx_global          = ',nx_global
+       write(logunit,'(2a,i0)')     trim(subname),' ny_global          = ',ny_global
+       write(logunit,'(3a)')        trim(subname),' restfilm           = ',trim(restfilm)
+       write(logunit,'(2a,l6)')     trim(subname),' skip_restart_read  = ',skip_restart_read
+       write(logunit,'(3a)')        trim(subname),' import_data_fields = ',trim(import_data_fields)
+       write(logunit,'(2a,es13.6)') trim(subname),' sst_constant_value = ',sst_constant_value
+       write(logunit,'(2a,l6)')     trim(subname),' export_all         = ',export_all
 
        bcasttmp = 0
        bcasttmp(1) = nx_global
@@ -267,7 +265,6 @@ contains
     ! Broadcast namelist input
     call ESMF_GridCompGet(gcomp, vm=vm, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
     call ESMF_VMBroadcast(vm, datamode, CL, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_VMBroadcast(vm, model_meshfile, CX, main_task, rc=rc)
@@ -278,10 +275,8 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_VMBroadcast(vm, import_data_fields, CL, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
     call ESMF_VMBroadcast(vm, bcasttmp, 4, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
     call ESMF_VMBroadcast(vm, rtmp, 1, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
@@ -303,47 +298,52 @@ contains
        datamode = "sst_aquap_analytic"
     end if
 
-    ! Validate datamode
-    if ( trim(datamode) == 'sstdata'            .or. & ! read stream, no import data
-         trim(datamode) == 'sst_aquap_file'     .or. & ! read stream, no import data
-         trim(datamode) == 'som'                .or. & ! read stream, needs import data
-         trim(datamode) == 'som_aquap'          .or. & ! read stream, needs import data
-         trim(datamode) == 'cplhist'            .or. & ! read stream, needs import data
-         trim(datamode) == 'sst_aquap_analytic' .or. & ! analytic, no streams, import or export data
-         trim(datamode) == 'sst_aquap_constant' .or. & ! analytic, no streams, import or export data
-         trim(datamode) == 'multilev_cplhist'   .or. & ! multilevel ocean input
-         trim(datamode) == 'multilev'           .or. & ! multilevel ocean input
-         trim(datamode) == 'multilev_dom') then        ! multilevel ocean input and sst export
-       ! success do nothing
-    else
+    ! Validate datamode - the following values are currently accepted
+    ! 'sstdata'             read stream, no import data
+    ! 'sst_aquap_file'      read stream, no import data
+    ! 'som'                 read stream, needs import data
+    ! 'som_aquap'           read stream, needs import data
+    ! 'cplhist'             read stream, needs import data
+    ! 'sst_aquap_analytic'  analytic, no streams, import or export data
+    ! 'sst_aquap_constant'  analytic, no streams, import or export data
+    ! 'multilev_cplhist'    multilevel ocean input from cplhist data
+    ! 'multilev'            multilevel ocean input
+    ! 'multilev_dom'        multilevel ocean input and sst export
+    select case (trim(datamode))
+    case ( 'sstdata', 'sst_aquap_file', 'som', 'som_aquap', &
+           'cplhist', 'sst_aquap_analytic', 'sst_aquap_constant', &
+           'multilev_cplhist', 'multilev', 'multilev_dom' )
+       if (mainproc) write(logunit,'(3a)') trim(subname),'docn datamode = ',trim(datamode)
+    case default
        call shr_log_error(' ERROR illegal docn datamode = '//trim(datamode), rc=rc)
        return
-    endif
+    end select
 
     ! Advertise docn fields
-    if (trim(datamode)=='sst_aquap_analytic' .or. trim(datamode)=='sst_aquap_constant') then
+    select case (trim(datamode))
+    case('sst_aquap_analytic','sst_aquap_constant')
        aquaplanet = .true.
        call docn_datamode_aquaplanet_advertise(exportState, fldsExport, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    else if (trim(datamode(1:3)) == 'som') then
+    case('som')
        call docn_datamode_som_advertise(importState, exportState, fldsImport, fldsExport, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    else if (trim(datamode) == 'sstdata' .or. trim(datamode) == 'sst_aquap_file') then
+    case('sstdata','sst_aquap_file')
        call docn_datamode_dom_advertise(exportState, fldsExport, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    else if (trim(datamode) == 'cplhist') then
+    case('cplhist')
        call docn_datamode_cplhist_advertise(exportState, fldsExport, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    else if (trim(datamode) == 'multilev') then
+    case('multilev')
        call docn_datamode_multilev_advertise(exportState, fldsExport, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    else if (trim(datamode) == 'multilev_cplhist') then
+    case('multilev_cplhist')
        call docn_datamode_multilev_cplhist_advertise(exportState, fldsExport, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    else if (trim(datamode) == 'multilev_dom') then
+    case('multilev_dom')
        call docn_datamode_multilev_dom_advertise(exportState, fldsExport, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    end if
+    end select
 
     if (trim(import_data_fields) /= 'none') then
        call docn_import_data_advertise(importState, fldsImport, flds_scalar_name, import_data_fields, rc)
@@ -486,15 +486,13 @@ contains
     character(len=*),parameter :: subname=trim(module_name)//':(ModelAdvance) '
     !-------------------------------------------------------------------------------
 
-
     rc = ESMF_SUCCESS
-    call shr_log_setLogUnit(logunit)
 
+    call shr_log_setLogUnit(logunit)
     if (.not. valid_ocn) then
        RETURN
     end if
-
-    call memcheck(subname, 5, my_task == main_task)
+    call memcheck(subname, 5, mainproc)
 
     ! query the Component for its clock, importState and exportState
     call NUOPC_ModelGet(gcomp, modelClock=clock, importState=importState, exportState=exportState, rc=rc)
@@ -536,7 +534,6 @@ contains
     integer          , intent(out)   :: rc
 
     ! local variables
-    logical :: first_time = .true.
     character(len=CL) :: rpfile  ! restart pointer file name
     character(*), parameter :: subName = "(docn_comp_run) "
     !-------------------------------------------------------------------------------
@@ -549,7 +546,7 @@ contains
     ! First time initialization
     !--------------------
 
-    if (first_time) then
+    if (first_call) then
 
        ! Initialize datamode module pointers
        select case (trim(datamode))
@@ -560,27 +557,30 @@ contains
           call docn_datamode_som_init_pointers(importState, exportState, sdat, model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('sst_aquap_analytic', 'sst_aquap_constant')
-          skip_restart_read=.true.
           call  docn_datamode_aquaplanet_init_pointers(exportState, model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('cplhist')
           call docn_datamode_cplhist_init_pointers(exportState, sdat, model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('multilev')
-          call docn_datamode_multilev_init_pointers(exportState, sdat,  model_frac, rc)
+          call docn_datamode_multilev_init_pointers(exportState, sdat, model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('multilev_dom')
-          call docn_datamode_multilev_dom_init_pointers(exportState, sdat,  model_frac, rc)
+          call docn_datamode_multilev_dom_init_pointers(exportState, sdat, model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('multilev_cplhist')
-          ! Note that there is no call to docn_init_dfields since the
-          ! initialization of dfields is done in the above routine
-          call docn_datamode_multilev_cplhist_init_pointers(dfields, &
-               exportState, sdat,  model_frac, logunit, mainproc, rc)
+          call docn_datamode_multilev_cplhist_init_pointers(exportState, sdat,  model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end select
 
        ! Read restart if needed
+       select case (trim(datamode))
+       case('sst_aquap_analytic', 'sst_aquap_constant')
+          skip_restart_read=.true.
+       case default
+          skip_restart_read=.false.
+       end select
+
        if (restart_read .and. .not. skip_restart_read) then
           call shr_get_rpointer_name(gcomp, 'ocn', target_ymd, target_tod, rpfile, 'read', rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -590,12 +590,12 @@ contains
              call dshr_restart_read(restfilm, rpfile, logunit, my_task, mpicom, sdat, rc)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
           case('som', 'som_aquap')
-             call docn_datamode_som_restart_read(restfilm, rpfile, logunit, my_task, mpicom, sdat)
+             call docn_datamode_som_restart_read(restfilm, rpfile, logunit, my_task, mpicom, sdat, rc)
+             if (ChkErr(rc,__LINE__,u_FILE_u)) return
           end select
        end if
 
-       ! Reset first_time
-       first_time = .false.
+       first_call = .false.
     end if
 
     !--------------------
@@ -648,7 +648,8 @@ contains
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('som', 'som_aquap')
           call docn_datamode_som_restart_write(rpfile, case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, my_task, sdat)
+               logunit, my_task, sdat, rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('sst_aquap_analytic', 'sst_aquap_constant')
           ! Do nothing
        case default
@@ -673,7 +674,7 @@ contains
     integer, intent(out) :: rc
     !-------------------------------------------------------------------------------
     rc = ESMF_SUCCESS
-    if (my_task == main_task) then
+    if (mainproc) then
        write(logunit,*)
        write(logunit,*) 'docn : end of main integration loop'
        write(logunit,*)

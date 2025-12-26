@@ -114,16 +114,19 @@ contains
     call shr_strdata_get_stream_pointer( sdat, 'So_bldepth', strm_So_bldepth, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    if (associated(So_u) .and. .not. associate(strm_So_u)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_So_u must be associated for docn cplhist mode', rc=rc)
+    if (associated(So_u) .and. .not. associated(strm_So_u)) then
+       call shr_log_error(trim(subname)//&
+            'ERROR: strm_So_u must be associated if So_u is associated for docn cplhist mode', rc=rc)
        return
     end if
-    if (associated(So_v) .and. .not. associate(strm_So_v)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_So_v must be associated for docn cplhist mode', rc=rc)
+    if (associated(So_v) .and. .not. associated(strm_So_v)) then
+       call shr_log_error(trim(subname)//&
+            'ERROR: strm_So_v must be associated if So_v is associated for docn cplhist mode', rc=rc)
        return
     end if
-    if (associated(Sobldepth) .and. .not. associate(strm_Sobldepth)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_Sobldepth must be associated for docn cplhist mode', rc=rc)
+    if (associated(So_bldepth) .and. .not. associated(strm_So_bldepth)) then
+       call shr_log_error(trim(subname)//&
+            'ERROR: strm_So_bldepth must be associated if So_bldepth is associated for docn cplhist mode', rc=rc)
        return
     end if
 
@@ -152,13 +155,13 @@ contains
 
     rc = ESMF_SUCCESS
 
-    if (associate(So_u)) then
+    if (associated(So_u)) then
        So_u(:) = strm_So_u(:)
     end if
-    if (associate(So_v)) then
+    if (associated(So_v)) then
        So_v(:) = strm_So_v(:)
     end if
-    if (associate(So_bldepth)) then
+    if (associated(So_bldepth)) then
        So_bldepth(:) = strm_So_bldepth(:)
     end if
 

@@ -273,7 +273,6 @@ contains
     if (associated(Faxa_swvdr) .and. .not. associated(strm_Faxa_swvdr)) then
        call shr_log_error(trim(subname)//'ERROR: strm_Faxa_swvdr must be associated for era5 datamode', rc=rc)
        return
-       end if
     end if
     if (associated(Faxa_swndr) .and. .not. associated(strm_Faxa_swndr)) then
        call shr_log_error(trim(subname)//'ERROR: strm_Faxa_swndr must be associated for era5 datamode', rc=rc)
@@ -283,7 +282,7 @@ contains
        call shr_log_error(trim(subname)//'ERROR: strm_Faxa_swvdf must be associated for era5 datamode', rc=rc)
        return
     end if
-    if (associated(Faxa_swndf) .and. not. associated(strm_Faxa_swndf)) then
+    if (associated(Faxa_swndf) .and. .not. associated(strm_Faxa_swndf)) then
        call shr_log_error(trim(subname)//'ERROR: strm_Faxa_swndf must be associated for era5 datamode', rc=rc)
        return
     end if

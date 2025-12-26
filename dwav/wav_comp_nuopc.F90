@@ -7,6 +7,7 @@ module cdeps_dwav_comp
   !----------------------------------------------------------------------------
   ! This is the NUOPC cap for DWAV
   !----------------------------------------------------------------------------
+
   use ESMF             , only : ESMF_VM, ESMF_VMBroadcast, ESMF_GridCompGet
   use ESMF             , only : ESMF_SUCCESS, ESMF_TraceRegionExit, ESMF_TraceRegionEnter
   use ESMF             , only : ESMF_State, ESMF_Clock, ESMF_Alarm, ESMF_LogWrite, ESMF_Time
@@ -25,7 +26,7 @@ module cdeps_dwav_comp
   use shr_kind_mod     , only : r8=>shr_kind_r8, cl=>shr_kind_cl, cs=>shr_kind_cs, cx=>shr_kind_cx
   use shr_cal_mod      , only : shr_cal_ymd2date
   use shr_log_mod      , only : shr_log_setLogUnit, shr_log_error
-  use dshr_methods_mod , only : state_diagnose, chkerr, memcheck
+  use dshr_methods_mod , only : dshr_state_diagnose, chkerr, memcheck
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_advance, shr_strdata_init_from_config
   use dshr_mod         , only : dshr_model_initphase, dshr_init
   use dshr_mod         , only : dshr_state_setscalar, dshr_set_runclock, dshr_check_restart_alarm
@@ -75,6 +76,14 @@ module cdeps_dwav_comp
   integer                      :: ny_global
   logical                      :: skip_restart_read = .false.         ! true => skip restart read
   logical                      :: export_all = .false.                ! true => export all fields, do not check connected or not
+  logical                      :: first_call = .true.
+
+  ! linked lists
+  type(fldList_type) , pointer :: fldsExport => null()
+
+  ! model mask and model fraction
+  real(r8), pointer            :: model_frac(:) => null()
+  integer , pointer            :: model_mask(:) => null()
 
   ! constants
   logical                      :: diagnose_data = .true.
@@ -84,14 +93,6 @@ module cdeps_dwav_comp
 #else
   character(*) , parameter     :: modName =  "(cdeps_dwav_comp)"
 #endif
-
-  ! linked lists
-  type(fldList_type) , pointer :: fldsExport => null()
-
-  ! model mask and model fraction
-  real(r8), pointer            :: model_frac(:) => null()
-  integer , pointer            :: model_mask(:) => null()
-
   character(*) , parameter     :: u_FILE_u = &
        __FILE__
 
@@ -235,12 +236,13 @@ contains
     export_all = (bcasttmp(4) == 1)
 
     ! Validate datamode
-    if (trim(datamode) == 'copyall') then
-       if (my_task == main_task) write(logunit,*) 'dwav datamode = ',trim(datamode)
-    else
+    select case (trim(datamode))
+    case('copyall')
+       if (mainproc) write(logunit,'(3a)') trim(subname),' dwav datamode = ',trim(datamode)
+    case default
        call shr_log_error(' ERROR illegal dwav datamode = '//trim(datamode), rc=rc)
        return
-    end if
+    end select
 
     ! Advertise export fields
     call dwav_datamode_copyall_advertise(exportState, fldsexport, flds_scalar_name, rc)
@@ -250,6 +252,7 @@ contains
 
   !===============================================================================
   subroutine InitializeRealize(gcomp, importState, exportState, clock, rc)
+
     ! input/output variables
     type(ESMF_GridComp)  :: gcomp
     type(ESMF_State)     :: importState, exportState
@@ -305,7 +308,7 @@ contains
     end if
 
     ! Run dwav to create export state
-    call dwav_comp_run(logunit, current_ymd, current_tod, sdat, rc=rc)
+    call dwav_comp_run(gcomp, exportstate, current_ymd, current_tod, restart_write=.false., rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Add scalars to export state
@@ -339,8 +342,8 @@ contains
 
     rc = ESMF_SUCCESS
 
-    call memcheck(subname, 5, my_task == main_task)
     call shr_log_setLogUnit(logunit)
+    call memcheck(subname, 5, mainproc)
 
     ! query the Component for its clock, importState and exportState
     call NUOPC_ModelGet(gcomp, modelClock=clock, importState=importState, exportState=exportState, rc=rc)
@@ -361,7 +364,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! run dwav
-    call dwav_comp_run(logunit, next_ymd, next_tod, sdat, restart_write,rc=rc)
+    call dwav_comp_run(gcomp, exportState, next_ymd, next_tod, restart_write, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine ModelAdvance
@@ -382,17 +385,15 @@ contains
     integer          , intent(out)   :: rc
 
     ! local variables
-    logical           :: first_time = .true.
-    integer           :: n
     character(len=CL) :: rpfile
     character(*), parameter :: subName = "(dwav_comp_run) "
     !-------------------------------------------------------------------------------
 
-    rc = ESMF_SUCESS
+    rc = ESMF_SUCCESS
 
     call ESMF_TraceRegionEnter('DWAV_RUN')
 
-    if (first_time) then
+    if (first_call) then
        ! Initialize stream and export state pointers
        select case (trim(datamode))
        case('copyall')
@@ -408,7 +409,7 @@ contains
           if (chkerr(rc,__LINE__,u_FILE_u)) return
        end if
 
-       first_time = .false.
+       first_call = .false.
     end if
 
     !--------------------
@@ -439,7 +440,7 @@ contains
           call dshr_restart_write(rpfile, case_name, 'dwav', inst_suffix, target_ymd, target_tod, &
                logunit, my_task, sdat, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       endif
+       end select
     end if
 
     ! write diagnostics

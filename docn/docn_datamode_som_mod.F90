@@ -26,7 +26,7 @@ module docn_datamode_som_mod
   public :: docn_datamode_som_restart_read
   public :: docn_datamode_som_restart_write
 
-  ! export fields
+  ! pointers to export fields
   real(r8), pointer :: So_omask(:)  => null()    ! real ocean fraction sent to mediator
   real(r8), pointer :: So_t(:)      => null()
   real(r8), pointer :: So_s(:)      => null()
@@ -38,7 +38,7 @@ module docn_datamode_som_mod
   real(r8), pointer :: Fioo_q(:)    => null()
   real(r8), pointer :: So_fswpen(:) => null()
 
-  ! import  fields
+  ! pointers to import  fields
   real(r8), pointer :: Foxx_swnet(:) => null()
   real(r8), pointer :: Foxx_lwup(:)  => null()
   real(r8), pointer :: Foxx_sen(:)   => null()
@@ -61,7 +61,7 @@ module docn_datamode_som_mod
   ! restart fields
   real(R8), public, pointer :: somtp(:)     ! SOM ocean temperature needed for restart
 
-  real(R8) :: dt                            ! real model timestep
+  real(R8) :: dt ! real model timestep
 
   ! constants
   real(r8) , parameter :: cpsw    = shr_const_cpsw        ! specific heat of sea h2o ~ j/kg/k
@@ -71,7 +71,6 @@ module docn_datamode_som_mod
   real(r8) , parameter :: latice  = shr_const_latice      ! latent heat of fusion
   real(r8) , parameter :: ocnsalt = shr_const_ocn_ref_sal ! ocean reference salinity
 
-  character(*) , parameter :: nullstr = 'null'
   character(*) , parameter :: u_FILE_u = &
        __FILE__
 
@@ -206,56 +205,30 @@ contains
     end if
 
     ! Initialize pointers to stream fields
-    call shr_strdata_get_stream_pointer( sdat, 'So_t'    , strm_So_t, rc)
+    call shr_strdata_get_stream_pointer( sdat, 'So_t'    , strm_So_t, &
+         errmsg=trim(subname)//'ERROR: strm_So_t must be associated for docn som datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'So_s'    , strm_So_s, rc)
+    call shr_strdata_get_stream_pointer( sdat, 'So_s'    , strm_So_s, &
+         errmsg=trim(subname)//'ERROR: strm_So_s must be associated for docn som datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'So_u'    , strm_So_u, rc)
+    call shr_strdata_get_stream_pointer( sdat, 'So_u'    , strm_So_u, &
+         errmsg=trim(subname)//'ERROR: strm_So_u must be associated for docn som datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'So_v'    , strm_So_v, rc)
+    call shr_strdata_get_stream_pointer( sdat, 'So_v'    , strm_So_v, &
+         errmsg=trim(subname)//'ERROR: strm_So_v must be associated for docn som datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'So_dhdx' , strm_So_dhdx, rc)
+    call shr_strdata_get_stream_pointer( sdat, 'So_dhdx' , strm_So_dhdx, &
+         errmsg=trim(subname)//'ERROR: strm_So_dhdx must be associated for docn som datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'So_dhdy' , strm_So_dhdy, rc)
+    call shr_strdata_get_stream_pointer( sdat, 'So_dhdy' , strm_So_dhdy, &
+         errmsg=trim(subname)//'ERROR: strm_So_dhdy must be associated for docn som datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'So_h'    , strm_So_h, rc=rc)
+    call shr_strdata_get_stream_pointer( sdat, 'So_h'    , strm_So_h, &
+         errmsg=trim(subname)//'ERROR: strm_So_h must be associated for docn som datamode', rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'So_qbot' , strm_So_qbot, rc=rc)
+    call shr_strdata_get_stream_pointer( sdat, 'So_qbot' , strm_So_qbot, &
+         errmsg=trim(subname)//'ERROR: strm_So_qbot must be associated for docn som datamode', rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
-
-    ! Error checks for stream pointers
-    if (.not. associated(strm_So_t)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_So_t must be associated for docn som mode')
-       return
-    end if
-    if (.not. associated(strm_So_s)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_So_s must be associated for docn som mode')
-       return
-    end if
-    if (.not. associated(strm_So_u)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_So_u must be associated for docn som mode')
-       return
-    end if
-    if (.not. associated(strm_So_v)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_So_v must be associated for docn som mode')
-       return
-    end if
-    if (.not. associated(strm_So_dhdx)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_So_dhdx must be associated for docn som mode')
-       return
-    end if
-    if (.not. associated(strm_So_dhdy)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_So_dhdy must be associated for docn som mode')
-       return
-    end if
-    if (.not. associated(strm_So_h)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_So_h must be associated for docn som mode')
-       return
-    end if
-    if (.not. associated(strm_So_qbot)) then
-       call shr_log_error(trim(subname)//'ERROR: strm_So_qbot must be associated for docn som mode')
-       return
-    end if
 
     ! Set export state ocean fraction (So_omask)
     So_omask(:) = ocn_fraction(:)
@@ -283,8 +256,8 @@ contains
     ! local variables
     logical                 :: first_time = .true.
     type(ESMF_TimeInterval) :: timeStep
-    integer                 :: idt          ! integer model timestep
-    real(r8), allocatable   :: tfreeze(:)         ! SOM ocean freezing temperature
+    integer                 :: idt        ! integer model timestep
+    real(r8), allocatable   :: tfreeze(:) ! SOM ocean freezing temperature
     integer                 :: lsize
     integer                 :: n
     logical                 :: reset_temp
@@ -298,7 +271,7 @@ contains
     So_s(:)    = strm_So_s(:)
     So_dhdx(:) = strm_So_dhdx(:)
     So_dhdy(:) = strm_So_dhdy(:)
-    So_t(:)    = strm_So_t(:)
+    So_t(:)    = strm_So_t(:) ! assume input is in degrees C
 
     lsize = size(So_t)
 
@@ -364,7 +337,7 @@ contains
 
   !===============================================================================
   subroutine docn_datamode_som_restart_write(rpfile, case_name, inst_suffix, ymd, tod, &
-       logunit, my_task, sdat)
+       logunit, my_task, sdat, rc)
 
     ! write restart file
 
@@ -377,8 +350,11 @@ contains
     integer                     , intent(in)    :: logunit
     integer                     , intent(in)    :: my_task
     type(shr_strdata_type)      , intent(inout) :: sdat
+    integer                     , intent(out)   :: rc
     !-------------------------------------------------------------------------------
-    integer :: rc
+
+    rc = ESMF_SUCCESS
+
     call dshr_restart_write(rpfile, case_name, 'docn', inst_suffix, ymd, tod, &
          logunit, my_task, sdat, rc, fld=somtp, fldname='somtp')
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -386,23 +362,27 @@ contains
   end subroutine docn_datamode_som_restart_write
 
   !===============================================================================
-  subroutine docn_datamode_som_restart_read(rest_filem, rpfile, logunit, my_task, mpicom, sdat)
+  subroutine docn_datamode_som_restart_read(rest_filem, rpfile, logunit, my_task, mpicom, sdat, rc)
 
     ! read restart file
 
     ! input/output arguments
-    character(len=*)            , intent(inout) :: rest_filem
-    character(len=*)            , intent(in)    :: rpfile
-    integer                     , intent(in)    :: logunit
-    integer                     , intent(in)    :: my_task
-    integer                     , intent(in)    :: mpicom
-    type(shr_strdata_type)      , intent(inout) :: sdat
+    character(len=*)       , intent(inout) :: rest_filem
+    character(len=*)       , intent(in)    :: rpfile
+    integer                , intent(in)    :: logunit
+    integer                , intent(in)    :: my_task
+    integer                , intent(in)    :: mpicom
+    type(shr_strdata_type) , intent(inout) :: sdat
+    integer                , intent(out)   :: rc
     !-------------------------------------------------------------------------------
-    integer :: rc
+
+    rc = ESMF_SUCCESS
+
     ! allocate module memory for restart fields that are read in
     allocate(somtp(sdat%model_lsize))
+
     ! read restart
-    call dshr_restart_read(rest_filem, rpfile, logunit, my_task, mpicom, sdat, rc,&
+    call dshr_restart_read(rest_filem, rpfile, logunit, my_task, mpicom, sdat, rc, &
          fld=somtp, fldname='somtp')
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 

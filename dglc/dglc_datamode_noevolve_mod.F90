@@ -262,7 +262,6 @@ contains
       real(r8)               :: loc_pos_smb(1), Tot_pos_smb(1) ! Sum of positive smb values on each ice sheet for hole-filling
       real(r8)               :: loc_neg_smb(1), Tot_neg_smb(1) ! Sum of negative smb values on each ice sheet for hole-filling
       real(r8)               :: rat     ! Ratio of hole-filling flux to apply
-
       character(len=*), parameter :: subname='(dglc_datamode_noevolve_advance): '
       !-------------------------------------------------------------------------------
 
@@ -436,7 +435,7 @@ contains
             ! where there is no negative smb. In that case the ice
             ! runoff is exactly equal to the input smb.
             if(abs(Tot_pos_smb(1)) >= abs(Tot_neg_smb(1))) then
-               do ng = 1,lsize             
+               do ng = 1,lsize
                   if (Sg_icemask_coupled_fluxes(ns)%ptr(ng) > 0.d0) then
                      if(Flgl_qice(ns)%ptr(ng) > 0.d0) then
                         rat = Flgl_qice(ns)%ptr(ng)/Tot_pos_smb(1)
@@ -465,7 +464,7 @@ contains
                      Fgrg_rofi(ns)%ptr(ng) = 0.d0
                   end if
                end do
-                  
+
             end if ! More neg or pos smb
 
          end do ! Each ice sheet
@@ -473,7 +472,7 @@ contains
 
       ! Set initialized flag
       initialized_noevolve = .true.
-      
+
    end subroutine dglc_datamode_noevolve_advance
 
    !===============================================================================
@@ -583,7 +582,7 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call pio_initdecomp(pio_subsystem, pio_double, (/nx_global(ns),ny_global(ns)/), gindex, pio_iodesc(ns))
        call pio_write_darray(pioid, varid(ns), pio_iodesc(ns), Fgrg_rofi(ns)%ptr, rcode, fillval=shr_const_spval)
-       
+
        ! Deallocate gindex
        deallocate (gindex)
     end do
@@ -661,12 +660,12 @@ contains
        write(logunit, '(a)') trim(subname)//' file not found, skipping '//trim(restfilem)
        return
     end if
-    
+
     ! Read restart file
     if (my_task == main_task) then
        write(logunit, '(a)') trim(subname)//' reading data model restart '//trim(restfilem)
     end if
-    
+
     rcode = pio_openfile(pio_subsystem, pioid, io_type, trim(restfilem), pio_nowrite)
     do ns = 1,num_icesheets
 
