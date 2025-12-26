@@ -1,4 +1,4 @@
-module docn_datamode_dom_mod
+module docn_datamode_sstdata_mod
 
   use ESMF             , only : ESMF_State, ESMF_LOGMSG_INFO, ESMF_LogWrite, ESMF_SUCCESS
   use NUOPC            , only : NUOPC_Advertise
@@ -12,9 +12,9 @@ module docn_datamode_dom_mod
   implicit none
   private ! except
 
-  public  :: docn_datamode_dom_advertise
-  public  :: docn_datamode_dom_init_pointers
-  public  :: docn_datamode_dom_advance
+  public  :: docn_datamode_sstdata_advertise
+  public  :: docn_datamode_sstdata_init_pointers
+  public  :: docn_datamode_sstdata_advance
 
   ! export fields
   real(r8), pointer :: So_omask(:)  => null()    ! real ocean fraction sent to mediator
@@ -37,7 +37,7 @@ module docn_datamode_dom_mod
 contains
 !===============================================================================
 
-  subroutine docn_datamode_dom_advertise(exportState, fldsexport, flds_scalar_name, rc)
+  subroutine docn_datamode_sstdata_advertise(exportState, fldsexport, flds_scalar_name, rc)
 
     ! input/output variables
     type(esmf_State)   , intent(inout) :: exportState
@@ -67,10 +67,10 @@ contains
        fldList => fldList%next
     enddo
 
-  end subroutine docn_datamode_dom_advertise
+  end subroutine docn_datamode_sstdata_advertise
 
   !===============================================================================
-  subroutine docn_datamode_dom_init_pointers(exportState, sdat, ocn_fraction, rc)
+  subroutine docn_datamode_sstdata_init_pointers(exportState, sdat, ocn_fraction, rc)
 
     ! input/output variables
     type(ESMF_State)       , intent(inout) :: exportState
@@ -98,7 +98,7 @@ contains
 
     ! initialize pointer to stream field
     call shr_strdata_get_stream_pointer( sdat, 'So_t', strm_So_t, &
-         errmsg=trim(subname)//'ERROR: strm_So_t must be associated for docn dom datamode', rc=rc)
+         errmsg=trim(subname)//'ERROR: strm_So_t must be associated for docn sstdata datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Initialize value of export state
@@ -108,16 +108,16 @@ contains
     if (associated(So_v)) So_v(:) = 0.0_r8
     if (associated(So_s)) So_s(:) = ocnsalt
 
-  end subroutine docn_datamode_dom_init_pointers
+  end subroutine docn_datamode_sstdata_init_pointers
 
   !===============================================================================
-  subroutine docn_datamode_dom_advance(rc)
+  subroutine docn_datamode_sstdata_advance(rc)
 
     ! input/output variables
     integer, intent(out)   :: rc
 
     ! local variables
-    character(len=*), parameter :: subname='(docn_datamode_dom_advance): '
+    character(len=*), parameter :: subname='(docn_datamode_sstdata_advance): '
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -125,6 +125,6 @@ contains
     ! Assume stream sst data is in degrees C
     So_t(:) = strm_So_t(:) + TkFrz
 
-  end subroutine docn_datamode_dom_advance
+  end subroutine docn_datamode_sstdata_advance
 
-end module docn_datamode_dom_mod
+end module docn_datamode_sstdata_mod

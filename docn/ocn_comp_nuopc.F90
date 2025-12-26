@@ -35,9 +35,9 @@ module cdeps_docn_comp
   use nuopc_shr_methods, only : shr_get_rpointer_name
 
   ! Datamode specialized modules
-  use docn_datamode_dom_mod              , only : docn_datamode_dom_advertise
-  use docn_datamode_dom_mod              , only : docn_datamode_dom_init_pointers
-  use docn_datamode_dom_mod              , only : docn_datamode_dom_advance
+  use docn_datamode_sstdata_mod          , only : docn_datamode_sstdata_advertise
+  use docn_datamode_sstdata_mod          , only : docn_datamode_sstdata_init_pointers
+  use docn_datamode_sstdata_mod          , only : docn_datamode_sstdata_advance
 
   use docn_datamode_som_mod              , only : docn_datamode_som_advertise
   use docn_datamode_som_mod              , only : docn_datamode_som_init_pointers
@@ -57,9 +57,9 @@ module cdeps_docn_comp
   use docn_datamode_multilev_cplhist_mod , only : docn_datamode_multilev_cplhist_init_pointers
   use docn_datamode_multilev_cplhist_mod , only : docn_datamode_multilev_cplhist_advance
 
-  use docn_datamode_multilev_dom_mod     , only : docn_datamode_multilev_dom_advertise
-  use docn_datamode_multilev_dom_mod     , only : docn_datamode_multilev_dom_init_pointers
-  use docn_datamode_multilev_dom_mod     , only : docn_datamode_multilev_dom_advance
+  use docn_datamode_multilev_sstdata_mod , only : docn_datamode_multilev_sstdata_advertise
+  use docn_datamode_multilev_sstdata_mod , only : docn_datamode_multilev_sstdata_init_pointers
+  use docn_datamode_multilev_sstdata_mod , only : docn_datamode_multilev_sstdata_advance
 
   use docn_datamode_multilev_mod         , only : docn_datamode_multilev_advertise
   use docn_datamode_multilev_mod         , only : docn_datamode_multilev_init_pointers
@@ -308,11 +308,12 @@ contains
     ! 'sst_aquap_constant'  analytic, no streams, import or export data
     ! 'multilev_cplhist'    multilevel ocean input from cplhist data
     ! 'multilev'            multilevel ocean input
-    ! 'multilev_dom'        multilevel ocean input and sst export
+    ! 'multilev_sstdata'    multilevel ocean input and sst export
+
     select case (trim(datamode))
     case ( 'sstdata', 'sst_aquap_file', 'som', 'som_aquap', &
            'cplhist', 'sst_aquap_analytic', 'sst_aquap_constant', &
-           'multilev_cplhist', 'multilev', 'multilev_dom' )
+           'multilev_cplhist', 'multilev', 'multilev_sstdata' )
        if (mainproc) write(logunit,'(3a)') trim(subname),'docn datamode = ',trim(datamode)
     case default
        call shr_log_error(' ERROR illegal docn datamode = '//trim(datamode), rc=rc)
@@ -329,7 +330,7 @@ contains
        call docn_datamode_som_advertise(importState, exportState, fldsImport, fldsExport, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('sstdata','sst_aquap_file')
-       call docn_datamode_dom_advertise(exportState, fldsExport, flds_scalar_name, rc)
+       call docn_datamode_sstdata_advertise(exportState, fldsExport, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('cplhist')
        call docn_datamode_cplhist_advertise(exportState, fldsExport, flds_scalar_name, rc)
@@ -340,8 +341,8 @@ contains
     case('multilev_cplhist')
        call docn_datamode_multilev_cplhist_advertise(exportState, fldsExport, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    case('multilev_dom')
-       call docn_datamode_multilev_dom_advertise(exportState, fldsExport, flds_scalar_name, rc)
+    case('multilev_sstdata')
+       call docn_datamode_multilev_sstdata_advertise(exportState, fldsExport, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end select
 
@@ -551,7 +552,7 @@ contains
        ! Initialize datamode module pointers
        select case (trim(datamode))
        case('sstdata', 'sst_aquap_file')
-          call docn_datamode_dom_init_pointers(exportState, sdat, model_frac, rc)
+          call docn_datamode_sstdata_init_pointers(exportState, sdat, model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('som', 'som_aquap')
           call docn_datamode_som_init_pointers(importState, exportState, sdat, model_frac, rc)
@@ -565,8 +566,8 @@ contains
        case('multilev')
           call docn_datamode_multilev_init_pointers(exportState, sdat, model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       case('multilev_dom')
-          call docn_datamode_multilev_dom_init_pointers(exportState, sdat, model_frac, rc)
+       case('multilev_sstdata')
+          call docn_datamode_multilev_sstdata_init_pointers(exportState, sdat, model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('multilev_cplhist')
           call docn_datamode_multilev_cplhist_init_pointers(exportState, sdat,  model_frac, rc)
@@ -586,7 +587,7 @@ contains
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
           select case (trim(datamode))
-          case('sstdata', 'sst_aquap_file', 'cplhist', 'multilev', 'mulitilev_dom', 'multilev_cplhist')
+          case('sstdata', 'sst_aquap_file', 'cplhist', 'multilev', 'mulitilev_sstdata', 'multilev_cplhist')
              call dshr_restart_read(restfilm, rpfile, logunit, my_task, mpicom, sdat, rc)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
           case('som', 'som_aquap')
@@ -611,7 +612,7 @@ contains
     ! Perform data mode specific calculations
     select case (trim(datamode))
     case('sstdata','sst_aquap_file')
-       call  docn_datamode_dom_advance(rc=rc)
+       call  docn_datamode_sstdata_advance(rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('som','som_aquap')
        call docn_datamode_som_advance(importState, exportState, clock, restart_read, datamode, rc)
@@ -628,8 +629,8 @@ contains
     case('multilev')
        call  docn_datamode_multilev_advance(sdat, logunit, mainproc, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    case('multilev_dom')
-       call  docn_datamode_multilev_dom_advance(sdat, logunit, mainproc, rc=rc)
+    case('multilev_sstdata')
+       call  docn_datamode_multilev_sstdata_advance(sdat, logunit, mainproc, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('multilev_cplhist')
        call  docn_datamode_multilev_cplhist_advance(exportState, rc=rc)
@@ -642,7 +643,7 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
        select case (trim(datamode))
-       case('sstdata', 'sst_aquap_file', 'cplhist', 'multilev', 'mulitilev_dom', 'multilev_cplhist')
+       case('sstdata', 'sst_aquap_file', 'cplhist', 'multilev', 'mulitilev_sstdata', 'multilev_cplhist')
           call dshr_restart_write(rpfile, case_name, 'docn', inst_suffix, target_ymd, target_tod, logunit, &
                my_task, sdat, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return

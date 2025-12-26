@@ -1,4 +1,4 @@
-module docn_datamode_multilev_dom_mod
+module docn_datamode_multilev_sstdata_mod
 
   use ESMF             , only : ESMF_State, ESMF_LOGMSG_INFO, ESMF_LogWrite, ESMF_SUCCESS
   use NUOPC            , only : NUOPC_Advertise
@@ -12,9 +12,9 @@ module docn_datamode_multilev_dom_mod
   implicit none
   private ! except
 
-  public :: docn_datamode_multilev_dom_advertise
-  public :: docn_datamode_multilev_dom_init_pointers
-  public :: docn_datamode_multilev_dom_advance
+  public :: docn_datamode_multilev_sstdata_advertise
+  public :: docn_datamode_multilev_sstdata_init_pointers
+  public :: docn_datamode_multilev_sstdata_advance
 
   ! pointers to export fields
   real(r8), pointer :: So_omask(:)     => null()    ! real ocean fraction sent to mediator
@@ -46,7 +46,7 @@ module docn_datamode_multilev_dom_mod
 contains
 !===============================================================================
 
-  subroutine docn_datamode_multilev_dom_advertise(exportState, fldsexport, flds_scalar_name, rc)
+  subroutine docn_datamode_multilev_sstdata_advertise(exportState, fldsexport, flds_scalar_name, rc)
 
     ! input/output variables
     type(esmf_State)   , intent(inout) :: exportState
@@ -78,10 +78,10 @@ contains
        fldList => fldList%next
     enddo
 
-  end subroutine docn_datamode_multilev_dom_advertise
+  end subroutine docn_datamode_multilev_sstdata_advertise
 
   !===============================================================================
-  subroutine docn_datamode_multilev_dom_init_pointers(exportState, sdat, ocn_fraction, rc)
+  subroutine docn_datamode_multilev_sstdata_init_pointers(exportState, sdat, ocn_fraction, rc)
 
     ! input/output variables
     type(ESMF_State)       , intent(inout) :: exportState
@@ -114,13 +114,13 @@ contains
     ! initialize pointers to stream fields
     ! this has the full set of leveles in the stream data
     call shr_strdata_get_stream_pointer( sdat, 'So_t', strm_So_t, &
-         errmsg=trim(subname)//'ERROR: strm_So_t must be associated for docn multilev_dom datamode', rc=rc)
+         errmsg=trim(subname)//'ERROR: strm_So_t must be associated for docn multilev_sstdata datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'So_t_depth', strm_So_t_depth, &
-         errmsg=trim(subname)//'ERROR: strm_So_t_depth must be associated for docn multilev_dom datamode', rc=rc)
+         errmsg=trim(subname)//'ERROR: strm_So_t_depth must be associated for docn multilev_sstdata datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'So_s_depth', strm_So_s_depth, &
-         errmsg=trim(subname)//'ERROR: strm_So_t_depth must be associated for docn multilev_dom datamode', rc=rc)
+         errmsg=trim(subname)//'ERROR: strm_So_t_depth must be associated for docn multilev_sstdata datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Initialize export state pointers to non-zero
@@ -135,10 +135,10 @@ contains
     ! Set export state ocean fraction (So_omask)
     So_omask(:) = ocn_fraction(:)
 
-  end subroutine docn_datamode_multilev_dom_init_pointers
+  end subroutine docn_datamode_multilev_sstdata_init_pointers
 
   !===============================================================================
-  subroutine docn_datamode_multilev_dom_advance(sdat, logunit, mainproc, rc)
+  subroutine docn_datamode_multilev_sstdata_advance(sdat, logunit, mainproc, rc)
 
     ! input/output variables
     type(shr_strdata_type) , intent(in) :: sdat
@@ -155,7 +155,7 @@ contains
     real(r8) :: factor
     real(r8), allocatable :: stream_vlevs(:)
     logical :: first_time = .true.
-    character(len=*), parameter :: subname='(docn_datamode_multilev_dom): '
+    character(len=*), parameter :: subname='(docn_datamode_multilev_sstdata): '
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -221,6 +221,6 @@ contains
 
     first_time = .false.
 
-  end subroutine docn_datamode_multilev_dom_advance
+  end subroutine docn_datamode_multilev_sstdata_advance
 
-end module docn_datamode_multilev_dom_mod
+end module docn_datamode_multilev_sstdata_mod
