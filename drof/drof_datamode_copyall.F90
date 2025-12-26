@@ -109,11 +109,13 @@ contains
     enddo
 
     if (associated(strm_Forr_rofi)) then
-       if (abs(strm_Forr_rofi(ni)) < SHR_CONST_SPVAL) then
-          Forr_rofi(:) = strm_Forr_rofi(:)
-       else
-          Forr_rofi(ni) = 0.0_r8
-       end if
+       do ni = 1, size(Forr_rofl)
+          if (abs(strm_Forr_rofi(ni)) < SHR_CONST_SPVAL) then
+             Forr_rofi(:) = strm_Forr_rofi(:)
+          else
+             Forr_rofi(ni) = 0.0_r8
+          end if
+       end do
     end if
 
   end subroutine drof_datamode_copyall_advance

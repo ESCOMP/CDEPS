@@ -38,6 +38,8 @@ module datm_datamode_jra_mod
   real(r8), pointer :: Faxa_swvdr(:) => null()
   real(r8), pointer :: Faxa_swvdf(:) => null()
   real(r8), pointer :: Faxa_swnet(:) => null()
+  real(r8), pointer :: Faxa_swdn(:)  => null()
+  real(r8), pointer :: Faxa_lwdn(:)  => null()
 
   ! stream data pointers
   real(r8), pointer :: strm_Sa_tbot(:)   => null()
@@ -185,6 +187,10 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Faxa_swnet' , fldptr1=Faxa_swnet , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call dshr_state_getfldptr(exportState, 'Faxa_swdn' , fldptr1=Faxa_swdn  , rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call dshr_state_getfldptr(exportState, 'Faxa_lwdn' , fldptr1=Faxa_lwdn  , rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! initialize stream pointers
     call shr_strdata_get_stream_pointer( sdat, 'Faxa_prec' , strm_Faxa_prec  , requirePointer=.true., &
@@ -245,11 +251,13 @@ contains
        Sa_z(n) = 10.0_R8
 
        ! Set export fields as copies directly from streams
-       Sa_pslv(n) = strm_Sa_pslv(n)
-       Sa_tbot(n) = strm_Sa_tbot(n)
-       Sa_u(n)    = strm_Sa_u(n)
-       Sa_v(n)    = strm_Sa_v(n)
-       Sa_shum(n) = strm_Sa_shum(n)
+       Sa_pslv(n)   = strm_Sa_pslv(n)
+       Sa_tbot(n)   = strm_Sa_tbot(n)
+       Sa_u(n)      = strm_Sa_u(n)
+       Sa_v(n)      = strm_Sa_v(n)
+       Sa_shum(n)   = strm_Sa_shum(n)
+       Faxa_swdn(n) = strm_Faxa_swdn(n)
+       Faxa_lwdn(n) = strm_Faxa_lwdn(n)
 
        ! Set Sa_pbot from Sa_pslv
        Sa_pbot(n) = Sa_pslv(n)
