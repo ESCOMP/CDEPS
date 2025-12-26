@@ -32,7 +32,6 @@ module datm_datamode_clmncep_mod
   real(r8), pointer :: Sa_dens(:)    => null()
   real(r8), pointer :: Sa_pbot(:)    => null()
   real(r8), pointer :: Sa_pslv(:)    => null()
-  real(r8), pointer :: Faxa_lwdn(:)  => null()
   real(r8), pointer :: Faxa_rainc(:) => null()
   real(r8), pointer :: Faxa_rainl(:) => null()
   real(r8), pointer :: Faxa_snowc(:) => null()
@@ -42,6 +41,8 @@ module datm_datamode_clmncep_mod
   real(r8), pointer :: Faxa_swvdr(:) => null()
   real(r8), pointer :: Faxa_swvdf(:) => null()
   real(r8), pointer :: Faxa_swnet(:) => null()
+  real(r8), pointer :: Faxa_swdn(:)  => null()
+  real(r8), pointer :: Faxa_lwdn(:)  => null()
 
   ! import state data pointers
   real(r8), pointer :: Sx_avsdr(:)   => null()
@@ -158,6 +159,8 @@ contains
     rc = ESMF_SUCCESS
 
     ! initialize export state pointers
+    call dshr_state_getfldptr(exportState, 'Sa_topo'    , fldptr1=Sa_topo    , rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Sa_z'       , fldptr1=Sa_z       , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Sa_u'       , fldptr1=Sa_u       , rc=rc)
@@ -166,15 +169,15 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Sa_tbot'    , fldptr1=Sa_tbot    , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call dshr_state_getfldptr(exportState, 'Sa_pbot'    , fldptr1=Sa_pbot    , rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call dshr_state_getfldptr(exportState, 'Sa_pslv'    , fldptr1=Sa_pslv    , rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Sa_ptem'    , fldptr1=Sa_ptem    , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Sa_shum'    , fldptr1=Sa_shum    , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Sa_dens'    , fldptr1=Sa_dens    , rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call dshr_state_getfldptr(exportState, 'Sa_pbot'    , fldptr1=Sa_pbot    , rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call dshr_state_getfldptr(exportState, 'Sa_pslv'    , fldptr1=Sa_pslv    , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Faxa_rainc' , fldptr1=Faxa_rainc , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -193,6 +196,8 @@ contains
     call dshr_state_getfldptr(exportState, 'Faxa_swndf' , fldptr1=Faxa_swndf , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Faxa_swnet' , fldptr1=Faxa_swnet , rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call dshr_state_getfldptr(exportState, 'Faxa_swdn'  , fldptr1=Faxa_swdn  , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Faxa_lwdn'  , fldptr1=Faxa_lwdn  , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -317,6 +322,9 @@ contains
 
     lsize = size(Sa_u)
 
+    Sa_tbot(:) = strm_Sa_tbot(:)
+    Faxa_swdn(:) = strm_Faxa_swdn(:)
+
     if (first_time) then
        call ESMF_VMGetCurrent(vm, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -368,7 +376,6 @@ contains
        end if
 
        !--- temperature ---
-       Sa_tbot(n) = strm_Sa_tbot(n)
        if (tbotmax < 50.0_r8) Sa_tbot(n) = Sa_tbot(n) + tkFrz
        ! Limit very cold forcing to 180K
        Sa_tbot(n) = max(180._r8, Sa_tbot(n))
