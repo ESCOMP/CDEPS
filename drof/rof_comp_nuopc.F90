@@ -34,6 +34,11 @@ module cdeps_drof_comp
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_realize
   use nuopc_shr_methods, only : shr_get_rpointer_name
 
+  ! Datamode specialized modules
+  use drof_datamode_copyall_mod, only : drof_datamode_copyall_advertise
+  use drof_datamode_copyall_mod, only : drof_datamode_copyall_init_pointers
+  use drof_datamode_copyall_mod, only : drof_datamode_copyall_advance
+
   implicit none
   private ! except
 
@@ -394,7 +399,7 @@ contains
        ! Initialize stream and export state pointers
        select case (trim(datamode))
        case('copyall')
-          call drof_datamode_copyall_init_pointers(exportState, rc)
+          call drof_datamode_copyall_init_pointers(exportState, sdat, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end select
 

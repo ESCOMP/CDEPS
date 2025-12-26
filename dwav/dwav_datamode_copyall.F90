@@ -3,10 +3,9 @@ module dwav_datamode_copyall_mod
   use ESMF             , only : ESMF_State, ESMF_LOGMSG_INFO, ESMF_LogWrite, ESMF_SUCCESS
   use NUOPC            , only : NUOPC_Advertise
   use shr_kind_mod     , only : r8=>shr_kind_r8
-  use dshr_methods_mod , only : dshr_state_getfldptr, chkerr
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
+  use dshr_methods_mod , only : dshr_state_getfldptr, chkerr
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_get_stream_pointer
-  use shr_const_mod    , only : SHR_CONST_SPVAL
 
   implicit none
   private ! except
@@ -63,11 +62,12 @@ contains
   end subroutine dwav_datamode_copyall_advertise
 
   !===============================================================================
-  subroutine dwav_datamode_copyall_init_pointers(exportState, rc)
+  subroutine dwav_datamode_copyall_init_pointers(exportState, sdat, rc)
 
     ! input/output variables
-    type(ESMF_State) , intent(inout) :: exportState
-    integer          , intent(out)   :: rc
+    type(ESMF_State)       , intent(inout) :: exportState
+    type(shr_strdata_type) , intent(in)    :: sdat
+    integer                , intent(out)   :: rc
 
     ! local variables
     character(len=*), parameter :: subname='(dwav_init_pointers): '

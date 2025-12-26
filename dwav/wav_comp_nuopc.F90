@@ -34,6 +34,11 @@ module cdeps_dwav_comp
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add, dshr_fldlist_realize
   use nuopc_shr_methods, only : shr_get_rpointer_name
 
+  ! Datamode specialized modules
+  use dwav_datamode_copyall_mod, only : dwav_datamode_copyall_advertise
+  use dwav_datamode_copyall_mod, only : dwav_datamode_copyall_init_pointers
+  use dwav_datamode_copyall_mod, only : dwav_datamode_copyall_advance
+
   implicit none
   private ! except
 
@@ -397,7 +402,7 @@ contains
        ! Initialize stream and export state pointers
        select case (trim(datamode))
        case('copyall')
-          call dwav_datamode_copyall_init_pointers(exportState, rc)
+          call dwav_datamode_copyall_init_pointers(exportState, sdat, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end select
 
