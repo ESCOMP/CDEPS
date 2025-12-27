@@ -21,10 +21,11 @@ operations need to be done by DOCN on *ALL* of the streams in the
 with a DOCN source file that carries out these operations and these are
 listed in parentheses next to the mode name.
 
-sstdata and sst_aquap_file (``docn_datamode_copyall_mod.F90``)
+sstdata and sst_aquap_file (``docn_datamode_sstdata_mod.F90``)
   - `sstdata` and `sst_aquap_file` modes assume that the only field in the
     input stream is SST. It also assumes the SST is in Celsius and must be
     converted to Kelvin. All other fields are set to zero.
+    `ssdata` mode includes both climatological and interannyal varying data.
 
 .. note::
   Normally the ice fraction data is found in the same data files that
@@ -32,30 +33,50 @@ sstdata and sst_aquap_file (``docn_datamode_copyall_mod.F90``)
   the same file because the SST and ice fraction data are derived from
   the same observational data sets and are consistent with each other.
 
-iaf (``docn_datamode_iaf_mod.F90``)
-  - iaf is the interannually varying version of `sstdata`.
-    The ocean salinity is set to a constant reference salinity value.
-    All other fields other than SST and ocean salinity are set to zero.
-
 sst_aquap_analytic, sst_aquap_constant and sst_aquap[1-10] (``docn_datamode_aquaplanet_mod.F90``)
   - This mode creates analytic sea surface temperature. In case of using
     `sst_aquap[1-10]` data mode, an additional information (`sst_option`)
     is extracted from the data mode to change the behaviour of the
     data mode such as the method of calculation of sea surface temperature.
 
+multilev (``docn_multilev_mod.F90``)
+  - This mode reads in multi-level ocean forcing data for temperature
+    and salinity. The input data can be on any set of vertical levels,
+    but the output data is then remapped to a fixed set of 30 vertical
+    levels. This mode is used to force the prognostic land-ice
+    component (in this case CISM) with ocean forcing.
+
+multilev_cplhist (``docn_multilev_cplhist_mod.F90``)
+  - This mode reads in multi-level ocean forcing data for temperature
+    and salinity. The input data is assumed to be on 30 vertical
+    levels and it is the responsibility of the prognostic ocean
+    component to map the data to these levels before sending the data
+    to the mediator.  This mode is used to force the prognostic
+    land-ice component (in this case CISM) with ocean forcing.
+
+multilev (``docn_multilev_sstdata_mod.F90``)
+  - This mode reads in multi-level ocean forcing data for temperature
+    and salinity (to be sent to a land-ice component, e.g. CISM) as
+    well as sst data (to be sent to a atmosphere component,
+    e.g. CAM). The ocean input data can be on any set of vertical
+    levels, but the output data is then remapped to a fixed set of 30
+    vertical levels. The sst data is handled the same way as in
+    sstdata mode.
+
 som and som_aquap (``docn_datamode_som_mod.F90``)
   - som ("slab ocean model") mode is a prognostic mode. This mode
     computes a prognostic sea surface temperature and a freeze/melt
     potential (surface Q-flux) used by the sea ice model.  This
-    calculation requires an external SOM forcing data file that includes
-    ocean mixed layer depths and bottom-of-the-slab Q-fluxes.
-    Scientifically appropriate bottom-of-the-slab Q-fluxes are normally
-    ocean resolution dependent and are derived from the ocean model output
-    of a fully coupled CESM run.  Note that while this mode runs out of
-    the box, the default SOM forcing file is not scientifically
-    appropriate and is provided for testing and development purposes only.
-    Users must create scientifically appropriate data for their particular
-    application. A tool is available to derive valid SOM forcing.
+    calculation requires an external SOM forcing data file that
+    includes ocean mixed layer depths and bottom-of-the-slab Q-fluxes.
+    Scientifically appropriate bottom-of-the-slab Q-fluxes are
+    normally ocean resolution dependent and are derived from the ocean
+    model output of a fully coupled (e.g. CESM or NorESM) run.  Note
+    that while this mode runs out of the box, the default SOM forcing
+    file is not scientifically appropriate and is provided for testing
+    and development purposes only.  Users must create scientifically
+    appropriate data for their particular application. A tool is
+    available to derive valid SOM forcing.
 
     The only difference between `som` and `som_aquap` is that `som_aquap`
     limits sea surface temperature based on calculated value of freezing

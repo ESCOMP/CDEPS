@@ -326,11 +326,11 @@ contains
        aquaplanet = .true.
        call docn_datamode_aquaplanet_advertise(exportState, fldsExport, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    case('som')
-       call docn_datamode_som_advertise(importState, exportState, fldsImport, fldsExport, flds_scalar_name, rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('sstdata','sst_aquap_file')
        call docn_datamode_sstdata_advertise(exportState, fldsExport, flds_scalar_name, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    case('som')
+       call docn_datamode_som_advertise(importState, exportState, fldsImport, fldsExport, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('cplhist')
        call docn_datamode_cplhist_advertise(exportState, fldsExport, flds_scalar_name, rc)
