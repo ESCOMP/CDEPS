@@ -76,7 +76,8 @@ class StreamCDEPS(GenericXML):
         data_list_file,
         user_mods_file,
         available_neon_data=None,
-        available_plumber_data=None
+        available_plumber_data=None,
+        lnd2rof_nonh2o_number=0,
     ):
         """
         Create the stream xml file and append the required stream input data to the input data list file
@@ -230,6 +231,7 @@ class StreamCDEPS(GenericXML):
                         datavars = child.xml_element.text.strip()
                         datavars = self._resolve_values(case, datavars)
                         datavars = self._sub_glc_fields(datavars, case)
+                        datavars = self._sub_rof_fields(datavars, case, lnd2rof_nonh2o_number=lnd2rof_nonh2o_number)
                         datavars = self._add_xml_delimiter(datavars.split("\n"), "var")
                         if stream_vars[node_name]:
                             stream_vars[node_name] = (
@@ -520,11 +522,11 @@ class StreamCDEPS(GenericXML):
 
         Returns a string.
 
-        Example: If `_sub_fields` is called with an array containing two
+        Example: If `_sub_glc_fields` is called with an array containing two
         elements, each of which contains two strings, and glc_nec=3:
              foo               bar
              s2x_Ss_tsrf%glc   tsrf%glc
-         then the returned array will be:
+        then the returned array will be:
              foo               bar
              s2x_Ss_tsrf00     tsrf00
              s2x_Ss_tsrf01     tsrf01
@@ -543,6 +545,56 @@ class StreamCDEPS(GenericXML):
                     glc_nec_indices = range(case.get_value("GLC_NEC") + 1)
                 for i in glc_nec_indices:
                     new_lines.append(line.replace("%glc", "{:02d}".format(i)))
+            else:
+                new_lines.append(line)
+        return "\n".join(new_lines)
+
+    def _sub_rof_fields(self, datavars, case, lnd2rof_nonh2o_number=0):
+        """Substitute indicators with given values in a list of fields.
+        Replace any instance of the following substring indicators with the
+        appropriate values:
+            %lnd2rof_nonh2o_number = two-digit number from 0 through the number
+             of non-h2o tracers sent from the dlnd to mosart.
+
+        The difference between this function and `_sub_paths` is that this
+        function is intended to be used for variable names (especially from the
+        `strm_datvar` defaults), whereas `_sub_paths` is intended for use on
+        input data file paths.
+
+        Returns a string.
+
+        Example: If `_sub_rof_fields` is called with an array containing only one
+        element, and lnd2rof_nonh2o_number = 2
+             foo               bar
+	     lndImp_Flrl_rofsur_nonh2o%rof Flrl_rofsur_nonh2o%rof
+        then the returned array will be:
+             foo               bar
+	     lndImp_Flrl_rofsur_nonh2o Flrl_rofsur_nonh2o
+
+        Example: If `_sub_rof_fields` is called with an array containing two
+        elements, each of which contains two strings, and lnd2rof_nonh2o_number = 2
+             foo               bar
+	     lndImp_Flrl_rofsur_nonh2o%rof Flrl_rofsur_nonh2o%rof
+        then the returned array will be:
+             foo               bar
+	     lndImp_Flrl_rofsur_nonh2o%01 Flrl_rofsur_nonh2o%01
+	     lndImp_Flrl_rofsur_nonh2o%02 Flrl_rofsur_nonh2o%02
+        """
+        lines = datavars.split("\n")
+        new_lines = []
+        for line in lines:
+            if not line:
+                continue
+            if "%rof" in line:
+                if lnd2rof_nonh2o_number == 0:
+                    lnd2rof_indices = []
+                else:
+                    lnd2rof_indices = range(1,lnd2rof_nonh2o_number + 1)
+                for i in lnd2rof_indices:
+                    if len(lnd2rof_indices) == 1:
+                        new_lines.append(line.replace("%rof", "".format(i)))
+                    else:
+                        new_lines.append(line.replace("%rof", "{:02d}".format(i)))
             else:
                 new_lines.append(line)
         return "\n".join(new_lines)
@@ -664,8 +716,11 @@ class StreamCDEPS(GenericXML):
                             date_string = (year_format + "-{:02d}-{:02d}").format(
                                 adjusted_year, adjusted_month, adjusted_day
                             )
-                            new_line = line.replace(match.group(0), date_string)
-                            new_lines.append(new_line)
+                            new_file = line.replace(match.group(0), date_string)
+                            if os.path.exists(new_file):
+                                new_lines.append(new_file)
+                            else:
+                                print(f"   WARNING:not adding missing file {new_file}")
                 elif match.group("month"):
                     for month in range(1, 13):
                         date_string = (year_format + "-{:02d}").format(year, month)
