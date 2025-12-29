@@ -4,6 +4,8 @@ module dlnd_datamode_glc_forcing_mod
    use ESMF             , only : ESMF_StateItem_Flag, ESMF_GridComp
    use NUOPC            , only : NUOPC_CompAttributeGet, NUOPC_Advertise
    use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
+   use shr_log_mod      , only : shr_log_error
+   use shr_const_mod    , only : SHR_CONST_SPVAL
    use dshr_methods_mod , only : dshr_state_getfldptr, chkerr
    use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_get_stream_pointer
    use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
@@ -17,14 +19,14 @@ module dlnd_datamode_glc_forcing_mod
    public :: dlnd_datamode_glc_forcing_advance
 
    ! export state pointer
-   real(r8), pointer :: lfrac(:)
-   real(r8), pointer :: Sl_tsrf_elev(:,:)
-   real(r8), pointer :: Sl_topo_elev(:,:)
-   real(r8), pointer :: Flgl_qice_elev(:,:)
+   real(r8), pointer :: lfrac(:)            => null()
+   real(r8), pointer :: Sl_tsrf_elev(:,:)   => null()
+   real(r8), pointer :: Sl_topo_elev(:,:)   => null()
+   real(r8), pointer :: Flgl_qice_elev(:,:) => null()
 
    ! stream pointers (1d)
    type, public :: stream_pointer_type
-      real(r8), pointer :: strm_ptr(:)
+      real(r8), pointer :: strm_ptr(:) => null()
    end type stream_pointer_type
    type(stream_pointer_type), allocatable :: strm_Sl_tsrf_elev(:)
    type(stream_pointer_type), allocatable :: strm_Sl_topo_elev(:)
@@ -110,6 +112,7 @@ contains
       integer          :: ng
       character(len=2) :: nec_str
       character(CS)    :: strm_fld
+      integer          :: istat
       character(len=*), parameter :: subname='(dlnd_datamode_glc_forcing_init_pointers): '
       !-------------------------------------------------------------------------------
 
@@ -128,9 +131,14 @@ contains
 
       ! Obtain pointers to stream fields
 
-      allocate(strm_Sl_tsrf_elev(glc_nec+1))
-      allocate(strm_Sl_topo_elev(glc_nec+1))
-      allocate(strm_Flgl_qice_elev(glc_nec+1))
+      allocate(strm_Sl_tsrf_elev(glc_nec+1), &
+               strm_Sl_topo_elev(glc_nec+1), &
+               strm_Flgl_qice_elev(glc_nec+1), stat=istat)
+      if ( istat /= 0 ) then
+         call shr_log_error(subName//&
+              ': allocation error for strm_Sl_tsrf_elev, Strm_Sl_topo_elev and strm_Flgl_qice_elev',rc=rc)
+         return
+      end if
 
       do ng = 1,glc_nec+1
          if (trim(datamode) == 'glc_forcing_mct') then
@@ -161,7 +169,7 @@ contains
 
       ! local variables
       integer :: ni,ng
-      Character(len=*), parameter :: subname='(dlnd_datamode_glc_forcing_advance): '
+      character(len=*), parameter :: subname='(dlnd_datamode_glc_forcing_advance): '
       !-------------------------------------------------------------------------------
 
       ! Set special value over masked points
@@ -170,7 +178,7 @@ contains
       elev_class_loop: do ng = 1,glc_nec+1
          do ni = 1,size(Sl_tsrf_elev,dim=2)
             if (lfrac(ni) == 0._r8) then
-               Sl_tsrf_elev(ng,ni) = 1.e30_r8
+               Sl_tsrf_elev(ng,ni) = SHR_CONST_SPVAL
             else
                Sl_tsrf_elev(ng,ni) = strm_Sl_tsrf_elev(ng)%strm_ptr(ni)
             end if
@@ -178,7 +186,7 @@ contains
 
          do ni = 1,size(Sl_topo_elev,dim=2)
             if (lfrac(ni) == 0._r8) then
-               Sl_topo_elev(ng,ni) = 1.e30_r8
+               Sl_topo_elev(ng,ni) = SHR_CONST_SPVAL
             else
                Sl_topo_elev(ng,ni) = strm_Sl_topo_elev(ng)%strm_ptr(ni)
             end if
@@ -186,7 +194,7 @@ contains
 
          do ni = 1,size(Flgl_qice_elev,dim=2)
             if (lfrac(ni) == 0._r8) then
-               Flgl_qice_elev(ng,ni) = 1.e30_r8
+               Flgl_qice_elev(ng,ni) = SHR_CONST_SPVAL
             else
                Flgl_qice_elev(ng,ni) = strm_Flgl_qice_elev(ng)%strm_ptr(ni)
             end if
