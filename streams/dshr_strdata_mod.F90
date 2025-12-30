@@ -1784,11 +1784,13 @@ contains
        else if (pio_iovartype == PIO_SHORT) then
           rcode = pio_get_att(pioid, varid, "scale_factor", scale_factor)
           if(rcode /= PIO_NOERR) then
+             rc = rcode
              call shr_log_error('DATATYPE PIO_SHORT requires attributes scale_factor', rc=rc)
              return
           endif
           rcode = pio_get_att(pioid, varid, "add_offset", add_offset)
           if(rcode /= PIO_NOERR) then
+             rc = rcode
              call shr_log_error('DATATYPE PIO_SHORT requires attributes add_offset', rc=rc)
              return
           endif
@@ -1817,6 +1819,7 @@ contains
                 rcode = pio_get_var(pioid, varid,start=(/1,1,1,nt/),count=(/1,1,1,1/), ival=data_real2d)
              end if
              if ( rcode /= PIO_NOERR ) then
+                rc = rcode
                 call shr_log_error(' ERROR: reading in variable: '// trim(per_stream%fldlist_stream(nf)), rc=rc)
                 return
              end if
@@ -1854,6 +1857,7 @@ contains
                 rcode = pio_get_var(pioid, varid,start=(/1,1,nt/),count=(/1,1,1/), ival=data_real1d)
              endif
              if ( rcode /= PIO_NOERR ) then
+                rc = rcode
                 call shr_log_error(' ERROR: reading in variable: '// trim(per_stream%fldlist_stream(nf)), rc=rc)
                 return
              end if
@@ -1891,6 +1895,7 @@ contains
                 rcode = pio_get_var(pioid, varid,start=(/1,1,1,nt/), count=(/1,1,1,1/), ival=data_dbl2d)
              end if
              if ( rcode /= PIO_NOERR ) then
+                rc = rcode
                 call shr_log_error(' ERROR: reading in 2d double variable: '// trim(per_stream%fldlist_stream(nf)), rc=rc)
                 return
              end if
@@ -1924,6 +1929,7 @@ contains
                 rcode = pio_get_var(pioid, varid,start=(/1,1,nt/), count=(/1,1,1/), ival=data_dbl1d)
              endif
              if ( rcode /= PIO_NOERR ) then
+                rc = rcode
                 call shr_log_error(' ERROR: reading in variable: '// trim(per_stream%fldlist_stream(nf)), rc=rc)
                 return
              end if
@@ -1959,6 +1965,7 @@ contains
                 rcode = pio_get_var(pioid, varid,start=(/1,1,1,nt/), count=(/1,1,1,1/), ival=data_short2d)
              end if
              if ( rcode /= PIO_NOERR ) then
+                rc = rcode
                 call shr_log_error(' ERROR: reading in 2d short variable: '// trim(per_stream%fldlist_stream(nf)), rc=rc)
                 return
              end if
@@ -1986,6 +1993,7 @@ contains
                 rcode = pio_get_var(pioid, varid,start=(/1,1,nt/),count=(/1,1,1/), ival=data_short1d)
              endif
              if ( rcode /= PIO_NOERR ) then
+                rc = rcode
                 call shr_log_error(' ERROR: reading in variable: '// trim(per_stream%fldlist_stream(nf)), rc=rc)
                 return
              end if
