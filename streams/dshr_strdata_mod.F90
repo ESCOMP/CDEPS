@@ -815,8 +815,9 @@ contains
        write(sdat%logunit,'(2a,i0,a,i0)') subname, &
             'Stream: ',stream_index,' stream_nlev = ',stream_nlev
        if (stream_nlev /= 1) then
-          write(sdat%logunit,'(3a)') subname,&
-               'Stream: ',stream_index,' stream vertical levels = ',sdat%pstrm(stream_index)%stream_vlevs
+          write(sdat%logunit,'(2a,i0,a)') subname, &
+               'Stream: ',stream_index,' has following vertical levels'
+          write(sdat%logunit,*) sdat%pstrm(stream_index)%stream_vlevs
        end if
     end if
 
@@ -2192,6 +2193,9 @@ contains
     do n = 1, ndims
        rcode = pio_inq_dimlen(pioid, dimids(n), dimlens(n))
     end do
+
+    ! Determine if there is a time dimension
+    rcode = pio_inq_dimname(pioid, dimids(ndims), dimname)
 
     ! determine compdof for stream
     call ESMF_MeshGet(per_stream%stream_mesh, elementdistGrid=distGrid, rc=rc)
