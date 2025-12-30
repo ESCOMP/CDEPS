@@ -64,6 +64,12 @@ contains
 
     rc = ESMF_SUCCESS
 
+    ! only one of fldptr1 or fldptr2 can be present
+    if (present(fldptr1) .and. present(fldptr2)) then
+       call shr_log_error(trim(subname)//": both fldptr1 and fldptr2 cannot be present ",rc=rc)
+       return
+    end if
+
     if (present(allowNullReturn)) then
       call ESMF_StateGet(State, itemSearch=trim(fldname), itemCount=itemCount, rc=rc)
       if (chkerr(rc,__LINE__,u_FILE_u)) return
