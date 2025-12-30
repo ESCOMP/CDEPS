@@ -812,9 +812,11 @@ contains
     end if
     if (sdat%mainproc) then
        write(sdat%logunit,*)
-       write(sdat%logunit,'(2a,i0)') subname,' stream_nlev = ',stream_nlev
+       write(sdat%logunit,'(2a,i0,a,i0)') subname, &
+            'Stream: ',stream_index,' stream_nlev = ',stream_nlev
        if (stream_nlev /= 1) then
-          write(sdat%logunit,'(3a)') subname,' stream vertical levels = ',sdat%pstrm(stream_index)%stream_vlevs
+          write(sdat%logunit,'(3a)') subname,&
+               'Stream: ',stream_index,' stream vertical levels = ',sdat%pstrm(stream_index)%stream_vlevs
        end if
     end if
 
@@ -1087,12 +1089,11 @@ contains
              return
           end select
 
-          if (sdat%mainproc) then
-             if (newData(ns)) then
-                write(sdat%logunit,'(2a,2x,i0,2x,a,2x,l4)') subname,' newData flag for stream = ',ns,' is ',newData(ns)
-                write(sdat%logunit,'(2a,2x,3(i0,2x))')      subname,' LB ymd,tod = ',ns,sdat%pstrm(ns)%ymdLB,sdat%pstrm(ns)%todLB
-                write(sdat%logunit,'(2a,2x,3(i0,2x))')      subname,' UB ymd,tod = ',ns,sdat%pstrm(ns)%ymdUB,sdat%pstrm(ns)%todUB
-             end if
+          if (sdat%mainproc .and. newData(ns)) then
+             write(sdat%logunit,'(2a,i0,a,a,2(i0,2x),a,2(i0,2x))') subname, &
+                  '     Stream: ',ns,' reading new data with ', &
+                  ' LB ymd,tod = ',sdat%pstrm(ns)%ymdLB,sdat%pstrm(ns)%todLB, &
+                  ' UB ymd,tod = ',sdat%pstrm(ns)%ymdUB,sdat%pstrm(ns)%todUB
           endif
 
           ! ---------------------------------------------------------
@@ -1497,16 +1498,19 @@ contains
     ! write time bounds info
     if (debug_level > 0 .and. sdat%mainproc) then
        if (debug_level > 0) then
-          write(sdat%logunit,'(2a,i0)') subname,' stream number is: ',ns
-          write(sdat%logunit,'(2a,l7,a,l7)') subname, &
-            ' find_bounds = ',find_bounds,' newdata is = ',newdata
-          write(sdat%logunit,'(2a,4(2x,i0))') subname, &
-               ' oDateLB, OSecLb, oDateUB, OsecUB   =  ',&
+          write(sdat%logunit,'(2a,i0,a,l7,a,l7)') subname, &
+               'Stream: ',ns,&
+               ' find_bounds = ',find_bounds,' newdata is = ',newdata
+          write(sdat%logunit,'(2a,i0,a,4(2x,i0))') subname, &
+               'Stream: ',ns,&
+               ' oDateLB, OSecLb, oDateUB, OsecUB =  ',&
                oDateLB, OSecLb, oDateUB, OsecUB
-          write(sdat%logunit,'(2a,2x,3(f13.6,2x),l4)') subname, &
-               ' rdateLB,rdateM,rdateUB             = ',&
+          write(sdat%logunit,'(2a,i0,a,2x,3(f13.6,2x),l4)') subname, &
+               'Stream: ',ns,&
+               ' rdateLB,rdateM,rdateUB = ',&
                rdateLB, rdateM, rdateUB
-          write(sdat%logunit,'(2a,2x,6(i0,2x))') subname, &
+          write(sdat%logunit,'(2a,i0,a,6(i0,2x))') subname, &
+               'Stream: ',ns,&
                ' lbymd,lbsec,mdate,msec,ubymd,ubsec = ',&
                sdat%pstrm(ns)%ymdLB, sdat%pstrm(ns)%todLB, &
                mdate, msec, &
@@ -1518,7 +1522,7 @@ contains
     if (newdata) then
        if (sdat%pstrm(ns)%ymdLB == oDateUB .and. sdat%pstrm(ns)%todLB == oSecUB) then
           if (debug_level > 0 .and. sdat%mainproc) then
-             write(sdat%logunit,'(2a,i0)') subname,' Copying upper bound bound of data to lower bound for stream ',ns
+             write(sdat%logunit,'(2a,i0,a)') subname,' Stream: ',ns,' Copying upper bound bound of data to lower bound'
           end if
           ! copy fldbun_stream_ub to fldbun_stream_lb
           i = sdat%pstrm(ns)%stream_ub
@@ -1526,7 +1530,7 @@ contains
           sdat%pstrm(ns)%stream_lb = i
        else
           if (debug_level > 0 .and. sdat%mainproc) then
-             write(sdat%logunit,'(2a,i0)') subname,' Reading in new lower bound of data for stream ',ns
+             write(sdat%logunit,'(2a,i0,a)') subname,' Stream: ',ns,' Reading in new lower bound of data'
           end if
           ! read lower bound of data
           call shr_strdata_readstrm(sdat, sdat%pstrm(ns), stream, &
@@ -1543,7 +1547,7 @@ contains
             filename_ub, n_ub, istr=trim(istr)//'_UB', boundstr='ub', rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
        if (debug_level > 0 .and. sdat%mainproc) then
-          write(sdat%logunit,'(2a,i0)') subname,' Reading in new upper bound of data for stream ',ns
+          write(sdat%logunit,'(2a,i0,a)') subname,' Stream: ',ns,' Reading in new upper bound of data'
        end if
     endif
 
@@ -1674,8 +1678,8 @@ contains
 
     if (ESMF_MeshIsCreated(per_stream%stream_mesh)) then
        if (.not. per_stream%stream_pio_iodesc_set) then
-          if (sdat%mainproc) then
-             write(sdat%logunit,'(3a)') subname,' setting pio descriptor : ',trim(filename)
+          if (debug_level > 0 .and. sdat%mainproc) then
+             write(sdat%logunit,'(2a)') subname,' setting pio descriptor : '
           end if
           call shr_strdata_set_stream_iodesc(sdat, per_stream, trim(per_stream%fldlist_stream(1)), &
                pioid, rc=rc)
@@ -1707,7 +1711,7 @@ contains
 
     call ESMF_TraceRegionEnter(trim(istr)//'_readpio')
     if (sdat%mainproc) then
-       write(sdat%logunit,'(5a)') subname,' reading file ',trim(boundstr),': ',trim(filename)
+       write(sdat%logunit,'(5a)') subname,'    reading file ',trim(boundstr),': ',trim(filename)
     endif
 
     if (ESMF_FieldIsCreated(per_stream%field_stream_vector)) then
@@ -1800,7 +1804,7 @@ contains
        call PIO_seterrorhandling(pioid, old_error_handle)
 
        if (debug_level>0 .and. sdat%mainproc)  then
-          write(sdat%logunit,'(6a,i0)') subname,&
+          write(sdat%logunit,'(a,4x,5a,i0)') subname,&
                ' reading ',trim(per_stream%fldlist_stream(nf)), &
                ' into ',trim(per_stream%fldlist_model(nf)), &
                ' at time index: ',nt
