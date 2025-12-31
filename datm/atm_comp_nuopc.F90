@@ -729,25 +729,19 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_TraceRegionExit('datm_strdata_advance')
 
-    ! update export state co2 if appropriate
+    ! update export state if appropriate
     if (flds_co2) then
        call datm_pres_co2_advance()
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
-
-    ! update export state o3 if appropriate
     if (flds_preso3) then
        call datm_pres_o3_advance()
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
-
-    ! ungridded dimension output - update export state nitrogen deposition if appropriate
     if (flds_presndep) then
        call datm_pres_ndep_advance()
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
-
-    ! ungridded dimension output - upate prescribed aerosol if appropriate
     if (flds_presaero) then
        call datm_pres_aero_advance()
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
