@@ -213,7 +213,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     if  clm_usrdat_name == 'NEON.PRISM':
         streamlist.append(clm_usrdat_name+"_PRECIP."+neonsite)
     if  clm_usrdat_name == 'NEON':
-        streamlist.append(clm_usrdat_name+".NEON_PRECIP."+neonsite)
+        streamlist.append(clm_usrdat_name+".NEON_PRECIP."+neonsite)   
     if clm_usrdat_name == 'PLUMBER2':
         streamlist.append(clm_usrdat_name+"."+plumber2site)
 
@@ -243,7 +243,7 @@ def _create_drv_flds_in(case, confdir):
 
     # for now we are hard-coding this file name and values because we only need it for ozone
     if datm_preso3 != "none":
-
+        
         # Generate drv_flds_in file
         outfile = os.path.join(confdir, "drv_flds_in")
         ozone_nl_name = "&ozone_coupling_nl"

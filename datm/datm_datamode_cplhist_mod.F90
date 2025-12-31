@@ -18,6 +18,7 @@ module datm_datamode_cplhist_mod
   public  :: datm_datamode_cplhist_init_pointers
   public  :: datm_datamode_cplhist_advance
 
+
   ! export state data pointers
 
   real(r8), pointer :: Sa_z(:)            => null()
