@@ -368,7 +368,7 @@ contains
     nstrms = tmp(1)
 
     if (.not. isroot_task) then
-       allocate(streamdat(nstrms), stat=istat)
+       allocate(streamdat(nstrms))
     endif
 
     ! Set the logunit and mainproc attributes for each stream
@@ -918,7 +918,8 @@ contains
     if (cycle) then
        dYear  = yrFirst + modulo(mYear-yrAlign+(2*nYears),nYears)   ! current data year
        if(debug_level>0 .and. strm%mainproc) then
-          write(strm%logunit,'(2a,4(i0,2x))') subname, ' dyear, yrfirst, myear, yralign, nyears = ', &
+          write(strm%logunit,'(2a,5(i0,2x))') subname, &
+               ' dyear, yrfirst, myear, yralign, nyears = ', &
                dyear, yrfirst, myear, yralign, nyears
        endif
     else
@@ -937,7 +938,7 @@ contains
     if (debug_level>0 .and. strm%mainproc) then
        write(strm%logunit,'(2a,3(i0,2x),f20.4)') subname, &
             ' mYear,dYear,dDateIn,rDateIn  = ',mYear,dYear,dDateIn,rDateIn
-       write(strm%logunit,'(a,4(i0,2x))') subname, &
+       write(strm%logunit,'(2a,4(i0,2x))') subname, &
             ' yrFirst,yrLast,yrAlign,nYears= ',yrFirst,yrLast,yrAlign,nYears
     endif
 
@@ -1433,7 +1434,7 @@ contains
           din = strm%file(k)%date(n)
           sin = strm%file(k)%secs(n)
           if (debug_level > 5 .and. strm%mainproc) then
-             write(strm%logunit,'(2a,4(i0,2x))') subname,&
+             write(strm%logunit,'(2a,5(i0,2x))') subname,&
                   ' before shr_cal_advDateInt: offset,n,k,strm%file(k)%date(n),strm%file(k)%sec(n) = ',&
              offin,n,k,strm%file(k)%date(n),strm%file(k)%secs(n)
           end if
@@ -2104,8 +2105,8 @@ contains
                    rsfname = streams(k)%file(n)%name(index(streams(k)%file(n)%name, '/',.true.):)
                    if (trim(rfname) /= trim(rsfname)) then
                       if (streams(k)%mainproc) then
-                         write(streams(k)%logunit,'(2a)') subname,trim(rfname), '<>', trim(rsfname)
-                         write(streams(k)%logunit,'(2a)') subname,' fname = '//trim(fname)
+                         write(streams(k)%logunit,'(4a)') subname,trim(rfname), '<>', trim(rsfname)
+                         write(streams(k)%logunit,'(3a)') subname,' fname = ',trim(fname)
                          write(streams(k)%logunit,'(2a,i0,2x,i0,2x,a)') subname,' k,n,streams(k)%file(n)%name = ',&
                               k,n,trim(streams(k)%file(n)%name)
                       end if
