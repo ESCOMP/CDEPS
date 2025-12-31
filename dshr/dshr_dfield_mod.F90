@@ -117,7 +117,7 @@ contains
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     dfield_new%state_data1d = 0.0_r8
     if (mainproc) then
-       write(logunit,'(2a)') trim(subname),' setting pointer for export state '//trim(state_fld)
+       write(logunit,'(3a)') trim(subname),' setting pointer for export state ',trim(state_fld)
     end if
 
   end subroutine dshr_dfield_add_1d
@@ -194,7 +194,7 @@ contains
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     dfield_new%state_data1d = 0.0_r8
     if (mainproc) then
-       write(logunit,'(2a)') trim(subname),' setting pointer for export state '//trim(state_fld)
+       write(logunit,'(3a)') trim(subname),' setting pointer for export state ',trim(state_fld)
     end if
 
     ! Return array pointer if argument is present
@@ -203,8 +203,8 @@ contains
     ! write output
     if (mainproc) then
        if (found) then
-          write(logunit,'(2a,i0,a,i0)') trim(subname),&
-               ' setting pointer to stream field strm_'//trim(strm_fld)//&
+          write(logunit,'(4a,i0,a,i0)') trim(subname),&
+               ' setting pointer to stream field strm_',trim(strm_fld), &
                ' stream index = ',ns,' field bundle index= ',nf
        end if
        write(logunit,*)
@@ -297,8 +297,8 @@ contains
                 if (trim(strm_flds(nf)) == trim(lfieldnamelist(n))) then
                    dfield_new%fldbun_indices(nf) = n
                    if (mainproc) then
-                      write(logunit,'(2a)') trim(subname),&
-                           ' using stream field strm_'//trim(strm_flds(nf))//' for 2d '//trim(state_fld)
+                      write(logunit,'(5a)') trim(subname), &
+                           ' using stream field strm_',trim(strm_flds(nf)),' for 2d ',trim(state_fld)
                    end if
                 end if
              end do
@@ -314,7 +314,7 @@ contains
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     dfield_new%state_data2d(:,:) = 0._r8
     if (mainproc) then
-       write(logunit,'(2a)') trim(subname),' setting pointer for export state '//trim(state_fld)
+       write(logunit,'(3a)') trim(subname),' setting pointer for export state ',trim(state_fld)
     end if
 
   end subroutine dshr_dfield_add_2d
@@ -404,8 +404,8 @@ contains
                 if (trim(strm_flds(nf)) == trim(lfieldnamelist(n))) then
                    dfield_new%fldbun_indices(nf) = n
                    if (mainproc) then
-                      write(logunit,'(2a)') trim(subname), &
-                           ' using stream field strm_'//trim(strm_flds(nf))//' for 2d '//trim(state_fld)
+                      write(logunit,'(5a)') trim(subname), &
+                           ' using stream field strm_',trim(strm_flds(nf)),' for 2d ',trim(state_fld)
                    end if
                 end if
              end do
@@ -421,7 +421,7 @@ contains
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     dfield_new%state_data2d(:,:) = 0._r8
     if (mainproc) then
-       write(logunit,'(2a)') trim(subname),' setting pointer for export state '//trim(state_fld)
+       write(logunit,'(3a)') trim(subname),' setting pointer for export state ',trim(state_fld)
     end if
     state_ptr => dfield_new%state_data2d
 

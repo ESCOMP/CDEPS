@@ -1,10 +1,12 @@
 module dlnd_datamode_rof_forcing_mod
 
-   use ESMF                    , only : ESMF_SUCCESS, ESMF_LOGMSG_INFO, ESMF_LogWrite, ESMF_State
+   use ESMF                    , only : ESMF_SUCCESS, ESMF_FAILURE, ESMF_LOGMSG_INFO, ESMF_LogWrite, ESMF_State
    use ESMF                    , only : ESMF_StateItem_Flag
    use NUOPC                   , only : NUOPC_Advertise
    use shr_kind_mod            , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
    use shr_string_mod          , only : shr_string_listGetNum, shr_string_listGetName
+   use shr_log_mod             , only : shr_log_error
+   use shr_const_mod           , only : SHR_CONST_SPVAL
    use dshr_methods_mod        , only : dshr_state_getfldptr, chkerr
    use dshr_strdata_mod        , only : shr_strdata_type, shr_strdata_get_stream_pointer
    use dshr_fldlist_mod        , only : fldlist_type, dshr_fldlist_add
@@ -18,26 +20,27 @@ module dlnd_datamode_rof_forcing_mod
    public :: dlnd_datamode_rof_forcing_advance
 
    ! export state pointers
-   real(r8), pointer :: lfrac(:)
-   real(r8), pointer :: Flrl_rofsur_nonh2o_2d(:,:)
-   real(r8), pointer :: Flrl_rofsur_nonh2o_1d(:)
-   real(r8), pointer :: Flrl_rofsur(:)
-   real(r8), pointer :: Flrl_rofsub(:)
-   real(r8), pointer :: Flrl_rofgwl(:)
-   real(r8), pointer :: Flrl_rofi(:)
-   real(r8), pointer :: Flrl_irrig(:)
+   real(r8), pointer :: lfrac(:) => null()
+   real(r8), pointer :: Flrl_rofsur_nonh2o_2d(:,:) => null()
+   real(r8), pointer :: Flrl_rofsur_nonh2o_1d(:)   => null()
+   real(r8), pointer :: Flrl_rofsur(:) => null()
+   real(r8), pointer :: Flrl_rofsub(:) => null()
+   real(r8), pointer :: Flrl_rofgwl(:) => null()
+   real(r8), pointer :: Flrl_rofi(:)   => null()
+   real(r8), pointer :: Flrl_irrig(:)  => null()
 
    ! stream field pointers
    type, public :: stream_pointer_type
-      real(r8), pointer :: strm_ptr(:)
+      real(r8), pointer :: strm_ptr(:) => null()
    end type stream_pointer_type
    type(stream_pointer_type), allocatable :: strm_Flrl_rofsur_nonh2o_2d(:) ! 2dple nonh2o tracers
-   real(r8), pointer :: strm_Flrl_rofsur_nonh2o_1d(:) ! onlyl 1 nonh2o tracer
-   real(r8), pointer :: strm_Flrl_rofsur(:)
-   real(r8), pointer :: strm_Flrl_rofsub(:)
-   real(r8), pointer :: strm_Flrl_rofgwl(:)
-   real(r8), pointer :: strm_Flrl_rofi(:)
-   real(r8), pointer :: strm_Flrl_irrig(:)
+
+   real(r8), pointer :: strm_Flrl_rofsur_nonh2o_1d(:) => null() ! onlyl 1 nonh2o tracer
+   real(r8), pointer :: strm_Flrl_rofsur(:) => null()
+   real(r8), pointer :: strm_Flrl_rofsub(:) => null()
+   real(r8), pointer :: strm_Flrl_rofgwl(:) => null()
+   real(r8), pointer :: strm_Flrl_rofi(:)   => null()
+   real(r8), pointer :: strm_Flrl_irrig(:)  => null()
 
    integer :: ntracers_nonh2o
 
@@ -64,6 +67,7 @@ contains
       ! local variables
       character(len=CS) :: lnd2rof_tracers
       type(fldlist_type), pointer :: fldList
+      character(len=*), parameter :: subname='(dlnd_datamode_rof_forcing_init_pointers): '
       !-------------------------------------------------------------------------------
 
       rc = ESMF_SUCCESS
@@ -77,6 +81,11 @@ contains
       call shr_lnd2rof_tracers_readnl('drv_flds_in', lnd2rof_tracers)
       if (lnd2rof_tracers /= ' ') then
          ntracers_nonh2o = shr_string_listGetNum(lnd2rof_tracers)
+         if (ntracers_nonh2o > 99) then
+            rc = ESMF_FAILURE
+            call shr_log_error(subName//': ERROR: number of tracers must be less than 99', rc=rc)
+            return
+         end if
       else
          ntracers_nonh2o = 0
       end if
@@ -127,6 +136,7 @@ contains
       integer          :: nf
       character(len=2) :: nchar
       character(CS)    :: strm_fld
+      integer          :: istat
       character(len=*), parameter :: subname='(dlnd_datamode_rof_forcing_init_pointers): '
       !-------------------------------------------------------------------------------
 
@@ -157,7 +167,12 @@ contains
       ! Set pointers to required stream fields
 
       if (ntracers_nonh2o > 1) then
-         allocate(strm_Flrl_rofsur_nonh2o_2d(ntracers_nonh2o))
+         allocate(strm_Flrl_rofsur_nonh2o_2d(ntracers_nonh2o), stat=istat)
+         if ( istat /= 0 ) then
+            rc = istat
+            call shr_log_error(subName//': allocation error for strm_Flrl_rofsur_nonh2o_2d', rc=rc)
+            return
+         end if
          do nf = 1,ntracers_nonh2o
             write(nchar,'(i2.2)') nf
             strm_fld = trim('Flrl_rofsur_nonh2o') // trim(nchar)
@@ -207,7 +222,7 @@ contains
          do nf = 1,ntracers_nonh2o
             do ni = 1,size(Flrl_rofsur_nonh2o_2d,dim=2)
                if (lfrac(ni) == 0._r8) then
-                  Flrl_rofsur_nonh2o_2d(nf,ni) = 1.e30_r8
+                  Flrl_rofsur_nonh2o_2d(nf,ni) = SHR_CONST_SPVAL
                else
                   Flrl_rofsur_nonh2o_2d(nf,ni) = strm_Flrl_rofsur_nonh2o_2d(nf)%strm_ptr(ni)
                end if
@@ -216,7 +231,7 @@ contains
       else if (ntracers_nonh2o == 1) then
          do ni = 1,size(Flrl_rofsur_nonh2o_1d)
             if (lfrac(ni) == 0._r8) then
-               Flrl_rofsur_nonh2o_1d(ni) = 1.e30_r8
+               Flrl_rofsur_nonh2o_1d(ni) = SHR_CONST_SPVAL
             else
                Flrl_rofsur_nonh2o_1d(ni) = strm_Flrl_rofsur_nonh2o_1d(ni)
             end if
@@ -225,10 +240,10 @@ contains
 
       do ni = 1,size(Flrl_rofsur)
          if (lfrac(ni) == 0._r8) then
-            Flrl_rofsur(ni) = 1.e30_r8
-            Flrl_rofsub(ni) = 1.e30_r8
-            Flrl_rofgwl(ni) = 1.e30_r8
-            Flrl_rofi(ni)   = 1.e30_r8
+            Flrl_rofsur(ni) = SHR_CONST_SPVAL
+            Flrl_rofsub(ni) = SHR_CONST_SPVAL
+            Flrl_rofgwl(ni) = SHR_CONST_SPVAL
+            Flrl_rofi(ni)   = SHR_CONST_SPVAL
          else
             Flrl_rofsur(ni) = strm_Flrl_rofsur(ni)
             Flrl_rofsub(ni) = strm_Flrl_rofsub(ni)
@@ -240,7 +255,7 @@ contains
       if (associated(strm_Flrl_irrig)) then
          do ni = 1,size(Flrl_rofsur)
             if (lfrac(ni) == 0._r8) then
-               Flrl_irrig(ni)  = 1.e30_r8
+               Flrl_irrig(ni)  = SHR_CONST_SPVAL
             else
                Flrl_irrig(ni)  = strm_Flrl_irrig(ni)
             end if
