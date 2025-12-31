@@ -36,7 +36,6 @@ module datm_datamode_cplhist_mod
   real(r8), pointer :: Faxa_swndf(:)        => null()
   real(r8), pointer :: Faxa_swvdr(:)        => null()
   real(r8), pointer :: Faxa_swvdf(:)        => null()
-  real(r8), pointer :: Faxa_ndep(:,:)       => null()
 
   character(*), parameter :: nullstr = 'null'
   character(*), parameter :: u_FILE_u = &
