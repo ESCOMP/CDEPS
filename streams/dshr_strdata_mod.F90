@@ -815,9 +815,9 @@ contains
        write(sdat%logunit,'(2a,i0,a,i0)') subname, &
             'Stream: ',stream_index,' stream_nlev = ',stream_nlev
        if (stream_nlev /= 1) then
-          write(sdat%logunit,'(2a,i0,a)') subname, &
-               'Stream: ',stream_index,' has following vertical levels'
-          write(sdat%logunit,*) sdat%pstrm(stream_index)%stream_vlevs
+          write(sdat%logunit,'(2a,i0,a)') subname,&
+               'Stream: ',stream_index,' has following vertical levels '
+          write(sdat%logunit,*)sdat%pstrm(stream_index)%stream_vlevs
        end if
     end if
 
@@ -1293,7 +1293,7 @@ contains
                   algo=trim(sdat%stream(ns)%tinterpalgo), rc=rc)
              if (chkerr(rc,__LINE__,u_FILE_u)) return
              if (debug_level > 0 .and. sdat%mainproc) then
-                write(sdat%logunit,'(2a,i0,2(f10.5,2x))') &
+                write(sdat%logunit,'(2a,i0,2(2x,f10.5))') &
                      subname,' non-cosz-interp stream, flb, fub= ',ns,flb,fub
                 write(sdat%logunit,'(a)') '------------------------------------------------------'
              endif
@@ -1498,25 +1498,23 @@ contains
 
     ! write time bounds info
     if (debug_level > 0 .and. sdat%mainproc) then
-       if (debug_level > 0) then
-          write(sdat%logunit,'(2a,i0,a,l7,a,l7)') subname, &
-               'Stream: ',ns,&
-               ' find_bounds = ',find_bounds,' newdata is = ',newdata
-          write(sdat%logunit,'(2a,i0,a,4(2x,i0))') subname, &
-               'Stream: ',ns,&
-               ' oDateLB, OSecLb, oDateUB, OsecUB =  ',&
-               oDateLB, OSecLb, oDateUB, OsecUB
-          write(sdat%logunit,'(2a,i0,a,2x,3(f13.6,2x),l4)') subname, &
-               'Stream: ',ns,&
-               ' rdateLB,rdateM,rdateUB = ',&
-               rdateLB, rdateM, rdateUB
-          write(sdat%logunit,'(2a,i0,a,6(i0,2x))') subname, &
-               'Stream: ',ns,&
-               ' lbymd,lbsec,mdate,msec,ubymd,ubsec = ',&
-               sdat%pstrm(ns)%ymdLB, sdat%pstrm(ns)%todLB, &
-               mdate, msec, &
-               sdat%pstrm(ns)%ymdUB, sdat%pstrm(ns)%todUB
-       end if
+       write(sdat%logunit,'(2a,i0,a,l7,a,l7)') subname, &
+            'Stream: ',ns,&
+            ' find_bounds = ',find_bounds,' newdata is = ',newdata
+       write(sdat%logunit,'(2a,i0,a,4(2x,i0))') subname, &
+            'Stream: ',ns,&
+            ' oDateLB, OSecLb, oDateUB, OsecUB =  ',&
+            oDateLB, OSecLb, oDateUB, OsecUB
+       write(sdat%logunit,'(2a,i0,a,2x,3(f13.6,2x))') subname, &
+            'Stream: ',ns,&
+            ' rdateLB,rdateM,rdateUB = ',&
+            rdateLB, rdateM, rdateUB
+       write(sdat%logunit,'(2a,i0,a,6(i0,2x))') subname, &
+            'Stream: ',ns,&
+            ' lbymd,lbsec,mdate,msec,ubymd,ubsec = ',&
+            sdat%pstrm(ns)%ymdLB, sdat%pstrm(ns)%todLB, &
+            mdate, msec, &
+            sdat%pstrm(ns)%ymdUB, sdat%pstrm(ns)%todUB
     end if
 
     ! if newdata, determine if do a copy or read in new lower bound data
@@ -1831,7 +1829,7 @@ contains
              if (handlefill) then
                 ! Single point streams are not allowed to have missing values
                 if (stream%mapalgo == 'none' .and. any(data_real2d == fillvalue_r4)) then
-                   write(errmsg,'(2a)')' ERROR: _Fillvalue found in stream input variable: '//&
+                   write(errmsg,'(2a)')' ERROR: _Fillvalue found in stream input variable: ',&
                         trim(per_stream%fldlist_stream(nf))
                    if (sdat%mainproc) then
                       write(sdat%logunit,'(2a)') subname,trim(errmsg)
@@ -2051,7 +2049,7 @@ contains
 
        ! get lon and lat of stream u and v fields
        lsize = size(dataptr1d)
-       allocate(dataptr(lsize))
+       allocate(dataptr(lsize), stat=istat)
        if ( istat /= 0 ) then
           call shr_log_error(subName//'allocation error of dataptr with size '// &
                toString(lsize), rc=rc)
@@ -2217,12 +2215,15 @@ contains
           return
        end if
        ! Assume that first 2 dimensions correspond to the compdof
+       rcode = pio_inq_dimname(pioid, dimids(ndims), dimname)
        if (trim(dimname) == 'time' .or. trim(dimname) == 'nt') then
           if (ndims == 3) then
              ! second dimension is lev and third dimension is time
+             ! this would then corresond to an unstructured grid with just ncol
              gsize2d = dimlens(1)
           else if (ndims == 4) then
              ! third dimension is lev and fourth dimension is time
+             ! first two dimensions are lon,lat
              gsize2d = dimlens(1)*dimlens(2)
           else
              call shr_log_error(subname//' only ndims of 3 and 4 '//&
