@@ -368,7 +368,7 @@ contains
     nstrms = tmp(1)
 
     if (.not. isroot_task) then
-       allocate(streamdat(nstrms), stat=istat)
+       allocate(streamdat(nstrms))
     endif
 
     ! Set the logunit and mainproc attributes for each stream
