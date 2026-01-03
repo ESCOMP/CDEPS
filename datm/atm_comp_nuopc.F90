@@ -729,7 +729,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_TraceRegionExit('datm_strdata_advance')
 
-    ! update export state if appropriate
+    ! Update export state for non data-mode specific fields
     if (flds_co2) then
        call datm_pres_co2_advance()
        if (ChkErr(rc,__LINE__,u_FILE_u)) return

@@ -205,7 +205,6 @@ contains
     integer                  :: status
     integer                  :: tmp(6)
     real(r8)                 :: rtmp(1)
-    integer                  :: istat
     character(len=*),parameter   :: subName = '(shr_stream_init_from_xml) '
     ! --------------------------------------------------------
 
