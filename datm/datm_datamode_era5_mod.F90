@@ -44,8 +44,6 @@ module datm_datamode_era5_mod
   real(r8), pointer :: Faxa_lat(:)          => null()
   real(r8), pointer :: Faxa_taux(:)         => null()
   real(r8), pointer :: Faxa_tauy(:)         => null()
-!
-!  real(r8), pointer :: Faxa_ndep(:,:)       => null()
 
   ! stream data
   real(r8), pointer :: strm_tdew(:)         => null()
@@ -189,7 +187,7 @@ contains
 
   end subroutine datm_datamode_era5_init_pointers
 
-  !===============================================================================  
+  !===============================================================================
   subroutine datm_datamode_era5_advance(exportstate, mainproc, logunit, mpicom, target_ymd, target_tod, model_calendar, rc)
     use ESMF, only: ESMF_VMGetCurrent, ESMF_VMAllReduce, ESMF_REDUCE_MAX, ESMF_VM
 
@@ -312,7 +310,7 @@ contains
 
   end subroutine datm_datamode_era5_advance
 
-  !===============================================================================  
+  !===============================================================================
   real(r8) function datm_eSat(tK,tKbot)
 
     !----------------------------------------------------------------------------

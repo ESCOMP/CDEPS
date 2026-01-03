@@ -14,7 +14,7 @@ module dshr_methods_mod
   use ESMF         , only : ESMF_TraceRegionEnter, ESMF_TraceRegionExit
   use shr_kind_mod , only : r8=>shr_kind_r8, cs=>shr_kind_cs, cl=>shr_kind_cl
   use shr_log_mod  , only : shr_log_error
-  
+
   implicit none
   public
 
@@ -41,6 +41,8 @@ contains
 
   subroutine dshr_state_getfldptr(State, fldname, fldptr1, fldptr2, allowNullReturn, rc)
 
+    use shr_infnan_mod, only: nan => shr_infnan_nan, assignment(=)
+
     ! ----------------------------------------------
     ! Get pointer to a state field
     ! ----------------------------------------------
@@ -50,16 +52,23 @@ contains
     character(len=*) ,          intent(in)              :: fldname
     real(R8)         , pointer, intent(inout), optional :: fldptr1(:)
     real(R8)         , pointer, intent(inout), optional :: fldptr2(:,:)
-    logical          ,          intent(in),optional     :: allowNullReturn
+    logical          ,          intent(in)   , optional :: allowNullReturn
     integer          ,          intent(out)             :: rc
 
     ! local variables
+    integer                     :: ni, nj
     type(ESMF_Field)            :: lfield
     integer                     :: itemCount
     character(len=*), parameter :: subname='(dshr_state_getfldptr)'
     ! ----------------------------------------------
 
     rc = ESMF_SUCCESS
+
+    ! only one of fldptr1 or fldptr2 can be present
+    if (present(fldptr1) .and. present(fldptr2)) then
+       call shr_log_error(trim(subname)//": both fldptr1 and fldptr2 cannot be present ",rc=rc)
+       return
+    end if
 
     if (present(allowNullReturn)) then
       call ESMF_StateGet(State, itemSearch=trim(fldname), itemCount=itemCount, rc=rc)
@@ -74,7 +83,9 @@ contains
         if (chkerr(rc,__LINE__,u_FILE_u)) return
       else
         ! the call to just returns if it cannot find the field
-        call ESMF_LogWrite(trim(subname)//" Could not find the field: "//trim(fldname)//" just returning", ESMF_LOGMSG_INFO)
+         call ESMF_LogWrite(trim(subname)//" Could not find the field: "//trim(fldname)//&
+              " just returning", ESMF_LOGMSG_INFO)
+        return
       end if
     else
       call ESMF_StateGet(State, itemName=trim(fldname), field=lfield, rc=rc)
@@ -82,6 +93,19 @@ contains
 
       call dshr_field_getfldptr(lfield, fldptr1=fldptr1, fldptr2=fldptr2, rc=rc)
       if (chkerr(rc,__LINE__,u_FILE_u)) return
+    end if
+
+    ! Initialize pointer value
+    if (present(fldptr1)) then
+       do ni = 1,size(fldptr1)
+          fldptr1(ni) = nan
+       end do
+    else if (present(fldptr2)) then
+       do nj = 1,size(fldptr2, dim=2)
+          do ni = 1,size(fldptr2, dim=1)
+             fldptr2(ni,nj) = nan
+          end do
+       end do
     end if
 
   end subroutine dshr_state_getfldptr
