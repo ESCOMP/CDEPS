@@ -129,35 +129,6 @@ contains
       call dshr_state_getfldptr(exportState, 'Flgl_qice_elev', fldptr2=Flgl_qice_elev, rc=rc)
       if (chkerr(rc,__LINE__,u_FILE_u)) return
 
-<<<<<<< HEAD
-      ! Create stream-> export state mapping
-      ! Note that strm_flds is the model name for the stream field
-      ! Note that state_fld is the model name for the export field
-
-      if (trim(datamode) == 'glc_forcing_mct') then
-         allocate(strm_flds_tsrf(0:glc_nec))
-         allocate(strm_flds_topo(0:glc_nec))
-         allocate(strm_flds_qice(0:glc_nec))
-         do n = 0,glc_nec
-            write(nec_str, '(i2.2)') n
-            strm_flds_tsrf(n) = 'Sl_tsrf_elev'   // trim(nec_str)
-            strm_flds_topo(n) = 'Sl_topo_elev'   // trim(nec_str)
-            strm_flds_qice(n) = 'Flgl_qice_elev' // trim(nec_str)
-         end do
-
-      else if (trim(datamode) == 'glc_forcing' ) then
-         allocate(strm_flds_tsrf(1:glc_nec+1))
-         allocate(strm_flds_topo(1:glc_nec+1))
-         allocate(strm_flds_qice(1:glc_nec+1))
-         do n = 1,glc_nec+1
-            write(nec_str, '(i0)') n
-            strm_flds_tsrf(n) = 'Sl_tsrf_elev'   // trim(nec_str)
-            strm_flds_topo(n) = 'Sl_topo_elev'   // trim(nec_str)
-            strm_flds_qice(n) = 'Flgl_qice_elev' // trim(nec_str)
-         end do
-      else
-         call shr_log_error(subname//'ERROR illegal datamode = '//trim(datamode), rc=rc)
-=======
       ! Obtain pointers to stream fields
 
       allocate(strm_Sl_tsrf_elev(glc_nec+1), &
@@ -166,7 +137,6 @@ contains
       if ( istat /= 0 ) then
          call shr_log_error(subName//&
               ': allocation error for strm_Sl_tsrf_elev, Strm_Sl_topo_elev and strm_Flgl_qice_elev',rc=rc)
->>>>>>> mvertens/feature/new_datm_optional_streams
          return
       end if
 
