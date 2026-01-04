@@ -43,7 +43,7 @@
 
   <entry id="DROF_MODE">
     <type>char</type>
-    <valid_values>CPLHIST,DIATREN_ANN_RX1,DIATREN_IAF_RX1,DIATREN_IAF_AIS00_RX1,DIATREN_IAF_AIS45_RX1,DIATREN_IAF_AIS55_RX1,IAF_JRA,IAF_JRA_1p4_2018,IAF_JRA_1p4_2018_AIS0ICE,IAF_JRA_1p4_2018_AIS0LIQ,IAF_JRA_1p4_2018_AIS0ROF,RYF6162_JRA,RYF8485_JRA,RYF9091_JRA,RYF0304_JRA,NULL</valid_values>
+    <valid_values>CPLHIST,DIATREN_ANN_RX1,DIATREN_IAF_RX1,DIATREN_IAF_AIS00_RX1,DIATREN_IAF_AIS45_RX1,DIATREN_IAF_AIS55_RX1,IAF_JRA,IAF_JRA_1p4_2018,IAF_JRA_1p4_2018_AIS0ICE,IAF_JRA_1p4_2018_AIS0LIQ,IAF_JRA_1p4_2018_AIS0ROF,IAF_JRA_1p5_2023,RYF6162_JRA,RYF8485_JRA,RYF9091_JRA,RYF0304_JRA,NULL</valid_values>
     <default_value>DIATREN_ANN_RX1</default_value>
     <values match="last">
       <value compset="_DROF%NULL"                 >NULL</value>
@@ -94,13 +94,13 @@
     <default_value>UNSET</default_value>
     <group>run_component_drof</group>
     <file>env_run.xml</file>
-    <desc>case name for coupler history data mode when DROF_MODE is CPLHIST mode</desc>
+    <desc>case name for coupler history data mode (only used when DROF_MODE is CPLHIST mode)</desc>
   </entry>
 
   <entry id="DROF_CPLHIST_YR_ALIGN">
     <type>integer</type>
     <valid_values></valid_values>
-    <default_value>1</default_value>
+    <default_value>-999</default_value>
     <group>run_component_drof</group>
     <file>env_run.xml</file>
     <desc>
@@ -121,7 +121,7 @@
   <entry id="DROF_CPLHIST_YR_START">
     <type>integer</type>
     <valid_values></valid_values>
-    <default_value>1</default_value>
+    <default_value>-999</default_value>
     <group>run_component_drof</group>
     <file>env_run.xml</file>
     <desc>starting year to loop data over (only used when DROF_MODE is CPLHIST)</desc>
@@ -130,7 +130,7 @@
   <entry id="DROF_CPLHIST_YR_END">
     <type>integer</type>
     <valid_values></valid_values>
-    <default_value>1</default_value>
+    <default_value>-999</default_value>
     <group>run_component_drof</group>
     <file>env_run.xml</file>
     <desc>ending year to loop data over (only used when DROF_MODE is CPLHIST)</desc>
