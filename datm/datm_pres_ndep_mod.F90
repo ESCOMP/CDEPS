@@ -8,7 +8,7 @@ module datm_pres_ndep_mod
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
 
   implicit none
-  private ! except
+  private
 
   public :: datm_pres_ndep_advertise
   public :: datm_pres_ndep_init_pointers
@@ -28,7 +28,7 @@ module datm_pres_ndep_mod
 
   logical :: use_cmip7_ndep
 
-  character(*), parameter :: u_FILE_u = &
+  character(len=*), parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
