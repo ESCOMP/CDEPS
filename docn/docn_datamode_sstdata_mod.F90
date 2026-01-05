@@ -10,7 +10,7 @@ module docn_datamode_sstdata_mod
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_get_stream_pointer
 
   implicit none
-  private ! except
+  private
 
   public  :: docn_datamode_sstdata_advertise
   public  :: docn_datamode_sstdata_init_pointers
@@ -29,8 +29,8 @@ module docn_datamode_sstdata_mod
   real(r8) , parameter :: tkfrz   = shr_const_tkfrz       ! freezing point, fresh water (kelvin)
   real(r8) , parameter :: ocnsalt = shr_const_ocn_ref_sal ! ocean reference salinity
 
-  character(*) , parameter :: nullstr = 'null'
-  character(*) , parameter :: u_FILE_u = &
+  character(len=*) , parameter :: nullstr = 'null'
+  character(len=*) , parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -98,7 +98,7 @@ contains
 
     ! initialize pointer to stream field
     call shr_strdata_get_stream_pointer( sdat, 'So_t', strm_So_t, &
-         errmsg=trim(subname)//'ERROR: strm_So_t must be associated for docn sstdata datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_So_t must be associated for docn sstdata datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Initialize value of export state

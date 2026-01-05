@@ -8,7 +8,7 @@ module dwav_datamode_copyall_mod
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_get_stream_pointer
 
   implicit none
-  private ! except
+  private
 
   public  :: dwav_datamode_copyall_advertise
   public  :: dwav_datamode_copyall_init_pointers
@@ -24,7 +24,7 @@ module dwav_datamode_copyall_mod
   real(r8), pointer :: strm_Sw_ustokes(:) => null()
   real(r8), pointer :: strm_Sw_vstokes(:) => null()
 
-  character(*) , parameter :: u_FILE_u = &
+  character(len=*) , parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -85,13 +85,13 @@ contains
 
     ! Initialize module pointers
     call shr_strdata_get_stream_pointer( sdat, 'Sw_lamult', strm_Sw_lamult, requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Sw_lamult must be associated for dwav', rc=rc)
+         errmsg=subname//'ERROR: strm_Sw_lamult must be associated for dwav', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'Sw_ustokes', strm_Sw_ustokes, requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Sw_ustokes must be associated for dwav', rc=rc)
+         errmsg=subname//'ERROR: strm_Sw_ustokes must be associated for dwav', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'Sw_vstokes', strm_Sw_vstokes, requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Sw_vstokes must be associated for dwav', rc=rc)
+         errmsg=subname//'ERROR: strm_Sw_vstokes must be associated for dwav', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine dwav_datamode_copyall_init_pointers

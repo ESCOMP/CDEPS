@@ -11,7 +11,7 @@ module docn_datamode_multilev_cplhist_mod
   use dshr_strdata_mod , only : shr_strdata_get_stream_pointer, shr_strdata_type
 
   implicit none
-  private ! except
+  private
 
   public :: docn_datamode_multilev_cplhist_advertise
   public :: docn_datamode_multilev_cplhist_init_pointers
@@ -32,7 +32,7 @@ module docn_datamode_multilev_cplhist_mod
   ! number of multi-level ocean fields
   integer, parameter :: nlev_export = 30
 
-  character(*) , parameter :: u_FILE_u = &
+  character(len=*) , parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -106,14 +106,14 @@ contains
        strm_fld = 'So_t_depth' // trim(num_str)
        call shr_strdata_get_stream_pointer( sdat, trim(strm_fld), strm_So_t_depth(ilev)%ptr, &
             requirePointer=.true., &
-            errmsg=trim(subname)//'ERROR: '//trim(strm_fld)//&
+            errmsg=subname//'ERROR: '//trim(strm_fld)//&
             ' must be associated for docn multiplev_cplhist datamode', rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
        strm_fld = 'So_s_depth' // trim(num_str)
        call shr_strdata_get_stream_pointer( sdat, trim(strm_fld), strm_So_s_depth(ilev)%ptr, &
             requirePointer=.true., &
-            errmsg=trim(subname)//'ERROR: '//trim(strm_fld)//&
+            errmsg=subname//'ERROR: '//trim(strm_fld)//&
             ' must be associated for docn multiplev_cplhist datamode', rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end do

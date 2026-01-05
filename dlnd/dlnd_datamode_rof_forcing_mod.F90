@@ -12,7 +12,7 @@ module dlnd_datamode_rof_forcing_mod
    use shr_lnd2rof_tracers_mod , only : shr_lnd2rof_tracers_readnl
 
    implicit none
-   private ! except
+   private
 
    public :: dlnd_datamode_rof_forcing_advertise
    public :: dlnd_datamode_rof_forcing_init_pointers
@@ -43,8 +43,8 @@ module dlnd_datamode_rof_forcing_mod
 
    integer :: ntracers_nonh2o
 
-   character(*), parameter :: nullstr = 'null'
-   character(*), parameter :: u_FILE_u = &
+   character(len=*), parameter :: nullstr = 'null'
+   character(len=*), parameter :: u_FILE_u = &
         __FILE__
 
 !===============================================================================
@@ -177,29 +177,29 @@ contains
             strm_fld = trim('Flrl_rofsur_nonh2o') // trim(nchar)
             call shr_strdata_get_stream_pointer( sdat, trim(strm_fld), strm_Flrl_rofsur_nonh2o_2d(nf)%ptr, &
                  requirePointer=.true., &
-                 errmsg=trim(subname)//'ERROR: '//trim(strm_fld)//&
+                 errmsg=subname//'ERROR: '//trim(strm_fld)//&
                  ' must be associated for dlnd rof_forcing datamode', rc=rc)
             if (ChkErr(rc,__LINE__,u_FILE_u)) return
          end do
       else if (ntracers_nonh2o == 1) then
          call shr_strdata_get_stream_pointer(sdat, 'Flrl_rofsur_nonh2o' , strm_Flrl_rofsur_nonh2o_1d, &
               requirePointer=.true., &
-              errmsg=trim(subname)//'ERROR: strm_Flrl_rofsur_1d '// &
+              errmsg=subname//'ERROR: strm_Flrl_rofsur_1d '// &
               ' must be associated for dlnd rof_forcing mode', rc=rc)
          if (ChkErr(rc,__LINE__,u_FILE_u)) return
       end if
 
       call shr_strdata_get_stream_pointer(sdat, 'Flrl_rofsur' , strm_Flrl_rofsur, requirePointer=.true., &
-           errmsg=trim(subname)//'ERROR: strm_Flrl_rofsur be associated for dlnd rof_forcing mode', rc=rc)
+           errmsg=subname//'ERROR: strm_Flrl_rofsur be associated for dlnd rof_forcing mode', rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
       call shr_strdata_get_stream_pointer(sdat, 'Flrl_rofsub' , strm_Flrl_rofsub, requirePointer=.true., &
-           errmsg=trim(subname)//'ERROR: strm_Flrl_rofsub be associated for dlnd rof_forcing mode', rc=rc)
+           errmsg=subname//'ERROR: strm_Flrl_rofsub be associated for dlnd rof_forcing mode', rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
       call shr_strdata_get_stream_pointer(sdat, 'Flrl_rofgwl' , strm_Flrl_rofgwl, requirePointer=.true., &
-           errmsg=trim(subname)//'ERROR: strm_Flrl_rofgwl be associated for dlnd rof_forcing mode', rc=rc)
+           errmsg=subname//'ERROR: strm_Flrl_rofgwl be associated for dlnd rof_forcing mode', rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
       call shr_strdata_get_stream_pointer(sdat, 'Flrl_rofi' , strm_Flrl_rofi, requirePointer=.true., &
-           errmsg=trim(subname)//'ERROR: strm_Flrl_rofi be associated for dlnd rof_forcing mode', rc=rc)
+           errmsg=subname//'ERROR: strm_Flrl_rofi be associated for dlnd rof_forcing mode', rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
       ! optional stream field pointer

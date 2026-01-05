@@ -46,7 +46,7 @@ module cdeps_dlnd_comp
   use nuopc_shr_methods , only : shr_get_rpointer_name
 
   implicit none
-  private ! except
+  private
 
   public  :: SetServices
   public  :: SetVM
@@ -74,7 +74,7 @@ module cdeps_dlnd_comp
   integer                  :: logunit                             ! logging unit number
   logical                  :: restart_read                        ! start from restart
   character(CL)            :: case_name                           ! case name
-  character(*) , parameter :: nullstr = 'null'
+  character(len=*) , parameter :: nullstr = 'null'
 
   ! dlnd_in namelist input
   character(CL)            :: dataMode = nullstr                  ! flags physics options wrt input data
@@ -100,12 +100,12 @@ module cdeps_dlnd_comp
   logical                      :: diagnose_data = .true.
   integer      , parameter     :: main_task=0                   ! task number of main task
 #ifdef CESMCOUPLED
-  character(*) , parameter     :: modName =  "(lnd_comp_nuopc)"
+  character(len=*) , parameter     :: modName =  "(lnd_comp_nuopc)"
 #else
-  character(*) , parameter     :: modName =  "(cdeps_dlnd_comp)"
+  character(len=*) , parameter     :: modName =  "(cdeps_dlnd_comp)"
 #endif
 
-  character(*) , parameter     :: u_FILE_u = &
+  character(len=*) , parameter     :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -233,20 +233,20 @@ contains
 
     ! write namelist input to standard out
     if (my_task == main_task) then
-       write(logunit,'(3a)')    trim(subname),' model_meshfile    = ',trim(model_meshfile)
-       write(logunit,'(3a)')    trim(subname),' model_maskfile    = ',trim(model_maskfile)
-       write(logunit,'(3a)')    trim(subname),' datamode          = ',datamode
-       write(logunit,'(2a,i0)') trim(subname),' nx_global         = ',nx_global
-       write(logunit,'(2a,i0)') trim(subname),' ny_global         = ',ny_global
-       write(logunit,'(3a)')    trim(subname),' restfilm          = ',trim(restfilm)
-       write(logunit,'(2a,l6)') trim(subname),' skip_restart_read = ',skip_restart_read
-       write(logunit,'(2a,l6)') trim(subname),' export_all        = ',export_all
+       write(logunit,'(3a)')    subname,' model_meshfile    = ',trim(model_meshfile)
+       write(logunit,'(3a)')    subname,' model_maskfile    = ',trim(model_maskfile)
+       write(logunit,'(3a)')    subname,' datamode          = ',datamode
+       write(logunit,'(2a,i0)') subname,' nx_global         = ',nx_global
+       write(logunit,'(2a,i0)') subname,' ny_global         = ',ny_global
+       write(logunit,'(3a)')    subname,' restfilm          = ',trim(restfilm)
+       write(logunit,'(2a,l6)') subname,' skip_restart_read = ',skip_restart_read
+       write(logunit,'(2a,l6)') subname,' export_all        = ',export_all
     endif
 
     ! Validate sdat datamode
     select case (trim(datamode))
     case('glc_forcing_mct','glc_forcing','rof_forcing')
-       if (my_task == main_task) write(logunit,'(3a)') trim(subname),' dlnd datamode = ',trim(datamode)
+       if (my_task == main_task) write(logunit,'(3a)') subname,' dlnd datamode = ',trim(datamode)
     case default
        call shr_log_error(' ERROR illegal dlnd datamode = '//trim(datamode), rc=rc)
        return
@@ -413,8 +413,8 @@ contains
     integer, intent(out) :: rc
 
     ! local variables
-    character(*), parameter :: F00   = "('(dlnd_comp_final) ',8a)"
-    character(*), parameter :: F91   = "('(dlnd_comp_final) ',73('-'))"
+    character(len=*), parameter :: F00   = "('(dlnd_comp_final) ',8a)"
+    character(len=*), parameter :: F91   = "('(dlnd_comp_final) ',73('-'))"
     character(len=*),parameter  :: subname=trim(modName)//':(ModelFinalize) '
     !-------------------------------------------------------------------------------
 

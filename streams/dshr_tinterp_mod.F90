@@ -13,8 +13,9 @@ module dshr_tInterp_mod
   use shr_const_mod    , only : SHR_CONST_PI
   use dshr_methods_mod , only : chkerr
   use shr_sys_mod      , only : shr_sys_abort
+
   implicit none
-  private ! except
+  private
 
   public :: shr_tInterp_getFactors  ! get time-interp factors
   public :: shr_tInterp_getAvgCosz  ! get cosz, time avg of
@@ -26,7 +27,7 @@ module dshr_tInterp_mod
   real(r8)     ,parameter :: c0 = 0.0_r8
   real(r8)     ,parameter :: c1 = 1.0_r8
   real(r8)     ,parameter :: eps = 1.0E-12_r8
-  character(*) ,parameter :: u_FILE_u = &
+  character(len=*) ,parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -51,9 +52,9 @@ contains
     integer      ,intent(in)           :: Din,Sin ! desired/model date & sec
     real(r8)     ,intent(out)          :: f1      ! wgt for 1
     real(r8)     ,intent(out)          :: f2      ! wgt for 2
-    character(*) ,intent(in)           :: calendar!calendar type
+    character(len=*) ,intent(in)           :: calendar!calendar type
     integer      ,intent(in)           :: logunit
-    character(*) ,intent(in) ,optional :: algo    ! algorithm
+    character(len=*) ,intent(in) ,optional :: algo    ! algorithm
     integer      ,intent(out)          :: rc      ! return code
 
     ! local variables
@@ -64,11 +65,11 @@ contains
     integer(i8)            :: snum, sden  ! delta times in seconds
     integer(i8)            :: sint1,sint2 ! delta times in seconds
     character(cs)          :: lalgo       ! local algo variable
-    character(*),parameter :: subName = "(shr_tInterp_getFactors) "
-    character(*),parameter :: F00   = "('(shr_tInterp_getFactors) ',8a)"
-    character(*),parameter :: F01   = "('(shr_tInterp_getFactors) ',a,2f17.8)"
-    character(*),parameter :: F02   = "('(shr_tInterp_getFactors) ',a,3i9)"
-    character(*),parameter :: F03   = "('(shr_tInterp_getFactors) ',2a,3(i9.8,i6))"
+    character(len=*),parameter :: subName = "(shr_tInterp_getFactors) "
+    character(len=*),parameter :: F00   = "('(shr_tInterp_getFactors) ',8a)"
+    character(len=*),parameter :: F01   = "('(shr_tInterp_getFactors) ',a,2f17.8)"
+    character(len=*),parameter :: F02   = "('(shr_tInterp_getFactors) ',a,3i9)"
+    character(len=*),parameter :: F03   = "('(shr_tInterp_getFactors) ',2a,3(i9.8,i6))"
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -182,7 +183,7 @@ contains
     real(r8)     ,intent(in)    :: lambm0     ! orb param
     real(r8)     ,intent(in)    :: obliqr     ! orb param
     integer      ,intent(in)    :: modeldt    ! model time step in secs
-    character(*) ,intent(in)    :: calendar   ! calendar type
+    character(len=*) ,intent(in)    :: calendar   ! calendar type
     logical      , intent(in)   :: isroot
     integer      , intent(in)   :: logunit
     integer      ,intent(out)   :: rc         ! error status
@@ -198,8 +199,8 @@ contains
     integer                 :: ldt               ! local dt as needed
     integer(i8)             :: ldt8              ! local dt as needed in i8
     integer(i8)             :: dtsec             ! delta time from timeint
-    character(*),parameter  :: subName = "(shr_tInterp_getAvgCosz) "
-    character(*),parameter  :: F00   = "('(shr_tInterp_getAvgCosz) ',8a)"
+    character(len=*),parameter  :: subName = "(shr_tInterp_getAvgCosz) "
+    character(len=*),parameter  :: F00   = "('(shr_tInterp_getAvgCosz) ',8a)"
     !---------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -247,7 +248,7 @@ contains
     allocate(cosz(lsize))
 
     if (debug>0 .and. isroot) then
-       write(logunit,'(a,4(i8,2x))') trim(subname)//' calculating time average over interval ymd1,tod1,ymd2,tod2 = ', &
+       write(logunit,'(a,4(i8,2x))') subname//' calculating time average over interval ymd1,tod1,ymd2,tod2 = ', &
             ymd1,tod1,ymd2,tod2
     end if
 
@@ -289,7 +290,7 @@ contains
     real(r8)     , intent(in)    :: mvelpp     ! orb param
     real(r8)     , intent(in)    :: lambm0     ! orb param
     real(r8)     , intent(in)    :: obliqr     ! orb param
-    character(*) , intent(in)    :: calendar   ! calendar type
+    character(len=*) , intent(in)    :: calendar   ! calendar type
     logical      , intent(in)    :: isroot
     integer      , intent(in)    :: logunit
 
@@ -300,7 +301,7 @@ contains
     real(r8)                :: calday               ! julian days
     real(r8)                :: declin,eccf          ! orb params
     real(r8)     ,parameter :: solZenMin = 0.001_r8 ! min solar zenith angle
-    character(*) ,parameter :: subName = "(shr_tInterp_getCosz) "
+    character(len=*) ,parameter :: subName = "(shr_tInterp_getCosz) "
     !---------------------------------------------------------------
 
     lsize = size(lon)
@@ -312,9 +313,9 @@ contains
     call shr_cal_date2julian(ymd, tod, calday, calendar)
     call shr_orb_decl( calday, eccen, mvelpp, lambm0, obliqr, declin, eccf )
     if (debug > 0 .and. isroot) then
-       write(logunit,'(a,2(i8,2x),d20.10,2x,a)') trim(subname)//' ymd, tod, calday, calendar = ',ymd,tod,calday,calendar  
-       write(logunit,'(a,4(d20.10,2x))') trim(subname)//' eccen, mvelpp, lambm0, obliqr = ',eccen, mvelpp, lambm0, obliqr
-       write(logunit,'(a,2(d20.10,2x))') trim(subname)//' declin,eccf= ',declin,eccf
+       write(logunit,'(a,2(i8,2x),d20.10,2x,a)') subname//' ymd, tod, calday, calendar = ',ymd,tod,calday,calendar
+       write(logunit,'(a,4(d20.10,2x))') subname//' eccen, mvelpp, lambm0, obliqr = ',eccen, mvelpp, lambm0, obliqr
+       write(logunit,'(a,2(d20.10,2x))') subname//' declin,eccf= ',declin,eccf
     end if
     do n = 1,lsize
        lonr = lon(n) * deg2rad

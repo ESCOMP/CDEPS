@@ -17,7 +17,7 @@ module dice_datamode_cplhist_mod
   use dshr_dfield_mod  , only : dfield_type, dshr_dfield_add, dshr_dfield_copy
 
   implicit none
-  private ! except
+  private
 
   public  :: dice_datamode_cplhist_advertise
   public  :: dice_datamode_cplhist_init_pointers
@@ -45,7 +45,7 @@ module dice_datamode_cplhist_mod
 
   type(dfield_type)  , pointer :: dfields => null()
 
-  character(*) , parameter :: u_FILE_u = &
+  character(len=*) , parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -101,7 +101,7 @@ contains
     ! input/output variables
     type(ESMF_State)       , intent(inout) :: importState
     type(ESMF_State)       , intent(inout) :: exportState
-    character(len=*)       , intent(in)    :: flds_scalar_name 
+    character(len=*)       , intent(in)    :: flds_scalar_name
     integer                , intent(in)    :: logunit
     logical                , intent(in)    :: mainproc
     type(shr_strdata_type) , intent(in)    :: sdat
@@ -134,7 +134,7 @@ contains
           if (chkerr(rc,__LINE__,u_FILE_u)) return
        end if
     end do
-    
+
     ! initialize pointers to export fields
     call dshr_state_getfldptr(exportState,'Si_ifrac',fldptr1=Si_ifrac, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return

@@ -18,7 +18,7 @@ module docn_datamode_som_mod
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
 
   implicit none
-  private ! except
+  private
 
   public :: docn_datamode_som_advertise
   public :: docn_datamode_som_init_pointers
@@ -71,7 +71,7 @@ module docn_datamode_som_mod
   real(r8) , parameter :: latice  = shr_const_latice      ! latent heat of fusion
   real(r8) , parameter :: ocnsalt = shr_const_ocn_ref_sal ! ocean reference salinity
 
-  character(*) , parameter :: u_FILE_u = &
+  character(len=*) , parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -206,28 +206,28 @@ contains
 
     ! Initialize pointers to stream fields
     call shr_strdata_get_stream_pointer( sdat, 'So_t'    , strm_So_t, &
-         errmsg=trim(subname)//'ERROR: strm_So_t must be associated for docn som datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_So_t must be associated for docn som datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'So_s'    , strm_So_s, &
-         errmsg=trim(subname)//'ERROR: strm_So_s must be associated for docn som datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_So_s must be associated for docn som datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'So_u'    , strm_So_u, &
-         errmsg=trim(subname)//'ERROR: strm_So_u must be associated for docn som datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_So_u must be associated for docn som datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'So_v'    , strm_So_v, &
-         errmsg=trim(subname)//'ERROR: strm_So_v must be associated for docn som datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_So_v must be associated for docn som datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'So_dhdx' , strm_So_dhdx, &
-         errmsg=trim(subname)//'ERROR: strm_So_dhdx must be associated for docn som datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_So_dhdx must be associated for docn som datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'So_dhdy' , strm_So_dhdy, &
-         errmsg=trim(subname)//'ERROR: strm_So_dhdy must be associated for docn som datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_So_dhdy must be associated for docn som datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'So_h'    , strm_So_h, &
-         errmsg=trim(subname)//'ERROR: strm_So_h must be associated for docn som datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_So_h must be associated for docn som datamode', rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'So_qbot' , strm_So_qbot, &
-         errmsg=trim(subname)//'ERROR: strm_So_qbot must be associated for docn som datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_So_qbot must be associated for docn som datamode', rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
 
     ! Set export state ocean fraction (So_omask)

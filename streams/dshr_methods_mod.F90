@@ -32,7 +32,7 @@ module dshr_methods_mod
 
   character(len=1024) :: msgString
   integer, parameter  :: memdebug_level=1
-  character(*), parameter :: u_FILE_u = &
+  character(len=*), parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -66,7 +66,7 @@ contains
 
     ! only one of fldptr1 or fldptr2 can be present
     if (present(fldptr1) .and. present(fldptr2)) then
-       call shr_log_error(trim(subname)//": both fldptr1 and fldptr2 cannot be present ",rc=rc)
+       call shr_log_error(subname//": both fldptr1 and fldptr2 cannot be present ",rc=rc)
        return
     end if
 
@@ -83,7 +83,7 @@ contains
         if (chkerr(rc,__LINE__,u_FILE_u)) return
       else
         ! the call to just returns if it cannot find the field
-         call ESMF_LogWrite(trim(subname)//" Could not find the field: "//trim(fldname)//&
+         call ESMF_LogWrite(subname//" Could not find the field: "//trim(fldname)//&
               " just returning", ESMF_LOGMSG_INFO)
         return
       end if
@@ -165,7 +165,7 @@ contains
                 write(msgString,'(A,a)') trim(string)//': '//trim(lfieldnamelist(n))," no data"
              endif
           else
-             call shr_log_error(trim(subname)//": ERROR rank not supported ", rc=rc)
+             call shr_log_error(subname//": ERROR rank not supported ", rc=rc)
              return
           endif
           call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
@@ -202,7 +202,7 @@ contains
     rc = ESMF_SUCCESS
 
     if (.not. dshr_fldbun_FldChk(FB, trim(fldname), rc=rc)) then
-       call shr_log_error(trim(subname)//": ERROR field "//trim(fldname)//" not in FB ", rc=rc)
+       call shr_log_error(subname//": ERROR field "//trim(fldname)//" not in FB ", rc=rc)
        return
     endif
     call ESMF_FieldBundleGet(FB, fieldName=trim(fldname), field=lfield, rc=rc)
@@ -211,7 +211,7 @@ contains
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     if (ungriddedUBound(1) > 0) then
        if (.not.present(fldptr2)) then
-          call shr_log_error(trim(subname)//": ERROR missing rank=2 array ", &
+          call shr_log_error(subname//": ERROR missing rank=2 array ", &
                line=__LINE__, file=u_FILE_u, rc=rc)
           return
        endif
@@ -220,7 +220,7 @@ contains
        lrank = 2
     else
        if (.not.present(fldptr1)) then
-          call shr_log_error(trim(subname)//": ERROR missing rank=1 array ", &
+          call shr_log_error(subname//": ERROR missing rank=1 array ", &
                line=__LINE__, file=u_FILE_u, rc=rc)
           return
        endif
@@ -282,7 +282,7 @@ contains
 
     ! check that input and output field bundles have identical number of fields
     if (fieldcount_src /= fieldcount_dst) then
-       call ESMF_LogWrite(trim(subname)//": ERROR fieldcount_src and field_count_dst are not the same")
+       call ESMF_LogWrite(subname//": ERROR fieldcount_src and field_count_dst are not the same")
        rc = ESMF_FAILURE
        if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=u_FILE_u)) then
           call ESMF_Finalize(endflag=ESMF_END_ABORT)
@@ -361,7 +361,7 @@ contains
     call ESMF_FieldBundleGet(FB, fieldCount=fieldCount, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     if (fieldnum > fieldCount) then
-       call shr_log_error(trim(subname)//": ERROR fieldnum > fieldCount ", rc=rc)
+       call shr_log_error(subname//": ERROR fieldnum > fieldCount ", rc=rc)
        return
     endif
 
@@ -398,7 +398,7 @@ contains
 
     call ESMF_FieldBundleGet(FB, fieldName=trim(fldname), isPresent=isPresent, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) then
-       call shr_log_error(trim(subname)//" Error checking field: "//trim(fldname), rc=rc)
+       call shr_log_error(subname//" Error checking field: "//trim(fldname), rc=rc)
        return
     endif
 
@@ -441,20 +441,20 @@ contains
        ! no local data
     elseif (lrank == 1) then
        if (size(dataPtr1d) > 0) then
-          write(msgString,'(A,3g14.7,i8)') trim(subname)//' '//trim(lstring)//': '//trim(fieldname), &
+          write(msgString,'(A,3g14.7,i8)') subname//' '//trim(lstring)//': '//trim(fieldname), &
                minval(dataPtr1d), maxval(dataPtr1d), sum(dataPtr1d), size(dataPtr1d)
        else
-          write(msgString,'(A,a)') trim(subname)//' '//trim(lstring)//': '//trim(fieldname)," no data"
+          write(msgString,'(A,a)') subname//' '//trim(lstring)//': '//trim(fieldname)," no data"
        endif
     elseif (lrank == 2) then
        if (size(dataPtr2d) > 0) then
-          write(msgString,'(A,3g14.7,i8)') trim(subname)//' '//trim(lstring)//': '//trim(fieldname), &
+          write(msgString,'(A,3g14.7,i8)') subname//' '//trim(lstring)//': '//trim(fieldname), &
                minval(dataPtr2d), maxval(dataPtr2d), sum(dataPtr2d), size(dataPtr2d)
        else
-          write(msgString,'(A,a)') trim(subname)//' '//trim(lstring)//': '//trim(fieldname)," no data"
+          write(msgString,'(A,a)') subname//' '//trim(lstring)//': '//trim(fieldname)," no data"
        endif
     else
-       call shr_log_error(trim(subname)//": ERROR rank not supported ", rc=rc)
+       call shr_log_error(subname//": ERROR rank not supported ", rc=rc)
        return
     endif
     call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
@@ -508,23 +508,23 @@ contains
 
        elseif (lrank == 1) then
           if (size(dataPtr1d) > 0) then
-             write(msgString,'(A,3g14.7,i8)') trim(subname)//' '//trim(lstring)//': '//trim(lfieldnamelist(n))//' ', &
+             write(msgString,'(A,3g14.7,i8)') subname//' '//trim(lstring)//': '//trim(lfieldnamelist(n))//' ', &
                   minval(dataPtr1d), maxval(dataPtr1d), sum(dataPtr1d), size(dataPtr1d)
           else
-             write(msgString,'(A,a)') trim(subname)//' '//trim(lstring)//': '//trim(lfieldnamelist(n)), " no data"
+             write(msgString,'(A,a)') subname//' '//trim(lstring)//': '//trim(lfieldnamelist(n)), " no data"
           endif
 
        elseif (lrank == 2) then
           if (size(dataPtr2d) > 0) then
-             write(msgString,'(A,3g14.7,i8)') trim(subname)//' '//trim(lstring)//': '//trim(lfieldnamelist(n))//' ', &
+             write(msgString,'(A,3g14.7,i8)') subname//' '//trim(lstring)//': '//trim(lfieldnamelist(n))//' ', &
                   minval(dataPtr2d), maxval(dataPtr2d), sum(dataPtr2d), size(dataPtr2d)
           else
-             write(msgString,'(A,a)') trim(subname)//' '//trim(lstring)//': '//trim(lfieldnamelist(n)), &
+             write(msgString,'(A,a)') subname//' '//trim(lstring)//': '//trim(lfieldnamelist(n)), &
                   " no data"
           endif
 
        else
-          call shr_log_error(trim(subname)//": ERROR rank not supported ", rc=rc)
+          call shr_log_error(subname//": ERROR rank not supported ", rc=rc)
           return
        endif
        call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
@@ -533,7 +533,7 @@ contains
     ! Deallocate memory
     deallocate(lfieldnamelist)
 
-    call ESMF_LogWrite(trim(subname)//": done", ESMF_LOGMSG_INFO)
+    call ESMF_LogWrite(subname//": done", ESMF_LOGMSG_INFO)
 
   end subroutine dshr_fldbun_diagnose
 
@@ -575,17 +575,17 @@ contains
        if (labort) then
           call ESMF_FieldGet(field, name=name, rc=rc)
           if (chkerr(rc,__LINE__,u_FILE_u)) return
-          call shr_log_error(trim(subname)//": field "//trim(name)//" has no data not allocated ", rc=rc)
+          call shr_log_error(subname//": field "//trim(name)//" has no data not allocated ", rc=rc)
           return
        else
-          call ESMF_LogWrite(trim(subname)//": WARNING data not allocated ", ESMF_LOGMSG_INFO, rc=rc)
+          call ESMF_LogWrite(subname//": WARNING data not allocated ", ESMF_LOGMSG_INFO, rc=rc)
        endif
     else
         call ESMF_FieldGet(field, ungriddedUBound=ungriddedUBound, rc=rc)
         if (chkerr(rc,__LINE__,u_FILE_u)) return
         if (ungriddedUBound(1) > 0) then
            if (.not.present(fldptr2)) then
-              call shr_log_error(trim(subname)//": ERROR missing rank=2 array for "//trim(name), &
+              call shr_log_error(subname//": ERROR missing rank=2 array for "//trim(name), &
                    line=__LINE__, file=u_FILE_u, rc=rc)
               return
            endif
@@ -594,7 +594,7 @@ contains
            lrank = 2
         else
            if (.not.present(fldptr1)) then
-              call shr_log_error(trim(subname)//": ERROR missing rank=1 array for "//trim(name), &
+              call shr_log_error(subname//": ERROR missing rank=1 array for "//trim(name), &
                    line=__LINE__, file=u_FILE_u, rc=rc)
               return
            endif

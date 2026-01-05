@@ -48,7 +48,7 @@ module cdeps_dice_comp
   use dice_datamode_cplhist_mod , only : dice_datamode_cplhist_restart_write
 
   implicit none
-  private ! except
+  private
 
   public  :: SetServices
   public  :: SetVM
@@ -75,7 +75,7 @@ module cdeps_dice_comp
   integer                      :: logunit                             ! logging unit number
   logical                      :: restart_read                        ! start from restart
   character(CL)                :: case_name     ! case name
-  character(*) , parameter     :: nullstr = 'null'
+  character(len=*) , parameter     :: nullstr = 'null'
 
   ! dice_in namelist input
   character(CX)                :: streamfilename = nullstr            ! filename to obtain stream info from
@@ -110,11 +110,11 @@ module cdeps_dice_comp
   logical                      :: diagnose_data = .true.
   integer      , parameter     :: main_task=0                         ! task number of main task
 #ifdef CESMCOUPLED
-  character(*) , parameter     :: modName =  "(ice_comp_nuopc)"
+  character(len=*) , parameter     :: modName =  "(ice_comp_nuopc)"
 #else
-  character(*) , parameter     :: modName =  "(cdeps_dice_comp)"
+  character(len=*) , parameter     :: modName =  "(cdeps_dice_comp)"
 #endif
-  character(*) , parameter     :: u_FILE_u = &
+  character(len=*) , parameter     :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -220,17 +220,17 @@ contains
        end if
 
        ! write namelist input to standard out
-       write(logunit,'(3a)')       trim(subname),' datamode       = ',trim(datamode)
-       write(logunit,'(3a)')       trim(subname),' model_meshfile = ',trim(model_meshfile)
-       write(logunit,'(3a)')       trim(subname),' model_maskfile = ',trim(model_maskfile)
-       write(logunit,'(2a,i0)')    trim(subname),' nx_global      = ',nx_global
-       write(logunit,'(2a,i0)')    trim(subname),' ny_global      = ',ny_global
-       write(logunit,'(2a,d13.5)') trim(subname),' flux_swpf      = ',flux_swpf
-       write(logunit,'(2a,d13.5)') trim(subname),' flux_Qmin      = ',flux_Qmin
-       write(logunit,'(2a,l6)')    trim(subname),' flux_Qacc      = ',flux_Qacc
-       write(logunit,'(2a,d13.5)') trim(subname),' flux_Qacc0     = ',flux_Qacc0
-       write(logunit,'(3a)')       trim(subname),' restfilm       = ',trim(restfilm)
-       write(logunit,'(2a,l6)')    trim(subname),' export_all     = ',export_all
+       write(logunit,'(3a)')       subname,' datamode       = ',trim(datamode)
+       write(logunit,'(3a)')       subname,' model_meshfile = ',trim(model_meshfile)
+       write(logunit,'(3a)')       subname,' model_maskfile = ',trim(model_maskfile)
+       write(logunit,'(2a,i0)')    subname,' nx_global      = ',nx_global
+       write(logunit,'(2a,i0)')    subname,' ny_global      = ',ny_global
+       write(logunit,'(2a,d13.5)') subname,' flux_swpf      = ',flux_swpf
+       write(logunit,'(2a,d13.5)') subname,' flux_Qmin      = ',flux_Qmin
+       write(logunit,'(2a,l6)')    subname,' flux_Qacc      = ',flux_Qacc
+       write(logunit,'(2a,d13.5)') subname,' flux_Qacc0     = ',flux_Qacc0
+       write(logunit,'(3a)')       subname,' restfilm       = ',trim(restfilm)
+       write(logunit,'(2a,l6)')    subname,' export_all     = ',export_all
 
        bcasttmp = 0
        bcasttmp(1) = nx_global
@@ -271,7 +271,7 @@ contains
     ! Validate datamode
     select case (trim(datamode))
     case('ssmi','ssmi_iaf','cplhist')
-       if (mainproc) write(logunit,'(3a)') trim(subname),' dice datamode = ',trim(datamode)
+       if (mainproc) write(logunit,'(3a)') subname,' dice datamode = ',trim(datamode)
     case default
        call shr_log_error(' ERROR illegal dice datamode = '//trim(datamode), rc=rc)
        return
@@ -485,7 +485,7 @@ contains
 
     ! local variables
     character(len=CL) :: rpfile
-    character(*), parameter :: subName = "(dice_comp_run) "
+    character(len=*), parameter :: subName = "(dice_comp_run) "
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS

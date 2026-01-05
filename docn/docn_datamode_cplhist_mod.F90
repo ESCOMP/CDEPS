@@ -10,7 +10,7 @@ module docn_datamode_cplhist_mod
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_get_stream_pointer
 
   implicit none
-  private ! except
+  private
 
   public  :: docn_datamode_cplhist_advertise
   public  :: docn_datamode_cplhist_init_pointers
@@ -32,8 +32,8 @@ module docn_datamode_cplhist_mod
   real(r8) , parameter :: tkfrz   = shr_const_tkfrz       ! freezing point, fresh water (kelvin)
   real(r8) , parameter :: ocnsalt = shr_const_ocn_ref_sal ! ocean reference salinity
 
-  character(*) , parameter :: nullstr = 'null'
-  character(*) , parameter :: u_FILE_u = &
+  character(len=*) , parameter :: nullstr = 'null'
+  character(len=*) , parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -103,7 +103,7 @@ contains
 
     ! initialize pointers to required stream fields
     call shr_strdata_get_stream_pointer( sdat, 'So_t', strm_So_t, requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_So_t must be associated for docn cplhist datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_So_t must be associated for docn cplhist datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! initialize pointers to optional stream fields
@@ -115,17 +115,17 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     if (associated(So_u) .and. .not. associated(strm_So_u)) then
-       call shr_log_error(trim(subname)//&
+       call shr_log_error(subname//&
             'ERROR: strm_So_u must be associated if So_u is associated for docn cplhist mode', rc=rc)
        return
     end if
     if (associated(So_v) .and. .not. associated(strm_So_v)) then
-       call shr_log_error(trim(subname)//&
+       call shr_log_error(subname//&
             'ERROR: strm_So_v must be associated if So_v is associated for docn cplhist mode', rc=rc)
        return
     end if
     if (associated(So_bldepth) .and. .not. associated(strm_So_bldepth)) then
-       call shr_log_error(trim(subname)//&
+       call shr_log_error(subname//&
             'ERROR: strm_So_bldepth must be associated if So_bldepth is associated for docn cplhist mode', rc=rc)
        return
     end if

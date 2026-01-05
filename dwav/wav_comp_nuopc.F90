@@ -40,7 +40,7 @@ module cdeps_dwav_comp
   use dwav_datamode_copyall_mod, only : dwav_datamode_copyall_advance
 
   implicit none
-  private ! except
+  private
 
   public  :: SetServices
   public  :: SetVM
@@ -68,7 +68,7 @@ module cdeps_dwav_comp
   integer                      :: logunit                             ! logging unit number
   logical                      :: restart_read
   character(CL)                :: case_name                           ! case name
-  character(*) , parameter     :: nullstr = 'null'
+  character(len=*) , parameter     :: nullstr = 'null'
 
   ! dwav_in namelist input
   character(CX)                :: streamfilename = nullstr            ! filename to obtain stream info from
@@ -94,11 +94,11 @@ module cdeps_dwav_comp
   logical                      :: diagnose_data = .true.
   integer      , parameter     :: main_task=0                       ! task number of main task
 #ifdef CESMCOUPLED
-  character(*) , parameter     :: modName =  "(wav_comp_nuopc)"
+  character(len=*) , parameter     :: modName =  "(wav_comp_nuopc)"
 #else
-  character(*) , parameter     :: modName =  "(cdeps_dwav_comp)"
+  character(len=*) , parameter     :: modName =  "(cdeps_dwav_comp)"
 #endif
-  character(*) , parameter     :: u_FILE_u = &
+  character(len=*) , parameter     :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -167,9 +167,9 @@ contains
     type(ESMF_VM)     :: vm
     integer           :: bcasttmp(4)
     character(len=*),parameter  :: subname=trim(modName)//':(InitializeAdvertise) '
-    character(*)    ,parameter :: F00 = "('(" // trim(modName) // ") ',8a)"
-    character(*)    ,parameter :: F01 = "('(" // trim(modName) // ") ',a,2x,i8)"
-    character(*)    ,parameter :: F02 = "('(" // trim(modName) // ") ',a,l6)"
+    character(len=*)    ,parameter :: F00 = "('(" // trim(modName) // ") ',8a)"
+    character(len=*)    ,parameter :: F01 = "('(" // trim(modName) // ") ',a,2x,i8)"
+    character(len=*)    ,parameter :: F02 = "('(" // trim(modName) // ") ',a,l6)"
     !-------------------------------------------------------------------------------
 
     namelist / dwav_nml / datamode, model_meshfile, model_maskfile, &
@@ -198,20 +198,20 @@ contains
        read (nu,nml=dwav_nml,iostat=ierr)
        close(nu)
        if (ierr > 0) then
-          write(logunit,'(a,i0)') trim(subname),' ERROR: reading input namelist, '//trim(nlfilename)//' iostat=',ierr
+          write(logunit,'(a,i0)') subname,' ERROR: reading input namelist, '//trim(nlfilename)//' iostat=',ierr
           call shr_log_error(subName//': namelist read error '//trim(nlfilename), rc=rc)
           return
        end if
 
        ! write namelist input to standard out
-       write(logunit,'(3a)')    trim(subname),' datamode          = ',trim(datamode)
-       write(logunit,'(3a)')    trim(subname),' model_meshfile    = ',trim(model_meshfile)
-       write(logunit,'(3a)')    trim(subname),' model_maskfile    = ',trim(model_maskfile)
-       write(logunit,'(2a,i0)') trim(subname),' nx_global         = ',nx_global
-       write(logunit,'(2a,i0)') trim(subname),' ny_global         = ',ny_global
-       write(logunit,'(3a)')    trim(subname),' restfilm          = ',trim(restfilm)
-       write(logunit,'(2a,l6)') trim(subname),' skip_restart_read = ',skip_restart_read
-       write(logunit,'(2a,l6)') trim(subname),' export_all        = ',export_all
+       write(logunit,'(3a)')    subname,' datamode          = ',trim(datamode)
+       write(logunit,'(3a)')    subname,' model_meshfile    = ',trim(model_meshfile)
+       write(logunit,'(3a)')    subname,' model_maskfile    = ',trim(model_maskfile)
+       write(logunit,'(2a,i0)') subname,' nx_global         = ',nx_global
+       write(logunit,'(2a,i0)') subname,' ny_global         = ',ny_global
+       write(logunit,'(3a)')    subname,' restfilm          = ',trim(restfilm)
+       write(logunit,'(2a,l6)') subname,' skip_restart_read = ',skip_restart_read
+       write(logunit,'(2a,l6)') subname,' export_all        = ',export_all
 
        bcasttmp = 0
        bcasttmp(1) = nx_global
@@ -243,7 +243,7 @@ contains
     ! Validate datamode
     select case (trim(datamode))
     case('copyall')
-       if (mainproc) write(logunit,'(3a)') trim(subname),' dwav datamode = ',trim(datamode)
+       if (mainproc) write(logunit,'(3a)') subname,' dwav datamode = ',trim(datamode)
     case default
        call shr_log_error(' ERROR illegal dwav datamode = '//trim(datamode), rc=rc)
        return
@@ -391,7 +391,7 @@ contains
 
     ! local variables
     character(len=CL) :: rpfile
-    character(*), parameter :: subName = "(dwav_comp_run) "
+    character(len=*), parameter :: subName = "(dwav_comp_run) "
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS

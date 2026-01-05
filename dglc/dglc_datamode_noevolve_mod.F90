@@ -25,7 +25,7 @@ module dglc_datamode_noevolve_mod
    use pio              , only : pio_seterrorhandling
 
    implicit none
-   private ! except
+   private
 
    public  :: dglc_datamode_noevolve_advertise
    public  :: dglc_datamode_noevolve_init_pointers
@@ -72,8 +72,8 @@ module dglc_datamode_noevolve_mod
    character(len=*), parameter :: field_in_so_t_depth              = 'So_t_depth'
    character(len=*), parameter :: field_in_so_s_depth              = 'So_s_depth'
 
-   character(*) , parameter :: nullstr = 'null'
-   character(*) , parameter :: u_FILE_u = &
+   character(len=*) , parameter :: nullstr = 'null'
+   character(len=*) , parameter :: u_FILE_u = &
         __FILE__
 
 !===============================================================================
@@ -204,7 +204,7 @@ contains
          if (.not. NUOPC_IsConnected(NStateImp(ns), fieldName=field_in_tsrf)) then
             ! NOTE: the field is connected ONLY if the MED->GLC entry is in the nuopc.runconfig file
             ! This restriction occurs even if the field was advertised
-            call shr_log_error(trim(subname)//": MED->GLC must appear in run sequence", rc=rc)
+            call shr_log_error(subname//": MED->GLC must appear in run sequence", rc=rc)
             return
          end if
          call dshr_state_getfldptr(NStateImp(ns), field_in_tsrf, fldptr1=Sl_tsrf(ns)%ptr, rc=rc)
@@ -626,7 +626,7 @@ contains
     type(io_desc_t)     :: pio_iodesc
     integer             :: rcode
     integer             :: tmp(1)
-    character(*), parameter :: subName = "(dglc_datamode_noevolve_restart_read) "
+    character(len=*), parameter :: subName = "(dglc_datamode_noevolve_restart_read) "
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -638,7 +638,7 @@ contains
        call ESMF_VMGetCurrent(vm, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        if (my_task == main_task) then
-          write(logunit,'(a)') trim(subname)//' restart filename from rpointer '//trim(rpfile)
+          write(logunit,'(a)') subname//' restart filename from rpointer '//trim(rpfile)
           open(newunit=nu, file=trim(rpfile), form='formatted')
           read(nu,'(a)') restfilem
           close(nu)
@@ -649,7 +649,7 @@ contains
     else
        ! use namelist already read
        if (my_task == main_task) then
-          write(logunit, '(a)') trim(subname)//' restart filenames from namelist '
+          write(logunit, '(a)') subname//' restart filenames from namelist '
           inquire(file=trim(restfilem), exist=exists)
        endif
     endif
@@ -657,13 +657,13 @@ contains
     if(exists) tmp=1
     exists = (tmp(1) == 1)
     if (.not. exists .and. my_task == main_task) then
-       write(logunit, '(a)') trim(subname)//' file not found, skipping '//trim(restfilem)
+       write(logunit, '(a)') subname//' file not found, skipping '//trim(restfilem)
        return
     end if
 
     ! Read restart file
     if (my_task == main_task) then
-       write(logunit, '(a)') trim(subname)//' reading data model restart '//trim(restfilem)
+       write(logunit, '(a)') subname//' reading data model restart '//trim(restfilem)
     end if
 
     rcode = pio_openfile(pio_subsystem, pioid, io_type, trim(restfilem), pio_nowrite)

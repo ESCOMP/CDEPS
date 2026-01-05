@@ -12,7 +12,7 @@ module dlnd_datamode_glc_forcing_mod
    use glc_elevclass_mod, only : glc_elevclass_as_string, glc_elevclass_init
 
    implicit none
-   private ! except
+   private
 
    public :: dlnd_datamode_glc_forcing_advertise
    public :: dlnd_datamode_glc_forcing_init_pointers
@@ -34,8 +34,8 @@ module dlnd_datamode_glc_forcing_mod
 
    integer :: glc_nec
 
-   character(*), parameter :: nullstr = 'null'
-   character(*), parameter :: u_FILE_u = &
+   character(len=*), parameter :: nullstr = 'null'
+   character(len=*), parameter :: u_FILE_u = &
         __FILE__
 
 !===============================================================================
@@ -148,17 +148,17 @@ contains
          end if
          strm_fld = 'Sl_tsrf_elev'//trim(nec_str)
          call shr_strdata_get_stream_pointer( sdat, trim(strm_fld), strm_Sl_tsrf_elev(ng)%ptr, requirePointer=.true., &
-              errmsg=trim(subname)//'ERROR: '//trim(strm_fld)//' must be associated for dlnd glc_forcing datamode', rc=rc)
+              errmsg=subname//'ERROR: '//trim(strm_fld)//' must be associated for dlnd glc_forcing datamode', rc=rc)
          if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
          strm_fld = 'Sl_topo_elev'//trim(nec_str)
          call shr_strdata_get_stream_pointer( sdat, trim(strm_fld), strm_Sl_topo_elev(ng)%ptr, requirePointer=.true., &
-              errmsg=trim(subname)//'ERROR: '//trim(strm_fld)//' must be associated for dlnd glc_forcing datamode', rc=rc)
+              errmsg=subname//'ERROR: '//trim(strm_fld)//' must be associated for dlnd glc_forcing datamode', rc=rc)
          if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
          strm_fld = 'Flgl_qice_elev'//trim(nec_str)
          call shr_strdata_get_stream_pointer( sdat, trim(strm_fld), strm_Flgl_qice_elev(ng)%ptr, requirePointer=.true., &
-              errmsg=trim(subname)//'ERROR: '//trim(strm_fld)//' must be associated for dlnd glc_forcing datamode', rc=rc)
+              errmsg=subname//'ERROR: '//trim(strm_fld)//' must be associated for dlnd glc_forcing datamode', rc=rc)
          if (ChkErr(rc,__LINE__,u_FILE_u)) return
       end do
 

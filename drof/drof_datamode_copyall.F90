@@ -9,7 +9,7 @@ module drof_datamode_copyall_mod
   use shr_const_mod    , only : SHR_CONST_SPVAL
 
   implicit none
-  private ! except
+  private
 
   public  :: drof_datamode_copyall_advertise
   public  :: drof_datamode_copyall_init_pointers
@@ -23,7 +23,7 @@ module drof_datamode_copyall_mod
   real(r8), pointer :: strm_Forr_rofl(:) => null() ! always required
   real(r8), pointer :: strm_Forr_rofi(:) => null() ! sometimes present in stream
 
-  character(*) , parameter :: u_FILE_u = &
+  character(len=*) , parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -81,7 +81,7 @@ contains
 
     ! Initialize module pointers
     call shr_strdata_get_stream_pointer( sdat, 'Forr_rofl', strm_Forr_rofl, requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Forr_rofl must be associated for drof', rc=rc)
+         errmsg=subname//'ERROR: strm_Forr_rofl must be associated for drof', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     call shr_strdata_get_stream_pointer( sdat, 'Forr_rofi', strm_Forr_rofi, rc=rc)

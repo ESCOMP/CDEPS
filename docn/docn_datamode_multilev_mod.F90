@@ -9,7 +9,7 @@ module docn_datamode_multilev_mod
   use dshr_strdata_mod , only : shr_strdata_get_stream_pointer, shr_strdata_type
 
   implicit none
-  private ! except
+  private
 
   public :: docn_datamode_multilev_advertise
   public :: docn_datamode_multilev_init_pointers
@@ -31,8 +31,8 @@ module docn_datamode_multilev_mod
        1230., 1290., 1350., 1410., 1470., 1530., 1590., 1650., 1710., 1770. /)
 
   ! constants
-  character(*) , parameter :: nullstr = 'null'
-  character(*) , parameter :: u_FILE_u = &
+  character(len=*) , parameter :: nullstr = 'null'
+  character(len=*) , parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -94,10 +94,10 @@ contains
 
     ! Set stream pointers (this has the full set of leveles in the stream data)
     call shr_strdata_get_stream_pointer( sdat, 'So_t_depth', strm_So_t_depth, &
-         errmsg=trim(subname)//'ERROR: strm_So_t_depth must be associated for docn multilev datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_So_t_depth must be associated for docn multilev datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'So_s_depth', strm_So_s_depth, &
-         errmsg=trim(subname)//'ERROR: strm_So_s_depth must be associated for docn multilev datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_So_s_depth must be associated for docn multilev datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Initialize export state pointers to non-zero

@@ -7,7 +7,7 @@ module datm_pres_co2_mod
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
 
   implicit none
-  private ! except
+  private
 
   public :: datm_pres_co2_advertise
   public :: datm_pres_co2_init_pointers
@@ -23,7 +23,7 @@ module datm_pres_co2_mod
 
   character(len=CL) :: datamode
 
-  character(*), parameter :: u_FILE_u = &
+  character(len=*), parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -69,12 +69,12 @@ contains
     ! Get pointer to stream data that will be used below - if the
     ! following stream fields are not in any sdat streams, then a null value is returned
     call shr_strdata_get_stream_pointer(sdat, 'Sa_co2diag', strm_Sa_co2diag, requirePointer=.true., &
-         errmsg=trim(subname)//'strm_Sa_co2diag must be associated if flds_co2 is .true.', rc=rc)
+         errmsg=subname//'strm_Sa_co2diag must be associated if flds_co2 is .true.', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     if (datamode == 'CPLHIST') then
        call shr_strdata_get_stream_pointer(sdat, 'Sa_co2prog', strm_Sa_co2prog, requirePointer=.true., &
-            errmsg=trim(subname)//'strm_Sa_co2prog must be associated if flds_co2 is .true. '// &
+            errmsg=subname//'strm_Sa_co2prog must be associated if flds_co2 is .true. '// &
             ' and datamode is CPLHIST', rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if

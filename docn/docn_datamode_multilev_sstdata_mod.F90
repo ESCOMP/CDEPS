@@ -10,7 +10,7 @@ module docn_datamode_multilev_sstdata_mod
   use dshr_strdata_mod , only : shr_strdata_get_stream_pointer, shr_strdata_type, shr_strdata_get_stream_count
 
   implicit none
-  private ! except
+  private
 
   public :: docn_datamode_multilev_sstdata_advertise
   public :: docn_datamode_multilev_sstdata_init_pointers
@@ -39,7 +39,7 @@ module docn_datamode_multilev_sstdata_mod
   real(r8) , parameter :: tkfrz   = shr_const_tkfrz       ! freezing point, fresh water (kelvin)
   real(r8) , parameter :: ocnsalt = shr_const_ocn_ref_sal ! ocean reference salinity
 
-  character(*) , parameter :: u_FILE_u = &
+  character(len=*) , parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -114,13 +114,13 @@ contains
     ! initialize pointers to stream fields
     ! this has the full set of leveles in the stream data
     call shr_strdata_get_stream_pointer( sdat, 'So_t', strm_So_t, &
-         errmsg=trim(subname)//'ERROR: strm_So_t must be associated for docn multilev_sstdata datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_So_t must be associated for docn multilev_sstdata datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'So_t_depth', strm_So_t_depth, &
-         errmsg=trim(subname)//'ERROR: strm_So_t_depth must be associated for docn multilev_sstdata datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_So_t_depth must be associated for docn multilev_sstdata datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'So_s_depth', strm_So_s_depth, &
-         errmsg=trim(subname)//'ERROR: strm_So_t_depth must be associated for docn multilev_sstdata datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_So_t_depth must be associated for docn multilev_sstdata datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Initialize export state pointers to non-zero
@@ -171,7 +171,7 @@ contains
        if (nlev_stream > 1) exit
     end do
     if (nlev_stream == 0) then
-       call shr_log_error(trim(subname)//" could not find vertical levels greater than 0", rc=rc)
+       call shr_log_error(subname//" could not find vertical levels greater than 0", rc=rc)
        return
     end if
     allocate(stream_vlevs(nlev_stream))
@@ -214,7 +214,7 @@ contains
           end if
        end do
        if (.not. level_found) then
-          call shr_log_error(trim(subname)//" could not find level bounds for vertical interpolation", rc=rc)
+          call shr_log_error(subname//" could not find level bounds for vertical interpolation", rc=rc)
           return
        end if
     end do

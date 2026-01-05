@@ -50,7 +50,7 @@ module cdeps_dglc_comp
   use dglc_datamode_noevolve_mod, only : dglc_datamode_noevolve_restart_write
 
   implicit none
-  private ! except
+  private
 
   public  :: SetServices
   public  :: SetVM
@@ -65,7 +65,7 @@ module cdeps_dglc_comp
   ! Private module data
   !--------------------------------------------------------------------------
 
-  character(*) , parameter :: nullstr = 'null'
+  character(len=*) , parameter :: nullstr = 'null'
   integer      , parameter :: max_icesheets = 10 ! maximum number of ice sheets for namelist input
   integer                  :: num_icesheets      ! actual number of ice sheets
 
@@ -113,12 +113,12 @@ module cdeps_dglc_comp
   logical                      :: diagnose_data = .true.
   integer      , parameter     :: main_task = 0                 ! task number of main task
 #ifdef CESMCOUPLED
-  character(*) , parameter     :: module_name = "(glc_comp_nuopc)"
+  character(len=*) , parameter     :: module_name = "(glc_comp_nuopc)"
 #else
-  character(*) , parameter     :: module_name = "(cdeps_dglc_comp)"
+  character(len=*) , parameter     :: module_name = "(cdeps_dglc_comp)"
 #endif
-  character(*) , parameter     :: modelname = 'dglc'
-  character(*) , parameter     :: u_FILE_u = &
+  character(len=*) , parameter     :: modelname = 'dglc'
+  character(len=*) , parameter     :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -337,7 +337,7 @@ contains
     rc = ESMF_SUCCESS
 
     ! Initialize model mesh, restart flag, logunit, model_mask and model_frac
-    call ESMF_VMLogMemInfo("Entering "//trim(subname))
+    call ESMF_VMLogMemInfo("Entering "//subname)
     call ESMF_TraceRegionEnter('dglc_strdata_init')
 
     ! Determine stream filename
@@ -389,7 +389,7 @@ contains
        if (my_task == main_task) then
           inquire(file=trim(model_meshfiles(ns)), exist=exists)
           if (.not.exists) then
-             call shr_log_error(trim(subname)//' ERROR: model_meshfile '//trim(model_meshfiles(ns))//' does not exist', rc=rc)
+             call shr_log_error(subname//' ERROR: model_meshfile '//trim(model_meshfiles(ns))//' does not exist', rc=rc)
              return
           end if
        endif
@@ -433,7 +433,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     call ESMF_TraceRegionExit('dglc_strdata_init')
-    call ESMF_VMLogMemInfo("Leaving "//trim(subname))
+    call ESMF_VMLogMemInfo("Leaving "//subname)
 
   end subroutine InitializeRealize
 
@@ -529,7 +529,7 @@ contains
     character(len=CS) :: cnum
     integer           :: ns ! ice sheet index
     character(len=CS) :: rpfile
-    character(*), parameter :: subName = "(dglc_comp_run) "
+    character(len=*), parameter :: subName = "(dglc_comp_run) "
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -606,7 +606,7 @@ contains
     if (diagnose_data) then
       do ns = 1,num_icesheets
         write(cnum,'(i0)') ns
-        call dshr_state_diagnose(NStateExp(ns), flds_scalar_name, trim(subname)//':ES_'//trim(cnum), rc=rc)
+        call dshr_state_diagnose(NStateExp(ns), flds_scalar_name, subname//':ES_'//trim(cnum), rc=rc)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
       end do
     end if
@@ -687,7 +687,7 @@ contains
           call alarmInit(mclock, valid_alarm, 'nseconds', opt_n=dtime, alarmname='alarm_valid_inputs', rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        else
-          call ESMF_LogWrite(trim(subname)// ": ERROR glc_avg_period = "//trim(glc_avg_period)//" not supported", &
+          call ESMF_LogWrite(subname// ": ERROR glc_avg_period = "//trim(glc_avg_period)//" not supported", &
                ESMF_LOGMSG_INFO, rc=rc)
           rc = ESMF_FAILURE
           RETURN

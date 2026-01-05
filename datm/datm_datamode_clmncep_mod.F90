@@ -15,7 +15,7 @@ module datm_datamode_clmncep_mod
   use shr_const_mod    , only : SHR_CONST_SPVAL
 
   implicit none
-  private ! except
+  private
 
   public  :: datm_datamode_clmncep_advertise
   public  :: datm_datamode_clmncep_init_pointers
@@ -88,8 +88,8 @@ module datm_datamode_clmncep_mod
   real(r8) , parameter :: stebol   = SHR_CONST_STEBOL   ! Stefan-Boltzmann constant ~ W/m^2/K^4
   real(r8) , parameter :: rdair    = SHR_CONST_RDAIR    ! dry air gas constant   ~ J/K/kg
 
-  character(*), parameter :: nullstr = 'null'
-  character(*), parameter :: u_FILE_u = &
+  character(len=*), parameter :: nullstr = 'null'
+  character(len=*), parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -220,13 +220,13 @@ contains
 
     ! required stream data pointers
     call shr_strdata_get_stream_pointer( sdat, 'Sa_wind'     , strm_Sa_wind, requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Sa_wind must be associated for datm clmncep datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_Sa_wind must be associated for datm clmncep datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'Sa_tbot'     , strm_Sa_tbot, requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Sa_tbot must be associated for datm clmncep datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_Sa_tbot must be associated for datm clmncep datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'Faxa_precn'  , strm_Faxa_precn, requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Faxa_precn must be associated for datm clmncep datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_Faxa_precn must be associated for datm clmncep datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! optional stream data pointers
@@ -339,7 +339,7 @@ contains
        call ESMF_VMAllReduce(vm, rtmp, rtmp(2:), 1, ESMF_REDUCE_MAX, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        tbotmax = rtmp(2)
-       if (mainproc) write(logunit,*) trim(subname),' tbotmax = ',tbotmax
+       if (mainproc) write(logunit,*) subname,' tbotmax = ',tbotmax
        if(tbotmax <= 0) then
           call shr_log_error(subname//'ERROR: bad value in tbotmax', rc=rc)
           return
@@ -354,7 +354,7 @@ contains
        else
           anidrmax = SHR_CONST_SPVAL
        end if
-       if (mainproc) write(logunit,*) trim(subname),' anidrmax = ',anidrmax
+       if (mainproc) write(logunit,*) subname,' anidrmax = ',anidrmax
 
        ! determine tdewmax (see below for use)
        if (associated(strm_Sa_tdew)) then
@@ -362,7 +362,7 @@ contains
           call ESMF_VMAllReduce(vm, rtmp, rtmp(2:), 1, ESMF_REDUCE_MAX, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           tdewmax = rtmp(2)
-          if (mainproc) write(logunit,*) trim(subname),' tdewmax = ',tdewmax
+          if (mainproc) write(logunit,*) subname,' tdewmax = ',tdewmax
        endif
 
        ! reset first_time

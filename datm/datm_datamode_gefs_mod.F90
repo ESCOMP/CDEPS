@@ -14,7 +14,7 @@ module datm_datamode_gefs_mod
   use dshr_dfield_mod  , only : dfield_type, dshr_dfield_add, dshr_dfield_copy
 
   implicit none
-  private ! except
+  private
 
   public  :: datm_datamode_gefs_advertise
   public  :: datm_datamode_gefs_init_pointers
@@ -52,8 +52,8 @@ module datm_datamode_gefs_mod
 
   type(dfield_type)  , pointer :: dfields    => null()
 
-  character(*), parameter :: nullstr = 'undefined'
-  character(*), parameter :: u_FILE_u = &
+  character(len=*), parameter :: nullstr = 'undefined'
+  character(len=*), parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -132,7 +132,7 @@ contains
     call ESMF_StateGet(exportState, itemNameList=lfieldnames, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     do n = 1, fieldCount
-       call ESMF_LogWrite(trim(subname)//': field name = '//trim(lfieldnames(n)), ESMF_LOGMSG_INFO)
+       call ESMF_LogWrite(subname//': field name = '//trim(lfieldnames(n)), ESMF_LOGMSG_INFO)
        call ESMF_StateGet(exportState, itemName=trim(lfieldnames(n)), field=lfield, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
        call dshr_dfield_add( dfields, sdat, trim(lfieldnames(n)), trim(lfieldnames(n)), &
@@ -219,14 +219,14 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        tbotmax = rtmp(2)
 
-       if (mainproc) write(logunit,*) trim(subname),' tbotmax = ',tbotmax
+       if (mainproc) write(logunit,*) subname,' tbotmax = ',tbotmax
 
        ! determine maskmax (see below for use)
        rtmp(1) = maxval(strm_mask(:))
        call ESMF_VMAllReduce(vm, rtmp, rtmp(2:), 1, ESMF_REDUCE_MAX, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        maskmax = rtmp(2)
-       if (mainproc) write(logunit,*) trim(subname),' maskmax = ',maskmax
+       if (mainproc) write(logunit,*) subname,' maskmax = ',maskmax
 
        ! reset first_time
        first_time = .false.

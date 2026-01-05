@@ -12,7 +12,7 @@ module datm_datamode_cplhist_mod
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
 
   implicit none
-  private ! except
+  private
 
   public  :: datm_datamode_cplhist_advertise
   public  :: datm_datamode_cplhist_init_pointers
@@ -61,7 +61,7 @@ module datm_datamode_cplhist_mod
   real(r8), pointer :: strm_Faxa_snowl(:) => null()
   real(r8), pointer :: strm_Faxa_lwdn (:) => null()
 
-  character(*), parameter :: u_FILE_u = &
+  character(len=*), parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -172,64 +172,64 @@ contains
     ! Set pointers into stream data
 
     call shr_strdata_get_stream_pointer(sdat, 'Sa_z', strm_Sa_z, requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Sa_z must be associated for cplhist datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_Sa_z must be associated for cplhist datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer(sdat, 'Sa_tbot', strm_Sa_tbot, requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Sa_tbot must be associated for cplhist datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_Sa_tbot must be associated for cplhist datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer(sdat, 'Sa_ptem', strm_Sa_ptem, requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Sa_ptem must be associated for cplhist datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_Sa_ptem must be associated for cplhist datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer(sdat, 'Sa_shum', strm_Sa_shum, requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Sa_shum must be associated for cplhist datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_Sa_shum must be associated for cplhist datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer(sdat, 'Sa_pbot', strm_Sa_pbot, requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Sa_pbot must be associated for cplhist datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_Sa_pbot must be associated for cplhist datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer(sdat, 'Sa_dens', strm_Sa_dens, requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Sa_wind must be associated for cplhist datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_Sa_wind must be associated for cplhist datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer(sdat, 'Sa_pslv', strm_Sa_pslv, requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Sa_pslv must be associated for cplhist datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_Sa_pslv must be associated for cplhist datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer(sdat, 'Sa_dens', strm_Sa_dens, requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Sa_dens must be associated for cplhist datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_Sa_dens must be associated for cplhist datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer(sdat, 'Sa_u', strm_Sa_u, requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Sa_u must be associated for cplhist datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_Sa_u must be associated for cplhist datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer(sdat, 'Sa_v', strm_Sa_v, requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Sa_v must be associated for cplhist datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_Sa_v must be associated for cplhist datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer(sdat, 'Faxa_rainc', strm_Faxa_rainc, requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Faxa_rainc must be associated for cplhist datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_Faxa_rainc must be associated for cplhist datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer(sdat, 'Faxa_rainl', strm_Faxa_rainl, requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Faxa_rainl must be associated for cplhist datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_Faxa_rainl must be associated for cplhist datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer(sdat, 'Faxa_snowc', strm_Faxa_snowc, requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Faxa_snowc must be associated for cplhist datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_Faxa_snowc must be associated for cplhist datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer(sdat, 'Faxa_snowl', strm_Faxa_snowl, requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Faxa_snowl must be associated for cplhist datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_Faxa_snowl must be associated for cplhist datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer(sdat, 'Faxa_lwdn', strm_Faxa_lwdn, requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Faxa_lwdn must be associated for cplhist datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_Faxa_lwdn must be associated for cplhist datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer(sdat, 'Faxa_swndr', strm_Faxa_swndr, requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Faxa_swndr must be associated for cplhist datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_Faxa_swndr must be associated for cplhist datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer(sdat, 'Faxa_swvdr', strm_Faxa_swvdr, requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Faxa_swvdr must be associated for cplhist datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_Faxa_swvdr must be associated for cplhist datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer(sdat, 'Faxa_swndf', strm_Faxa_swndf, requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Faxa_swndf must be associated for cplhist datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_Faxa_swndf must be associated for cplhist datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer(sdat, 'Faxa_swvdf', strm_Faxa_swvdf, requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Faxa_swvdf must be associated for cplhist datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_Faxa_swvdf must be associated for cplhist datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer(sdat, 'Faxa_lwdn', strm_Faxa_lwdn, requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Faxa_lwdn must be associated for clmncep datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_Faxa_lwdn must be associated for clmncep datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
  end subroutine datm_datamode_cplhist_init_pointers

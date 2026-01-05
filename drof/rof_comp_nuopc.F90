@@ -40,7 +40,7 @@ module cdeps_drof_comp
   use drof_datamode_copyall_mod, only : drof_datamode_copyall_advance
 
   implicit none
-  private ! except
+  private
 
   public  :: SetServices
   public  :: SetVM
@@ -68,7 +68,7 @@ module cdeps_drof_comp
   integer                      :: logunit                     ! logging unit number
   logical                      :: restart_read
   character(CL)                :: case_name                   ! case name
-  character(*) , parameter     :: nullstr = 'null'
+  character(len=*) , parameter     :: nullstr = 'null'
                                                               ! drof_in namelist input
   character(CX)                :: streamfilename = nullstr    ! filename to obtain stream info from
   character(CX)                :: nlfilename = nullstr        ! filename to obtain namelist info from
@@ -85,9 +85,9 @@ module cdeps_drof_comp
 
   integer      , parameter     :: main_task=0                 ! task number of main task
 #ifdef CESMCOUPLED
-  character(*) , parameter     :: modName =  "(rof_comp_nuopc)"
+  character(len=*) , parameter     :: modName =  "(rof_comp_nuopc)"
 #else
-  character(*) , parameter     :: modName =  "(cdeps_drof_comp)"
+  character(len=*) , parameter     :: modName =  "(cdeps_drof_comp)"
 #endif
 
   ! linked lists
@@ -97,7 +97,7 @@ module cdeps_drof_comp
   real(r8), pointer :: model_frac(:) ! currently not used
   integer , pointer :: model_mask(:) ! currently not used
 
-  character(*) , parameter     :: u_FILE_u = &
+  character(len=*) , parameter     :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -196,21 +196,21 @@ contains
        close(nu)
        if (ierr > 0) then
           rc = ierr
-          write(logunit,'(a,i0)') trim(subname), &
+          write(logunit,'(a,i0)') subname, &
                ' ERROR: reading input namelist, '//trim(nlfilename)//' iostat=',ierr
           call shr_log_error(subName//': namelist read error '//trim(nlfilename), rc=rc)
           return
        end if
 
        ! write namelist input to standard out
-       write(logunit,'(3a)')    trim(subname),' datamode          = ',trim(datamode)
-       write(logunit,'(3a)')    trim(subname),' model_meshfile    = ',trim(model_meshfile)
-       write(logunit,'(3a)')    trim(subname),' model_maskfile    = ',trim(model_maskfile)
-       write(logunit,'(2a,i0)') trim(subname),' nx_global         = ',nx_global
-       write(logunit,'(2a,i0)') trim(subname),' ny_global         = ',ny_global
-       write(logunit,'(3a)')    trim(subname),' restfilm          = ',trim(restfilm)
-       write(logunit,'(2a,l6)') trim(subname),' skip_restart_read = ',skip_restart_read
-       write(logunit,'(2a,l6)') trim(subname),' export_all        = ',export_all
+       write(logunit,'(3a)')    subname,' datamode          = ',trim(datamode)
+       write(logunit,'(3a)')    subname,' model_meshfile    = ',trim(model_meshfile)
+       write(logunit,'(3a)')    subname,' model_maskfile    = ',trim(model_maskfile)
+       write(logunit,'(2a,i0)') subname,' nx_global         = ',nx_global
+       write(logunit,'(2a,i0)') subname,' ny_global         = ',ny_global
+       write(logunit,'(3a)')    subname,' restfilm          = ',trim(restfilm)
+       write(logunit,'(2a,l6)') subname,' skip_restart_read = ',skip_restart_read
+       write(logunit,'(2a,l6)') subname,' export_all        = ',export_all
 
        bcasttmp = 0
        bcasttmp(1) = nx_global
@@ -243,7 +243,7 @@ contains
     select case (trim(datamode))
     case('copyall')
        if (mainproc) then
-          write(logunit,'(2a)') trim(subname),'drof datamode = ',trim(datamode)
+          write(logunit,'(2a)') subname,'drof datamode = ',trim(datamode)
        end if
     case default
        call shr_log_error(' ERROR illegal drof datamode = '//trim(datamode), rc=rc)
@@ -384,7 +384,7 @@ contains
 
     ! local variables
     character(len=CL) :: rpfile
-    character(*), parameter :: subName = "(drof_comp_run) "
+    character(len=*), parameter :: subName = "(drof_comp_run) "
     !--------------------------------
 
     rc = ESMF_SUCCESS

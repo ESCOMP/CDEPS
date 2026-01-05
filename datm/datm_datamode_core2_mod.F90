@@ -26,7 +26,7 @@ module datm_datamode_core2_mod
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
 
   implicit none
-  private ! except
+  private
 
   public  :: datm_datamode_core2_advertise
   public  :: datm_datamode_core2_init_pointers
@@ -90,8 +90,8 @@ module datm_datamode_core2_mod
   data   dTarc      / 0.49_R8, 0.06_R8,-0.73_R8,  -0.89_R8,-0.77_R8,-1.02_R8, &
                      -1.99_R8,-0.91_R8, 1.72_R8,   2.30_R8, 1.81_R8, 1.06_R8/
 
-  character(*), parameter :: nullstr = 'null'
-  character(*), parameter :: u_FILE_u = &
+  character(len=*), parameter :: nullstr = 'null'
+  character(len=*), parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -216,36 +216,36 @@ contains
 
     ! get required stream pointers
     call shr_strdata_get_stream_pointer( sdat, 'Faxa_prec'  , strm_Faxa_prec  , requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Faxa_prec must be associated for core2 datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_Faxa_prec must be associated for core2 datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'Faxa_swdn'  , strm_Faxa_swdn  , requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Faxa_swdn must be associated for core2 datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_Faxa_swdn must be associated for core2 datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'Faxa_lwdn'  , strm_Faxa_lwdn  , requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Faxa_lwdn must be associated for core2 datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_Faxa_lwdn must be associated for core2 datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'Sa_pslv'    , strm_Sa_pslv    , requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Sa_pslv must be associated for core2 datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_Sa_pslv must be associated for core2 datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'Sa_tbot'    , strm_Sa_tbot    , requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Sa_tbot must be associated for core2 datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_Sa_tbot must be associated for core2 datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'Sa_u'       , strm_Sa_u       , requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Sa_u must be associated for core2 datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_Sa_u must be associated for core2 datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'Sa_v'       , strm_Sa_v       , requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Sa_v must be associated for core2 datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_Sa_v must be associated for core2 datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'Sa_shum'    , strm_Sa_shum    , requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Sa_shum must be associated for core2 datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_Sa_shum must be associated for core2 datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'Sa_dens'    , strm_Sa_dens    , requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Sa_dens must be associated for core2 datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_Sa_dens must be associated for core2 datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'tarcf', strm_tarcf, rc) ! required for CORE2_IAF
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (trim(datamode) == 'CORE2_IAF' .and. .not. associated(strm_tarcf)) then
-       call shr_log_error(trim(subname)//'tarcf must be associated for CORE2_IAF', rc=rc)
+       call shr_log_error(subname//'tarcf must be associated for CORE2_IAF', rc=rc)
        return
     endif
 
@@ -409,8 +409,8 @@ contains
 
     ! input/output variables
     type(shr_strdata_type) , intent(in)  :: sdat
-    character(*)           , intent(in)  :: fileName_mesh ! file name string
-    character(*)           , intent(in)  :: fileName_data ! file name string
+    character(len=*)           , intent(in)  :: fileName_mesh ! file name string
+    character(len=*)           , intent(in)  :: fileName_data ! file name string
     real(R8)               , pointer     :: windF(:)      ! wind adjustment factor
     real(R8)               , pointer     :: winddF(:)     ! wind adjustment factor
     real(r8)               , pointer     :: qsatF(:)      ! rel humidty adjustment factor
@@ -435,7 +435,7 @@ contains
     integer                :: nxg, nyg
     real(r8), pointer      :: data(:)
     integer                :: srcTermProcessing_Value = 0
-    character(*) ,parameter :: subName =  '(datm_get_adjustment_factors) '
+    character(len=*) ,parameter :: subName =  '(datm_get_adjustment_factors) '
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS

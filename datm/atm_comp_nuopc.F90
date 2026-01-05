@@ -84,10 +84,11 @@ module cdeps_datm_comp
   use datm_pres_co2_mod         , only : datm_pres_co2_advance
 
   implicit none
-  private ! except
+  private
 
   public  :: SetServices
   public  :: SetVM
+
   private :: InitializeAdvertise
   private :: InitializeRealize
   private :: ModelAdvance
@@ -154,12 +155,12 @@ module cdeps_datm_comp
   logical                      :: diagnose_data = .true.
   integer          , parameter :: main_task   = 0                   ! task number of main task
 #ifdef CESMCOUPLED
-  character(*)     , parameter :: modName       = "(atm_comp_nuopc)"
+  character(len=*) , parameter :: modName = "(atm_comp_nuopc)"
 #else
-  character(*)     , parameter :: modName       = "(cdeps_datm_comp)"
+  character(len=*) , parameter :: modName = "(cdeps_datm_comp)"
 #endif
 
-  character(*), parameter :: u_FILE_u = &
+  character(len=*), parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -287,23 +288,23 @@ contains
        end if
 
        ! write namelist input to standard out
-       write(logunit,'(3a)')    trim(subname),' case_name         = ',trim(case_name)
-       write(logunit,'(3a)')    trim(subname),' datamode          = ',trim(datamode)
-       write(logunit,'(3a)')    trim(subname),' model_meshfile    = ',trim(model_meshfile)
-       write(logunit,'(3a)')    trim(subname),' model_maskfile    = ',trim(model_maskfile)
-       write(logunit,'(2a,i0)') trim(subname),' nx_global         = ',nx_global
-       write(logunit,'(2a,i0)') trim(subname),' ny_global         = ',ny_global
-       write(logunit,'(3a)')    trim(subname),' restfilm          = ',trim(restfilm)
-       write(logunit,'(2a,i0)') trim(subname),' iradsw            = ',iradsw
-       write(logunit,'(3a)')    trim(subname),' nextsw_cday_calc  = ', trim(nextsw_cday_calc)
-       write(logunit,'(3a)')    trim(subname),' factorFn_data     = ',trim(factorFn_data)
-       write(logunit,'(3a)')    trim(subname),' factorFn_mesh     = ',trim(factorFn_mesh)
-       write(logunit,'(2a,l6)') trim(subname),' flds_presaero     = ',flds_presaero
-       write(logunit,'(2a,l6)') trim(subname),' flds_presndep     = ',flds_presndep
-       write(logunit,'(2a,l6)') trim(subname),' flds_preso3       = ',flds_preso3
-       write(logunit,'(2a,l6)') trim(subname),' flds_co2          = ',flds_co2
-       write(logunit,'(2a,l6)') trim(subname),' skip_restart_read = ',skip_restart_read
-       write(logunit,'(2a,l6)') trim(subname),' export_all        = ',export_all
+       write(logunit,'(3a)')    subname,' case_name         = ',trim(case_name)
+       write(logunit,'(3a)')    subname,' datamode          = ',trim(datamode)
+       write(logunit,'(3a)')    subname,' model_meshfile    = ',trim(model_meshfile)
+       write(logunit,'(3a)')    subname,' model_maskfile    = ',trim(model_maskfile)
+       write(logunit,'(2a,i0)') subname,' nx_global         = ',nx_global
+       write(logunit,'(2a,i0)') subname,' ny_global         = ',ny_global
+       write(logunit,'(3a)')    subname,' restfilm          = ',trim(restfilm)
+       write(logunit,'(2a,i0)') subname,' iradsw            = ',iradsw
+       write(logunit,'(3a)')    subname,' nextsw_cday_calc  = ', trim(nextsw_cday_calc)
+       write(logunit,'(3a)')    subname,' factorFn_data     = ',trim(factorFn_data)
+       write(logunit,'(3a)')    subname,' factorFn_mesh     = ',trim(factorFn_mesh)
+       write(logunit,'(2a,l6)') subname,' flds_presaero     = ',flds_presaero
+       write(logunit,'(2a,l6)') subname,' flds_presndep     = ',flds_presndep
+       write(logunit,'(2a,l6)') subname,' flds_preso3       = ',flds_preso3
+       write(logunit,'(2a,l6)') subname,' flds_co2          = ',flds_co2
+       write(logunit,'(2a,l6)') subname,' skip_restart_read = ',skip_restart_read
+       write(logunit,'(2a,l6)') subname,' export_all        = ',export_all
 
        bcasttmp = 0
        bcasttmp(1) = nx_global
@@ -366,7 +367,7 @@ contains
        case ('CORE2_NYF','CORE2_IAF','CORE_IAF_JRA', &
              'CORE_RYF6162_JRA','CORE_RYF8485_JRA','CORE_RYF9091_JRA','CORE_RYF0304_JRA', &
              'CLMNCEP','CPLHIST','GEFS','ERA5','SIMPLE')
-       if (mainproc) write(logunit,'(3a)') trim(subname),'datm datamode = ',trim(datamode)
+       if (mainproc) write(logunit,'(3a)') subname,'datm datamode = ',trim(datamode)
     case default
        call shr_log_error(' ERROR illegal datm datamode = '//trim(datamode), rc=rc)
        return
@@ -617,7 +618,7 @@ contains
 
     ! local variables
     character(len=CL) :: rpfile
-    character(*), parameter :: subName = '(datm_comp_run) '
+    character(len=*), parameter :: subName = '(datm_comp_run) '
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -812,7 +813,7 @@ contains
     real(R8) :: nextsw_cday
     integer  :: liradsw
     integer  :: delta_radsw
-    character(*),parameter :: subName =  '(getNextRadCDay) '
+    character(len=*),parameter :: subName =  '(getNextRadCDay) '
     !-------------------------------------------------------------------------------
 
     ! Note that stepno is obtained via the advancecount argument to

@@ -68,7 +68,7 @@ module cdeps_docn_comp
   use docn_import_data_mod               , only : docn_import_data_advertise
 
   implicit none
-  private ! except
+  private
 
   public  :: SetServices
   public  :: SetVM
@@ -96,7 +96,7 @@ module cdeps_docn_comp
   integer                      :: logunit          ! logging unit number
   logical                      :: restart_read     ! start from restart
   character(CL)                :: case_name
-  character(*) , parameter     :: nullstr = 'null'
+  character(len=*) , parameter     :: nullstr = 'null'
 
   ! docn_in namelist input
   character(CX)                :: streamfilename = nullstr            ! filename to obtain stream info from
@@ -129,12 +129,12 @@ module cdeps_docn_comp
   logical                      :: diagnose_data = .true.
   integer      , parameter     :: main_task = 0                 ! task number of main task
 #ifdef CESMCOUPLED
-  character(*) , parameter     :: module_name = "(ocn_comp_nuopc)"
+  character(len=*) , parameter     :: module_name = "(ocn_comp_nuopc)"
 #else
-  character(*) , parameter     :: module_name = "(cdeps_docn_comp)"
+  character(len=*) , parameter     :: module_name = "(cdeps_docn_comp)"
 #endif
-  character(*) , parameter     :: modelname = 'docn'
-  character(*) , parameter     :: u_FILE_u = &
+  character(len=*) , parameter     :: modelname = 'docn'
+  character(len=*) , parameter     :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -234,7 +234,7 @@ contains
        close(nu)
        if (ierr > 0) then
           if (mainproc) then
-             write(logunit,'(2a,i0)') trim(subname), &
+             write(logunit,'(2a,i0)') subname, &
                   'ERROR: reading input namelist, '//trim(nlfilename)//' iostat=',ierr
           end if
           call shr_log_error(subName//': namelist read error '//trim(nlfilename), rc=rc)
@@ -242,17 +242,17 @@ contains
        end if
 
        ! write namelist input to standard out
-       write(logunit,'(3a)')        trim(subname),' case_name          = ',trim(case_name)
-       write(logunit,'(3a)')        trim(subname),' datamode           = ',trim(datamode)
-       write(logunit,'(3a)')        trim(subname),' model_meshfile     = ',trim(model_meshfile)
-       write(logunit,'(3a)')        trim(subname),' model_maskfile     = ',trim(model_maskfile)
-       write(logunit,'(2a,i0)')     trim(subname),' nx_global          = ',nx_global
-       write(logunit,'(2a,i0)')     trim(subname),' ny_global          = ',ny_global
-       write(logunit,'(3a)')        trim(subname),' restfilm           = ',trim(restfilm)
-       write(logunit,'(2a,l6)')     trim(subname),' skip_restart_read  = ',skip_restart_read
-       write(logunit,'(3a)')        trim(subname),' import_data_fields = ',trim(import_data_fields)
-       write(logunit,'(2a,es13.6)') trim(subname),' sst_constant_value = ',sst_constant_value
-       write(logunit,'(2a,l6)')     trim(subname),' export_all         = ',export_all
+       write(logunit,'(3a)')        subname,' case_name          = ',trim(case_name)
+       write(logunit,'(3a)')        subname,' datamode           = ',trim(datamode)
+       write(logunit,'(3a)')        subname,' model_meshfile     = ',trim(model_meshfile)
+       write(logunit,'(3a)')        subname,' model_maskfile     = ',trim(model_maskfile)
+       write(logunit,'(2a,i0)')     subname,' nx_global          = ',nx_global
+       write(logunit,'(2a,i0)')     subname,' ny_global          = ',ny_global
+       write(logunit,'(3a)')        subname,' restfilm           = ',trim(restfilm)
+       write(logunit,'(2a,l6)')     subname,' skip_restart_read  = ',skip_restart_read
+       write(logunit,'(3a)')        subname,' import_data_fields = ',trim(import_data_fields)
+       write(logunit,'(2a,es13.6)') subname,' sst_constant_value = ',sst_constant_value
+       write(logunit,'(2a,l6)')     subname,' export_all         = ',export_all
 
        bcasttmp = 0
        bcasttmp(1) = nx_global
@@ -314,7 +314,7 @@ contains
     case ( 'sstdata', 'sst_aquap_file', 'som', 'som_aquap', &
            'cplhist', 'sst_aquap_analytic', 'sst_aquap_constant', &
            'multilev_cplhist', 'multilev', 'multilev_sstdata' )
-       if (mainproc) write(logunit,'(3a)') trim(subname),'docn datamode = ',trim(datamode)
+       if (mainproc) write(logunit,'(3a)') subname,'docn datamode = ',trim(datamode)
     case default
        call shr_log_error(' ERROR illegal docn datamode = '//trim(datamode), rc=rc)
        return
@@ -381,7 +381,7 @@ contains
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
-    call ESMF_VMLogMemInfo("Entering "//trim(subname))
+    call ESMF_VMLogMemInfo("Entering "//subname)
     ! Initialize model mesh, restart flag, logunit, model_mask and model_frac
     call ESMF_TraceRegionEnter('docn_strdata_init')
 
@@ -443,7 +443,7 @@ contains
        ! *******************
        ! *** RETURN HERE ***
        ! *******************
-       call ESMF_VMLogMemInfo("Leaving "//trim(subname))
+       call ESMF_VMLogMemInfo("Leaving "//subname)
        RETURN
     end if
 
@@ -463,7 +463,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_SetScalar(dble(ny_global),flds_scalar_index_ny, exportState, flds_scalar_name, flds_scalar_num, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_VMLogMemInfo("Leaving "//trim(subname))
+    call ESMF_VMLogMemInfo("Leaving "//subname)
    end subroutine InitializeRealize
 
   !===============================================================================
@@ -536,7 +536,7 @@ contains
 
     ! local variables
     character(len=CL) :: rpfile  ! restart pointer file name
-    character(*), parameter :: subName = "(docn_comp_run) "
+    character(len=*), parameter :: subName = "(docn_comp_run) "
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS

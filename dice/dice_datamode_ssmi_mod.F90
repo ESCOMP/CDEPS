@@ -14,7 +14,7 @@ module dice_datamode_ssmi_mod
   use dshr_fldlist_mod     , only : fldlist_type, dshr_fldlist_add
 
   implicit none
-  private ! except
+  private
 
   public  :: dice_datamode_ssmi_advertise
   public  :: dice_datamode_ssmi_init_pointers
@@ -102,8 +102,8 @@ module dice_datamode_ssmi_mod
   real(r8) , parameter :: latice   = shr_const_latice ! latent heat of fusion
   real(r8) , parameter :: waterMax = 1000.0_r8        ! wrt iFrac comp & frazil ice (kg/m^2)
 
-  character(*) , parameter :: nullstr = 'null'
-  character(*) , parameter :: u_FILE_u = &
+  character(len=*) , parameter :: nullstr = 'null'
+  character(len=*) , parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -227,7 +227,7 @@ contains
 
     ! Set pointer to stream data (required)
     call shr_strdata_get_stream_pointer( sdat, 'Si_ifrac', strm_Si_ifrac, requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Si_ifrac must be associated for ssmi datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_Si_ifrac must be associated for ssmi datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Set Si_imask (this corresponds to the ocean mask)
