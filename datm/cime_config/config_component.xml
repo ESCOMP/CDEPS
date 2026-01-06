@@ -109,11 +109,11 @@
     </valid_values>
     <default_value>clim_2000</default_value>
     <values match="last">
-      <value compset="^1850[CE]?_"  >clim_1850_cmip7</value>
-      <value compset="^2000_"       >clim_2000_cmip7</value>
-      <value compset="^2010_"       >clim_2010_cmip7</value>
-      <value compset="^HIST[CE]?_"  >hist_cmip7</value>
-      <value compset="^20TR_"       >hist_cmip7</value>
+      <value compset="^1850[CE]?_"  >clim_1850_cmip6</value>
+      <value compset="^2000_"       >clim_2000_cmip6</value>
+      <value compset="^2010_"       >clim_2010_cmip6</value>
+      <value compset="^HIST[CE]?_"  >hist_cmip6</value>
+      <value compset="^20TR_"       >hist_cmip6</value>
       <value compset="^SSP126_"     >SSP1-2.6</value>
       <value compset="^SSP245_"     >SSP2-4.5</value>
       <value compset="^SSP370_"     >SSP3-7.0</value>
