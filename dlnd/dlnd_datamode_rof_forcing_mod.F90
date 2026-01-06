@@ -44,6 +44,9 @@ module dlnd_datamode_rof_forcing_mod
    real(r8), pointer :: strm_Flrl_irrig(:)  => null()
 
    integer :: ntracers_nonh2o
+
+   ! Note that setting the maximum value to 99 is due to the i2.2 format below
+   ! for generating the strm_fld field names
    integer, parameter :: ntracers_nonh2o_max = 99
 
    character(*), parameter :: nullstr = 'null'
