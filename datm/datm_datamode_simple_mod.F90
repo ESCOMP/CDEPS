@@ -84,6 +84,7 @@ contains
 
   subroutine datm_datamode_simple_advertise(exportState, fldsexport, flds_scalar_name, &
     nlfilename, my_task, vm, rc)
+
     use shr_nl_mod, only:  shr_nl_find_group_name
 
     ! input/output variables

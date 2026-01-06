@@ -1,9 +1,8 @@
 module dlnd_datamode_rof_forcing_mod
 
    use ESMF                    , only : ESMF_SUCCESS, ESMF_FAILURE, ESMF_LOGMSG_INFO, ESMF_LogWrite, ESMF_State
-   use ESMF                    , only : ESMF_StateItem_Flag
    use NUOPC                   , only : NUOPC_Advertise
-   use shr_kind_mod            , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
+   use shr_kind_mod            , only : r8=>shr_kind_r8, cs=>shr_kind_cs
    use shr_string_mod          , only : shr_string_listGetNum, shr_string_listGetName
    use shr_log_mod             , only : shr_log_error
    use shr_const_mod           , only : SHR_CONST_SPVAL
@@ -14,7 +13,7 @@ module dlnd_datamode_rof_forcing_mod
   use shr_strconvert_mod       , only : toString
 
    implicit none
-   private ! except
+   private
 
    public :: dlnd_datamode_rof_forcing_advertise
    public :: dlnd_datamode_rof_forcing_init_pointers
@@ -32,7 +31,7 @@ module dlnd_datamode_rof_forcing_mod
 
    ! stream field pointers
    type, public :: stream_pointer_type
-      real(r8), pointer :: strm_ptr(:) => null()
+      real(r8), pointer :: ptr(:) => null()
    end type stream_pointer_type
    type(stream_pointer_type), allocatable :: strm_Flrl_rofsur_nonh2o_2d(:) ! 2dple nonh2o tracers
 
@@ -49,8 +48,8 @@ module dlnd_datamode_rof_forcing_mod
    ! for generating the strm_fld field names
    integer, parameter :: ntracers_nonh2o_max = 99
 
-   character(*), parameter :: nullstr = 'null'
-   character(*), parameter :: u_FILE_u = &
+   character(len=*), parameter :: nullstr = 'null'
+   character(len=*), parameter :: u_FILE_u = &
         __FILE__
 
 !===============================================================================
@@ -184,31 +183,31 @@ contains
          do nf = 1,ntracers_nonh2o
             write(nchar,'(i2.2)') nf
             strm_fld = trim('Flrl_rofsur_nonh2o') // trim(nchar)
-            call shr_strdata_get_stream_pointer( sdat, trim(strm_fld), strm_Flrl_rofsur_nonh2o_2d(nf)%strm_ptr, &
+            call shr_strdata_get_stream_pointer( sdat, trim(strm_fld), strm_Flrl_rofsur_nonh2o_2d(nf)%ptr, &
                  requirePointer=.true., &
-                 errmsg=trim(subname)//'ERROR: '//trim(strm_fld)//&
+                 errmsg=subname//'ERROR: '//trim(strm_fld)//&
                  ' must be associated for dlnd rof_forcing datamode', rc=rc)
             if (ChkErr(rc,__LINE__,u_FILE_u)) return
          end do
       else if (ntracers_nonh2o == 1) then
          call shr_strdata_get_stream_pointer(sdat, 'Flrl_rofsur_nonh2o' , strm_Flrl_rofsur_nonh2o_1d, &
               requirePointer=.true., &
-              errmsg=trim(subname)//'ERROR: strm_Flrl_rofsur_1d '// &
+              errmsg=subname//'ERROR: strm_Flrl_rofsur_1d '// &
               ' must be associated for dlnd rof_forcing mode', rc=rc)
          if (ChkErr(rc,__LINE__,u_FILE_u)) return
       end if
 
       call shr_strdata_get_stream_pointer(sdat, 'Flrl_rofsur' , strm_Flrl_rofsur, requirePointer=.true., &
-           errmsg=trim(subname)//'ERROR: strm_Flrl_rofsur be associated for dlnd rof_forcing mode', rc=rc)
+           errmsg=subname//'ERROR: strm_Flrl_rofsur be associated for dlnd rof_forcing mode', rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
       call shr_strdata_get_stream_pointer(sdat, 'Flrl_rofsub' , strm_Flrl_rofsub, requirePointer=.true., &
-           errmsg=trim(subname)//'ERROR: strm_Flrl_rofsub be associated for dlnd rof_forcing mode', rc=rc)
+           errmsg=subname//'ERROR: strm_Flrl_rofsub be associated for dlnd rof_forcing mode', rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
       call shr_strdata_get_stream_pointer(sdat, 'Flrl_rofgwl' , strm_Flrl_rofgwl, requirePointer=.true., &
-           errmsg=trim(subname)//'ERROR: strm_Flrl_rofgwl be associated for dlnd rof_forcing mode', rc=rc)
+           errmsg=subname//'ERROR: strm_Flrl_rofgwl be associated for dlnd rof_forcing mode', rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
       call shr_strdata_get_stream_pointer(sdat, 'Flrl_rofi' , strm_Flrl_rofi, requirePointer=.true., &
-           errmsg=trim(subname)//'ERROR: strm_Flrl_rofi be associated for dlnd rof_forcing mode', rc=rc)
+           errmsg=subname//'ERROR: strm_Flrl_rofi be associated for dlnd rof_forcing mode', rc=rc)
       if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
       ! optional stream field pointer
@@ -232,7 +231,7 @@ contains
                if (lfrac(ni) == 0._r8) then
                   Flrl_rofsur_nonh2o_2d(nf,ni) = SHR_CONST_SPVAL
                else
-                  Flrl_rofsur_nonh2o_2d(nf,ni) = strm_Flrl_rofsur_nonh2o_2d(nf)%strm_ptr(ni)
+                  Flrl_rofsur_nonh2o_2d(nf,ni) = strm_Flrl_rofsur_nonh2o_2d(nf)%ptr(ni)
                end if
             end do
          end do

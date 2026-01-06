@@ -1,19 +1,20 @@
-module docn_datamode_copyall_mod
+module docn_datamode_sstdata_mod
 
   use ESMF             , only : ESMF_State, ESMF_LOGMSG_INFO, ESMF_LogWrite, ESMF_SUCCESS
   use NUOPC            , only : NUOPC_Advertise
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
+  use shr_log_mod      , only : shr_log_error
   use shr_const_mod    , only : shr_const_TkFrz, shr_const_pi, shr_const_ocn_ref_sal
   use dshr_methods_mod , only : dshr_state_getfldptr, dshr_fldbun_getfldptr, chkerr
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
-  use dshr_strdata_mod , only : shr_strdata_type
+  use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_get_stream_pointer
 
   implicit none
-  private ! except
+  private
 
-  public  :: docn_datamode_copyall_advertise
-  public  :: docn_datamode_copyall_init_pointers
-  public  :: docn_datamode_copyall_advance
+  public  :: docn_datamode_sstdata_advertise
+  public  :: docn_datamode_sstdata_init_pointers
+  public  :: docn_datamode_sstdata_advance
 
   ! export fields
   real(r8), pointer :: So_omask(:)  => null()    ! real ocean fraction sent to mediator
@@ -22,18 +23,21 @@ module docn_datamode_copyall_mod
   real(r8), pointer :: So_v(:)      => null()
   real(r8), pointer :: So_s(:)      => null()
 
+  ! pointer to stream field
+  real(r8), pointer :: strm_So_t(:) => null()
+
   real(r8) , parameter :: tkfrz   = shr_const_tkfrz       ! freezing point, fresh water (kelvin)
   real(r8) , parameter :: ocnsalt = shr_const_ocn_ref_sal ! ocean reference salinity
 
-  character(*) , parameter :: nullstr = 'null'
-  character(*) , parameter :: u_FILE_u = &
+  character(len=*) , parameter :: nullstr = 'null'
+  character(len=*) , parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
 contains
 !===============================================================================
 
-  subroutine docn_datamode_copyall_advertise(exportState, fldsexport, flds_scalar_name, rc)
+  subroutine docn_datamode_sstdata_advertise(exportState, fldsexport, flds_scalar_name, rc)
 
     ! input/output variables
     type(esmf_State)   , intent(inout) :: exportState
@@ -63,15 +67,16 @@ contains
        fldList => fldList%next
     enddo
 
-  end subroutine docn_datamode_copyall_advertise
+  end subroutine docn_datamode_sstdata_advertise
 
   !===============================================================================
-  subroutine docn_datamode_copyall_init_pointers(exportState, ocn_fraction, rc)
+  subroutine docn_datamode_sstdata_init_pointers(exportState, sdat, ocn_fraction, rc)
 
     ! input/output variables
-    type(ESMF_State) , intent(inout) :: exportState
-    real(r8)         , intent(in)    :: ocn_fraction(:)
-    integer          , intent(out)   :: rc
+    type(ESMF_State)       , intent(inout) :: exportState
+    type(shr_strdata_type) , intent(in)    :: sdat
+    real(r8)               , intent(in)    :: ocn_fraction(:)
+    integer                , intent(out)   :: rc
 
     ! local variables
     character(len=*), parameter :: subname='(docn_init_pointers): '
@@ -91,36 +96,35 @@ contains
     call dshr_state_getfldptr(exportState, 'So_v'     , fldptr1=So_v     , allowNullReturn=.true., rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
 
-    if (associated(So_u)) then
-      So_u(:) = 0.0_r8
-    end if
-    if (associated(So_v)) then
-      So_v(:) = 0.0_r8
-    end if
-    if (associated(So_s)) then
-      So_s(:) = ocnsalt
-    end if
-    So_t(:) = TkFrz
+    ! initialize pointer to stream field
+    call shr_strdata_get_stream_pointer( sdat, 'So_t', strm_So_t, &
+         errmsg=subname//'ERROR: strm_So_t must be associated for docn sstdata datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    ! Set export state ocean fraction (So_omask)
+    ! Initialize value of export state
     So_omask(:) = ocn_fraction(:)
+    So_t(:) = TkFrz
+    if (associated(So_u)) So_u(:) = 0.0_r8
+    if (associated(So_v)) So_v(:) = 0.0_r8
+    if (associated(So_s)) So_s(:) = ocnsalt
 
-  end subroutine docn_datamode_copyall_init_pointers
+  end subroutine docn_datamode_sstdata_init_pointers
 
   !===============================================================================
-  subroutine docn_datamode_copyall_advance(rc)
+  subroutine docn_datamode_sstdata_advance(rc)
 
     ! input/output variables
     integer, intent(out)   :: rc
 
     ! local variables
-    character(len=*), parameter :: subname='(docn_datamode_copyall_advance): '
+    character(len=*), parameter :: subname='(docn_datamode_sstdata_advance): '
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
 
-    So_t(:) = So_t(:) + TkFrz
+    ! Assume stream sst data is in degrees C
+    So_t(:) = strm_So_t(:) + TkFrz
 
-  end subroutine docn_datamode_copyall_advance
+  end subroutine docn_datamode_sstdata_advance
 
-end module docn_datamode_copyall_mod
+end module docn_datamode_sstdata_mod
