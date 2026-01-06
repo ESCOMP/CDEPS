@@ -108,7 +108,7 @@
     </values>
     <group>run_component_dlnd</group>
     <file>env_run.xml</file>
-    <desc>starting year to loop data over (only used when DLND_MODE is CPLHIST or GLC_CPLHIST or ROF_CPLHIST)</desc>
+    <desc>starting year to loop data over (only used when DLND_MODE is SCPL or GCPL or RCPL)</desc>
   </entry>
 
   <entry id="DLND_CPLHIST_YR_END">
@@ -119,7 +119,7 @@
     </values>
     <group>run_component_dlnd</group>
     <file>env_run.xml</file>
-    <desc>ending year to loop data over (only used when DLND_MODE is CPLHIST or GLC_CPLHIST)</desc>
+    <desc>starting year to loop data over (only used when DLND_MODE is SCPL or GCPL or RCPL)</desc>
   </entry>
 
   <entry id="DLND_SKIP_RESTART_READ">
