@@ -7,7 +7,7 @@ module datm_pres_aero_mod
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
 
   implicit none
-  private ! except
+  private
 
   public :: datm_pres_aero_advertise
   public :: datm_pres_aero_init_pointers
@@ -38,7 +38,7 @@ module datm_pres_aero_mod
   real(r8), pointer :: strm_Faxa_dstdry3(:)  => null()
   real(r8), pointer :: strm_Faxa_dstdry4(:)  => null()
 
-  character(*), parameter :: u_FILE_u = &
+  character(len=*), parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -86,59 +86,59 @@ contains
     ! Set module pointers into streams and check that they are associated
 
     call shr_strdata_get_stream_pointer(sdat, 'Faxa_bcphidry' , strm_Faxa_bcphidry, requirePointer=.true., &
-         errmsg=trim(subname)//'strm_Faxa_bcphidry must be associated if flds_presaero is .true.', rc=rc)
+         errmsg=subname//'strm_Faxa_bcphidry must be associated if flds_presaero is .true.', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     call shr_strdata_get_stream_pointer(sdat, 'Faxa_bcphodry' , strm_Faxa_bcphodry, requirePointer=.true., &
-         errmsg=trim(subname)//'strm_Faxa_bcphodry must be associated if flds_presaero is .true.', rc=rc)
+         errmsg=subname//'strm_Faxa_bcphodry must be associated if flds_presaero is .true.', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     call shr_strdata_get_stream_pointer(sdat, 'Faxa_bcphiwet' , strm_Faxa_bcphiwet, requirePointer=.true., &
-         errmsg=trim(subname)//'strm_Faxa_bcphiwet must be associated if flds_presaero is .true.', rc=rc)
+         errmsg=subname//'strm_Faxa_bcphiwet must be associated if flds_presaero is .true.', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     call shr_strdata_get_stream_pointer(sdat, 'Faxa_ocphidry' , strm_Faxa_ocphidry, requirePointer=.true., &
-         errmsg=trim(subname)//'strm_Faxa_ocphidry must be associated if flds_presaero is .true.', rc=rc)
+         errmsg=subname//'strm_Faxa_ocphidry must be associated if flds_presaero is .true.', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     call shr_strdata_get_stream_pointer(sdat, 'Faxa_ocphodry' , strm_Faxa_ocphodry, requirePointer=.true., &
-         errmsg=trim(subname)//'strm_Faxa_ocphodry must be associated if flds_presaero is .true.', rc=rc)
+         errmsg=subname//'strm_Faxa_ocphodry must be associated if flds_presaero is .true.', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     call shr_strdata_get_stream_pointer(sdat, 'Faxa_ocphiwet' , strm_Faxa_ocphiwet, requirePointer=.true., &
-         errmsg=trim(subname)//'strm_Faxa_ocphiwet must be associated if flds_presaero is .true.', rc=rc)
+         errmsg=subname//'strm_Faxa_ocphiwet must be associated if flds_presaero is .true.', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     call shr_strdata_get_stream_pointer(sdat, 'Faxa_dstdry1'  , strm_Faxa_dstdry1 , requirePointer=.true., &
-         errmsg=trim(subname)//'strm_Faxa_dstdry1 must be associated if flds_presaero is .true.', rc=rc)
+         errmsg=subname//'strm_Faxa_dstdry1 must be associated if flds_presaero is .true.', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     call shr_strdata_get_stream_pointer(sdat, 'Faxa_dstdry2'  , strm_Faxa_dstdry2 , requirePointer=.true., &
-         errmsg=trim(subname)//'strm_Faxa_dstdry2 must be associated if flds_presaero is .true.', rc=rc)
+         errmsg=subname//'strm_Faxa_dstdry2 must be associated if flds_presaero is .true.', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     call shr_strdata_get_stream_pointer(sdat, 'Faxa_dstdry3'  , strm_Faxa_dstdry3 , requirePointer=.true., &
-         errmsg=trim(subname)//'strm_Faxa_dstdry3 must be associated if flds_presaero is .true.', rc=rc)
+         errmsg=subname//'strm_Faxa_dstdry3 must be associated if flds_presaero is .true.', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     call shr_strdata_get_stream_pointer(sdat, 'Faxa_dstdry4'  , strm_Faxa_dstdry4 , requirePointer=.true., &
-         errmsg=trim(subname)//'strm_Faxa_dstdry4 must be associated if flds_presaero is .true.', rc=rc)
+         errmsg=subname//'strm_Faxa_dstdry4 must be associated if flds_presaero is .true.', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     call shr_strdata_get_stream_pointer(sdat, 'Faxa_dstwet1'  , strm_Faxa_dstwet1 , requirePointer=.true., &
-         errmsg=trim(subname)//'strm_Faxa_dstwet1 must be associated if flds_presaero is .true.', rc=rc)
+         errmsg=subname//'strm_Faxa_dstwet1 must be associated if flds_presaero is .true.', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     call shr_strdata_get_stream_pointer(sdat, 'Faxa_dstwet2'  , strm_Faxa_dstwet2 , requirePointer=.true., &
-         errmsg=trim(subname)//'strm_Faxa_dstwet2 must be associated if flds_presaero is .true.', rc=rc)
+         errmsg=subname//'strm_Faxa_dstwet2 must be associated if flds_presaero is .true.', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     call shr_strdata_get_stream_pointer(sdat, 'Faxa_dstwet3'  , strm_Faxa_dstwet3 , requirePointer=.true., &
-         errmsg=trim(subname)//'strm_Faxa_dstwet3 must be associated if flds_presaero is .true.', rc=rc)
+         errmsg=subname//'strm_Faxa_dstwet3 must be associated if flds_presaero is .true.', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     call shr_strdata_get_stream_pointer(sdat, 'Faxa_dstwet4'  , strm_Faxa_dstwet4 , requirePointer=.true., &
-         errmsg=trim(subname)//'strm_Faxa_dstwet4 must be associated if flds_presaero is .true.', rc=rc)
+         errmsg=subname//'strm_Faxa_dstwet4 must be associated if flds_presaero is .true.', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine datm_pres_aero_init_pointers

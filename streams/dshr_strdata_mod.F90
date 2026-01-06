@@ -412,7 +412,7 @@ contains
     call ESMF_MeshGet(sdat%model_mesh, spatialDim=spatialDim, &
          numOwnedElements=numOwnedElements, elementdistGrid=distGrid, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    allocate(ownedElemCoords(spatialDim*numOwnedElements))
+    allocate(ownedElemCoords(spatialDim*numOwnedElements), stat=istat)
     if ( istat /= 0 ) then
        call shr_log_error(subName//&
             ': allocation error for mesh ownedElemCoords with size '//toString(spatialDim*numOwnedElements), rc=rc)
@@ -426,13 +426,13 @@ contains
     end if
     call ESMF_MeshGet(sdat%model_mesh, ownedElemCoords=ownedElemCoords)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    allocate(sdat%model_lon(numOwnedElements))
+    allocate(sdat%model_lon(numOwnedElements), stat=istat)
     if ( istat /= 0 ) then
        call shr_log_error(subName//&
             ': allocation error for sdat%model_lon with size '//toString(numOwnedElements), rc=rc)
        return
     end if
-    allocate(sdat%model_lat(numOwnedElements))
+    allocate(sdat%model_lat(numOwnedElements), stat=istat)
     if ( istat /= 0 ) then
        call shr_log_error(subName//&
             ': allocation error for sdat%model_lat with size '//toString(numOwnedElements), rc=rc)
@@ -1747,7 +1747,7 @@ contains
              allocate(data_short2d(lsize, stream_nlev), stat=istat)
              if ( istat /= 0 ) then
                 call shr_log_error(subName//'allocation error of data_short2d with size '// &
-                     toString(lsize*stream_nlev), rc=istat)
+                     toString(lsize*stream_nlev), rc=rc)
                 return
              end if
           endif
@@ -1757,21 +1757,21 @@ contains
              allocate(data_real1d(lsize), stat=istat)
              if ( istat /= 0 ) then
                 call shr_log_error(subName//'allocation error of data_real1d with size '// &
-                     toString(lsize), rc=istat)
+                     toString(lsize), rc=rc)
                 return
              end if
           else if (pio_iovartype == PIO_DOUBLE .and. .not. allocated(data_dbl1d)) then
              allocate(data_dbl1d(lsize), stat=istat)
              if ( istat /= 0 ) then
                 call shr_log_error(subName//'allocation error of data_dbl1d with size '// &
-                     toString(lsize), rc=istat)
+                     toString(lsize), rc=rc)
                 return
              end if
           else if(pio_iovartype == PIO_SHORT .and. .not. allocated(data_short1d)) then
              allocate(data_short1d(lsize), stat=istat)
              if ( istat /= 0 ) then
                 call shr_log_error(subName//'allocation error of data_short1d with size '// &
-                     toString(lsize), rc=istat)
+                     toString(lsize), rc=rc)
                 return
              end if
           endif
@@ -2191,9 +2191,6 @@ contains
     do n = 1, ndims
        rcode = pio_inq_dimlen(pioid, dimids(n), dimlens(n))
     end do
-
-    ! Determine if there is a time dimension
-    rcode = pio_inq_dimname(pioid, dimids(ndims), dimname)
 
     ! determine compdof for stream
     call ESMF_MeshGet(per_stream%stream_mesh, elementdistGrid=distGrid, rc=rc)

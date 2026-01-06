@@ -7,7 +7,7 @@ module datm_pres_o3_mod
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
 
   implicit none
-  private ! except
+  private
 
   public :: datm_pres_o3_advertise
   public :: datm_pres_o3_init_pointers
@@ -19,7 +19,7 @@ module datm_pres_o3_mod
   ! stream pointer
   real(r8), pointer :: strm_Sa_o3(:) => null()
 
-  character(*), parameter :: u_FILE_u = &
+  character(len=*), parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -55,7 +55,7 @@ contains
 
     ! Get pointer to stream data that will be used below
     call shr_strdata_get_stream_pointer(sdat, 'Sa_o3', strm_Sa_o3, requirePointer=.true., &
-         errmsg=trim(subname)//'ERROR: strm_Sa_o3 must be associated if flds_pres_o3 is .true.', rc=rc)
+         errmsg=subname//'ERROR: strm_Sa_o3 must be associated if flds_pres_o3 is .true.', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine datm_pres_o3_init_pointers

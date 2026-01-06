@@ -27,7 +27,7 @@ module datm_datamode_simple_mod
   use shr_log_mod      , only : shr_log_error
 
   implicit none
-  private ! except
+  private
 
   public  :: datm_datamode_simple_advertise
   public  :: datm_datamode_simple_init_pointers
@@ -74,8 +74,8 @@ module datm_datamode_simple_mod
   real(R8) , parameter :: phs_c0   =   0.298_R8
   real(R8) , parameter :: dLWarc   =  -5.000_R8
 
-  character(*), parameter :: nullstr = 'null'
-  character(*), parameter :: u_FILE_u = &
+  character(len=*), parameter :: nullstr = 'null'
+  character(len=*), parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================

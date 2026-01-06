@@ -26,7 +26,7 @@ module datm_datamode_core2_mod
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
 
   implicit none
-  private ! except
+  private
 
   public  :: datm_datamode_core2_advertise
   public  :: datm_datamode_core2_init_pointers
@@ -81,8 +81,8 @@ module datm_datamode_core2_mod
   data   dTarc      / 0.49_R8, 0.06_R8,-0.73_R8,  -0.89_R8,-0.77_R8,-1.02_R8, &
                      -1.99_R8,-0.91_R8, 1.72_R8,   2.30_R8, 1.81_R8, 1.06_R8/
 
-  character(*), parameter :: nullstr = 'null'
-  character(*), parameter :: u_FILE_u = &
+  character(len=*), parameter :: nullstr = 'null'
+  character(len=*), parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -227,13 +227,13 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     if (.not. associated(strm_prec) .or. .not. associated(strm_swdn)) then
-       call shr_log_error(trim(subname)//'ERROR: prec and swdn must be in streams for CORE2', rc=rc)
+       call shr_log_error(subname//'ERROR: prec and swdn must be in streams for CORE2', rc=rc)
        return
     endif
 
     if (trim(datamode) == 'CORE2_IAF' ) then
        if (.not. associated(strm_tarcf)) then
-          call shr_log_error(trim(subname)//'tarcf must be in an input stream for CORE2_IAF', rc=rc)
+          call shr_log_error(subname//'tarcf must be in an input stream for CORE2_IAF', rc=rc)
           return
        endif
     endif
@@ -372,8 +372,8 @@ contains
 
     ! input/output variables
     type(shr_strdata_type) , intent(in)  :: sdat
-    character(*)           , intent(in)  :: fileName_mesh ! file name string
-    character(*)           , intent(in)  :: fileName_data ! file name string
+    character(len=*)       , intent(in)  :: fileName_mesh ! file name string
+    character(len=*)       , intent(in)  :: fileName_data ! file name string
     real(R8)               , pointer     :: windF(:)      ! wind adjustment factor
     real(R8)               , pointer     :: winddF(:)     ! wind adjustment factor
     real(r8)               , pointer     :: qsatF(:)      ! rel humidty adjustment factor
@@ -398,7 +398,7 @@ contains
     integer                :: nxg, nyg
     real(r8), pointer      :: data(:)
     integer                :: srcTermProcessing_Value = 0
-    character(*) ,parameter :: subName =  '(datm_get_adjustment_factors) '
+    character(len=*) ,parameter :: subName =  '(datm_get_adjustment_factors) '
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS

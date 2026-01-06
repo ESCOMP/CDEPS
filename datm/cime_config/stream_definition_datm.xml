@@ -1,7 +1,5 @@
 <?xml version="1.0"?>
 
-<?xml-stylesheet type="text/xsl" href="namelist_definition.xsl"?>
-
 <stream_data version="2.0" xmlns:xi="http://www.w3.org/2001/XInclude">
 
   <!-- TODO: when should the mapalgo be nn? -->
@@ -191,11 +189,13 @@
   - DATM_NDEP is set by the 4 character time prefix in config_component.xml
   ========================
   presndep.clim_1850_cmip7
-  presndep.clim_1850
-  presndep.clim_2000
-  presndep.clim_2010
+  presndep.clim_2000_cmip7
+  presndep.clim_2010_cmip7
   presndep.hist_cmip7
-  presndep.hist
+  presndep.clim_1850_cmip6
+  presndep.clim_2000_cmip6
+  presndep.clim_2010_cmip6
+  presndep.hist_cmip6
   presndep.SSP1-2.6
   presndep.SSP2-4.5
   presndep.SSP3-7.0
@@ -4898,6 +4898,76 @@
     <stream_readmode>single</stream_readmode>
   </stream_entry>
 
+  <stream_entry name="presndep.clim_2000_cmip7">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/ndep/cmip7/ndep_input4MIPs_surfaceFluxes_ESMFmesh_cdf5_c20251211.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/ndep/cmip7/ndep_input4MIPs_surfaceFluxes_CMIP_FZJ-CMIP-nitrogen-1-2_gn_185001-202212_c20251222.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <!-- the following stream fields are in units of kg/m2/sec - so need no unit conversion -->
+      <var>drynhx  Faxa_ndep_nhx_dry</var>
+      <var>wetnhx  Faxa_ndep_nhx_wet</var>
+      <var>drynoy  Faxa_ndep_noy_dry</var>
+      <var>wetnoy  Faxa_ndep_noy_wet</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>2000</stream_year_first>
+    <stream_year_last>2000</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="presndep.clim_2010_cmip7">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/ndep/cmip7/ndep_input4MIPs_surfaceFluxes_ESMFmesh_cdf5_c20251211.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/ndep/cmip7/ndep_input4MIPs_surfaceFluxes_CMIP_FZJ-CMIP-nitrogen-1-2_gn_185001-202212_c20251222.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <!-- the following stream fields are in units of kg/m2/sec - so need no unit conversion -->
+      <var>drynhx  Faxa_ndep_nhx_dry</var>
+      <var>wetnhx  Faxa_ndep_nhx_wet</var>
+      <var>drynoy  Faxa_ndep_noy_dry</var>
+      <var>wetnoy  Faxa_ndep_noy_wet</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>2010</stream_year_first>
+    <stream_year_last>2010</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
   <stream_entry name="presndep.hist_cmip7">
     <stream_meshfile>
       <meshfile>$DIN_LOC_ROOT/atm/ndep/cmip7/ndep_input4MIPs_surfaceFluxes_ESMFmesh_cdf5_c20251211.nc</meshfile>
@@ -4933,7 +5003,7 @@
     <stream_readmode>single</stream_readmode>
   </stream_entry>
 
-  <stream_entry name="presndep.clim_1850">
+  <stream_entry name="presndep.clim_1850_cmip6">
     <stream_meshfile>
       <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
     </stream_meshfile>
@@ -4966,7 +5036,7 @@
     <stream_readmode>single</stream_readmode>
   </stream_entry>
 
-  <stream_entry name="presndep.clim_2000">
+  <stream_entry name="presndep.clim_2000_cmip6">
     <stream_meshfile>
       <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
     </stream_meshfile>
@@ -4999,7 +5069,7 @@
     <stream_readmode>single</stream_readmode>
   </stream_entry>
 
-  <stream_entry name="presndep.clim_2010">
+  <stream_entry name="presndep.clim_2010_cmip6">
     <stream_meshfile>
       <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
     </stream_meshfile>
@@ -5031,7 +5101,7 @@
     <stream_readmode>single</stream_readmode>
   </stream_entry>
 
-  <stream_entry name="presndep.hist">
+  <stream_entry name="presndep.hist_cmip6">
     <stream_meshfile>
       <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
     </stream_meshfile>

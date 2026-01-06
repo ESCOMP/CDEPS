@@ -11,7 +11,7 @@ module datm_datamode_gefs_mod
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
 
   implicit none
-  private ! except
+  private
 
   public  :: datm_datamode_gefs_advertise
   public  :: datm_datamode_gefs_init_pointers
@@ -47,8 +47,8 @@ module datm_datamode_gefs_mod
   real(r8) , parameter :: rdair    = SHR_CONST_RDAIR ! dry air gas constant ~ J/K/kg
   real(r8) , parameter :: rhofw    = SHR_CONST_RHOFW ! density of fresh water ~ kg/m^3
 
-  character(*), parameter :: nullstr = 'undefined'
-  character(*), parameter :: u_FILE_u = &
+  character(len=*), parameter :: nullstr = 'undefined'
+  character(len=*), parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -193,14 +193,14 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        tbotmax = rtmp(2)
 
-       if (mainproc) write(logunit,*) trim(subname),' tbotmax = ',tbotmax
+       if (mainproc) write(logunit,*) subname,' tbotmax = ',tbotmax
 
        ! determine maskmax (see below for use)
        rtmp(1) = maxval(strm_mask(:))
        call ESMF_VMAllReduce(vm, rtmp, rtmp(2:), 1, ESMF_REDUCE_MAX, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        maskmax = rtmp(2)
-       if (mainproc) write(logunit,*) trim(subname),' maskmax = ',maskmax
+       if (mainproc) write(logunit,*) subname,' maskmax = ',maskmax
 
        ! reset first_time
        first_time = .false.

@@ -14,7 +14,7 @@ module datm_datamode_jra_mod
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
 
   implicit none
-  private ! except
+  private
 
   public  :: datm_datamode_jra_advertise
   public  :: datm_datamode_jra_init_pointers
@@ -56,8 +56,8 @@ module datm_datamode_jra_mod
   real(R8) , parameter :: phs_c0   =   0.298_R8
   real(R8) , parameter :: dLWarc   =  -5.000_R8
 
-  character(*), parameter :: nullstr = 'null'
-  character(*), parameter :: u_FILE_u = &
+  character(len=*), parameter :: nullstr = 'null'
+  character(len=*), parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -191,7 +191,7 @@ contains
 
     ! erro check
     if (.not. associated(strm_prec) .or. .not. associated(strm_swdn)) then
-       call shr_log_error(trim(subname)//'ERROR: prec and swdn must be in streams for CORE_IAF_JRA', rc=rc)
+       call shr_log_error(subname//'ERROR: prec and swdn must be in streams for CORE_IAF_JRA', rc=rc)
        return
     endif
 

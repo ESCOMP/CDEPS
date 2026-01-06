@@ -155,9 +155,9 @@ module cdeps_datm_comp
   logical                      :: diagnose_data = .true.
   integer          , parameter :: main_task   = 0                   ! task number of main task
 #ifdef CESMCOUPLED
-  character(*)     , parameter :: modName       = "(atm_comp_nuopc)"
+  character(*)     , parameter :: modName = "(atm_comp_nuopc)"
 #else
-  character(*)     , parameter :: modName       = "(cdeps_datm_comp)"
+  character(*)     , parameter :: modName = "(cdeps_datm_comp)"
 #endif
 
   character(*), parameter :: u_FILE_u = &
@@ -172,7 +172,7 @@ contains
     integer, intent(out) :: rc
 
     ! local variables
-    character(len=*),parameter  :: subname=trim(modName)//':(SetServices) '
+    character(len=*),parameter  :: subname = modName//':(SetServices) '
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -228,10 +228,10 @@ contains
     integer           :: bcasttmp(10)
     character(CL)     :: nextsw_cday_calc
     type(ESMF_VM)     :: vm
-    character(len=*),parameter :: subname=trim(modName) // ':(InitializeAdvertise) '
-    character(*)    ,parameter :: F00 = "('(" // trim(modName) // ") ',8a)"
-    character(*)    ,parameter :: F01 = "('(" // trim(modName) // ") ',a,2x,i8)"
-    character(*)    ,parameter :: F02 = "('(" // trim(modName) // ") ',a,l6)"
+    character(len=*),parameter :: subname = modName // ':(InitializeAdvertise) '
+    character(*)    ,parameter :: F00 = "('(" // modName // ") ',8a)"
+    character(*)    ,parameter :: F01 = "('(" // modName // ") ',a,2x,i8)"
+    character(*)    ,parameter :: F02 = "('(" // modName // ") ',a,l6)"
     !-------------------------------------------------------------------------------
 
     namelist / datm_nml / &
@@ -386,7 +386,7 @@ contains
        return
     endif
 
-    ! Advertise fields that are not datamode specific
+    ! Advertise fields that ARE NOT datamode specific
     if (flds_co2) then
        call datm_pres_co2_advertise(fldsExport, datamode)
     end if
@@ -400,7 +400,7 @@ contains
        call datm_pres_aero_advertise(fldsExport)
     end if
 
-    ! Advertise fields that are not datamode specific
+    ! Advertise fields that ARE datamode specific
     select case (trim(datamode))
     case ('CORE2_NYF', 'CORE2_IAF')
        call datm_datamode_core2_advertise(exportState, fldsExport, flds_scalar_name, rc)
@@ -455,7 +455,7 @@ contains
     real(R8)                :: orbObliqr     ! orb obliquity (radians)
     logical                 :: isPresent, isSet
     real(R8)                :: dayofYear
-    character(len=*), parameter :: subname=trim(modName)//':(InitializeRealize) '
+    character(len=*), parameter :: subname = modName//':(InitializeRealize) '
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -555,7 +555,7 @@ contains
     real(R8)                :: orbLambm0     ! orb mean long of perhelion (radians)
     real(R8)                :: orbObliqr     ! orb obliquity (radians)
     real(R8)                :: dayofYear
-    character(len=*),parameter  :: subname=trim(modName)//':(ModelAdvance) '
+    character(len=*),parameter  :: subname = modName//':(ModelAdvance) '
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -844,7 +844,7 @@ contains
       call ESMF_StateGet(exportState, itemNameList=lfieldnames, rc=rc)
       if (chkerr(rc,__LINE__,u_FILE_u)) return
       do n = 1, fieldCount
-         call ESMF_LogWrite(trim(subname)//': field name = '//trim(lfieldnames(n)), ESMF_LOGMSG_INFO)
+         call ESMF_LogWrite(subname//': field name = '//trim(lfieldnames(n)), ESMF_LOGMSG_INFO)
          call ESMF_StateGet(exportState, itemName=trim(lfieldnames(n)), field=lfield, rc=rc)
          if (chkerr(rc,__LINE__,u_FILE_u)) return
          call ESMF_FieldGet(lfield, rank=rank, rc=rc)

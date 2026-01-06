@@ -102,18 +102,22 @@
 
   <entry id="DATM_PRESNDEP">
     <type>char</type>
-    <valid_values>none,clim_1850,clim_1850_cmip7,clim_2000,clim_2010,hist,hist_cmip7,SSP1-2.6,SSP2-4.5,SSP3-7.0,SSP5-3.4,SSP5-8.5,cplhist</valid_values>
+    <valid_values>none,
+      clim_1850_cmip7,clim_2000_cmip7,clim_2010_cmip7,hist_cmip7,
+      clim_1850_cmip6,clim_2000_cmip6,clim_2010_cmip6,hist_cmip6,
+      SSP1-2.6,SSP2-4.5,SSP3-7.0,SSP5-3.4,SSP5-8.5,cplhist
+    </valid_values>
     <default_value>clim_2000</default_value>
     <values match="last">
-      <value compset="^1850[CE]?_"  >clim_1850</value>
-      <value compset="^2000_"       >clim_2000</value>
-      <value compset="^2010_"       >clim_2010</value>
+      <value compset="^1850[CE]?_"  >clim_1850_cmip7</value>
+      <value compset="^2000_"       >clim_2000_cmip7</value>
+      <value compset="^2010_"       >clim_2010_cmip7</value>
+      <value compset="^HIST[CE]?_"  >hist_cmip7</value>
+      <value compset="^20TR_"       >hist_cmip7</value>
       <value compset="^SSP126_"     >SSP1-2.6</value>
       <value compset="^SSP245_"     >SSP2-4.5</value>
       <value compset="^SSP370_"     >SSP3-7.0</value>
       <value compset="^SSP585_"     >SSP5-8.5</value>
-      <value compset="^HIST[CE]?_"  >hist</value>
-      <value compset="^20TR_"       >hist</value>
       <value compset="_DATM%CPLHIST">cplhist</value>
       <value compset="_DATM.*_DICE.*_DOCN.*_DROF">none</value>
     </values>
