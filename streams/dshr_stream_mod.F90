@@ -290,7 +290,7 @@ contains
           if(associated(p)) then
              call extractDataContent(p, streamdat(i)%yearAlign)
           else
-             call shr_sys_abort(subname//" yearAlign must be provided", rc=rc)
+             call shr_sys_abort(subname//" yearAlign must be provided")
              return
           endif
 
@@ -760,7 +760,7 @@ contains
                 ' with size '//toString(streamdat(i)%nfiles), rc=rc)
            return
         end if
-        allocate(strm_tmpstrings(streamdat(i)%nfiles), stat=istat)
+        allocate(strm_tmpstrings(streamdat(i)%nfiles))
         call ESMF_ConfigGetAttribute(CF,valueList=strm_tmpstrings, label="stream_data_files"//mystrm//':', rc=rc)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
         do n=1,streamdat(i)%nfiles
