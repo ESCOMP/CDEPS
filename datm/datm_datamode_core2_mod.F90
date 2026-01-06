@@ -409,8 +409,8 @@ contains
 
     ! input/output variables
     type(shr_strdata_type) , intent(in)  :: sdat
-    character(len=*)           , intent(in)  :: fileName_mesh ! file name string
-    character(len=*)           , intent(in)  :: fileName_data ! file name string
+    character(len=*)       , intent(in)  :: fileName_mesh ! file name string
+    character(len=*)       , intent(in)  :: fileName_data ! file name string
     real(R8)               , pointer     :: windF(:)      ! wind adjustment factor
     real(R8)               , pointer     :: winddF(:)     ! wind adjustment factor
     real(r8)               , pointer     :: qsatF(:)      ! rel humidty adjustment factor

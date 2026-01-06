@@ -172,7 +172,7 @@ contains
     integer, intent(out) :: rc
 
     ! local variables
-    character(len=*),parameter  :: subname=trim(modName)//':(SetServices) '
+    character(len=*),parameter  :: subname = modName//':(SetServices) '
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -373,7 +373,7 @@ contains
        return
     end select
 
-    ! Advertise fields that are not datamode specific
+    ! Advertise fields that ARE NOT datamode specific
     if (flds_co2) then
        call datm_pres_co2_advertise(fldsExport, datamode)
     end if
@@ -387,7 +387,7 @@ contains
        call datm_pres_aero_advertise(fldsExport)
     end if
 
-    ! Advertise fields that are datamode specific
+    ! Advertise fields that ARE datamode specific
     select case (trim(datamode))
     case ('CORE2_NYF', 'CORE2_IAF')
        call datm_datamode_core2_advertise(exportState, fldsExport, flds_scalar_name, rc)
@@ -442,7 +442,7 @@ contains
     real(R8)                :: orbObliqr     ! orb obliquity (radians)
     logical                 :: isPresent, isSet
     real(R8)                :: dayofYear
-    character(len=*), parameter :: subname=trim(modName)//':(InitializeRealize) '
+    character(len=*), parameter :: subname = modName//':(InitializeRealize) '
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -542,7 +542,7 @@ contains
     real(R8)                :: orbLambm0     ! orb mean long of perhelion (radians)
     real(R8)                :: orbObliqr     ! orb obliquity (radians)
     real(R8)                :: dayofYear
-    character(len=*),parameter  :: subname=trim(modName)//':(ModelAdvance) '
+    character(len=*),parameter  :: subname = modName//':(ModelAdvance) '
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS

@@ -20,6 +20,7 @@ module datm_datamode_clmncep_mod
   public  :: datm_datamode_clmncep_advertise
   public  :: datm_datamode_clmncep_init_pointers
   public  :: datm_datamode_clmncep_advance
+
   private :: datm_esat  ! determine saturation vapor pressure
 
   ! export state data
@@ -202,6 +203,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Faxa_lwdn'  , fldptr1=Faxa_lwdn  , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
 
     ! import data pointers (to determine anidrmax (see below for use))
     call ESMF_StateGet(importstate, 'Sx_anidr', itemFlag, rc=rc)

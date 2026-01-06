@@ -15,6 +15,7 @@ module datm_datamode_era5_mod
   public  :: datm_datamode_era5_advertise
   public  :: datm_datamode_era5_init_pointers
   public  :: datm_datamode_era5_advance
+
   private :: datm_eSat  ! determine saturation vapor pressure
 
   ! export state data
