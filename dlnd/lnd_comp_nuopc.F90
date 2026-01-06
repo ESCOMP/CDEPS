@@ -67,7 +67,7 @@ module cdeps_dlnd_comp
   integer                  :: flds_scalar_index_ny = 0
   integer                  :: mpicom                              ! mpi communicator
   integer                  :: my_task                             ! my task in mpi communicator mpicom
-  logical                  :: mainproc                            ! true of my_task == main_task
+  logical                  :: mainproc                            ! true if my_task == main_task
   integer                  :: inst_index                          ! number of current instance (ie. 1)
   character(len=16)        :: inst_suffix = ""                    ! char string associated with instance (ie. "_0001" or "")
   integer                  :: logunit                             ! logging unit number
@@ -460,6 +460,9 @@ contains
        case('rof_forcing')
           call dlnd_datamode_rof_forcing_init_pointers(exportState, sdat, model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       case default
+          call shr_log_error(' ERROR illegal dlnd datamode = '//trim(datamode), rc=rc)
+          return
        end select
 
        first_time = .false.
@@ -481,6 +484,9 @@ contains
        call dlnd_datamode_glc_forcing_advance()
     case('rof_forcing')
        call dlnd_datamode_rof_forcing_advance()
+    case default
+       call shr_log_error(' ERROR illegal dlnd datamode = '//trim(datamode), rc=rc)
+       return
     end select
 
     call ESMF_TraceRegionExit('DLND_RUN')
