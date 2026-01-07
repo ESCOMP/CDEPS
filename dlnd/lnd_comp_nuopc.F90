@@ -26,13 +26,11 @@ module cdeps_dlnd_comp
   use shr_kind_mod      , only : cx=>shr_kind_cx
   use shr_cal_mod       , only : shr_cal_ymd2date
   use shr_log_mod       , only : shr_log_setLogUnit, shr_log_error
-  use dshr_methods_mod  , only : dshr_state_getfldptr, dshr_state_diagnose, chkerr, memcheck
-  use dshr_strdata_mod  , only : shr_strdata_type, shr_strdata_advance, shr_strdata_get_stream_domain
-  use dshr_strdata_mod  , only : shr_strdata_init_from_config
+  use dshr_methods_mod  , only : dshr_state_diagnose, chkerr, memcheck
+  use dshr_strdata_mod  , only : shr_strdata_type, shr_strdata_advance, shr_strdata_init_from_config
   use dshr_mod          , only : dshr_model_initphase, dshr_init, dshr_check_restart_alarm
   use dshr_mod          , only : dshr_state_setscalar, dshr_set_runclock, dshr_log_clock_advance
   use dshr_mod          , only : dshr_restart_read, dshr_restart_write, dshr_mesh_init
-  use dshr_dfield_mod   , only : dfield_type, dshr_dfield_add, dshr_dfield_copy
   use dshr_fldlist_mod  , only : fldlist_type, dshr_fldlist_add, dshr_fldlist_realize
 
   ! Datamode specialized modules
@@ -91,7 +89,6 @@ module cdeps_dlnd_comp
 
   ! linked lists
   type(fldList_type) , pointer :: fldsExport => null()
-  type(dfield_type)  , pointer :: dfields    => null()
 
   ! model mask and model fraction
   real(r8), pointer            :: model_frac(:) => null()
@@ -172,9 +169,6 @@ contains
     integer       :: bcasttmp(4)
     integer       :: ierr       ! error code
     character(len=*) , parameter :: subname=trim(modName)//':(InitializeAdvertise) '
-    character(*)     , parameter :: F00 = "('(" // trim(modName) // ") ',8a)"
-    character(*)     , parameter :: F01 = "('(" // trim(modName) // ") ',a,2x,i8)"
-    character(*)     , parameter :: F02 = "('(" // trim(modName) // ") ',a,l6)"
     !-------------------------------------------------------------------------------
 
     namelist / dlnd_nml / datamode, model_meshfile, model_maskfile, &
@@ -235,14 +229,14 @@ contains
 
     ! write namelist input to standard out
     if (my_task == main_task) then
-       write(logunit,F00)' model_meshfile    = ',trim(model_meshfile)
-       write(logunit,F00)' model_maskfile    = ',trim(model_maskfile)
-       write(logunit,F00)' datamode          = ',datamode
-       write(logunit,F01)' nx_global         = ',nx_global
-       write(logunit,F01)' ny_global         = ',ny_global
-       write(logunit,F00)' restfilm          = ',trim(restfilm)
-       write(logunit,F02)' skip_restart_read = ',skip_restart_read
-       write(logunit,F02)' export_all        = ',export_all
+       write(logunit,'(3a)')    trim(subname),' model_meshfile    = ',trim(model_meshfile)
+       write(logunit,'(3a)')    trim(subname),' model_maskfile    = ',trim(model_maskfile)
+       write(logunit,'(3a)')    trim(subname),' datamode          = ',datamode
+       write(logunit,'(2a,i0)') trim(subname),' nx_global         = ',nx_global
+       write(logunit,'(2a,i0)') trim(subname),' ny_global         = ',ny_global
+       write(logunit,'(3a)')    trim(subname),' restfilm          = ',trim(restfilm)
+       write(logunit,'(2a,l6)') trim(subname),' skip_restart_read = ',skip_restart_read
+       write(logunit,'(2a,l6)') trim(subname),' export_all        = ',export_all
     endif
 
     ! Validate sdat datamode
@@ -458,16 +452,13 @@ contains
     !--------------------
 
     if (first_time) then
-       ! Initialize datamode module pointers AND dfields
+       ! Initialize datamode export state and stream pointers
        select case (trim(datamode))
-       case('glc_forcing_mct')
-          call dlnd_datamode_glc_forcing_init_pointers(exportState, sdat, dfields, model_frac, datamode, logunit, mainproc, rc)
-          if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       case('glc_forcing')
-          call dlnd_datamode_glc_forcing_init_pointers(exportState, sdat, dfields, model_frac, datamode, logunit, mainproc, rc)
+       case('glc_forcing_mct','glc_forcing')
+          call dlnd_datamode_glc_forcing_init_pointers(exportState, sdat, model_frac, datamode, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('rof_forcing')
-          call dlnd_datamode_rof_forcing_init_pointers(exportState, sdat, dfields, model_frac, logunit, mainproc, rc)
+          call dlnd_datamode_rof_forcing_init_pointers(exportState, sdat, model_frac, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case default
           call shr_log_error(' ERROR illegal dlnd datamode = '//trim(datamode), rc=rc)
@@ -487,23 +478,16 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_TraceRegionExit('dlnd_strdata_advance')
 
-    ! copy all fields from streams to export state as default
-    ! This automatically will update the fields in the export state
-    call ESMF_TraceRegionEnter('dlnd_dfield_copy')
-    call dshr_dfield_copy(dfields, sdat, rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_TraceRegionExit('dlnd_dfield_copy')
-
-    if (trim(datamode) == 'glc_forcing_mct' .or. trim(datamode) == 'glc_forcing' ) then
-       call dlnd_datamode_glc_forcing_advance(exportState, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    else if (trim(datamode) == 'rof_forcing') then
-       call dlnd_datamode_rof_forcing_advance(exportState, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    else
+    ! determine data model behavior based on the mode
+    select case (trim(datamode))
+    case('glc_forcing_mct','glc_forcing')
+       call dlnd_datamode_glc_forcing_advance()
+    case('rof_forcing')
+       call dlnd_datamode_rof_forcing_advance()
+    case default
        call shr_log_error(' ERROR illegal dlnd datamode = '//trim(datamode), rc=rc)
        return
-    end if
+    end select
 
     call ESMF_TraceRegionExit('DLND_RUN')
 
