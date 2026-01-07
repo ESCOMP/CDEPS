@@ -3516,19 +3516,19 @@
       <meshfile>none</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_global_simyr_1750-2014_CMIP6_c180929.nc</file>
+      <file>$DIN_LOC_ROOT/atm/datm7/CO2/co2_input4MIPs_GHGConcentrations_CMIP_CR-CMIP-1-0-0_gm_1750-2022.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>CO2   Sa_co2diag</var>
+      <var>co2   Sa_co2diag</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
       <mapalgo>none</mapalgo>
     </stream_mapalgo>
     <stream_vectors>null</stream_vectors>
-    <stream_year_align>1850</stream_year_align>
-    <stream_year_first>1850</stream_year_first>
-    <stream_year_last>2014</stream_year_last>
+    <stream_year_align>1750</stream_year_align>
+    <stream_year_first>1750</stream_year_first>
+    <stream_year_last>2022</stream_year_last>
     <stream_offset>0</stream_offset>
     <stream_tintalgo>
       <tintalgo>linear</tintalgo>
