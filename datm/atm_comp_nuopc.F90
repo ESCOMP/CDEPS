@@ -68,6 +68,22 @@ module cdeps_datm_comp
   use datm_datamode_simple_mod  , only : datm_datamode_simple_init_pointers
   use datm_datamode_simple_mod  , only : datm_datamode_simple_advance
 
+  use datm_pres_ndep_mod        , only : datm_pres_ndep_advertise
+  use datm_pres_ndep_mod        , only : datm_pres_ndep_init_pointers
+  use datm_pres_ndep_mod        , only : datm_pres_ndep_advance
+
+  use datm_pres_aero_mod        , only : datm_pres_aero_advertise
+  use datm_pres_aero_mod        , only : datm_pres_aero_init_pointers
+  use datm_pres_aero_mod        , only : datm_pres_aero_advance
+
+  use datm_pres_o3_mod          , only : datm_pres_o3_advertise
+  use datm_pres_o3_mod          , only : datm_pres_o3_init_pointers
+  use datm_pres_o3_mod          , only : datm_pres_o3_advance
+
+  use datm_pres_co2_mod         , only : datm_pres_co2_advertise
+  use datm_pres_co2_mod         , only : datm_pres_co2_init_pointers
+  use datm_pres_co2_mod         , only : datm_pres_co2_advance
+
   implicit none
   private ! except
 
@@ -139,12 +155,12 @@ module cdeps_datm_comp
   logical                      :: diagnose_data = .true.
   integer          , parameter :: main_task   = 0                   ! task number of main task
 #ifdef CESMCOUPLED
-  character(*)     , parameter :: modName       = "(atm_comp_nuopc)"
+  character(len=*) , parameter :: modName = "(atm_comp_nuopc)"
 #else
-  character(*)     , parameter :: modName       = "(cdeps_datm_comp)"
+  character(len=*) , parameter :: modName = "(cdeps_datm_comp)"
 #endif
 
-  character(*), parameter :: u_FILE_u = &
+  character(len=*) , parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -156,7 +172,7 @@ contains
     integer, intent(out) :: rc
 
     ! local variables
-    character(len=*),parameter  :: subname=trim(modName)//':(SetServices) '
+    character(len=*),parameter  :: subname = modName//':(SetServices) '
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -212,10 +228,10 @@ contains
     integer           :: bcasttmp(10)
     character(CL)     :: nextsw_cday_calc
     type(ESMF_VM)     :: vm
-    character(len=*),parameter :: subname=trim(modName) // ':(InitializeAdvertise) '
-    character(*)    ,parameter :: F00 = "('(" // trim(modName) // ") ',8a)"
-    character(*)    ,parameter :: F01 = "('(" // trim(modName) // ") ',a,2x,i8)"
-    character(*)    ,parameter :: F02 = "('(" // trim(modName) // ") ',a,l6)"
+    character(len=*),parameter :: subname = modName // ':(InitializeAdvertise) '
+    character(*)    ,parameter :: F00 = "('(" // modName // ") ',8a)"
+    character(*)    ,parameter :: F01 = "('(" // modName // ") ',a,2x,i8)"
+    character(*)    ,parameter :: F02 = "('(" // modName // ") ',a,l6)"
     !-------------------------------------------------------------------------------
 
     namelist / datm_nml / &
@@ -370,23 +386,33 @@ contains
        return
     endif
 
-    ! Advertise datm fields
+    ! Advertise fields that ARE NOT datamode specific
+    if (flds_co2) then
+       call datm_pres_co2_advertise(fldsExport, datamode)
+    end if
+    if (flds_preso3) then
+       call datm_pres_o3_advertise(fldsExport)
+    end if
+    if (flds_presndep) then
+       call datm_pres_ndep_advertise(fldsExport)
+    end if
+    if (flds_presaero) then
+       call datm_pres_aero_advertise(fldsExport)
+    end if
+
+    ! Advertise fields that ARE datamode specific
     select case (trim(datamode))
     case ('CORE2_NYF', 'CORE2_IAF')
-       call datm_datamode_core2_advertise(exportState, fldsExport, flds_scalar_name, &
-            flds_co2, flds_wiso, flds_presaero, flds_presndep, rc)
+       call datm_datamode_core2_advertise(exportState, fldsExport, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('CORE_IAF_JRA', 'CORE_RYF6162_JRA', 'CORE_RYF8485_JRA', 'CORE_RYF9091_JRA', 'CORE_RYF0304_JRA')
-       call datm_datamode_jra_advertise(exportState, fldsExport, flds_scalar_name, &
-            flds_co2, flds_wiso, flds_presaero, flds_presndep, rc)
+       call datm_datamode_jra_advertise(exportState, fldsExport, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('CLMNCEP')
-       call datm_datamode_clmncep_advertise(exportState, fldsExport, flds_scalar_name, &
-            flds_co2, flds_wiso, flds_presaero, flds_presndep, flds_preso3, rc)
+       call datm_datamode_clmncep_advertise(exportState, fldsExport, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('CPLHIST')
-       call datm_datamode_cplhist_advertise(exportState, fldsExport, flds_scalar_name, &
-            flds_co2, flds_wiso, flds_presaero, flds_presndep, rc)
+       call datm_datamode_cplhist_advertise(exportState, fldsExport, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('ERA5')
        call datm_datamode_era5_advertise(exportState, fldsExport, flds_scalar_name, rc)
@@ -429,7 +455,7 @@ contains
     real(R8)                :: orbObliqr     ! orb obliquity (radians)
     logical                 :: isPresent, isSet
     real(R8)                :: dayofYear
-    character(len=*), parameter :: subname=trim(modName)//':(InitializeRealize) '
+    character(len=*), parameter :: subname = modName//':(InitializeRealize) '
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -529,7 +555,7 @@ contains
     real(R8)                :: orbLambm0     ! orb mean long of perhelion (radians)
     real(R8)                :: orbObliqr     ! orb obliquity (radians)
     real(R8)                :: dayofYear
-    character(len=*),parameter  :: subname=trim(modName)//':(ModelAdvance) '
+    character(len=*),parameter  :: subname = modName//':(ModelAdvance) '
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -603,7 +629,7 @@ contains
 
     ! local variables
     logical :: first_time = .true.
-    character(len=CL) :: rpfile        
+    character(len=CL) :: rpfile
     character(*), parameter :: subName = '(datm_comp_run) '
     !-------------------------------------------------------------------------------
 
@@ -616,11 +642,35 @@ contains
     !--------------------
 
     if (first_time) then
+       ! Initialize data pointers for co2 (non datamode specific)
+       if (flds_co2) then
+          call datm_pres_co2_init_pointers(exportState, sdat, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       end if
+
+       ! Initialize data pointers for o3 (non datamode specific)
+       if (flds_preso3) then
+          call datm_pres_o3_init_pointers(exportState, sdat, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       end if
+
+       ! Initialize data pointers for nitrogen deposition (non datamode specific and use of ungridded dimensions)
+       if (flds_presndep) then
+          call datm_pres_ndep_init_pointers(exportState, sdat, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       end if
+
+       ! Initialize data pointers for prescribed aerosols (non datamode specific and use of ungridded dimensions)
+       if (flds_presaero) then
+          call datm_pres_aero_init_pointers(exportState, sdat, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       end if
+
        ! Initialize dfields
        call datm_init_dfields(rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-       ! Initialize datamode module ponters
+       ! Initialize datamode module pointers
        select case (trim(datamode))
        case('CORE2_NYF','CORE2_IAF')
           call datm_datamode_core2_init_pointers(exportState, sdat, datamode, factorfn_mesh, factorfn_data, rc)
@@ -650,7 +700,10 @@ contains
           call shr_get_rpointer_name(gcomp, 'atm', target_ymd, target_tod, rpfile, 'read', rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           select case (trim(datamode))
-          case('CORE2_NYF','CORE2_IAF','CORE_IAF_JRA','CORE_RYF6162_JRA','CORE_RYF8485_JRA','CORE_RYF9091_JRA','CORE_RYF0304_JRA','CLMNCEP','CPLHIST','ERA5','GEFS','SIMPLE')
+          case('CORE2_NYF','CORE2_IAF','CORE_IAF_JRA',&
+               'CORE_RYF6162_JRA','CORE_RYF8485_JRA' ,&
+               'CORE_RYF9091_JRA','CORE_RYF0304_JRA' ,&
+               'CLMNCEP','CPLHIST','ERA5','GEFS','SIMPLE')
              call dshr_restart_read(restfilm, rpfile, logunit, my_task, mpicom, sdat, rc)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
           case default
@@ -675,6 +728,24 @@ contains
     call shr_strdata_advance(sdat, target_ymd, target_tod, logunit, 'datm', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_TraceRegionExit('datm_strdata_advance')
+
+    ! Update export state for non data-mode specific fields
+    if (flds_co2) then
+       call datm_pres_co2_advance()
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    end if
+    if (flds_preso3) then
+       call datm_pres_o3_advance()
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    end if
+    if (flds_presndep) then
+       call datm_pres_ndep_advance()
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    end if
+    if (flds_presaero) then
+       call datm_pres_aero_advance()
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    end if
 
     ! copy all fields from streams to export state as default
     ! This automatically will update the fields in the export state
@@ -718,9 +789,12 @@ contains
        call shr_get_rpointer_name(gcomp, 'atm', target_ymd, target_tod, rpfile, 'write', rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        select case (trim(datamode))
-       case('CORE2_NYF','CORE2_IAF','CORE_IAF_JRA','CORE_RYF6162_JRA','CORE_RYF8485_JRA','CORE_RYF9091_JRA','CORE_RYF0304_JRA','CLMNCEP','CPLHIST','ERA5','GEFS','SIMPLE')
-          call dshr_restart_write(rpfile, case_name, 'datm', inst_suffix, target_ymd, target_tod, logunit, &
-               my_task, sdat, rc)
+       case('CORE2_NYF','CORE2_IAF','CORE_IAF_JRA',&
+            'CORE_RYF6162_JRA','CORE_RYF8485_JRA' ,&
+            'CORE_RYF9091_JRA','CORE_RYF0304_JRA' ,&
+            'CLMNCEP','CPLHIST','ERA5','GEFS','SIMPLE')
+          call dshr_restart_write(rpfile, case_name, 'datm', inst_suffix, &
+               target_ymd, target_tod, logunit, my_task, sdat, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case default
           call shr_log_error(subName//'datamode '//trim(datamode)//' not recognized', rc=rc)
@@ -754,13 +828,10 @@ contains
       integer, intent(out)   :: rc
 
       ! local variables
-      integer                         :: n
-      character(CS)                   :: strm_flds2(2)
-      character(CS)                   :: strm_flds3(3)
-      character(CS)                   :: strm_flds4(4)
-      integer                         :: rank
-      integer                         :: fieldcount
-      type(ESMF_Field)                :: lfield
+      integer          :: n
+      integer          :: rank
+      integer          :: fieldcount
+      type(ESMF_Field) :: lfield
       character(ESMF_MAXSTR) ,pointer :: lfieldnames(:)
       character(*), parameter   :: subName = "(datm_init_dfields) "
       !-------------------------------------------------------------------------------
@@ -773,63 +844,18 @@ contains
       call ESMF_StateGet(exportState, itemNameList=lfieldnames, rc=rc)
       if (chkerr(rc,__LINE__,u_FILE_u)) return
       do n = 1, fieldCount
-         call ESMF_LogWrite(trim(subname)//': field name = '//trim(lfieldnames(n)), ESMF_LOGMSG_INFO)
+         call ESMF_LogWrite(subname//': field name = '//trim(lfieldnames(n)), ESMF_LOGMSG_INFO)
          call ESMF_StateGet(exportState, itemName=trim(lfieldnames(n)), field=lfield, rc=rc)
          if (chkerr(rc,__LINE__,u_FILE_u)) return
          call ESMF_FieldGet(lfield, rank=rank, rc=rc)
          if (chkerr(rc,__LINE__,u_FILE_u)) return
-         if (rank == 1) then
+         ! Currently rank==2 fields are handled in datm_pres_aero_mod.F90, datm_pres_co2_mod.F90
+         ! and datm_pres_ndep_mod.F90
+         ! The rank one Sa_o3 field is handled in datm_pres_o3_mod.F90
+         if (rank == 1 .and. trim(lfieldnames(n)) /= 'Sa_o3') then
             call dshr_dfield_add( dfields, sdat, trim(lfieldnames(n)), trim(lfieldnames(n)), &
                  exportState, logunit, mainproc, rc=rc)
             if (ChkErr(rc,__LINE__,u_FILE_u)) return
-         else if (rank == 2) then
-            ! The following maps stream input fields to export fields that have an ungridded dimension
-            ! TODO: in the future it might be better to change the format of the streams file to have two more entries
-            ! that could denote how the stream variables are mapped to export fields that have an ungridded dimension
-
-            select case (trim(lfieldnames(n)))
-            case('Faxa_bcph')
-               strm_flds3 = (/'Faxa_bcphidry', 'Faxa_bcphodry', 'Faxa_bcphiwet'/)
-               call dshr_dfield_add(dfields, sdat, trim(lfieldnames(n)), strm_flds3, exportState, logunit, mainproc, rc)
-               if (ChkErr(rc,__LINE__,u_FILE_u)) return
-            case('Faxa_ocph')
-               strm_flds3 = (/'Faxa_ocphidry', 'Faxa_ocphodry', 'Faxa_ocphiwet'/)
-               call dshr_dfield_add(dfields, sdat, trim(lfieldnames(n)), strm_flds3, exportState, logunit, mainproc, rc)
-               if (ChkErr(rc,__LINE__,u_FILE_u)) return
-            case('Faxa_dstwet')
-               strm_flds4 = (/'Faxa_dstwet1', 'Faxa_dstwet2', 'Faxa_dstwet3', 'Faxa_dstwet4'/)
-               call dshr_dfield_add(dfields, sdat, trim(lfieldnames(n)), strm_flds4, exportState, logunit, mainproc, rc)
-               if (ChkErr(rc,__LINE__,u_FILE_u)) return
-            case('Faxa_dstdry')
-               strm_flds4 = (/'Faxa_dstdry1', 'Faxa_dstdry2', 'Faxa_dstdry3', 'Faxa_dstdry4'/)
-               call dshr_dfield_add(dfields, sdat, trim(lfieldnames(n)), strm_flds4, exportState, logunit, mainproc, rc)
-               if (ChkErr(rc,__LINE__,u_FILE_u)) return
-            case('Faxa_rainc_wiso')
-               strm_flds3 = (/'Faxa_rainc_16O', 'Faxa_rainc_18O', 'Faxa_rainc_HDO'/)
-               call dshr_dfield_add(dfields, sdat, trim(lfieldnames(n)), strm_flds3, exportState, logunit, mainproc, rc)
-               if (ChkErr(rc,__LINE__,u_FILE_u)) return
-            case('Faxa_rainl_wiso')
-               strm_flds3 = (/'Faxa_rainl_16O', 'Faxa_rainl_18O', 'Faxa_rainl_HDO'/)
-               call dshr_dfield_add(dfields, sdat, trim(lfieldnames(n)), strm_flds3, exportState, logunit, mainproc, rc)
-               if (ChkErr(rc,__LINE__,u_FILE_u)) return
-            case('Faxa_snowc_wiso')
-               strm_flds3 = (/'Faxa_snowc_16O', 'Faxa_snowc_18O', 'Faxa_snowc_HDO'/)
-               call dshr_dfield_add(dfields, sdat, trim(lfieldnames(n)), strm_flds3, exportState, logunit, mainproc, rc)
-               if (ChkErr(rc,__LINE__,u_FILE_u)) return
-            case('Faxa_snowl_wiso')
-               strm_flds3 = (/'Faxa_snowl_16O', 'Faxa_snowl_18O', 'Faxa_snowl_HDO'/)
-               call dshr_dfield_add(dfields, sdat, trim(lfieldnames(n)), strm_flds3, exportState, logunit, mainproc, rc)
-               if (ChkErr(rc,__LINE__,u_FILE_u)) return
-            case('Faxa_ndep')
-               strm_flds2 = (/'Faxa_ndep_nhx', 'Faxa_ndep_noy'/)
-               call dshr_dfield_add(dfields, sdat, trim(lfieldnames(n)), strm_flds2, exportState, logunit, mainproc, rc)
-               if (ChkErr(rc,__LINE__,u_FILE_u)) return
-            case('cpl_scalars')
-               continue
-            case default
-               call shr_log_error(subName//'field '//trim(lfieldnames(n))//' not recognized', rc=rc)
-               return
-            end select
          end if
       end do
     end subroutine datm_init_dfields
