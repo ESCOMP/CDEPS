@@ -155,12 +155,12 @@ module cdeps_datm_comp
   logical                      :: diagnose_data = .true.
   integer          , parameter :: main_task   = 0                   ! task number of main task
 #ifdef CESMCOUPLED
-  character(*)     , parameter :: modName = "(atm_comp_nuopc)"
+  character(len=*) , parameter :: modName = "(atm_comp_nuopc)"
 #else
-  character(*)     , parameter :: modName = "(cdeps_datm_comp)"
+  character(len=*) , parameter :: modName = "(cdeps_datm_comp)"
 #endif
 
-  character(*), parameter :: u_FILE_u = &
+  character(len=*) , parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
