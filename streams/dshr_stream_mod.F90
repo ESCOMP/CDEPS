@@ -244,7 +244,6 @@ contains
           p => item(getElementsByTagname(streamnode, "mapalgo"), 0)
           if (associated(p)) then
              call extractDataContent(p, streamdat(i)%mapalgo)
-             write(6,*)'DEBUG: shr_stream_mapalgo = '//trim(streamdat(i)%mapalgo)
              if (streamdat(i)%mapalgo /= shr_stream_mapalgo_bilinear .and. &
                  streamdat(i)%mapalgo /= shr_stream_mapalgo_redist   .and. &
                  streamdat(i)%mapalgo /= shr_stream_mapalgo_nn       .and. &
@@ -252,7 +251,8 @@ contains
                  streamdat(i)%mapalgo /= shr_stream_mapalgo_consd    .and. &
                  streamdat(i)%mapalgo(1:8) /= shr_stream_mapalgo_mapfile .and. &
                  streamdat(i)%mapalgo /= shr_stream_mapalgo_none) then
-                call shr_log_error("mapaglo must have a value of either bilinear, redist, nn, consf or consd", rc=rc)
+                call shr_log_error("mapaglo must have a value of either bilinear, redist, nn, consf, consd or "//&
+                     " mapalgo(1:8) must equal mapfile: ", rc=rc)
                 return
              end if
           endif
