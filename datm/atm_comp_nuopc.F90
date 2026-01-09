@@ -160,7 +160,7 @@ module cdeps_datm_comp
   character(len=*) , parameter :: modName = "(cdeps_datm_comp)"
 #endif
 
-  character(len=*), parameter :: u_FILE_u = &
+  character(len=*) , parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
