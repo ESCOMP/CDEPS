@@ -27,24 +27,15 @@
       <option name="wallclock"> 00:10:00 </option>
     </options>
   </test>
-
-  <test compset="DATAMODELTEST" grid="f10_f10_ais8gris4_mg37" name="SMS_D_Ld3">
-    <machines>
-      <machine name="derecho" compiler="gnu" category="aux_cdeps"/>
-      <machine name="derecho" compiler="gnu" category="aux_cdeps_noresm"/>
-    </machines>
-    <options>
-      <option name="wallclock"> 00:10:00 </option>
-    </options>
-  </test>
-
-    <test compset="2000_SATM_SLND_SICE_SOCN_SROF_DGLC%NOEVOLVE_SWAV" grid="f19_tn14_gris4" name="SMS_D_Ly3">
-    <machines>
-      <machine name="betzy" compiler="gnu" category="aux_cdeps_noresm"/>
-    </machines>
-    <options>
-      <option name="wallclock"> 00:30:00 </option>
-    </options>
-  </test>
+  <!-- NOTE: currently there is no compset DATAMODELTEST -->
+  <!-- <test compset="DATAMODELTEST" grid="f10_f10_ais8gris4_mg37" name="SMS_D_Ld3"> -->
+  <!--   <machines> -->
+  <!--     <machine name="derecho" compiler="gnu" category="aux_cdeps"/> -->
+  <!--     <machine name="betzy" compiler="gnu" category="aux_cdeps_noresm"/> -->
+  <!--   </machines> -->
+  <!--   <options> -->
+  <!--     <option name="wallclock"> 00:10:00 </option> -->
+  <!--   </options> -->
+  <!-- </test> -->
 
 </testlist>

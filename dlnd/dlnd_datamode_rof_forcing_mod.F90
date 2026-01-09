@@ -11,6 +11,7 @@ module dlnd_datamode_rof_forcing_mod
    use dshr_strdata_mod        , only : shr_strdata_type, shr_strdata_get_stream_pointer
    use dshr_fldlist_mod        , only : fldlist_type, dshr_fldlist_add
    use shr_lnd2rof_tracers_mod , only : shr_lnd2rof_tracers_readnl
+  use shr_strconvert_mod       , only : toString
 
    implicit none
    private ! except
@@ -43,6 +44,10 @@ module dlnd_datamode_rof_forcing_mod
    real(r8), pointer :: strm_Flrl_irrig(:)  => null()
 
    integer :: ntracers_nonh2o
+
+   ! Note that setting the maximum value to 99 is due to the i2.2 format below
+   ! for generating the strm_fld field names
+   integer, parameter :: ntracers_nonh2o_max = 99
 
    character(*), parameter :: nullstr = 'null'
    character(*), parameter :: u_FILE_u = &
@@ -81,9 +86,10 @@ contains
       call shr_lnd2rof_tracers_readnl('drv_flds_in', lnd2rof_tracers)
       if (lnd2rof_tracers /= ' ') then
          ntracers_nonh2o = shr_string_listGetNum(lnd2rof_tracers)
-         if (ntracers_nonh2o > 99) then
+         if (ntracers_nonh2o > ntracers_nonh2o_max) then
             rc = ESMF_FAILURE
-            call shr_log_error(subName//': ERROR: number of tracers must be less than 99', rc=rc)
+            call shr_log_error(subName//': ERROR: number of tracers must be less than '//&
+                 trim(toString(ntracers_nonh2o_max)), rc=rc)
             return
          end if
       else
@@ -146,12 +152,14 @@ contains
       call dshr_state_getfldptr(exportState, fldname='Sl_lfrin', fldptr1=lfrac, rc=rc)
       if (chkerr(rc,__LINE__,u_FILE_u)) return
       lfrac(:) = model_frac(:) ! Set fractional land pointer in export state
-      if (ntracers_nonh2o > 1) then
-         call dshr_state_getfldptr(exportState, fldname='Flrl_rofsur_nonh2o', fldptr2=Flrl_rofsur_nonh2o_2d, rc=rc)
-         if (chkerr(rc,__LINE__,u_FILE_u)) return
-      else
-         call dshr_state_getfldptr(exportState, fldname='Flrl_rofsur_nonh2o', fldptr1=Flrl_rofsur_nonh2o_1d, rc=rc)
-         if (chkerr(rc,__LINE__,u_FILE_u)) return
+      if (ntracers_nonh2o > 0) then
+         if (ntracers_nonh2o > 1) then
+            call dshr_state_getfldptr(exportState, fldname='Flrl_rofsur_nonh2o', fldptr2=Flrl_rofsur_nonh2o_2d, rc=rc)
+            if (chkerr(rc,__LINE__,u_FILE_u)) return
+         else
+            call dshr_state_getfldptr(exportState, fldname='Flrl_rofsur_nonh2o', fldptr1=Flrl_rofsur_nonh2o_1d, rc=rc)
+            if (chkerr(rc,__LINE__,u_FILE_u)) return
+         end if
       end if
       call dshr_state_getfldptr(exportState, fldname='Flrl_rofsur', fldptr1=Flrl_rofsur, rc=rc)
       if (chkerr(rc,__LINE__,u_FILE_u)) return
@@ -253,7 +261,7 @@ contains
       end do
 
       if (associated(strm_Flrl_irrig)) then
-         do ni = 1,size(Flrl_rofsur)
+         do ni = 1,size(Flrl_irrig)
             if (lfrac(ni) == 0._r8) then
                Flrl_irrig(ni)  = SHR_CONST_SPVAL
             else

@@ -94,7 +94,7 @@
     <default_value>UNSET</default_value>
     <group>run_component_drof</group>
     <file>env_run.xml</file>
-    <desc>case name for coupler history data mode when DROF_MODE is CPLHIST mode</desc>
+    <desc>case name for coupler history data mode (only used when DROF_MODE is CPLHIST mode)</desc>
   </entry>
 
   <entry id="DROF_CPLHIST_YR_ALIGN">
