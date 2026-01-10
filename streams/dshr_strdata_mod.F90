@@ -91,13 +91,13 @@ module dshr_strdata_mod
   ! note that the fields in fldbun_stream_lb and fldbun_stream_ub contain the the names fldlist_model
 
   type shr_strdata_perstream
-     character(CL)                       :: stream_meshfile                 ! stream mesh file from stream txt file
+     character(len=CL)                   :: stream_meshfile                 ! stream mesh file from stream txt file
      type(ESMF_Mesh)                     :: stream_mesh                     ! stream mesh created from stream mesh file
      type(io_desc_t)                     :: stream_pio_iodesc               ! stream pio descriptor
      logical                             :: stream_pio_iodesc_set =.false.  ! true=>pio iodesc has been set
      type(ESMF_RouteHandle)              :: routehandle                     ! stream n -> model mesh mapping
-     character(CL), allocatable          :: fldlist_stream(:)               ! names of stream file fields
-     character(CL), allocatable          :: fldlist_model(:)                ! names of stream model fields
+     character(len=CL), allocatable      :: fldlist_stream(:)               ! names of stream file fields
+     character(len=CL), allocatable      :: fldlist_model(:)                ! names of stream model fields
      integer                             :: stream_nlev                     ! number of vertical levels in stream
      real(r8), allocatable               :: stream_vlevs(:)                 ! values of vertical levels in stream
      integer                             :: stream_lb                       ! index of the Lowerbound (LB) in fldlist_stream
@@ -134,7 +134,7 @@ module dshr_strdata_mod
      integer, pointer               :: model_gindex(:)                 ! model global index spzce
      integer                        :: model_gsize                     ! model global domain size
      type(ESMF_CLock)               :: model_clock                     ! model clock
-     character(CL)                  :: model_calendar = shr_cal_noleap ! model calendar for ymd,tod
+     character(len=CL)              :: model_calendar = shr_cal_noleap ! model calendar for ymd,tod
      integer                        :: ymd, tod                        ! model time
      type(iosystem_desc_t), pointer :: pio_subsystem => null()         ! pio info
      real(r8)                       :: eccen  = SHR_ORB_UNDEF_REAL     ! cosz t-interp info
@@ -457,9 +457,9 @@ contains
     ! local variables
     type(ESMF_Mesh), pointer     :: stream_mesh
     type(ESMF_CalKind_Flag)      :: esmf_caltype    ! esmf calendar type
-    character(CS)                :: calendar        ! calendar name
+    character(len=CS)            :: calendar        ! calendar name
     integer                      :: ns              ! stream index
-    character(CX)                :: fileName        ! generic file name
+    character(len=CX)            :: fileName        ! generic file name
     integer                      :: nfld            ! loop stream field index
     type(ESMF_Field)             :: lfield          ! temporary
     type(ESMF_Field)             :: lfield_dst      ! temporary
@@ -468,8 +468,8 @@ contains
     type(ESMF_VM)                :: vm
     integer                      :: nvars
     integer                      :: i, stream_nlev, index, istat
-    character(CL)                :: stream_vector_names
-    character(CL)                :: mapfile
+    character(len=CL)            :: stream_vector_names
+    character(len=CL)            :: mapfile
     character(len=*), parameter  :: subname='(shr_sdat_init)'
     ! ----------------------------------------------
 
@@ -769,12 +769,12 @@ contains
     type(ESMF_VM)           :: vm
     type(file_desc_t)       :: pioid
     integer                 :: rcode
-    character(CX)           :: filename
+    character(len=CX)       :: filename
     integer                 :: dimid
     type(var_desc_t)        :: varid
     integer                 :: stream_nlev
     integer                 :: old_handle    ! previous setting of pio error handling
-    character(CS)           :: units
+    character(len=CS)       :: units
     integer                 :: istat
     character(len=*), parameter :: subname = '(shr_strdata_get_stream_nlev) '
     ! ----------------------------------------------
@@ -851,7 +851,7 @@ contains
     type(var_desc_t)        :: varid
     type(file_desc_t)       :: pioid
     integer                 :: rcode
-    character(CX)           :: filename
+    character(len=CX)       :: filename
     type(io_desc_t)         :: pio_iodesc
     real(r4), allocatable   :: data_real(:)
     real(r8), allocatable   :: data_double(:)
@@ -999,7 +999,7 @@ contains
     real(r8), pointer                   :: data_v_dst(:)    ! pointer into field bundle
     type(ESMF_Time)                     :: timeLB, timeUB   ! lb and ub times
     type(ESMF_TimeInterval)             :: timeint          ! delta time
-    character(CL)                       :: calendar
+    character(len=CL)                   :: calendar
     integer                             :: dday             ! delta days
     real(r8)                            :: dtime            ! delta time
     integer                             :: year,month,day   ! date year month day
@@ -1457,12 +1457,12 @@ contains
     real(r8)                             :: rDateM,rDateLB,rDateUB  ! model,LB,UB dates with fractional days
     integer                              :: n_lb, n_ub
     integer                              :: i
-    character(CX)                        :: filename_lb
-    character(CX)                        :: filename_ub
-    character(CX)                        :: filename_next
-    character(CX)                        :: filename_prev
+    character(len=CX)                    :: filename_lb
+    character(len=CX)                    :: filename_ub
+    character(len=CX)                    :: filename_next
+    character(len=CX)                    :: filename_prev
     logical                              :: find_bounds
-    character(len=*), parameter              :: subname = '(shr_strdata_readLBUB) '
+    character(len=*), parameter          :: subname = '(shr_strdata_readLBUB) '
     !-------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -1596,7 +1596,7 @@ contains
     ! local variables
     integer                  :: stream_nlev
     type(ESMF_Field)         :: field_dst
-    character(CX)            :: currfile
+    character(len=CX)        :: currfile
     logical                  :: fileexists
     logical                  :: fileopen
     type(file_desc_t)        :: pioid
@@ -1628,10 +1628,10 @@ contains
     real(r8)                 :: coslat, coslon
     real(r8)                 :: scale_factor, add_offset
     integer(i2)              :: fillvalue_i2
-    character(CS)            :: uname, vname
+    character(len=CS)        :: uname, vname
     integer                  :: i, lev
     logical                  :: checkflag = .false.
-    character(CL)            :: errmsg
+    character(len=CL)        :: errmsg
     integer                  :: istat
     character(len=*), parameter  :: subname = '(shr_strdata_readstrm) '
     !-------------------------------------------------------------------------------
@@ -2158,7 +2158,7 @@ contains
     integer                 :: n, m, cnt
     type(var_desc_t)        :: varid
     integer                 :: ndims
-    character(CS)           :: dimname
+    character(len=CS)       :: dimname
     integer, allocatable    :: dimids(:)
     integer, allocatable    :: dimlens(:)
     type(ESMF_DistGrid)     :: distGrid
