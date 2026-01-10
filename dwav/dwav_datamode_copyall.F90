@@ -80,7 +80,7 @@ contains
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Sw_ustokes', fldptr1=Sw_ustokes , rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
-    call dshr_state_getfldptr(exportState, 'Sw_ustokes', fldptr1=Sw_vstokes , rc=rc)
+    call dshr_state_getfldptr(exportState, 'Sw_vstokes', fldptr1=Sw_vstokes , rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
 
     ! Initialize module pointers
@@ -99,7 +99,7 @@ contains
   !===============================================================================
   subroutine dwav_datamode_copyall_advance()
 
-    Sw_lamult(:) = strm_Sw_lamult(:)
+    Sw_lamult(:)  = strm_Sw_lamult(:)
     Sw_ustokes(:) = strm_Sw_ustokes(:)
     Sw_vstokes(:) = strm_Sw_vstokes(:)
 
