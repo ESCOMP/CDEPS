@@ -677,7 +677,7 @@ contains
                   srcTermProcessing=srcTermProcessing_Value, ignoreDegenerate=.true., &
                   unmappedaction=ESMF_UNMAPPEDACTION_IGNORE, rc=rc)
           else if (trim(sdat%stream(ns)%mapalgo(1:8)) == 'mapfile:') then
-             mapfile = trim(sdat%stream(ns)%mapalgo(9:len_trim(sdat%stream(ns)%mapalgo)))
+             mapfile = trim(sdat%stream(ns)%mapalgo(9:))
              call ESMF_FieldSMMStore(sdat%pstrm(ns)%field_stream, lfield_dst, mapfile, &
                   routehandle=sdat%pstrm(ns)%routehandle, &
                   ignoreUnmatchedIndices=.true., &
