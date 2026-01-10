@@ -1,5 +1,6 @@
 project(dwav Fortran)
-set(SRCFILES wav_comp_nuopc.F90)
+set(SRCFILES wav_comp_nuopc.F90
+             dwav_datamode_copyall.F90)
 
 foreach(FILE ${SRCFILES})
   if(EXISTS "${CASEROOT}/SourceMods/src.dwav/${FILE}")

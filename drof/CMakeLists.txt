@@ -1,5 +1,6 @@
 project(drof Fortran)
-set(SRCFILES  rof_comp_nuopc.F90)
+set(SRCFILES  rof_comp_nuopc.F90
+              drof_datamode_copyall.F90)
 
 foreach(FILE ${SRCFILES})
   if(EXISTS "${CASEROOT}/SourceMods/src.drof/${FILE}")

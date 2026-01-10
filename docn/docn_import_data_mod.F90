@@ -7,13 +7,13 @@ module docn_import_data_mod
    use dshr_methods_mod , only : chkerr
 
    implicit none
-   private ! except
+   private
 
    public :: docn_import_data_advertise
 
    private :: docn_get_import_fields
 
-   character(*) , parameter :: u_FILE_u = &
+   character(len=*) , parameter :: u_FILE_u = &
         __FILE__
 
    !===============================================================================
