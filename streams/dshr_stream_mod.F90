@@ -63,31 +63,32 @@ module dshr_stream_mod
   public :: shr_stream_dataDump          ! internal stream data for debugging
   public :: shr_stream_restIO            ! read or write to netcdf restart file
 
-  character(CS),parameter,public :: shr_stream_file_null    = 'not_set'
+  character(len=CS),parameter,public :: shr_stream_file_null    = 'not_set'
 
   ! valid values for time extrapoloation
-  character(CS),parameter,public :: shr_stream_taxis_cycle  = 'cycle'
-  character(CS),parameter,public :: shr_stream_taxis_extend = 'extend'
-  character(CS),parameter,public :: shr_stream_taxis_limit  = 'limit'
+  character(len=CS),parameter,public :: shr_stream_taxis_cycle  = 'cycle'
+  character(len=CS),parameter,public :: shr_stream_taxis_extend = 'extend'
+  character(len=CS),parameter,public :: shr_stream_taxis_limit  = 'limit'
 
   ! valid values for time interpolation
-  character(CS),parameter,public :: shr_stream_tinterp_lower   = 'lower'
-  character(CS),parameter,public :: shr_stream_tinterp_upper   = 'upper'
-  character(CS),parameter,public :: shr_stream_tinterp_nearest = 'nearest'
-  character(CS),parameter,public :: shr_stream_tinterp_linear  = 'linear'
-  character(CS),parameter,public :: shr_stream_tinterp_coszen  = 'coszen'
+  character(len=CS),parameter,public :: shr_stream_tinterp_lower   = 'lower'
+  character(len=CS),parameter,public :: shr_stream_tinterp_upper   = 'upper'
+  character(len=CS),parameter,public :: shr_stream_tinterp_nearest = 'nearest'
+  character(len=CS),parameter,public :: shr_stream_tinterp_linear  = 'linear'
+  character(len=CS),parameter,public :: shr_stream_tinterp_coszen  = 'coszen'
 
   ! valid values for mapping interpolation
-  character(CS),parameter,public :: shr_stream_mapalgo_bilinear = 'bilinear'
-  character(CS),parameter,public :: shr_stream_mapalgo_redist   = 'redist'
-  character(CS),parameter,public :: shr_stream_mapalgo_nn       = 'nn'
-  character(CS),parameter,public :: shr_stream_mapalgo_consf    = 'consf'
-  character(CS),parameter,public :: shr_stream_mapalgo_consd    = 'consd'
-  character(CS),parameter,public :: shr_stream_mapalgo_none     = 'none'
+  character(len=CS),parameter,public :: shr_stream_mapalgo_bilinear = 'bilinear'
+  character(len=CS),parameter,public :: shr_stream_mapalgo_redist   = 'redist'
+  character(len=CS),parameter,public :: shr_stream_mapalgo_nn       = 'nn'
+  character(len=CS),parameter,public :: shr_stream_mapalgo_consf    = 'consf'
+  character(len=CS),parameter,public :: shr_stream_mapalgo_consd    = 'consd'
+  character(len=CL),parameter,public :: shr_stream_mapalgo_mapfile  = 'mapfile:'
+  character(len=CS),parameter,public :: shr_stream_mapalgo_none     = 'none'
 
   ! a useful derived type to use inside shr_streamType ---
   type shr_stream_file_type
-     character(CX)         :: name = shr_stream_file_null ! the file name (full pathname)
+     character(len=CX)     :: name = shr_stream_file_null ! the file name (full pathname)
      logical               :: haveData = .false.          ! has t-coord data been read in?
      integer               :: nt = 0                      ! size of time dimension
      integer  ,allocatable :: date(:)                     ! t-coord date: yyyymmdd
@@ -96,8 +97,8 @@ module dshr_stream_mod
   end type shr_stream_file_type
 
   type shr_stream_data_variable
-     character(CS) :: nameinfile
-     character(CS) :: nameinmodel
+     character(len=CS) :: nameinfile
+     character(len=CS) :: nameinmodel
   end type shr_stream_data_variable
 
   type shr_stream_streamType
@@ -112,15 +113,15 @@ module dshr_stream_mod
      integer           :: yearFirst    = -1                     ! first year to use in t-axis (yyyymmdd)
      integer           :: yearLast     = -1                     ! last  year to use in t-axis (yyyymmdd)
      integer           :: yearAlign    = -1                     ! align yearFirst with this model year
-     character(CS)     :: lev_dimname  = 'null'                 ! name of vertical dimension if any
-     character(CS)     :: taxMode      = shr_stream_taxis_cycle ! cycling option for time axis
-     character(CS)     :: tInterpAlgo  = 'linear'               ! algorithm to use for time interpolation
-     character(CS)     :: mapalgo      = 'bilinear'             ! type of mapping - default is 'bilinear'
-     character(CS)     :: readMode     = 'single'               ! stream read model - 'single' or 'full_file'
+     character(len=CS) :: lev_dimname  = 'null'                 ! name of vertical dimension if any
+     character(len=CS) :: taxMode      = shr_stream_taxis_cycle ! cycling option for time axis
+     character(len=CS) :: tInterpAlgo  = 'linear'               ! algorithm to use for time interpolation
+     character(len=CL) :: mapalgo      = 'bilinear'             ! type of mapping - default is 'bilinear'
+     character(len=CS) :: readMode     = 'single'               ! stream read model - 'single' or 'full_file'
      real(r8)          :: dtlimit      = 1.5_r8                 ! delta time ratio limits for time interpolation
      integer           :: offset       = 0                      ! offset in seconds of stream data
-     character(CS)     :: calendar     = shr_cal_noleap         ! stream calendar (obtained from first stream data file)
-     character(CL)     :: meshFile     = ' '                    ! filename for mesh for all fields on stream (full pathname)
+     character(len=CS) :: calendar     = shr_cal_noleap         ! stream calendar (obtained from first stream data file)
+     character(len=CL)     :: meshFile     = ' '                    ! filename for mesh for all fields on stream (full pathname)
      integer           :: k_lvd        = -1                     ! file/sample of least valid date
      integer           :: n_lvd        = -1                     ! file/sample of least valid date
      logical           :: found_lvd    = .false.                ! T <=> k_lvd,n_lvd have been set
@@ -128,9 +129,9 @@ module dshr_stream_mod
      integer           :: n_gvd        = -1                     ! file/sample of greatest valid date
      logical           :: found_gvd    = .false.                ! T <=> k_gvd,n_gvd have been set
      logical           :: fileopen     = .false.                ! is current file open
-     character(CX)     :: currfile     = ' '                    ! current filename
+     character(len=CX) :: currfile     = ' '                    ! current filename
      integer           :: nvars                                 ! number of stream variables
-     character(CL)     :: stream_vectors = 'null'               ! stream vectors names
+     character(len=CL) :: stream_vectors = 'null'               ! stream vectors names
      type(file_desc_t) :: currpioid                             ! current pio file desc
      type(shr_stream_file_type)    , allocatable :: file(:)     ! filenames of stream data files (full pathname)
      type(shr_stream_data_variable), allocatable :: varlist(:)  ! stream variable names (on file and in model)
@@ -248,8 +249,10 @@ contains
                  streamdat(i)%mapalgo /= shr_stream_mapalgo_nn       .and. &
                  streamdat(i)%mapalgo /= shr_stream_mapalgo_consf    .and. &
                  streamdat(i)%mapalgo /= shr_stream_mapalgo_consd    .and. &
+                 streamdat(i)%mapalgo(1:8) /= shr_stream_mapalgo_mapfile .and. &
                  streamdat(i)%mapalgo /= shr_stream_mapalgo_none) then
-                call shr_log_error("mapaglo must have a value of either bilinear, redist, nn, consf or consd", rc=rc)
+                call shr_log_error("mapaglo must have a value of either bilinear, redist, nn, consf, consd or "//&
+                     " mapalgo(1:8) must equal mapfile: ", rc=rc)
                 return
              end if
           endif
@@ -423,7 +426,7 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        call ESMF_VMBroadCast(vm, streamdat(i)%stream_vectors,  CL, 0, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call ESMF_VMBroadCast(vm, streamdat(i)%mapalgo,      CS, 0, rc=rc)
+       call ESMF_VMBroadCast(vm, streamdat(i)%mapalgo,      CL, 0, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        rtmp(1) = streamdat(i)%dtlimit
        call ESMF_VMBroadCast(vm, rtmp, 1, 0, rc=rc)
@@ -512,7 +515,7 @@ contains
     integer       :: nfiles
     integer       :: nvars
     integer       :: istat
-    character(CS) :: calendar ! stream calendar
+    character(len=CS) :: calendar ! stream calendar
     character(len=*),parameter :: subName = '(shr_stream_init_from_inline) '
     ! --------------------------------------------------------
 
@@ -1312,7 +1315,7 @@ contains
     integer,optional            ,intent(out)   :: rc   ! return code
 
     ! local variables
-    character(CX)          :: fileName    ! filename to read
+    character(len=CX)      :: fileName    ! filename to read
     integer                :: nt
     integer                :: num,n
     integer                :: din,dout
@@ -1320,15 +1323,15 @@ contains
     integer                :: lrc
     integer                :: vid,ndims,rcode
     integer,allocatable    :: dids(:)
-    character(CS)          :: units,calendar
-    character(CS)          :: bunits        ! time units (days,secs,...)
+    character(len=CS)      :: units,calendar
+    character(len=CS)      :: bunits        ! time units (days,secs,...)
     integer                :: bdate         ! base date: calendar date
     real(R8)               :: bsec          ! base date: elapsed secs
     integer                :: ndate         ! calendar date of time value
     integer                :: old_handle    ! previous setting of pio error handling
     real(R8)               :: nsec          ! elapsed secs on calendar date
     real(R8),allocatable   :: tvar(:)
-    character(CX)          :: msg
+    character(len=CX)      :: msg
     integer                :: istat
     character(len=*),parameter :: subname = '(shr_stream_readTCoord) '
     !-------------------------------------------------------------------------------
@@ -1642,8 +1645,8 @@ contains
 
     ! local
     integer                :: vid, n
-    character(CX)          :: fileName
-    character(CL)          :: lcal
+    character(len=CX)      :: fileName
+    character(len=CL)      :: lcal
     integer(PIO_OFFSET_KIND) :: attlen
     integer                :: old_handle
     integer                :: rCode
