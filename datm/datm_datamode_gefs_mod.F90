@@ -9,9 +9,7 @@ module datm_datamode_gefs_mod
   use shr_const_mod    , only : shr_const_tkfrz, shr_const_rhofw, shr_const_rdair
   use dshr_methods_mod , only : dshr_state_getfldptr, chkerr
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_get_stream_pointer
-  use dshr_strdata_mod , only : shr_strdata_type
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
-  use dshr_dfield_mod  , only : dfield_type, dshr_dfield_add, dshr_dfield_copy
 
   implicit none
   private
@@ -21,27 +19,45 @@ module datm_datamode_gefs_mod
   public  :: datm_datamode_gefs_advance
 
   ! export state data
-  real(r8), pointer :: Sa_z(:)              => null()
-  real(r8), pointer :: Sa_u(:)              => null()
-  real(r8), pointer :: Sa_v(:)              => null()
-  real(r8), pointer :: Sa_tbot(:)           => null()
-  real(r8), pointer :: Sa_shum(:)           => null()
-  real(r8), pointer :: Sa_pbot(:)           => null()
-  real(r8), pointer :: Sa_u10m(:)           => null()
-  real(r8), pointer :: Sa_v10m(:)           => null()
-  real(r8), pointer :: Sa_t2m(:)            => null()
-  real(r8), pointer :: Sa_q2m(:)            => null()
-  real(r8), pointer :: Sa_pslv(:)           => null()
-  real(r8), pointer :: Faxa_lwdn(:)         => null()
-  real(r8), pointer :: Faxa_rain(:)         => null()
-  real(r8), pointer :: Faxa_snow(:)         => null()
-  real(r8), pointer :: Faxa_swndr(:)        => null()
-  real(r8), pointer :: Faxa_swndf(:)        => null()
-  real(r8), pointer :: Faxa_swvdr(:)        => null()
-  real(r8), pointer :: Faxa_swvdf(:)        => null()
+  real(r8), pointer :: Sa_z(:)            => null()
+  real(r8), pointer :: Sa_u(:)            => null()
+  real(r8), pointer :: Sa_v(:)            => null()
+  real(r8), pointer :: Sa_tbot(:)         => null()
+  real(r8), pointer :: Sa_shum(:)         => null()
+  real(r8), pointer :: Sa_pbot(:)         => null()
+  real(r8), pointer :: Sa_u10m(:)         => null()
+  real(r8), pointer :: Sa_v10m(:)         => null()
+  real(r8), pointer :: Sa_t2m(:)          => null()
+  real(r8), pointer :: Sa_q2m(:)          => null()
+  real(r8), pointer :: Sa_pslv(:)         => null()
+  real(r8), pointer :: Faxa_lwdn(:)       => null()
+  real(r8), pointer :: Faxa_rain(:)       => null()
+  real(r8), pointer :: Faxa_snow(:)       => null()
+  real(r8), pointer :: Faxa_swndr(:)      => null()
+  real(r8), pointer :: Faxa_swndf(:)      => null()
+  real(r8), pointer :: Faxa_swvdr(:)      => null()
+  real(r8), pointer :: Faxa_swvdf(:)      => null()
 
   ! stream data
-  real(r8), pointer :: strm_mask(:)         => null()
+  real(r8), pointer :: strm_Sa_mask(:)    => null()
+  real(r8), pointer :: strm_Sa_z(:)       => null()
+  real(r8), pointer :: strm_Sa_u(:)       => null()
+  real(r8), pointer :: strm_Sa_v(:)       => null()
+  real(r8), pointer :: strm_Sa_tbot(:)    => null()
+  real(r8), pointer :: strm_Sa_shum(:)    => null()
+  real(r8), pointer :: strm_Sa_pbot(:)    => null()
+  real(r8), pointer :: strm_Sa_u10m(:)    => null()
+  real(r8), pointer :: strm_Sa_v10m(:)    => null()
+  real(r8), pointer :: strm_Sa_t2m(:)     => null()
+  real(r8), pointer :: strm_Sa_q2m(:)     => null()
+  real(r8), pointer :: strm_Sa_pslv(:)    => null()
+  real(r8), pointer :: strm_Faxa_lwdn(:)  => null()
+  real(r8), pointer :: strm_Faxa_rain(:)  => null()
+  real(r8), pointer :: strm_Faxa_snow(:)  => null()
+  real(r8), pointer :: strm_Faxa_swndr(:) => null()
+  real(r8), pointer :: strm_Faxa_swndf(:) => null()
+  real(r8), pointer :: strm_Faxa_swvdr(:) => null()
+  real(r8), pointer :: strm_Faxa_swvdf(:) => null()
 
   real(r8) :: tbotmax ! units detector
   real(r8) :: maskmax ! units detector
@@ -49,8 +65,6 @@ module datm_datamode_gefs_mod
   real(r8) , parameter :: tKFrz    = SHR_CONST_TKFRZ
   real(r8) , parameter :: rdair    = SHR_CONST_RDAIR ! dry air gas constant ~ J/K/kg
   real(r8) , parameter :: rhofw    = SHR_CONST_RHOFW ! density of fresh water ~ kg/m^3
-
-  type(dfield_type)  , pointer :: dfields    => null()
 
   character(len=*), parameter :: nullstr = 'undefined'
   character(len=*), parameter :: u_FILE_u = &
@@ -124,24 +138,63 @@ contains
 
     rc = ESMF_SUCCESS
 
-    ! Initialize dfields arrays for export fields with no ungridded dimension
-    ! and that have a corresponding stream field
-    call ESMF_StateGet(exportState, itemCount=fieldCount, rc=rc)
-    if (chkerr(rc,__LINE__,u_FILE_u)) return
-    allocate(lfieldnames(fieldCount))
-    call ESMF_StateGet(exportState, itemNameList=lfieldnames, rc=rc)
-    if (chkerr(rc,__LINE__,u_FILE_u)) return
-    do n = 1, fieldCount
-       call ESMF_LogWrite(subname//': field name = '//trim(lfieldnames(n)), ESMF_LOGMSG_INFO)
-       call ESMF_StateGet(exportState, itemName=trim(lfieldnames(n)), field=lfield, rc=rc)
-       if (chkerr(rc,__LINE__,u_FILE_u)) return
-       call dshr_dfield_add( dfields, sdat, trim(lfieldnames(n)), trim(lfieldnames(n)), &
-            exportState, logunit, mainproc, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    end do
-
     ! initialize pointers for module level stream arrays
-    call shr_strdata_get_stream_pointer( sdat, 'Sa_mask'   , strm_mask , rc)
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_mask', strm_Sa_mask , requirePointer=.true., &
+         errmsg=subname//'ERROR: strm_Sa_mask must be associated for gefs datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_z', strm_Sa_z , requirePointer=.true., &
+         errmsg=subname//'ERROR: strm_Sa_z must be associated for gefs datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_u', strm_Sa_u , requirePointer=.true., &
+         errmsg=subname//'ERROR: strm_Sa_u must be associated for gefs datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_v', strm_Sa_v , requirePointer=.true., &
+         errmsg=subname//'ERROR: strm_Sa_v must be associated for gefs datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_tbot', strm_Sa_tbot , requirePointer=.true., &
+         errmsg=subname//'ERROR: strm_Sa_tbot must be associated for gefs datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_pbot', strm_Sa_pbot , requirePointer=.true., &
+         errmsg=subname//'ERROR: strm_Sa_pbot must be associated for gefs datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_shum', strm_Sa_shum , requirePointer=.true., &
+         errmsg=subname//'ERROR: strm_Sa_shum must be associated for gefs datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_u10m', strm_Sa_u10m , requirePointer=.true., &
+         errmsg=subname//'ERROR: strm_Sa_u10m must be associated for gefs datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_v10m', strm_Sa_v10m , requirePointer=.true., &
+         errmsg=subname//'ERROR: strm_Sa_v10m must be associated for gefs datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_t2m', strm_Sa_t2m , requirePointer=.true., &
+         errmsg=subname//'ERROR: strm_Sa_t2m must be associated for gefs datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_q2m', strm_Sa_q2m , requirePointer=.true., &
+         errmsg=subname//'ERROR: strm_Sa_q2m must be associated for gefs datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_pslv', strm_Sa_pslv , requirePointer=.true., &
+         errmsg=subname//'ERROR: strm_Sa_pslv must be associated for gefs datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_rain', strm_Faxa_rain , requirePointer=.true., &
+         errmsg=subname//'ERROR: strm_Faxa_rain must be associated for gefs datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_snow', strm_Faxa_snow , requirePointer=.true., &
+         errmsg=subname//'ERROR: strm_Faxa_snow must be associated for gefs datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_swvdr', strm_Faxa_swvdr , requirePointer=.true., &
+         errmsg=subname//'ERROR: strm_Faxa_swvdr must be associated for gefs datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_swvdf', strm_Faxa_swvdf , requirePointer=.true., &
+         errmsg=subname//'ERROR: strm_Faxa_swvdf must be associated for gefs datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_swndr', strm_Faxa_swndr , requirePointer=.true., &
+         errmsg=subname//'ERROR: strm_Faxa_swndr must be associated for gefs datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_swndf', strm_Faxa_swndf , requirePointer=.true., &
+         errmsg=subname//'ERROR: strm_Faxa_swndf must be associated for gefs datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_lwdn', strm_Faxa_lwdn , requirePointer=.true., &
+         errmsg=subname//'ERROR: strm_Faxa_lwdn must be associated for gefs datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! get export state pointers
@@ -161,15 +214,15 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Sa_v10m'    , fldptr1=Sa_v10m    , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call dshr_state_getfldptr(exportState, 'Sa_t2m'    , fldptr1=Sa_t2m    , rc=rc)
+    call dshr_state_getfldptr(exportState, 'Sa_t2m'     , fldptr1=Sa_t2m     , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call dshr_state_getfldptr(exportState, 'Sa_q2m'    , fldptr1=Sa_q2m    , rc=rc)
+    call dshr_state_getfldptr(exportState, 'Sa_q2m'     , fldptr1=Sa_q2m     , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Sa_pslv'    , fldptr1=Sa_pslv    , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Faxa_rain'  , fldptr1=Faxa_rain  , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call dshr_state_getfldptr(exportState, 'Faxa_snow' , fldptr1=Faxa_snow, rc=rc)
+    call dshr_state_getfldptr(exportState, 'Faxa_snow'  , fldptr1=Faxa_snow  , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Faxa_swvdr' , fldptr1=Faxa_swvdr , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -186,7 +239,6 @@ contains
 
   !===============================================================================
   subroutine datm_datamode_gefs_advance(exportstate, sdat, mainproc, logunit, rc)
-
 
     use ESMF, only: ESMF_VMGetCurrent, ESMF_VMAllReduce, ESMF_REDUCE_MAX, ESMF_VM
 
@@ -208,13 +260,14 @@ contains
 
     rc = ESMF_SUCCESS
 
-    lsize = size(strm_mask)
+    lsize = size(strm_Sa_mask)
 
     if (first_time) then
        call ESMF_VMGetCurrent(vm, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
        ! determine tbotmax (see below for use)
-       rtmp(1) = maxval(Sa_tbot(:))
+       rtmp(1) = maxval(strm_Sa_tbot(:))
        call ESMF_VMAllReduce(vm, rtmp, rtmp(2:), 1, ESMF_REDUCE_MAX, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        tbotmax = rtmp(2)
@@ -222,7 +275,7 @@ contains
        if (mainproc) write(logunit,*) subname,' tbotmax = ',tbotmax
 
        ! determine maskmax (see below for use)
-       rtmp(1) = maxval(strm_mask(:))
+       rtmp(1) = maxval(strm_Sa_mask(:))
        call ESMF_VMAllReduce(vm, rtmp, rtmp(2:), 1, ESMF_REDUCE_MAX, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        maskmax = rtmp(2)
@@ -232,15 +285,27 @@ contains
        first_time = .false.
     end if
 
-    ! copy all fields from streams to export state as default
-    ! This automatically will update the fields in the export state
-    call ESMF_TraceRegionEnter('datm_gefs_dfield_copy')
-    call dshr_dfield_copy(dfields, sdat, rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_TraceRegionExit('datm_gefs_dfield_copy')
+    Sa_z(:)       = strm_Sa_z(:)
+    Sa_u(:)       = strm_Sa_u(:)
+    Sa_v(:)       = strm_Sa_v(:)
+    Sa_shum(:)    = strm_Sa_shum(:)
+    Sa_pbot(:)    = strm_Sa_pbot(:)
+    Sa_u10m(:)    = strm_Sa_u10m(:)
+    Sa_v10m(:)    = strm_Sa_v10m(:)
+    Sa_t2m(:)     = strm_Sa_t2m(:)
+    Sa_q2m(:)     = strm_Sa_q2m(:)
+    Sa_pslv(:)    = strm_Sa_pslv(:)
+    Faxa_lwdn(:)  = strm_Faxa_lwdn(:)
+    Faxa_rain(:)  = strm_Faxa_rain(:)
+    Faxa_snow(:)  = strm_Faxa_snow(:)
+    Faxa_swndr(:) = strm_Faxa_swndr(:)
+    Faxa_swndf(:) = strm_Faxa_swndf(:)
+    Faxa_swvdr(:) = strm_Faxa_swvdr(:)
+    Faxa_swvdf(:) = strm_Faxa_swvdf(:)
 
+    !--- temperature ---
     do n = 1, lsize
-       !--- temperature ---
+       Sa_tbot(n) = strm_Sa_tbot(n)
        if (tbotmax < 50.0_r8) Sa_tbot(n) = Sa_tbot(n) + tkFrz
        ! Limit very cold forcing to 180K
        Sa_tbot(n) = max(180._r8, Sa_tbot(n))
