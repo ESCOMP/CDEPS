@@ -4,7 +4,7 @@ module docn_datamode_cplhist_mod
   use NUOPC            , only : NUOPC_Advertise
   use shr_kind_mod     , only : r8=>shr_kind_r8
   use shr_log_mod      , only : shr_log_error
-  use shr_const_mod    , only : shr_const_TkFrz, shr_const_pi, shr_const_ocn_ref_sal
+  use shr_const_mod    , only : shr_const_TkFrz, shr_const_pi, shr_const_ocn_ref_sal, shr_const_spval
   use dshr_methods_mod , only : dshr_state_getfldptr, chkerr
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_get_stream_pointer
@@ -114,22 +114,6 @@ contains
     call shr_strdata_get_stream_pointer( sdat, 'So_bldepth', strm_So_bldepth, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    if (associated(So_u) .and. .not. associated(strm_So_u)) then
-       call shr_log_error(subname//&
-            'ERROR: strm_So_u must be associated if So_u is associated for docn cplhist mode', rc=rc)
-       return
-    end if
-    if (associated(So_v) .and. .not. associated(strm_So_v)) then
-       call shr_log_error(subname//&
-            'ERROR: strm_So_v must be associated if So_v is associated for docn cplhist mode', rc=rc)
-       return
-    end if
-    if (associated(So_bldepth) .and. .not. associated(strm_So_bldepth)) then
-       call shr_log_error(subname//&
-            'ERROR: strm_So_bldepth must be associated if So_bldepth is associated for docn cplhist mode', rc=rc)
-       return
-    end if
-
     ! Allocation depends on exchanged fields, so check before filling arrays with values here
     So_t(:) = TkFrz
     if (associated(So_u)) So_u(:) = 0.0_r8
@@ -156,13 +140,25 @@ contains
     rc = ESMF_SUCCESS
 
     if (associated(So_u)) then
-       So_u(:) = strm_So_u(:)
+       if (associated(strm_So_u)) then
+          So_u(:) = strm_So_u(:)
+       else
+          So_u(:) = shr_const_spval
+       end if
     end if
     if (associated(So_v)) then
-       So_v(:) = strm_So_v(:)
+       if (associated(strm_So_v)) then
+          So_v(:) = strm_So_v(:)
+       else
+          So_v(:) = shr_const_spval
+       end if
     end if
     if (associated(So_bldepth)) then
-       So_bldepth(:) = strm_So_bldepth(:)
+       if (associated(strm_So_bldepth)) then
+          So_bldepth(:) = strm_So_bldepth(:)
+       else
+          So_bldepth(:) = shr_const_spval
+       end if
     end if
 
     ! If need unit conversion for So_t (C-->K),
