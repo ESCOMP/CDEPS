@@ -146,7 +146,8 @@
   optional stream co2tseries (turned on and stream specified by xml variable DATM_CO2_TSERIES)
   - DATM_CO2_TSERIES is set by the 4 character time prefix in config_component.xml
   ========================
-  co2tseries.20tr
+  co2tseries.cmip6_20tr
+  co2tseries.cmip7_20tr
   co2tseries.omip.iaf
   co2tseries.omip.jra
   co2tseries.SSP1-1.9
@@ -3502,7 +3503,38 @@
 
   <!-- currently all co2 time series are single point and have no mesh -->
 
-  <stream_entry name="co2tseries.20tr">
+  <stream_entry name="co2tseries.cmip6_20tr">
+    <stream_meshfile>
+      <meshfile>none</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/datm7/CO2/fco2_datm_global_simyr_1750-2014_CMIP6_c180929.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>CO2   Sa_co2diag</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>none</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1750</stream_year_align>
+    <stream_year_first>1750</stream_year_first>
+    <stream_year_last>2014</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>extend</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.e30</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="co2tseries.cmip7_20tr">
     <stream_meshfile>
       <meshfile>none</meshfile>
     </stream_meshfile>
