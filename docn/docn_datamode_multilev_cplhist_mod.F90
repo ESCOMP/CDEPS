@@ -147,12 +147,12 @@ contains
        end do
     end do
 
-    do ilev = 1,size(So_t_depth,dim=1)
-       do ig = 1,size(So_t_depth,dim=2)
-          if (strm_So_t_depth(ilev)%ptr(ig) == 0._r8) then
-             So_t_depth(ilev,ig) = 1.e30_r8
+    do ilev = 1,size(So_s_depth,dim=1)
+       do ig = 1,size(So_s_depth,dim=2)
+          if (strm_So_s_depth(ilev)%ptr(ig) == 0._r8) then
+             So_s_depth(ilev,ig) = 1.e30_r8
           else
-             So_t_depth(ilev,ig) = strm_So_t_depth(ilev)%ptr(ig)
+             So_s_depth(ilev,ig) = strm_So_s_depth(ilev)%ptr(ig)
           end if
        end do
     end do

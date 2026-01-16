@@ -239,7 +239,7 @@ contains
 
     ! Error checks
     if (.not. associated(strm_Sa_tdew)) then
-       call shr_log_error(subname//'ERROR: strm_Sa_pslv must be associated for era5 datamode')
+       call shr_log_error(subname//'ERROR: strm_Sa_tdew must be associated for era5 datamode')
        return
     end if
 

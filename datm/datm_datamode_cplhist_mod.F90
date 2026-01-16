@@ -187,7 +187,7 @@ contains
          errmsg=subname//'ERROR: strm_Sa_pbot must be associated for cplhist datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer(sdat, 'Sa_dens', strm_Sa_dens, requirePointer=.true., &
-         errmsg=subname//'ERROR: strm_Sa_wind must be associated for cplhist datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_Sa_ndens must be associated for cplhist datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer(sdat, 'Sa_pslv', strm_Sa_pslv, requirePointer=.true., &
          errmsg=subname//'ERROR: strm_Sa_pslv must be associated for cplhist datamode', rc=rc)
@@ -262,8 +262,8 @@ contains
     Faxa_snowl(:) = strm_Faxa_snowl(:)
     Faxa_lwdn(:)  = strm_Faxa_lwdn (:)
     Faxa_swndr(:) = strm_Faxa_swndr(:)
-    Faxa_swndf(:) = strm_Faxa_swvdr(:)
-    Faxa_swvdr(:) = strm_Faxa_swndf(:)
+    Faxa_swndf(:) = strm_Faxa_swndf(:)
+    Faxa_swvdr(:) = strm_Faxa_swvdr(:)
     Faxa_swvdf(:) = strm_Faxa_swvdf(:)
 
   end subroutine datm_datamode_cplhist_advance

@@ -267,7 +267,7 @@ contains
     rc = ESMF_SUCCESS
 
     So_u(:)    = strm_So_u(:)
-    So_u(:)    = strm_So_v(:)
+    So_v(:)    = strm_So_v(:)
     So_s(:)    = strm_So_s(:)
     So_dhdx(:) = strm_So_dhdx(:)
     So_dhdy(:) = strm_So_dhdy(:)
