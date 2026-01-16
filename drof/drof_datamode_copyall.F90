@@ -110,7 +110,7 @@ contains
 
     if (associated(strm_Forr_rofi)) then
        do ni = 1, size(Forr_rofi)
-          if (abs(strm_Forr_rofl(ni)) < 1.e28_r8) then
+          if (abs(strm_Forr_rofi(ni)) < 1.e28_r8) then
              Forr_rofi(:) = strm_Forr_rofi(:)
           else
              Forr_rofi(ni) = 0.0_r8
