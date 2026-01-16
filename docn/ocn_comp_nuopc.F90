@@ -535,6 +535,7 @@ contains
     integer          , intent(out)   :: rc
 
     ! local variables
+    logical :: do_restart_read
     character(len=CL) :: rpfile  ! restart pointer file name
     character(len=*), parameter :: subName = "(docn_comp_run) "
     !-------------------------------------------------------------------------------
