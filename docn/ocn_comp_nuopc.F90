@@ -299,16 +299,17 @@ contains
     end if
 
     ! Validate datamode - the following values are currently accepted
-    ! 'sstdata'             read stream, no import data
-    ! 'sst_aquap_file'      read stream, no import data
-    ! 'som'                 read stream, needs import data
-    ! 'som_aquap'           read stream, needs import data
-    ! 'cplhist'             read stream, needs import data
-    ! 'sst_aquap_analytic'  analytic, no streams, import or export data
-    ! 'sst_aquap_constant'  analytic, no streams, import or export data
-    ! 'multilev_cplhist'    multilevel ocean input from cplhist data
-    ! 'multilev'            multilevel ocean input
-    ! 'multilev_sstdata'    multilevel ocean input and sst export
+    ! Unless specifically noted below, no import data is needed from the mediator
+    ! 'sstdata'             read stream
+    ! 'sst_aquap_file'      read stream
+    ! 'som'                 read stream, needs import data from mediator
+    ! 'som_aquap'           read stream, needs import data from mediator
+    ! 'cplhist'             read stream
+    ! 'sst_aquap_analytic'  analytic, no streams
+    ! 'sst_aquap_constant'  analytic, no streams
+    ! 'multilev_cplhist'    read stream, multilevel ocean export of cplhist data
+    ! 'multilev'            read stream, multilevel ocean export
+    ! 'multilev_sstdata'    read stream, multilevel ocean and sst export
 
     select case (trim(datamode))
     case ( 'sstdata', 'sst_aquap_file', 'som', 'som_aquap', &
