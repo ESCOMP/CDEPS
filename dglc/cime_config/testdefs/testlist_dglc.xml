@@ -35,6 +35,7 @@
       <option name="wallclock"> 00:30:00 </option>
     </options>
   </test>
+
   <!-- NOTE: currently there is no compset DATAMODELTEST -->
   <!-- <test compset="DATAMODELTEST" grid="f10_f10_ais8gris4_mg37" name="SMS_D_Ld3"> -->
   <!--   <machines> -->

@@ -535,6 +535,7 @@ contains
     integer          , intent(out)   :: rc
 
     ! local variables
+    logical :: do_restart_read
     character(len=CL) :: rpfile  ! restart pointer file name
     character(len=*), parameter :: subName = "(docn_comp_run) "
     !-------------------------------------------------------------------------------
@@ -580,7 +581,7 @@ contains
           do_restart_read = .false.
        end if
 
-       if (restart_read) then
+       if (do_restart_read) then
           call shr_get_rpointer_name(gcomp, 'ocn', target_ymd, target_tod, rpfile, 'read', rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
 

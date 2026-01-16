@@ -129,10 +129,6 @@ contains
     integer                , intent(out)   :: rc
 
     ! local variables
-    integer                         :: n
-    integer                         :: fieldcount
-    type(ESMF_Field)                :: lfield
-    character(ESMF_MAXSTR) ,pointer :: lfieldnames(:)
     character(len=*), parameter :: subname='(datm_init_pointers): '
     !-------------------------------------------------------------------------------
 
