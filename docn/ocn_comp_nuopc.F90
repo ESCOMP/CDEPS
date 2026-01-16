@@ -329,7 +329,7 @@ contains
     case('sstdata','sst_aquap_file')
        call docn_datamode_sstdata_advertise(exportState, fldsExport, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    case('som')
+    case('som','som_aquap')
        call docn_datamode_som_advertise(importState, exportState, fldsImport, fldsExport, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('cplhist')
@@ -575,14 +575,12 @@ contains
        end select
 
        ! Read restart if needed
-       select case (trim(datamode))
-       case('sst_aquap_analytic', 'sst_aquap_constant')
-          skip_restart_read=.true.
-       case default
-          skip_restart_read=.false.
-       end select
+       do_restart_read = restart_read .and. .not. skip_restart_read
+       if (datamode == 'sst_aquap_analytic' .or. datamode == 'sst_aquap_constant') then
+          do_restart_read = .false.
+       end if
 
-       if (restart_read .and. .not. skip_restart_read) then
+       if (restart_read) then
           call shr_get_rpointer_name(gcomp, 'ocn', target_ymd, target_tod, rpfile, 'read', rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
