@@ -504,8 +504,7 @@ contains
           call dice_datamode_ssmi_init_pointers(importState, exportState, sdat, flds_i2o_per_cat, rc)
           if (chkerr(rc,__LINE__,u_FILE_u)) return
        case('cplhist')
-          call dice_datamode_cplhist_init_pointers(importState, exportState, sdat, &
-               flds_scalar_name, logunit, mainproc, rc)
+          call dice_datamode_cplhist_init_pointers(exportState, sdat, rc)
           if (chkerr(rc,__LINE__,u_FILE_u)) return
        end select
 
