@@ -21,6 +21,7 @@ module datm_datamode_cplhist_mod
 
   ! export state data pointers
 
+  real(r8), pointer :: Sa_topo(:)         => null()
   real(r8), pointer :: Sa_z(:)            => null()
   real(r8), pointer :: Sa_tbot(:)         => null()
   real(r8), pointer :: Sa_ptem(:)         => null()
@@ -42,6 +43,7 @@ module datm_datamode_cplhist_mod
 
   ! stream data pointers
 
+  real(r8), pointer :: strm_Sa_topo(:)    => null()
   real(r8), pointer :: strm_Sa_z   (:)    => null()
   real(r8), pointer :: strm_Sa_tbot(:)    => null()
   real(r8), pointer :: strm_Sa_ptem(:)    => null()
@@ -132,6 +134,8 @@ contains
     rc = ESMF_SUCCESS
 
     ! get export state pointers
+    call dshr_state_getfldptr(exportState, 'Sa_topo'    , fldptr1=Sa_topo    , rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Sa_z'       , fldptr1=Sa_z       , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Sa_tbot'    , fldptr1=Sa_tbot    , rc=rc)
@@ -171,6 +175,9 @@ contains
 
     ! Set pointers into stream data
 
+    call shr_strdata_get_stream_pointer(sdat, 'Sa_topo', strm_Sa_topo, requirePointer=.true., &
+         errmsg=subname//'ERROR: strm_Sa_z must be associated for cplhist datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer(sdat, 'Sa_z', strm_Sa_z, requirePointer=.true., &
          errmsg=subname//'ERROR: strm_Sa_z must be associated for cplhist datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -246,6 +253,7 @@ contains
 
     rc = ESMF_SUCCESS
 
+    Sa_topo(:) = strm_Sa_topo(:)
     Sa_z(:)    = strm_Sa_z(:)
     Sa_tbot(:) = strm_Sa_tbot(:)
     Sa_ptem(:) = strm_Sa_ptem(:)
