@@ -151,6 +151,7 @@ contains
           if (lrank == 0) then
              ! no local data
           elseif (lrank == 1) then
+             write(6,'(2a)')'DEBUG: diagnosing 1d ',trim(lfieldnamelist(n))
              if (size(dataPtr1d) > 0) then
                 write(msgString,'(A,3g14.7,i8)') trim(string)//': '//trim(lfieldnamelist(n)), &
                      minval(dataPtr1d), maxval(dataPtr1d), sum(dataPtr1d), size(dataPtr1d)
@@ -158,6 +159,7 @@ contains
                 write(msgString,'(A,a)') trim(string)//': '//trim(lfieldnamelist(n))," no data"
              endif
           elseif (lrank == 2) then
+             write(6,'(2a)')'DEBUG: diagnosing 2d ',trim(lfieldnamelist(n))
              if (size(dataPtr2d) > 0) then
                 write(msgString,'(A,3g14.7,i8)') trim(string)//': '//trim(lfieldnamelist(n)), &
                      minval(dataPtr2d), maxval(dataPtr2d), sum(dataPtr2d), size(dataPtr2d)
