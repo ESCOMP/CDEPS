@@ -176,7 +176,7 @@ contains
     ! Set pointers into stream data
 
     call shr_strdata_get_stream_pointer(sdat, 'Sa_topo', strm_Sa_topo, requirePointer=.true., &
-         errmsg=subname//'ERROR: strm_Sa_z must be associated for cplhist datamode', rc=rc)
+         errmsg=subname//'ERROR: strm_Sa_topo must be associated for cplhist datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer(sdat, 'Sa_z', strm_Sa_z, requirePointer=.true., &
          errmsg=subname//'ERROR: strm_Sa_z must be associated for cplhist datamode', rc=rc)
