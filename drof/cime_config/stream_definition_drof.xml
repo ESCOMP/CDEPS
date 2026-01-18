@@ -641,8 +641,13 @@
       <file first_year="$DROF_CPLHIST_YR_START" last_year="$DROF_CPLHIST_YR_END">$DROF_CPLHIST_DIR/$DROF_CPLHIST_CASE.cpl.hx.rof.24h.avrg.%ymd-00000.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>rofImp_Forr_rofl  Forr_rofl</var>
-      <var>rofImp_Forr_rofi  Forr_rofi</var>
+      <var>rofImp_Forr_rofl     Forr_rofl</var>
+      <var>rofImp_Forr_rofl_glc Forr_rofl_glc</var>
+      <var>rofImp_Forr_rofi     Forr_rofi</var>
+      <var>rofImp_Forr_rofi_glc Forr_rofi_glc</var>
+      <var>rofImp_Flrr_flood    Flrr_flood</var>
+      <var>rofImp_Flrr_volr     Flrr_volr</var>
+      <var>rofImp_Flrr_volrmch  Flrr_volrmch</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
