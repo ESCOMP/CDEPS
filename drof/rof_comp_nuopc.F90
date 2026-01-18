@@ -39,6 +39,10 @@ module cdeps_drof_comp
   use drof_datamode_copyall_mod, only : drof_datamode_copyall_init_pointers
   use drof_datamode_copyall_mod, only : drof_datamode_copyall_advance
 
+  use drof_datamode_cplhist_mod, only : drof_datamode_cplhist_advertise
+  use drof_datamode_cplhist_mod, only : drof_datamode_cplhist_init_pointers
+  use drof_datamode_cplhist_mod, only : drof_datamode_cplhist_advance
+
   implicit none
   private
 
@@ -241,18 +245,22 @@ contains
 
     ! Validate datamode
     select case (trim(datamode))
-    case('copyall')
-       if (mainproc) then
-          write(logunit,'(2a)') subname,'drof datamode = ',trim(datamode)
-       end if
+    case('copyall','cplhist')
+       if (mainproc) write(logunit,'(2a)') subname,'drof datamode = ',trim(datamode)
     case default
        call shr_log_error(' ERROR illegal drof datamode = '//trim(datamode), rc=rc)
        return
     end select
 
     ! Advertise export fields
-    call drof_datamode_copyall_advertise(exportState, fldsexport, flds_scalar_name, rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    select case (trim(datamode))
+    case('copyall')
+       call drof_datamode_copyall_advertise(exportState, fldsexport, flds_scalar_name, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    case('cplhist')
+       call drof_datamode_cplhist_advertise(exportState, fldsexport, flds_scalar_name, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    end select
 
   end subroutine InitializeAdvertise
 
@@ -401,6 +409,12 @@ contains
        case('copyall')
           call drof_datamode_copyall_init_pointers(exportState, sdat, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       case('cplhist')
+          call drof_datamode_cplhist_init_pointers(exportState, sdat, rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       case default
+          call shr_log_error(' ERROR illegal drof datamode = '//trim(datamode), rc=rc)
+          return
        end select
 
        ! Read restart if needed
@@ -429,13 +443,18 @@ contains
     select case (trim(datamode))
     case('copyall')
        call drof_datamode_copyall_advance()
+    case('cplhist')
+       call drof_datamode_cplhist_advance()
+    case default
+       call shr_log_error(' ERROR illegal drof datamode = '//trim(datamode), rc=rc)
+       return
     end select
     call ESMF_TraceRegionExit('drof_datamode')
 
     ! write restarts if needed
     if (restart_write) then
        select case (trim(datamode))
-       case('copyall')
+       case('copyall','cplhist')
           call shr_get_rpointer_name(gcomp, 'rof', target_ymd, target_tod, rpfile, 'write', rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           call dshr_restart_write(rpfile, case_name, 'drof', inst_suffix, target_ymd, target_tod, &
