@@ -236,9 +236,10 @@ contains
     ! Allocate memory for somtp
     allocate(somtp(sdat%model_lsize))
 
-    ! Initialize export state pointers to non-zero
+    ! Initialize export state pointers
     So_t(:) = TkFrz
     So_s(:) = ocnsalt
+    So_bldepth(:) = 0._r8
 
   end subroutine docn_datamode_som_init_pointers
 
