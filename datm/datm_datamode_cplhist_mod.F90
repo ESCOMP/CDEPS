@@ -199,9 +199,6 @@ contains
     call shr_strdata_get_stream_pointer(sdat, 'Sa_pslv', strm_Sa_pslv, requirePointer=.true., &
          errmsg=subname//'ERROR: strm_Sa_pslv must be associated for cplhist datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer(sdat, 'Sa_dens', strm_Sa_dens, requirePointer=.true., &
-         errmsg=subname//'ERROR: strm_Sa_dens must be associated for cplhist datamode', rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer(sdat, 'Sa_u', strm_Sa_u, requirePointer=.true., &
          errmsg=subname//'ERROR: strm_Sa_u must be associated for cplhist datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return

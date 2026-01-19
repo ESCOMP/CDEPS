@@ -147,7 +147,7 @@ contains
 
     do ni = 1, size(Forr_rofl_glc)
        if (abs(strm_Forr_rofl_glc(ni)) < 1.e28_r8) then
-          Forr_rofl_glc(:) = strm_Forr_rofl_glc(:)
+          Forr_rofl_glc(ni) = strm_Forr_rofl_glc(ni)
        else
           Forr_rofl_glc(ni) = 0.0_r8
        end if
@@ -155,7 +155,7 @@ contains
 
     do ni = 1, size(Forr_rofi)
        if (abs(strm_Forr_rofi(ni)) < 1.e28_r8) then
-          Forr_rofi(:) = strm_Forr_rofi(:)
+          Forr_rofi(ni) = strm_Forr_rofi(ni)
        else
           Forr_rofi(ni) = 0.0_r8
        end if
@@ -163,7 +163,7 @@ contains
 
     do ni = 1, size(Forr_rofi_glc)
        if (abs(strm_Forr_rofi_glc(ni)) < 1.e28_r8) then
-          Forr_rofi_glc(:) = strm_Forr_rofi_glc(:)
+          Forr_rofi_glc(ni) = strm_Forr_rofi_glc(ni)
        else
           Forr_rofi_glc(ni) = 0.0_r8
        end if
