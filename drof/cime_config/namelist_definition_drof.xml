@@ -1,7 +1,5 @@
 <?xml version="1.0"?>
 
-<?xml-stylesheet type="text/xsl" href="namelist_definition.xsl"?>
-
 <entry_id version="2.0">
 
   <entry id="streamslist">
@@ -22,6 +20,7 @@
       <value drof_mode="IAF_JRA_1p4_2018"     >rof.iaf_jra_1p4_2018</value>
       <value drof_mode="IAF_JRA_1p5_2023"     >rof.iaf_jra_1p5_2023</value>
       <value drof_mode="IAF_JRA"              >rof.iaf_jra</value>
+      <value drof_mode="RYF6162_JRA"          >rof.ryf6162_jra</value>
       <value drof_mode="RYF8485_JRA"          >rof.ryf8485_jra</value>
       <value drof_mode="RYF9091_JRA"          >rof.ryf9091_jra</value>
       <value drof_mode="RYF0304_JRA"          >rof.ryf0304_jra</value>
@@ -45,7 +44,7 @@
     </values>
   </entry>
 
-  <entry id="model_meshfile"> 
+  <entry id="model_meshfile">
     <type>char</type>
     <category>streams</category>
     <input_pathname>abs</input_pathname>

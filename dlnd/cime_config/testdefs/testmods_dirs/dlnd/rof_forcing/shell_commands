@@ -1,0 +1,7 @@
+./xmlchange DLND_CPLHIST_CASE=create_lnd2rof_tracers
+./xmlchange DLND_CPLHIST_DIR='$DIN_LOC_ROOT/cplhist/noresm3_0/test-dlnd2rof'
+./xmlchange DLND_CPLHIST_YR_END=2000
+./xmlchange DLND_CPLHIST_YR_START=2000
+./xmlchange DLND_CPLHIST_YR_ALIGN=1
+./xmlchange DLND_LND2ROF_NONH2O=tracer1
+./xmlchange RUN_STARTDATE=0001-01-01

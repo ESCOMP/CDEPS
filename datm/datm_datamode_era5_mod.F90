@@ -11,11 +11,12 @@ module datm_datamode_era5_mod
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
 
   implicit none
-  private ! except
+  private
 
   public  :: datm_datamode_era5_advertise
   public  :: datm_datamode_era5_init_pointers
   public  :: datm_datamode_era5_advance
+
   private :: datm_eSat  ! determine saturation vapor pressure
 
   ! export state data
@@ -44,8 +45,6 @@ module datm_datamode_era5_mod
   real(r8), pointer :: Faxa_lat(:)          => null()
   real(r8), pointer :: Faxa_taux(:)         => null()
   real(r8), pointer :: Faxa_tauy(:)         => null()
-!
-!  real(r8), pointer :: Faxa_ndep(:,:)       => null()
 
   ! stream data
   real(r8), pointer :: strm_tdew(:)         => null()
@@ -57,8 +56,8 @@ module datm_datamode_era5_mod
   real(r8) , parameter :: rdair    = SHR_CONST_RDAIR ! dry air gas constant ~ J/K/kg
   real(r8) , parameter :: rhofw    = SHR_CONST_RHOFW ! density of fresh water ~ kg/m^3
 
-  character(*), parameter :: nullstr = 'undefined'
-  character(*), parameter :: u_FILE_u = &
+  character(len=*), parameter :: nullstr = 'undefined'
+  character(len=*), parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -189,7 +188,7 @@ contains
 
   end subroutine datm_datamode_era5_init_pointers
 
-  !===============================================================================  
+  !===============================================================================
   subroutine datm_datamode_era5_advance(exportstate, mainproc, logunit, mpicom, target_ymd, target_tod, model_calendar, rc)
     use ESMF, only: ESMF_VMGetCurrent, ESMF_VMAllReduce, ESMF_REDUCE_MAX, ESMF_VM
 
@@ -225,7 +224,7 @@ contains
 
          call ESMF_VMAllReduce(vm, rtmp, rtmp(2:), 1, ESMF_REDUCE_MAX, rc=rc)
          t2max = rtmp(2)
-         if (mainproc) write(logunit,*) trim(subname),' t2max = ',t2max
+         if (mainproc) write(logunit,*) subname,' t2max = ',t2max
        end if
 
        ! determine tdewmax (see below for use)
@@ -233,7 +232,7 @@ contains
        call ESMF_VMAllReduce(vm, rtmp, rtmp(2:), 1, ESMF_REDUCE_MAX, rc=rc)
        td2max = rtmp(2)
 
-       if (mainproc) write(logunit,*) trim(subname),' td2max = ',td2max
+       if (mainproc) write(logunit,*) subname,' td2max = ',td2max
 
        ! reset first_time
        first_time = .false.
@@ -312,7 +311,7 @@ contains
 
   end subroutine datm_datamode_era5_advance
 
-  !===============================================================================  
+  !===============================================================================
   real(r8) function datm_eSat(tK,tKbot)
 
     !----------------------------------------------------------------------------
