@@ -6,7 +6,7 @@
     <type>char(100)</type>
     <category>streams</category>
     <group>streams_file</group>
-    <desc>List of streams used for the given drof_mode.</desc>
+    <desc>List of streams used for the given drof_mode (determined by the xml variable $DROF_MODE)</desc>
     <values>
       <value drof_mode="CPLHIST"              >rof.cplhist</value>
       <value drof_mode="DIATREN_ANN_RX1"      >rof.diatren_ann_rx1</value>
@@ -31,16 +31,19 @@
     <type>char</type>
     <category>drof</category>
     <group>drof_nml</group>
-    <valid_values>copyall</valid_values>
+    <valid_values>copyall,cplhist</valid_values>
     <desc>
       The runoff data is associated with the river model.
       Copies all fields directly from the input data streams Any required
       fields not found on an input stream will be set to zero.
-      The only datamode is copyall - the streams are determined by the xml variable $DROF_MODE
-      dataMode = "copyall"
+      The two modes are copyall and cplhist. In cplhist mode, more fields are advertised
+      to the mediator than in copyall mode.
+      The streams are determined by the xml variable $DROF_MODE
+      dataMode = "copyall,cplhist"
     </desc>
     <values>
       <value>copyall</value>
+      <value drof_mode="CPLHIST">cplhist</value>
     </values>
   </entry>
 

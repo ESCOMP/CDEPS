@@ -14,9 +14,6 @@
       <value datm_mode="CLM_QIAN$">
         CLM_QIAN.Solar,CLM_QIAN.Precip,CLM_QIAN.TPQW
       </value>
-      <value datm_mode="CLM_QIAN_WISO">
-        CLM_QIAN_WISO.Solar,CLM_QIAN_WISO.Precip,CLM_QIAN_WISO.TPQW
-      </value>
       <value datm_mode="CLMCRUJRA2024">
         CLMCRUJRA2024.Solar,CLMCRUJRA2024.Precip,CLMCRUJRA2024.TPQW
       </value>
@@ -326,19 +323,6 @@
     <values>
       <value>.true.</value>
       <value datm_co2_tseries="none">.false.</value>
-    </values>
-  </entry>
-
-  <entry id="flds_wiso">
-    <type>logical</type>
-    <category>datm</category>
-    <group>datm_nml</group>
-    <desc>
-      If true, prescribed water isotopes are sent from datm (must be true for running with CLM).
-    </desc>
-    <values>
-      <value>.false.</value>
-      <!-- <value datm_mode="CLM_QIAN_WISO">.true.</value> -->
     </values>
   </entry>
 

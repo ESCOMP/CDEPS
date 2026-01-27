@@ -12,7 +12,7 @@ module dlnd_datamode_glc_forcing_mod
    use glc_elevclass_mod, only : glc_elevclass_as_string, glc_elevclass_init
 
    implicit none
-   private ! except
+   private
 
    public :: dlnd_datamode_glc_forcing_advertise
    public :: dlnd_datamode_glc_forcing_init_pointers
@@ -26,7 +26,7 @@ module dlnd_datamode_glc_forcing_mod
 
    ! stream pointers (1d)
    type, public :: stream_pointer_type
-      real(r8), pointer :: strm_ptr(:) => null()
+      real(r8), pointer :: ptr(:) => null()
    end type stream_pointer_type
    type(stream_pointer_type), allocatable :: strm_Sl_tsrf_elev(:)
    type(stream_pointer_type), allocatable :: strm_Sl_topo_elev(:)
@@ -34,8 +34,8 @@ module dlnd_datamode_glc_forcing_mod
 
    integer :: glc_nec
 
-   character(*), parameter :: nullstr = 'null'
-   character(*), parameter :: u_FILE_u = &
+   character(len=*), parameter :: nullstr = 'null'
+   character(len=*), parameter :: u_FILE_u = &
         __FILE__
 
 !===============================================================================
@@ -147,18 +147,18 @@ contains
             write(nec_str,'(i0)') ng
          end if
          strm_fld = 'Sl_tsrf_elev'//trim(nec_str)
-         call shr_strdata_get_stream_pointer( sdat, trim(strm_fld), strm_Sl_tsrf_elev(ng)%strm_ptr, requirePointer=.true., &
-              errmsg=trim(subname)//'ERROR: '//trim(strm_fld)//' must be associated for dlnd glc_forcing datamode', rc=rc)
+         call shr_strdata_get_stream_pointer( sdat, trim(strm_fld), strm_Sl_tsrf_elev(ng)%ptr, requirePointer=.true., &
+              errmsg=subname//'ERROR: '//trim(strm_fld)//' must be associated for dlnd glc_forcing datamode', rc=rc)
          if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
          strm_fld = 'Sl_topo_elev'//trim(nec_str)
-         call shr_strdata_get_stream_pointer( sdat, trim(strm_fld), strm_Sl_topo_elev(ng)%strm_ptr, requirePointer=.true., &
-              errmsg=trim(subname)//'ERROR: '//trim(strm_fld)//' must be associated for dlnd glc_forcing datamode', rc=rc)
+         call shr_strdata_get_stream_pointer( sdat, trim(strm_fld), strm_Sl_topo_elev(ng)%ptr, requirePointer=.true., &
+              errmsg=subname//'ERROR: '//trim(strm_fld)//' must be associated for dlnd glc_forcing datamode', rc=rc)
          if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
          strm_fld = 'Flgl_qice_elev'//trim(nec_str)
-         call shr_strdata_get_stream_pointer( sdat, trim(strm_fld), strm_Flgl_qice_elev(ng)%strm_ptr, requirePointer=.true., &
-              errmsg=trim(subname)//'ERROR: '//trim(strm_fld)//' must be associated for dlnd glc_forcing datamode', rc=rc)
+         call shr_strdata_get_stream_pointer( sdat, trim(strm_fld), strm_Flgl_qice_elev(ng)%ptr, requirePointer=.true., &
+              errmsg=subname//'ERROR: '//trim(strm_fld)//' must be associated for dlnd glc_forcing datamode', rc=rc)
          if (ChkErr(rc,__LINE__,u_FILE_u)) return
       end do
 
@@ -180,7 +180,7 @@ contains
             if (lfrac(ni) == 0._r8) then
                Sl_tsrf_elev(ng,ni) = SHR_CONST_SPVAL
             else
-               Sl_tsrf_elev(ng,ni) = strm_Sl_tsrf_elev(ng)%strm_ptr(ni)
+               Sl_tsrf_elev(ng,ni) = strm_Sl_tsrf_elev(ng)%ptr(ni)
             end if
          end do
 
@@ -188,7 +188,7 @@ contains
             if (lfrac(ni) == 0._r8) then
                Sl_topo_elev(ng,ni) = SHR_CONST_SPVAL
             else
-               Sl_topo_elev(ng,ni) = strm_Sl_topo_elev(ng)%strm_ptr(ni)
+               Sl_topo_elev(ng,ni) = strm_Sl_topo_elev(ng)%ptr(ni)
             end if
          end do
 
@@ -196,7 +196,7 @@ contains
             if (lfrac(ni) == 0._r8) then
                Flgl_qice_elev(ng,ni) = SHR_CONST_SPVAL
             else
-               Flgl_qice_elev(ng,ni) = strm_Flgl_qice_elev(ng)%strm_ptr(ni)
+               Flgl_qice_elev(ng,ni) = strm_Flgl_qice_elev(ng)%ptr(ni)
             end if
          end do
       end do elev_class_loop

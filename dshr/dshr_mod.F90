@@ -78,7 +78,7 @@ module dshr_mod
   logical :: write_restart_at_endofrun
 
   integer     , parameter :: main_task = 0
-  character(*), parameter :: u_FILE_u = &
+  character(len=*), parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -99,7 +99,7 @@ contains
     rc = ESMF_SUCCESS
     ! To prevent an unused variable warning
     if(.not. (ESMF_StateIsCreated(importState) .or. ESMF_StateIsCreated(exportState) .or. ESMF_ClockIsCreated(clock))) then
-       call shr_log_error(trim(subname)//' state or clock not created', rc=rc)
+       call shr_log_error(subname//' state or clock not created', rc=rc)
        return
     endif
 
@@ -154,7 +154,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     if (isPresent .and. isSet) then
        flds_scalar_name = trim(cvalue)
-       call ESMF_LogWrite(trim(subname)//' flds_scalar_name = '//trim(flds_scalar_name), ESMF_LOGMSG_INFO)
+       call ESMF_LogWrite(subname//' flds_scalar_name = '//trim(flds_scalar_name), ESMF_LOGMSG_INFO)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     endif
 
@@ -163,7 +163,7 @@ contains
     if (isPresent .and. isSet) then
        read(cvalue, *) flds_scalar_num
        write(logmsg,*) flds_scalar_num
-       call ESMF_LogWrite(trim(subname)//' flds_scalar_num = '//trim(logmsg), ESMF_LOGMSG_INFO)
+       call ESMF_LogWrite(subname//' flds_scalar_num = '//trim(logmsg), ESMF_LOGMSG_INFO)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     endif
 
@@ -172,7 +172,7 @@ contains
     if (isPresent .and. isSet) then
        read(cvalue,*) flds_scalar_index_nx
        write(logmsg,*) flds_scalar_index_nx
-       call ESMF_LogWrite(trim(subname)//' : flds_scalar_index_nx = '//trim(logmsg), ESMF_LOGMSG_INFO)
+       call ESMF_LogWrite(subname//' : flds_scalar_index_nx = '//trim(logmsg), ESMF_LOGMSG_INFO)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     endif
 
@@ -181,7 +181,7 @@ contains
     if (isPresent .and. isSet) then
        read(cvalue,*) flds_scalar_index_ny
        write(logmsg,*) flds_scalar_index_ny
-       call ESMF_LogWrite(trim(subname)//' : flds_scalar_index_ny = '//trim(logmsg), ESMF_LOGMSG_INFO)
+       call ESMF_LogWrite(subname//' : flds_scalar_index_ny = '//trim(logmsg), ESMF_LOGMSG_INFO)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     endif
 
@@ -203,7 +203,7 @@ contains
     call set_component_logging(gcomp, my_task == main_task, logunit, slogunit, rc=rc)
 #else
     if (my_task == main_task) then
-       call ESMF_LogWrite(trim(subname)//' : output logging is written to '//trim(diro)//"/"//trim(logfile), ESMF_LOGMSG_INFO)
+       call ESMF_LogWrite(subname//' : output logging is written to '//trim(diro)//"/"//trim(logfile), ESMF_LOGMSG_INFO)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
        open(newunit=logunit, file=trim(diro)//"/"//trim(logfile))
 
@@ -271,7 +271,7 @@ contains
     logical                        :: isPresent, isSet
     logical                        :: exists     ! check for file existence
     real(r8)                       :: scol_spval = -999._r8
-    character(*)    , parameter    :: F00 ="('(dshr_mesh_init) ',a)"
+    character(len=*)    , parameter    :: F00 ="('(dshr_mesh_init) ',a)"
     character(len=*), parameter    :: subname='(dshr_mod:dshr_mesh_init)'
     ! ----------------------------------------------
 
@@ -332,13 +332,13 @@ contains
           inquire(file=trim(model_meshfile), exist=exists)
           if (.not.exists) then
              write(logunit, *)' ERROR: model_meshfile '//trim(model_meshfile)//' does not exist'
-             call shr_log_error(trim(subname)//' ERROR: model_meshfile '//trim(model_meshfile)//' does not exist', rc=rc)
+             call shr_log_error(subname//' ERROR: model_meshfile '//trim(model_meshfile)//' does not exist', rc=rc)
              return
           end if
           inquire(file=trim(model_maskfile), exist=exists)
           if (.not.exists) then
              write(logunit, *)' ERROR: model_maskfile '//trim(model_maskfile)//' does not exist'
-             call shr_log_error(trim(subname)//' ERROR: model_maskfile '//trim(model_maskfile)//' does not exist', rc=rc)
+             call shr_log_error(subname//' ERROR: model_maskfile '//trim(model_maskfile)//' does not exist', rc=rc)
              return
           end if
        endif
@@ -356,9 +356,9 @@ contains
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
           if (mainproc) then
-             write(logunit,F00) trim(subname)// " obtained "//trim(compname)//" mesh from "// &
+             write(logunit,F00) subname// " obtained "//trim(compname)//" mesh from "// &
                   trim(model_meshfile)
-             write(logunit,F00) trim(subname)// " obtained "//trim(compname)//" mask from "// &
+             write(logunit,F00) subname// " obtained "//trim(compname)//" mask from "// &
                   trim(model_maskfile)
           end if
 
@@ -384,7 +384,7 @@ contains
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
           if (mainproc) then
-             write(logunit,F00) trim(subname)// " obtained "//trim(compname)//" mesh and mask from "// &
+             write(logunit,F00) subname// " obtained "//trim(compname)//" mesh and mask from "// &
                   trim(model_meshfile)
           end if
        end if
@@ -601,8 +601,8 @@ contains
     type(io_desc_t)   :: pio_iodesc
     integer           :: rcode
     integer           :: tmp(1)
-    character(*), parameter :: F00   = "('(dshr_restart_read) ',8a)"
-    character(*), parameter :: subName = "(dshr_restart_read) "
+    character(len=*), parameter :: F00   = "('(dshr_restart_read) ',8a)"
+    character(len=*), parameter :: subName = "(dshr_restart_read) "
     !-------------------------------------------------------------------------------
     rc = ESMF_SUCCESS
     ! no streams means no restart file is read.
@@ -682,7 +682,7 @@ contains
     type(io_desc_t)   :: pio_iodesc
     integer           :: oldmode
     integer           :: rcode
-    character(*), parameter :: F00   = "('(dshr_restart_write) ',2a,2(i0,2x))"
+    character(len=*), parameter :: F00   = "('(dshr_restart_write) ',2a,2(i0,2x))"
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -788,7 +788,7 @@ contains
       call ESMF_FieldGet(field, farrayPtr = farrayptr, rc=rc)
       if (chkerr(rc,__LINE__,u_FILE_u)) return
       if (scalar_id < 0 .or. scalar_id > flds_scalar_num) then
-        call ESMF_LogWrite(trim(subname)//": ERROR in scalar_id", ESMF_LOGMSG_INFO, line=__LINE__, file=u_FILE_u)
+        call ESMF_LogWrite(subname//": ERROR in scalar_id", ESMF_LOGMSG_INFO, line=__LINE__, file=u_FILE_u)
         rc = ESMF_FAILURE
         if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=u_FILE_u)) return
       endif
@@ -837,7 +837,7 @@ contains
        call ESMF_FieldGet(lfield, farrayPtr = farrayptr, rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
        if (scalar_id < 0 .or. scalar_id > flds_scalar_num) then
-          call ESMF_LogWrite(trim(subname)//": ERROR in scalar_id", ESMF_LOGMSG_INFO)
+          call ESMF_LogWrite(subname//": ERROR in scalar_id", ESMF_LOGMSG_INFO)
           rc = ESMF_FAILURE
           return
        endif
@@ -891,8 +891,8 @@ contains
     if (trim(orb_mode) == trim(orb_fixed_year)) then
        if (orb_iyear == SHR_ORB_UNDEF_INT) then
           if (maintask) then
-             write(logunit,*) trim(subname),' ERROR: invalid settings orb_mode =',trim(orb_mode)
-             write(logunit,*) trim(subname),' ERROR: fixed_year settings = ',orb_iyear
+             write(logunit,*) subname,' ERROR: invalid settings orb_mode =',trim(orb_mode)
+             write(logunit,*) subname,' ERROR: fixed_year settings = ',orb_iyear
              write (msgstr, *) ' ERROR: invalid settings for orb_mode '//trim(orb_mode)
           end if
           call ESMF_LogSetError(ESMF_RC_NOT_VALID, msg=msgstr, line=__LINE__, file=__FILE__, rcToReturn=rc)
@@ -905,8 +905,8 @@ contains
     elseif (trim(orb_mode) == trim(orb_variable_year)) then
        if (orb_iyear == SHR_ORB_UNDEF_INT .or. orb_iyear_align == SHR_ORB_UNDEF_INT) then
           if (maintask) then
-             write(logunit,*) trim(subname),' ERROR: invalid settings orb_mode =',trim(orb_mode)
-             write(logunit,*) trim(subname),' ERROR: variable_year settings = ',orb_iyear, orb_iyear_align
+             write(logunit,*) subname,' ERROR: invalid settings orb_mode =',trim(orb_mode)
+             write(logunit,*) subname,' ERROR: variable_year settings = ',orb_iyear, orb_iyear_align
              write (msgstr, *) subname//' ERROR: invalid settings for orb_mode '//trim(orb_mode)
           end if
           call ESMF_LogSetError(ESMF_RC_NOT_VALID, msg=msgstr, line=__LINE__, file=__FILE__, rcToReturn=rc)
@@ -920,10 +920,10 @@ contains
        !-- force orb_iyear to undef to make sure shr_orb_params works properly
        if (orb_eccen == SHR_ORB_UNDEF_REAL .or. orb_obliq == SHR_ORB_UNDEF_REAL .or. orb_mvelp == SHR_ORB_UNDEF_REAL) then
           if (maintask) then
-             write(logunit,*) trim(subname),' ERROR: invalid settings orb_mode =',trim(orb_mode)
-             write(logunit,*) trim(subname),' ERROR: orb_eccen = ',orb_eccen
-             write(logunit,*) trim(subname),' ERROR: orb_obliq = ',orb_obliq
-             write(logunit,*) trim(subname),' ERROR: orb_mvelp = ',orb_mvelp
+             write(logunit,*) subname,' ERROR: invalid settings orb_mode =',trim(orb_mode)
+             write(logunit,*) subname,' ERROR: orb_eccen = ',orb_eccen
+             write(logunit,*) subname,' ERROR: orb_obliq = ',orb_obliq
+             write(logunit,*) subname,' ERROR: orb_mvelp = ',orb_mvelp
              write (msgstr, *) subname//' ERROR: invalid settings for orb_mode '//trim(orb_mode)
           end if
           call ESMF_LogSetError(ESMF_RC_NOT_VALID, msg=msgstr, line=__LINE__, file=__FILE__, rcToReturn=rc)
@@ -1182,7 +1182,7 @@ contains
        else if (trim(cvalue) .eq. '64BIT_DATA') then
           sdat%io_format = PIO_64BIT_DATA
        else
-         call ESMF_LogWrite(trim(subname)//'-'//trim(cname)// &
+         call ESMF_LogWrite(subname//'-'//trim(cname)// &
               ' : need to provide valid option for pio_ioformat'// &
               ' (CLASSIC|64BIT_OFFSET|64BIT_DATA)', ESMF_LOGMSG_INFO)
          rc = ESMF_FAILURE
@@ -1192,7 +1192,7 @@ contains
        cvalue = '64BIT_OFFSET'
        sdat%io_format = PIO_64BIT_OFFSET
     end if
-    if (my_task == main_task) write(logunit,*) trim(subname)//' : pio_netcdf_format = ', &
+    if (my_task == main_task) write(logunit,*) subname//' : pio_netcdf_format = ', &
        trim(cvalue), sdat%io_format
 
     ! pio_typename
@@ -1211,7 +1211,7 @@ contains
        else if (trim(cvalue) .eq. 'NETCDF4P') then
           sdat%io_type = PIO_IOTYPE_NETCDF4P
        else
-         call ESMF_LogWrite(trim(subname)//'-'//trim(cname)// &
+         call ESMF_LogWrite(subname//'-'//trim(cname)// &
               ' : need to provide valid option for pio_typename'// &
               ' (NETCDF|PNETCDF|NETCDF4C|NETCDF4P)', ESMF_LOGMSG_INFO)
          rc = ESMF_FAILURE
@@ -1221,7 +1221,7 @@ contains
        cvalue = 'NETCDF'
        sdat%io_type = PIO_IOTYPE_NETCDF
     end if
-    if (my_task == main_task) write(logunit,*) trim(subname)//' : pio_typename = ', &
+    if (my_task == main_task) write(logunit,*) subname//' : pio_typename = ', &
        trim(cvalue), sdat%io_type
 
     ! pio_root
@@ -1238,7 +1238,7 @@ contains
     else
        pio_root = 1
     end if
-    if (my_task == main_task) write(logunit,*) trim(subname)//' : pio_root = ', &
+    if (my_task == main_task) write(logunit,*) subname//' : pio_root = ', &
        pio_root
 
     ! pio_stride
@@ -1251,7 +1251,7 @@ contains
     else
        pio_stride = -99
     end if
-    if (my_task == main_task) write(logunit,*) trim(subname)//' : pio_stride = ', &
+    if (my_task == main_task) write(logunit,*) subname//' : pio_stride = ', &
        pio_stride
 
     ! pio_numiotasks
@@ -1264,7 +1264,7 @@ contains
     else
        pio_numiotasks = -99
     end if
-    if (my_task == main_task) write(logunit,*) trim(subname)//' : pio_numiotasks = ', &
+    if (my_task == main_task) write(logunit,*) subname//' : pio_numiotasks = ', &
        pio_numiotasks
 
     ! check for parallel IO, it requires at least two io pes
@@ -1275,23 +1275,23 @@ contains
        pio_stride = min(pio_stride, petCount/2)
        if (my_task == main_task) then
           write(logunit,*) ' parallel io requires at least two io pes - following parameters are updated:'
-          write(logunit,*) trim(subname)//' : pio_stride = ', pio_stride
-          write(logunit,*) trim(subname)//' : pio_numiotasks = ', pio_numiotasks
+          write(logunit,*) subname//' : pio_stride = ', pio_stride
+          write(logunit,*) subname//' : pio_numiotasks = ', pio_numiotasks
        end if
     endif
 
     ! check/set/correct io pio parameters
     if (pio_stride > 0 .and. pio_numiotasks < 0) then
        pio_numiotasks = max(1, petCount/pio_stride)
-       if (my_task == main_task) write(logunit,*) trim(subname)//' : update pio_numiotasks = ', pio_numiotasks
+       if (my_task == main_task) write(logunit,*) subname//' : update pio_numiotasks = ', pio_numiotasks
     else if(pio_numiotasks > 0 .and. pio_stride < 0) then
        pio_stride = max(1, petCount/pio_numiotasks)
-       if (my_task == main_task) write(logunit,*) trim(subname)//' : update pio_stride = ', pio_stride
+       if (my_task == main_task) write(logunit,*) subname//' : update pio_stride = ', pio_stride
     else if(pio_numiotasks < 0 .and. pio_stride < 0) then
        pio_stride = max(1,petCount/4)
        pio_numiotasks = max(1,petCount/pio_stride)
-       if (my_task == main_task) write(logunit,*) trim(subname)//' : update pio_numiotasks = ', pio_numiotasks
-       if (my_task == main_task) write(logunit,*) trim(subname)//' : update pio_stride = ', pio_stride
+       if (my_task == main_task) write(logunit,*) subname//' : update pio_numiotasks = ', pio_numiotasks
+       if (my_task == main_task) write(logunit,*) subname//' : update pio_stride = ', pio_stride
     end if
     if (pio_stride == 1) then
        pio_root = 0
@@ -1316,15 +1316,15 @@ contains
        end if
        if (my_task == main_task) then
           write(logunit,*) 'pio_stride, iotasks or root out of bounds - resetting to defaults:'
-          write(logunit,*) trim(subname)//' : pio_root = ', pio_root
-          write(logunit,*) trim(subname)//' : pio_stride = ', pio_stride
-          write(logunit,*) trim(subname)//' : pio_numiotasks = ', pio_numiotasks
+          write(logunit,*) subname//' : pio_root = ', pio_root
+          write(logunit,*) subname//' : pio_stride = ', pio_stride
+          write(logunit,*) subname//' : pio_numiotasks = ', pio_numiotasks
        end if
     end if
 
     ! init PIO
     allocate(sdat%pio_subsystem)
-    if (my_task == main_task) write(logunit,*) trim(subname)//' : calling pio init'
+    if (my_task == main_task) write(logunit,*) subname//' : calling pio init'
     call pio_init(my_task, mpicom, pio_numiotasks, 0, pio_stride, &
                   pio_rearranger, sdat%pio_subsystem, base=pio_root)
 
@@ -1337,7 +1337,7 @@ contains
     if (isPresent .and. isSet) then
        read(cvalue,*) pio_debug_level
        if (pio_debug_level < 0 .or. pio_debug_level > 6) then
-         call ESMF_LogWrite(trim(subname)//': need to provide valid option for'// &
+         call ESMF_LogWrite(subname//': need to provide valid option for'// &
               ' pio_debug_level (0-6)', ESMF_LOGMSG_INFO)
          rc = ESMF_FAILURE
          return
@@ -1345,7 +1345,7 @@ contains
     else
        pio_debug_level = 0
     end if
-    if (my_task == main_task) write(logunit,*) trim(subname), &
+    if (my_task == main_task) write(logunit,*) subname, &
        ' : pio_debug_level = ',pio_debug_level
 
     ! set PIO debug level
@@ -1362,7 +1362,7 @@ contains
        else if (trim(cvalue) .eq. 'SUBSET') then
          pio_rearranger = PIO_REARR_SUBSET
        else
-         call ESMF_LogWrite(trim(subname)//'-'//trim(cname)// &
+         call ESMF_LogWrite(subname//'-'//trim(cname)// &
               ' : need to provide valid option for pio_rearranger'// &
               ' (BOX|SUBSET)', ESMF_LOGMSG_INFO)
          rc = ESMF_FAILURE
@@ -1372,12 +1372,12 @@ contains
        cvalue = 'BOX'
        pio_rearranger = PIO_REARR_BOX
     end if
-    if (my_task == main_task) write(logunit,*) trim(subname)//' : pio_rearranger = ', &
+    if (my_task == main_task) write(logunit,*) subname//' : pio_rearranger = ', &
        trim(cvalue), pio_rearranger
 
     ! init PIO
     allocate(sdat%pio_subsystem)
-    if (my_task == main_task) write(logunit,*) trim(subname)//' : calling pio init'
+    if (my_task == main_task) write(logunit,*) subname//' : calling pio init'
     call pio_init(my_task, mpicom, pio_numiotasks, 0, pio_stride, &
                   pio_rearranger, sdat%pio_subsystem, base=pio_root)
 
@@ -1394,7 +1394,7 @@ contains
        else if (trim(cvalue) .eq. 'COLL') then
           pio_rearr_comm_type = PIO_REARR_COMM_COLL
        else
-         call ESMF_LogWrite(trim(subname)//' : need to provide valid option for'// &
+         call ESMF_LogWrite(subname//' : need to provide valid option for'// &
               ' pio_rearr_comm_type (P2P|COLL)', ESMF_LOGMSG_INFO)
          rc = ESMF_FAILURE
          return
@@ -1403,7 +1403,7 @@ contains
        cvalue = 'P2P'
        pio_rearr_comm_type = PIO_REARR_COMM_P2P
     end if
-    if (my_task == main_task) write(logunit,*) trim(subname)// &
+    if (my_task == main_task) write(logunit,*) subname// &
        ' : pio_rearr_comm_type = ', trim(cvalue), pio_rearr_comm_type
 
     ! pio_rearr_comm_fcd
@@ -1422,7 +1422,7 @@ contains
        else if (trim(cvalue) .eq. '2DDISABLE') then
           pio_rearr_comm_fcd = PIO_REARR_COMM_FC_2D_DISABLE
        else
-         call ESMF_LogWrite(trim(subname)//' : need to provide valid option for'// &
+         call ESMF_LogWrite(subname//' : need to provide valid option for'// &
               ' pio_rearr_comm_fcd (2DENABLE|IO2COMP|COMP2IO|2DDISABLE)', ESMF_LOGMSG_INFO)
          rc = ESMF_FAILURE
          return
@@ -1431,7 +1431,7 @@ contains
        cvalue = '2DENABLE'
        pio_rearr_comm_fcd = PIO_REARR_COMM_FC_2D_ENABLE
     end if
-    if (my_task == main_task) write(logunit,*) trim(subname)// &
+    if (my_task == main_task) write(logunit,*) subname// &
        ' : pio_rearr_comm_fcd = ', trim(cvalue), pio_rearr_comm_fcd
 
     ! pio_rearr_comm_enable_hs_comp2io
@@ -1502,22 +1502,22 @@ contains
 
     ! print out PIO rearranger parameters
     if (my_task == main_task) then
-       write(logunit,*) trim(subname)//' : pio_rearr_comm_enable_hs_comp2io = ', &
+       write(logunit,*) subname//' : pio_rearr_comm_enable_hs_comp2io = ', &
             pio_rearr_comm_enable_hs_comp2io
-       write(logunit,*) trim(subname)//' : pio_rearr_comm_enable_isend_comp2io = ', &
+       write(logunit,*) subname//' : pio_rearr_comm_enable_isend_comp2io = ', &
             pio_rearr_comm_enable_isend_comp2io
-       write(logunit,*) trim(subname)//' : pio_rearr_comm_max_pend_req_comp2io = ', &
+       write(logunit,*) subname//' : pio_rearr_comm_max_pend_req_comp2io = ', &
             pio_rearr_comm_max_pend_req_comp2io
-       write(logunit,*) trim(subname)//' : pio_rearr_comm_enable_hs_io2comp = ', &
+       write(logunit,*) subname//' : pio_rearr_comm_enable_hs_io2comp = ', &
             pio_rearr_comm_enable_hs_io2comp
-       write(logunit,*) trim(subname)//' : pio_rearr_comm_enable_isend_io2comp = ', &
+       write(logunit,*) subname//' : pio_rearr_comm_enable_isend_io2comp = ', &
             pio_rearr_comm_enable_isend_io2comp
-       write(logunit,*) trim(subname)//' : pio_rearr_comm_max_pend_req_io2comp = ', &
+       write(logunit,*) subname//' : pio_rearr_comm_max_pend_req_io2comp = ', &
             pio_rearr_comm_max_pend_req_io2comp
     end if
 
     ! set PIO rearranger options
-    if (my_task == main_task) write(logunit,*) trim(subname)// &
+    if (my_task == main_task) write(logunit,*) subname// &
        ' calling pio_set_rearr_opts'
     ret = pio_set_rearr_opts(sdat%pio_subsystem, pio_rearr_comm_type, &
                              pio_rearr_comm_fcd, &
