@@ -1,7 +1,5 @@
 <?xml version="1.0"?>
 
-<?xml-stylesheet type="text/xsl" href="namelist_definition.xsl"?>
-
 <entry_id version="2.0">
 
   <!-- Note that streamslist here does not handle the optional streams - -->
@@ -15,9 +13,6 @@
     <values>
       <value datm_mode="CLM_QIAN$">
         CLM_QIAN.Solar,CLM_QIAN.Precip,CLM_QIAN.TPQW
-      </value>
-      <value datm_mode="CLM_QIAN_WISO">
-        CLM_QIAN_WISO.Solar,CLM_QIAN_WISO.Precip,CLM_QIAN_WISO.TPQW
       </value>
       <value datm_mode="CLMCRUJRA2024">
         CLMCRUJRA2024.Solar,CLMCRUJRA2024.Precip,CLMCRUJRA2024.TPQW
@@ -64,6 +59,9 @@
       <value datm_mode="CORE_IAF_JRA_1p5_2023" >
         CORE_IAF_JRA_1p5_2023.GCGCS.PREC,CORE_IAF_JRA_1p5_2023.GISS.LWDN,CORE_IAF_JRA_1p5_2023.GISS.SWDN,CORE_IAF_JRA_1p5_2023.NCEP.Q_10,CORE_IAF_JRA_1p5_2023.NCEP.SLP_,CORE_IAF_JRA_1p5_2023.NCEP.T_10,CORE_IAF_JRA_1p5_2023.NCEP.U_10,CORE_IAF_JRA_1p5_2023.NCEP.V_10
       </value>
+      <value datm_mode="CORE_RYF6162_JRA">
+        CORE_RYF6162_JRA.GISS.LWDN,CORE_RYF6162_JRA.GISS.SWDN,CORE_RYF6162_JRA.GCGCS,CORE_RYF6162_JRA.NCEP
+      </value>
       <value datm_mode="CORE_RYF8485_JRA">
         CORE_RYF8485_JRA.GISS.LWDN,CORE_RYF8485_JRA.GISS.SWDN,CORE_RYF8485_JRA.GCGCS,CORE_RYF8485_JRA.NCEP
       </value>
@@ -93,7 +91,7 @@
     <type>char</type>
     <category>datm</category>
     <group>datm_nml</group>
-    <valid_values>CLMNCEP,CORE2_NYF,CORE2_IAF,CORE_IAF_JRA,ERA5,SIMPLE,CPLHIST,1PT</valid_values>
+    <valid_values>CLMNCEP,CORE2_NYF,CORE2_IAF,CORE_IAF_JRA,CORE_RYF6162_JRA,CORE_RYF8485_JRA,CORE_RYF9091_JRA,CORE_RYF0304_JRA,ERA5,SIMPLE,CPLHIST,1PT</valid_values>
     <desc>
       general method that operates on the data.
       ----datamode = "CPLHIST"----
@@ -118,6 +116,14 @@
       Clm Dyn doi 10.1007/s00382-008-0441-3.
       ----datamode = "CORE_IAF_JRA"----
       JRA55 intra-annual year forcing
+      ----datamode = "CORE_RYF6162_JRA"----
+      JRA55 Repeat Year Forcing 1961-1962
+      ----datamode = "CORE_RYF8485_JRA"----
+      JRA55 Repeat Year Forcing 1984-1985
+      ----datamode = "CORE_RYF9091_JRA"----
+      JRA55 Repeat Year Forcing 1990-1991
+      ----datamode = "CORE_RYF0304_JRA"----
+      JRA55 Repeat Year Forcing 2003-2004
       ----datamode = "CLMNCEP"----
       In conjunction with NCEP climatological atmosphere data, provides the
       atmosphere forcing favored by the Land Model Working Group when
@@ -320,19 +326,6 @@
     <values>
       <value>.true.</value>
       <value datm_co2_tseries="none">.false.</value>
-    </values>
-  </entry>
-
-  <entry id="flds_wiso">
-    <type>logical</type>
-    <category>datm</category>
-    <group>datm_nml</group>
-    <desc>
-      If true, prescribed water isotopes are sent from datm (must be true for running with CLM).
-    </desc>
-    <values>
-      <value>.false.</value>
-      <!-- <value datm_mode="CLM_QIAN_WISO">.true.</value> -->
     </values>
   </entry>
 

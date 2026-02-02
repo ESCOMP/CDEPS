@@ -25,6 +25,7 @@
     <desc option="JRA">interannual JRA55 forcing</desc>
     <desc option="JRA-1p4-2018">interannual JRA55 forcing, v1.4, through 2018</desc>
     <desc option="JRA-1p5-2023">interannual JRA55 forcing, v1.5, through 2023</desc>
+    <desc option="JRA-RYF6162"> JRA55 Repeat Year Forcing v1.3 1961-1962</desc>
     <desc option="JRA-RYF8485"> JRA55 Repeat Year Forcing v1.3 1984-1985</desc>
     <desc option="JRA-RYF9091"> JRA55 Repeat Year Forcing v1.3 1990-1991</desc>
     <desc option="JRA-RYF0304"> JRA55 Repeat Year Forcing v1.3 2003-2004</desc>
@@ -57,6 +58,10 @@
       <value compset="DATM%JRA">CORE_IAF_JRA</value>
       <value compset="DATM%JRA-1p4-2018">CORE_IAF_JRA_1p4_2018</value>
       <value compset="DATM%JRA-1p5-2023">CORE_IAF_JRA_1p5_2023</value>
+      <value compset="DATM%JRA-RYF6162">CORE_RYF6162_JRA</value>
+      <value compset="DATM%JRA-RYF8485">CORE_RYF8485_JRA</value>
+      <value compset="DATM%JRA-RYF9091">CORE_RYF9091_JRA</value>
+      <value compset="DATM%JRA-RYF0304">CORE_RYF0304_JRA</value>
       <value compset="DATM%QIA">CLM_QIAN</value>
       <value compset="DATM%WISOQIA">CLM_QIAN_WISO</value>
       <value compset="DATM%CRUJRA2024">CLMCRUJRA2024</value>
@@ -99,18 +104,18 @@
 
   <entry id="DATM_PRESNDEP">
     <type>char</type>
-    <valid_values>none,clim_1850,clim_2000,clim_2010,hist,SSP1-2.6,SSP2-4.5,SSP3-7.0,SSP5-3.4,SSP5-8.5,cplhist</valid_values>
+    <valid_values>none,clim_1850_cmip7,clim_2000_cmip7,clim_2010_cmip7,hist_cmip7,clim_1850_cmip6,clim_2000_cmip6,clim_2010_cmip6,hist_cmip6,SSP1-2.6,SSP2-4.5,SSP3-7.0,SSP5-3.4,SSP5-8.5,cplhist</valid_values>
     <default_value>clim_2000</default_value>
     <values match="last">
-      <value compset="^1850[CE]?_"   >clim_1850</value>
-      <value compset="^2000_"   >clim_2000</value>
-      <value compset="^2010_"   >clim_2010</value>
-      <value compset="^SSP126_" >SSP1-2.6</value>
-      <value compset="^SSP245_" >SSP2-4.5</value>
-      <value compset="^SSP370_" >SSP3-7.0</value>
-      <value compset="^SSP585_" >SSP5-8.5</value>
-      <value compset="^HIST[CE]?_"   >hist</value>
-      <value compset="^20TR_"   >hist</value>
+      <value compset="^1850[CE]?_"  >clim_1850_cmip6</value>
+      <value compset="^2000_"       >clim_2000_cmip6</value>
+      <value compset="^2010_"       >clim_2010_cmip6</value>
+      <value compset="^HIST[CE]?_"  >hist_cmip6</value>
+      <value compset="^20TR_"       >hist_cmip6</value>
+      <value compset="^SSP126_"     >SSP1-2.6</value>
+      <value compset="^SSP245_"     >SSP2-4.5</value>
+      <value compset="^SSP370_"     >SSP3-7.0</value>
+      <value compset="^SSP585_"     >SSP5-8.5</value>
       <value compset="_DATM%CPLHIST">cplhist</value>
       <value compset="_DATM.*_DICE.*_DOCN.*_DROF">none</value>
     </values>

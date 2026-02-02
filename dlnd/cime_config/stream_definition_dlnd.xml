@@ -1,7 +1,5 @@
 <?xml version="1.0"?>
 
-<?xml-stylesheet type="text/xsl" href="namelist_definition.xsl"?>
-
   <!--
       %glc => GLC elevation class from the range 0 to GLC_NEC, obtained from the GLC_NEC xml variable
       %y   => year from the range yearfirst to yearlast
@@ -14,7 +12,7 @@
 
 <stream_data version="2.0" xmlns:xi="http://www.w3.org/2001/XInclude">
 
-  <stream_entry name="sno.cplhist">
+  <stream_entry name="glc_forcing_mct">
     <stream_meshfile>
       <meshfile>$LND_DOMAIN_MESH</meshfile>
     </stream_meshfile>
@@ -27,6 +25,106 @@
       <var>l2x1yr_glc_Sl_tsrf%glc     Sl_tsrf_elev%glc  </var>
       <var>l2x1yr_glc_Sl_topo%glc     Sl_topo_elev%glc  </var>
       <var>l2x1yr_glc_Flgl_qice%glc   Flgl_qice_elev%glc</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DLND_CPLHIST_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DLND_CPLHIST_YR_START</stream_year_first>
+    <stream_year_last>$DLND_CPLHIST_YR_END</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>lower</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="glc_forcing">
+    <stream_meshfile>
+      <meshfile>$LND_DOMAIN_MESH</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <!-- Specify first year = 0, last year = 99999 in order to apply
+           this pattern to all possible years that might be included. -->
+      <file first_year="0" last_year="99999">$DLND_CPLHIST_DIR/$DLND_CPLHIST_CASE.cpl.hx.lnd2glc.%y-01-01-00000.nc</file>
+    </stream_datafiles>
+   <stream_datavars>
+      <var>lndImp_Sl_topo_elev1    Sl_topo_elev1</var>
+      <var>lndImp_Sl_topo_elev2    Sl_topo_elev2</var>
+      <var>lndImp_Sl_topo_elev3    Sl_topo_elev3</var>
+      <var>lndImp_Sl_topo_elev4    Sl_topo_elev4</var>
+      <var>lndImp_Sl_topo_elev5    Sl_topo_elev5</var>
+      <var>lndImp_Sl_topo_elev6    Sl_topo_elev6</var>
+      <var>lndImp_Sl_topo_elev7    Sl_topo_elev7</var>
+      <var>lndImp_Sl_topo_elev8    Sl_topo_elev8</var>
+      <var>lndImp_Sl_topo_elev9    Sl_topo_elev9</var>
+      <var>lndImp_Sl_topo_elev10   Sl_topo_elev10</var>
+      <var>lndImp_Sl_topo_elev11   Sl_topo_elev11</var>
+      <var>lndImp_Sl_tsrf_elev1    Sl_tsrf_elev1</var>
+      <var>lndImp_Sl_tsrf_elev2    Sl_tsrf_elev2</var>
+      <var>lndImp_Sl_tsrf_elev3    Sl_tsrf_elev3</var>
+      <var>lndImp_Sl_tsrf_elev4    Sl_tsrf_elev4</var>
+      <var>lndImp_Sl_tsrf_elev5    Sl_tsrf_elev5</var>
+      <var>lndImp_Sl_tsrf_elev6    Sl_tsrf_elev6</var>
+      <var>lndImp_Sl_tsrf_elev7    Sl_tsrf_elev7</var>
+      <var>lndImp_Sl_tsrf_elev8    Sl_tsrf_elev8</var>
+      <var>lndImp_Sl_tsrf_elev9    Sl_tsrf_elev9</var>
+      <var>lndImp_Sl_tsrf_elev10   Sl_tsrf_elev10</var>
+      <var>lndImp_Sl_tsrf_elev11   Sl_tsrf_elev11</var>
+      <var>lndImp_Flgl_qice_elev1  Flgl_qice_elev1</var>
+      <var>lndImp_Flgl_qice_elev2  Flgl_qice_elev2</var>
+      <var>lndImp_Flgl_qice_elev3  Flgl_qice_elev3</var>
+      <var>lndImp_Flgl_qice_elev4  Flgl_qice_elev4</var>
+      <var>lndImp_Flgl_qice_elev5  Flgl_qice_elev5</var>
+      <var>lndImp_Flgl_qice_elev6  Flgl_qice_elev6</var>
+      <var>lndImp_Flgl_qice_elev7  Flgl_qice_elev7</var>
+      <var>lndImp_Flgl_qice_elev8  Flgl_qice_elev8</var>
+      <var>lndImp_Flgl_qice_elev9  Flgl_qice_elev9</var>
+      <var>lndImp_Flgl_qice_elev10 Flgl_qice_elev10</var>
+      <var>lndImp_Flgl_qice_elev11 Flgl_qice_elev11</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DLND_CPLHIST_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DLND_CPLHIST_YR_START</stream_year_first>
+    <stream_year_last>$DLND_CPLHIST_YR_END</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>lower</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="rof_forcing">
+    <stream_meshfile>
+      <meshfile>$LND_DOMAIN_MESH</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="0" last_year="99999">$DLND_CPLHIST_DIR/$DLND_CPLHIST_CASE.cpl.hx.lnd2rof.24hr.avg.%y-01-01-00000.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>lndImp_Flrl_rofsur_nonh2o%rof Flrl_rofsur_nonh2o%rof</var>
+	    <var>lndImp_Flrl_rofsur Flrl_rofsur</var>
+	    <var>lndImp_Flrl_rofsub Flrl_rofsub</var>
+	    <var>lndImp_Flrl_rofgwl Flrl_rofgwl</var>
+	    <var>lndImp_Flrl_rofi   Flrl_rofi</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>

@@ -16,6 +16,7 @@ add_library(cdeps_share  ${GenF90_SRCS}
                          shr_const_mod.F90
                          shr_orb_mod.F90
                          shr_log_mod.F90
+                         shr_lnd2rof_tracers_mod.F90
                          shr_strconvert_mod.F90
                          shr_precip_mod.F90
                          shr_string_mod.F90

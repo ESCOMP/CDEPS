@@ -33,7 +33,6 @@ module cdeps_dice_comp
   use dshr_mod             , only : dshr_state_setscalar, dshr_set_runclock, dshr_log_clock_advance
   use dshr_methods_mod     , only : dshr_state_diagnose, chkerr, memcheck
   use dshr_strdata_mod     , only : shr_strdata_type, shr_strdata_init_from_config, shr_strdata_advance
-  use dshr_dfield_mod      , only : dfield_type, dshr_dfield_add, dshr_dfield_copy
   use dshr_fldlist_mod     , only : fldlist_type, dshr_fldlist_add, dshr_fldlist_realize
 
   use dice_datamode_ssmi_mod , only : dice_datamode_ssmi_advertise
@@ -49,7 +48,7 @@ module cdeps_dice_comp
   use dice_datamode_cplhist_mod , only : dice_datamode_cplhist_restart_write
 
   implicit none
-  private ! except
+  private
 
   public  :: SetServices
   public  :: SetVM
@@ -76,7 +75,7 @@ module cdeps_dice_comp
   integer                      :: logunit                             ! logging unit number
   logical                      :: restart_read                        ! start from restart
   character(CL)                :: case_name     ! case name
-  character(*) , parameter     :: nullstr = 'null'
+  character(len=*) , parameter     :: nullstr = 'null'
 
   ! dice_in namelist input
   character(CX)                :: streamfilename = nullstr            ! filename to obtain stream info from
@@ -92,29 +91,30 @@ module cdeps_dice_comp
   integer                      :: nx_global
   integer                      :: ny_global
   logical                      :: export_all = .false.                ! true => export all fields, do not check connected or not
+  logical                      :: first_call = .true.
 
   ! linked lists
   type(fldList_type) , pointer :: fldsImport => null()
   type(fldList_type) , pointer :: fldsExport => null()
-  type(dfield_type)  , pointer :: dfields    => null()
 
   ! model mask and model fraction
   real(r8), pointer            :: model_frac(:) => null()
   integer , pointer            :: model_mask(:) => null()
   logical                      :: valid_ice = .true.                  ! used for single column logic (ocn mask > 0)
 
+
   ! constants
   logical                      :: flds_i2o_per_cat                    ! .true. if select per ice thickness
   real(R8)                     :: dt                                  ! real model timestep
 
   logical                      :: diagnose_data = .true.
-  integer      , parameter     :: main_task=0                       ! task number of main task
+  integer      , parameter     :: main_task=0                         ! task number of main task
 #ifdef CESMCOUPLED
-  character(*) , parameter     :: modName =  "(ice_comp_nuopc)"
+  character(len=*) , parameter     :: modName =  "(ice_comp_nuopc)"
 #else
-  character(*) , parameter     :: modName =  "(cdeps_dice_comp)"
+  character(len=*) , parameter     :: modName =  "(cdeps_dice_comp)"
 #endif
-  character(*) , parameter     :: u_FILE_u = &
+  character(len=*) , parameter     :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -183,10 +183,6 @@ contains
     real(r8)          :: rbcasttmp(3)
     type(ESMF_VM)     :: vm
     character(len=*),parameter  :: subname=trim(modName)//':(InitializeAdvertise) '
-    character(*)    ,parameter :: F00 = "('(" // trim(modName) // ") ',8a)"
-    character(*)    ,parameter :: F01 = "('(" // trim(modName) // ") ',a,2x,i8)"
-    character(*)    ,parameter :: F02 = "('(" // trim(modName) // ") ',a,l6)"
-    character(*)    ,parameter :: F03 = "('(" // trim(modName) // ") ',a,d13.5)"
     !-------------------------------------------------------------------------------
 
     namelist / dice_nml /  datamode, &
@@ -210,7 +206,7 @@ contains
     mainproc = (my_task == main_task)
 
     ! Read dice_nml from nlfilename
-    if (my_task == main_task) then
+    if (mainproc) then
        nlfilename = "dice_in"//trim(inst_suffix)
        open (newunit=nu,file=trim(nlfilename),status="old",action="read")
        call shr_nl_find_group_name(nu, 'dice_nml', status=ierr)
@@ -224,17 +220,18 @@ contains
        end if
 
        ! write namelist input to standard out
-       write(logunit,F00)' datamode       = ',trim(datamode)
-       write(logunit,F00)' model_meshfile = ',trim(model_meshfile)
-       write(logunit,F00)' model_maskfile = ',trim(model_maskfile)
-       write(logunit,F01)' nx_global  = ',nx_global
-       write(logunit,F01)' ny_global  = ',ny_global
-       write(logunit,F03)' flux_swpf  = ',flux_swpf
-       write(logunit,F03)' flux_Qmin  = ',flux_Qmin
-       write(logunit,F02)' flux_Qacc  = ',flux_Qacc
-       write(logunit,F03)' flux_Qacc0 = ',flux_Qacc0
-       write(logunit,F00)' restfilm = ',trim(restfilm)
-       write(logunit,F02)' export_all = ',export_all
+       write(logunit,'(3a)')       subname,' datamode       = ',trim(datamode)
+       write(logunit,'(3a)')       subname,' model_meshfile = ',trim(model_meshfile)
+       write(logunit,'(3a)')       subname,' model_maskfile = ',trim(model_maskfile)
+       write(logunit,'(2a,i0)')    subname,' nx_global      = ',nx_global
+       write(logunit,'(2a,i0)')    subname,' ny_global      = ',ny_global
+       write(logunit,'(2a,d13.5)') subname,' flux_swpf      = ',flux_swpf
+       write(logunit,'(2a,d13.5)') subname,' flux_Qmin      = ',flux_Qmin
+       write(logunit,'(2a,l6)')    subname,' flux_Qacc      = ',flux_Qacc
+       write(logunit,'(2a,d13.5)') subname,' flux_Qacc0     = ',flux_Qacc0
+       write(logunit,'(3a)')       subname,' restfilm       = ',trim(restfilm)
+       write(logunit,'(2a,l6)')    subname,' export_all     = ',export_all
+
        bcasttmp = 0
        bcasttmp(1) = nx_global
        bcasttmp(2) = ny_global
@@ -272,23 +269,20 @@ contains
     flux_Qacc0 = rbcasttmp(3)
 
     ! Validate datamode
-    if ( trim(datamode) == 'ssmi' .or. trim(datamode) == 'ssmi_iaf' .or. trim(datamode) == 'cplhist') then
-       if (my_task == main_task) write(logunit,*) ' dice datamode = ',trim(datamode)
-    else
+    select case (trim(datamode))
+    case('ssmi','ssmi_iaf','cplhist')
+       if (mainproc) write(logunit,'(3a)') subname,' dice datamode = ',trim(datamode)
+    case default
        call shr_log_error(' ERROR illegal dice datamode = '//trim(datamode), rc=rc)
        return
-    endif
+    end select
 
     ! Advertise import and export fields
-    if ( trim(datamode) == 'ssmi' .or. trim(datamode) == 'ssmi_iaf') then 
-      call NUOPC_CompAttributeGet(gcomp, name='flds_i2o_per_cat', value=cvalue, rc=rc)
-      if (ChkErr(rc,__LINE__,u_FILE_u)) return
-      read(cvalue,*) flds_i2o_per_cat  ! module variable
-    endif
-
-    !datamode already validated
     select case (trim(datamode))
     case('ssmi','ssmi_iaf')
+       call NUOPC_CompAttributeGet(gcomp, name='flds_i2o_per_cat', value=cvalue, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       read(cvalue,*) flds_i2o_per_cat  ! module variable
        call dice_datamode_ssmi_advertise(importState, exportState, fldsimport, fldsexport, &
             flds_scalar_name, flds_i2o_per_cat, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -409,6 +403,7 @@ contains
 
   !===============================================================================
   subroutine ModelAdvance(gcomp, rc)
+
     ! input/output variables
     type(ESMF_GridComp)  :: gcomp
     integer, intent(out) :: rc
@@ -489,9 +484,8 @@ contains
     integer          , intent(out)   :: rc
 
     ! local variables
-    logical :: first_time = .true.
     character(len=CL) :: rpfile
-    character(*), parameter :: subName = "(dice_comp_run) "
+    character(len=*), parameter :: subName = "(dice_comp_run) "
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -502,18 +496,7 @@ contains
     ! first time initialization
     !--------------------
 
-    if (first_time) then
-
-       ! Initialize dfields with export state data that has corresponding stream fieldi
-       select case (trim(datamode))
-       case('ssmi','ssmi_iaf')
-         call dshr_dfield_add(dfields, sdat, state_fld='Si_ifrac', strm_fld='Si_ifrac', &
-            state=exportState, logunit=logunit, mainproc=mainproc, rc=rc)
-         if (chkerr(rc,__LINE__,u_FILE_u)) return
-       case('cplhist')
-         call dice_init_dfields(importState, exportState, rc)
-         if (chkerr(rc,__LINE__,u_FILE_u)) return
-       end select
+    if (first_call) then
 
        ! Initialize datamode module ponters
        select case (trim(datamode))
@@ -521,7 +504,7 @@ contains
           call dice_datamode_ssmi_init_pointers(importState, exportState, sdat, flds_i2o_per_cat, rc)
           if (chkerr(rc,__LINE__,u_FILE_u)) return
        case('cplhist')
-          call dice_datamode_cplhist_init_pointers(importState,exportState,sdat,rc)
+          call dice_datamode_cplhist_init_pointers(exportState, sdat, rc)
           if (chkerr(rc,__LINE__,u_FILE_u)) return
        end select
 
@@ -531,14 +514,14 @@ contains
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           select case (trim(datamode))
           case('ssmi', 'ssmi_iaf')
-             call dice_datamode_ssmi_restart_read(restfilm, rpfile, logunit, my_task, mpicom, sdat)
+             call dice_datamode_ssmi_restart_read(restfilm, rpfile, logunit, my_task, mpicom, sdat, rc)
+             if (ChkErr(rc,__LINE__,u_FILE_u)) return
           case('cplhist')
-             call dice_datamode_cplhist_restart_read(restfilm, rpfile, logunit, my_task, mpicom, sdat) 
+             call dice_datamode_cplhist_restart_read(restfilm, rpfile, logunit, my_task, mpicom, sdat)
           end select
        end if
 
-       ! reset first_time
-       first_time = .false.
+       first_call = .false.
     end if
 
     !--------------------
@@ -550,17 +533,6 @@ contains
     call ESMF_TraceRegionEnter('dice_strdata_advance')
     call shr_strdata_advance(sdat, target_ymd, target_tod, logunit, 'dice', rc=rc)
     call ESMF_TraceRegionExit('dice_strdata_advance')
-
-    !--------------------
-    ! copy all fields from streams to export state as default
-    !--------------------
-
-    ! This automatically will update the fields in the export state
-
-    call ESMF_TraceRegionEnter('dice_dfield_copy')
-    call dshr_dfield_copy(dfields, sdat, rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_TraceRegionExit('dice_dfield_copy')
 
     !-------------------------------------------------
     ! Determine data model behavior based on the mode
@@ -575,8 +547,8 @@ contains
             flux_swpf, flux_Qmin, flux_Qacc, flux_Qacc0, dt, logunit, restart_read, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('cplhist')
-       call dice_datamode_cplhist_advance(rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return 
+       call dice_datamode_cplhist_advance(sdat, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end select
 
     ! Write restarts if needed
@@ -586,7 +558,8 @@ contains
        select case (trim(datamode))
        case('ssmi', 'ssmi_iaf')
           call dice_datamode_ssmi_restart_write(rpfile, case_name, inst_suffix, target_ymd, target_tod, &
-               logunit, my_task, sdat)
+               logunit, my_task, sdat, rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case ('cplhist')
           call dice_datamode_cplhist_restart_write(rpfile, case_name, inst_suffix, target_ymd, target_tod, &
                logunit, my_task, sdat)
@@ -602,46 +575,6 @@ contains
     call ESMF_TraceRegionExit('dice_datamode')
     call ESMF_TraceRegionExit('DICE_RUN')
 
-  contains
-    subroutine dice_init_dfields(importState, exportState, rc)
-      ! -----------------------------
-      ! Initialize dfields arrays
-      ! -----------------------------
-
-      ! input/output variables
-      type(ESMF_State)       , intent(inout) :: importState
-      type(ESMF_State)       , intent(inout) :: exportState
-      integer                , intent(out)   :: rc
-
-      ! local variables
-      integer                         :: n
-      integer                         :: fieldcount
-      type(ESMF_Field)                :: lfield
-      character(ESMF_MAXSTR) ,pointer :: lfieldnamelist(:)
-      character(*), parameter   :: subName = "(dice_init_dfields) "
-      !-------------------------------------------------------------------------------
-
-      rc = ESMF_SUCCESS
-
-      ! Initialize dfields data type (to map streams to export state fields)
-      ! Create dfields linked list - used for copying stream fields to export
-      ! state fields
-      call ESMF_StateGet(exportState, itemCount=fieldCount, rc=rc)
-      if (chkerr(rc,__LINE__,u_FILE_u)) return
-      allocate(lfieldnamelist(fieldCount))
-      call ESMF_StateGet(exportState, itemNameList=lfieldnamelist, rc=rc)
-      if (chkerr(rc,__LINE__,u_FILE_u)) return
-      do n = 1, fieldCount
-         call ESMF_StateGet(exportState, itemName=trim(lfieldNameList(n)), field=lfield, rc=rc)
-         if (chkerr(rc,__LINE__,u_FILE_u)) return
-         if (trim(lfieldnamelist(n)) /= flds_scalar_name) then
-            call dshr_dfield_add( dfields, sdat, trim(lfieldnamelist(n)), trim(lfieldnamelist(n)), exportState, &
-                 logunit, mainproc, rc)
-            if (chkerr(rc,__LINE__,u_FILE_u)) return
-         end if
-      end do
-    end subroutine dice_init_dfields
-
   end subroutine dice_comp_run
 
   !===============================================================================
@@ -651,7 +584,7 @@ contains
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
-    if (my_task == main_task) then
+    if (mainproc) then
        write(logunit,*)
        write(logunit,*) 'dice : end of main integration loop'
        write(logunit,*)
