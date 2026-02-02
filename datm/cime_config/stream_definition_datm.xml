@@ -29,7 +29,8 @@
   Currently the following data modes are supported:
   CLM_QIAN              = Run with the CLM Qian dataset valid from 1948 to 2004 (force CLM)
   CLM_QIAN_WISO         = Run with the CLM Qian dataset with isotopes valid from 2000 to 2004 (force CLM)
-  CLMCRUJRA2024         = Run with the CLM CRUJRA 2024 forcing valid from 1901 to 2023 (force CLM)
+  CLMCRUJRA2024         = Run with the CLM CRUJRA 2024 (filled Antarctica) forcing valid from 1901 to 2023 (force CLM)
+  CLMCRUJRA2024b        = Run with the CLM CRUJRA 2024b (filled Greenland snow hole) forcing valid from 1901 to 2023 (force CLM)
   CLMCRUNCEPv7          = Run with the CLM CRU NCEP V7 forcing valid from 1900 to 2010 (force CLM)
   CLMGSWP3v1            = Run with the CLM GSWP3 V1 forcing (force CLM)
   CLMNLDAS2             = Run with the CLM NLDAS2 regional forcing valid from 1980 to 2018 (force CLM)
@@ -75,6 +76,13 @@
   CLMCRUJRA2024.Solar
   CLMCRUJRA2024.Precip
   CLMCRUJRA2024.TPQW
+
+  ========================
+  datm_mode CLMCRUJRA2024b: (DATM%CRUJRA2024b in env_run.xml)
+  ========================
+  CLMCRUJRA2024b.Solar
+  CLMCRUJRA2024b.Precip
+  CLMCRUJRA2024b.TPQW
 
   ========================
   datm_mode CLMCRUNCEPv7: (DATM%CRUv7 in env_run.xml)
@@ -465,6 +473,107 @@
     </stream_meshfile>
     <stream_datafiles>
       <file first_year="1901" last_year="2014">$DIN_LOC_ROOT_CLMFORC/atm_forcing.datm7.GSWP3.0.5d.v1.c170516/TPHWL/clmforc.GSWP3.c2011.0.5x0.5.TPQWL.%ym.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>TBOT     Sa_tbot</var>
+      <var>WIND     Sa_wind</var>
+      <var>QBOT     Sa_shum</var>
+      <var>PSRF     Sa_pbot</var>
+      <var>FLDS     Faxa_lwdn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_YR_START</stream_year_first>
+    <stream_year_last>$DATM_YR_END</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <!-- ===================================  -->
+  <!-- datm_mode CLMCRUJRA2024b              -->
+  <!-- ===================================  -->
+
+  <stream_entry name="CLMCRUJRA2024b.Solar">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.CRUJRA.0.5d.c20260129/three_stream/mesh_0.5x0.5_CRUJRAv2.5mask_cdf5_c20240916.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1901" last_year="2023">$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.CRUJRA.0.5d.c20260129/three_stream/clmforc.CRUJRAv2.5_filled_antarct_and_grnlnd_0.5x0.5.Solr.%y.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>FSDS     Faxa_swdn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_YR_START</stream_year_first>
+    <stream_year_last>$DATM_YR_END</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>coszen</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CLMCRUJRA2024b.Precip">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.CRUJRA.0.5d.c20260129/three_stream/mesh_0.5x0.5_CRUJRAv2.5mask_cdf5_c20240916.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1901" last_year="2023">$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.CRUJRA.0.5d.c20260129/three_stream/clmforc.CRUJRAv2.5_filled_antarct_and_grnlnd_0.5x0.5.Prec.%y.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>PRECTmms Faxa_precn</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_YR_START</stream_year_first>
+    <stream_year_last>$DATM_YR_END</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>nearest</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="CLMCRUJRA2024b.TPQW">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.CRUJRA.0.5d.c20260129/three_stream/mesh_0.5x0.5_CRUJRAv2.5mask_cdf5_c20240916.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1901" last_year="2023">$DIN_LOC_ROOT/atm/datm7/atm_forcing.datm7.CRUJRA.0.5d.c20260129/three_stream/clmforc.CRUJRAv2.5_filled_antarct_and_grnlnd_0.5x0.5.TPQWL.%y.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>TBOT     Sa_tbot</var>
