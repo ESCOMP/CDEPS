@@ -4,6 +4,13 @@
 
   <!-- Note that streamslist here does not handle the optional streams - -->
   <!-- those are handled in buildnml -->
+  <!-- Note2: The list below gets searched using a "first match" method. -->
+  <!-- This means a different result when CLMCRUJRA2024 is listed before -->
+  <!-- versus after CLMCRUJRA2024b. Before will incorrectly choose -->
+  <!-- CLMCRUJRA2024 even when we ask for CLMCRUJRA2024b, while after -->
+  <!-- will correctly choose -->
+  <!-- CLMCRUJRA2024 when we ask for CLMCRUJRA2024 and -->
+  <!-- CLMCRUJRA2024b when we ask for CLMCRUJRA2024b. -->
 
   <entry id="streamslist">
     <type>char(100)</type>
