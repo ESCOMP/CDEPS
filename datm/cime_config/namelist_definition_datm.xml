@@ -11,6 +11,10 @@
   <!-- will correctly choose -->
   <!-- CLMCRUJRA2024 when we ask for CLMCRUJRA2024 and -->
   <!-- CLMCRUJRA2024b when we ask for CLMCRUJRA2024b. -->
+  <!-- Note3: The reg-expression after CLMCRUJRA2024 means NOT followed -->
+  <!-- by a "b" and ensures more robustly that we will end up with the -->
+  <!-- correct match, even if we were to place CLMCRUJRA2024 before -->
+  <!-- CLMCRUJRA2024b in the list. -->
 
   <entry id="streamslist">
     <type>char(100)</type>
@@ -24,7 +28,7 @@
       <value datm_mode="CLMCRUJRA2024b">
         CLMCRUJRA2024b.Solar,CLMCRUJRA2024b.Precip,CLMCRUJRA2024b.TPQW
       </value>
-      <value datm_mode="CLMCRUJRA2024">
+      <value datm_mode="CLMCRUJRA2024(?!b)">
         CLMCRUJRA2024.Solar,CLMCRUJRA2024.Precip,CLMCRUJRA2024.TPQW
       </value>
       <value datm_mode="CLMCRUNCEPv7">
