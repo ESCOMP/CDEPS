@@ -5,16 +5,14 @@
   <!-- Note that streamslist here does not handle the optional streams - -->
   <!-- those are handled in buildnml -->
   <!-- Note2: The list below gets searched using a "first match" method. -->
-  <!-- This means a different result when CLMCRUJRA2024 is listed before -->
-  <!-- versus after CLMCRUJRA2024b. Before will incorrectly choose -->
-  <!-- CLMCRUJRA2024 even when we ask for CLMCRUJRA2024b, while after -->
-  <!-- will correctly choose -->
-  <!-- CLMCRUJRA2024 when we ask for CLMCRUJRA2024 and -->
-  <!-- CLMCRUJRA2024b when we ask for CLMCRUJRA2024b. -->
-  <!-- Note3: The reg-expression after CLMCRUJRA2024 means NOT followed -->
-  <!-- by a "b" and ensures more robustly that we will end up with the -->
-  <!-- correct match, even if we were to place CLMCRUJRA2024 before -->
-  <!-- CLMCRUJRA2024b in the list. -->
+  <!-- This means a different result when CLM_XYZ is listed before -->
+  <!-- versus after CLM_XYZb. Before will incorrectly select CLM_XYZ -->
+  <!-- even when we request CLM_XYZb, while after will correctly select -->
+  <!-- CLM_XYZ when we request CLM_XYZ and CLM_XYZb when we request -->
+  <!-- CLM_XYZb. -->
+  <!-- Note3: The reg-expression (?!b) after CLMCRUJRA2024 means NOT -->
+  <!-- followed by a "b" and ensures order-independent selection of the -->
+  <!-- correct match for CLMCRUJRA2024 and CLMCRUJRA2024b specifically. -->
 
   <entry id="streamslist">
     <type>char(100)</type>
