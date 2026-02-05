@@ -10,7 +10,7 @@
        This file may have atm desc entries.
   -->
   <description modifier_mode="1">
-    <desc atm="DATM[%QIA][%WISOQIA][%CRUJRA2024][%CRUJRA2024b][%CRUv7][%GSWP3v1][%MOSARTTEST][%NLDAS2][%CPLHIST][%1PT][%NYF][%IAF][%JRA][%JRA-1p4-2018][%JRA-1p5-2023][%JRA-RYF8485][%JRA-RYF9091][%JRA-RYF0304][%SIMPLE]"> Data driven ATM </desc>
+    <desc atm="DATM[%QIA][%WISOQIA][%CRUJRA2024][%CRUJRA2024b][%CRUv7][%GSWP3v1][%MOSARTTEST][%NLDAS2][%CPLHIST][%1PT][%NYF][%IAF][%JRA][%JRA-1p4-2018][%JRA-1p5-2023][%JRA-RYF6162][%JRA-RYF8485][%JRA-RYF9091][%JRA-RYF0304][%SIMPLE]"> Data driven ATM </desc>
     <desc option="QIA"> QIAN data set </desc>
     <desc option="WISOQIA">QIAN with water isotopes</desc>
     <desc option="CRUJRA2024"> CRUJRA 2024 data set </desc>
@@ -44,7 +44,7 @@
 
   <entry id="DATM_MODE">
     <type>char</type>
-    <valid_values>CORE2_NYF,CORE2_IAF,CLM_QIAN,CLM_QIAN_WISO,1PT,CLMCRUJRA2024,CLMCRUJRA2024b,CLMCRUNCEPv7,CLMGSWP3v1,CLMNLDAS2,CPLHIST,CORE_IAF_JRA,CORE_IAF_JRA_1p4_2018,CORE_IAF_JRA_1p5_2023,ERA5,SIMPLE</valid_values>
+    <valid_values>CORE2_NYF,CORE2_IAF,CLM_QIAN,CLM_QIAN_WISO,1PT,CLMCRUJRA2024,CLMCRUJRA2024b,CLMCRUNCEPv7,CLMGSWP3v1,CLMNLDAS2,CPLHIST,CORE_IAF_JRA,CORE_IAF_JRA_1p4_2018,CORE_IAF_JRA_1p5_2023,CORE_RYF6162_JRA,CORE_RYF8485_JRA,CORE_RYF9091_JRA,CORE_RYF0304_JRA,ERA5,SIMPLE</valid_values>
     <default_value>CORE2_NYF</default_value>
     <group>run_component_datm</group>
     <file>env_run.xml</file>
