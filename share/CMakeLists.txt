@@ -25,6 +25,12 @@ add_library(cdeps_share  ${GenF90_SRCS}
 
 target_include_directories (cdeps_share PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${ESMF_F90COMPILEPATHS} ${PIO_Fortran_INCLUDE_DIRS})
 
+if(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
+  target_compile_definitions(cdeps_share PRIVATE "CPRGNU")
+elseif(CMAKE_Fortran_COMPILER_ID MATCHES "Intel")
+  target_compile_definitions(cdeps_share PRIVATE "CPRINTEL")
+endif()
+
 install(TARGETS cdeps_share
         LIBRARY DESTINATION lib)
 #===== genf90 =====
