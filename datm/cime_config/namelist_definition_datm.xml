@@ -4,6 +4,15 @@
 
   <!-- Note that streamslist here does not handle the optional streams - -->
   <!-- those are handled in buildnml -->
+  <!-- Note2: The list below gets searched using a "first match" method. -->
+  <!-- This means a different result when CLM_XYZ is listed before -->
+  <!-- versus after CLM_XYZb. Before will incorrectly select CLM_XYZ -->
+  <!-- even when we request CLM_XYZb, while after will correctly select -->
+  <!-- CLM_XYZ when we request CLM_XYZ and CLM_XYZb when we request -->
+  <!-- CLM_XYZb. -->
+  <!-- Note3: The reg-expression (?!b) after CLMCRUJRA2024 means NOT -->
+  <!-- followed by a "b" and ensures order-independent selection of the -->
+  <!-- correct match for CLMCRUJRA2024 and CLMCRUJRA2024b specifically. -->
 
   <entry id="streamslist">
     <type>char(100)</type>
@@ -14,7 +23,10 @@
       <value datm_mode="CLM_QIAN$">
         CLM_QIAN.Solar,CLM_QIAN.Precip,CLM_QIAN.TPQW
       </value>
-      <value datm_mode="CLMCRUJRA2024">
+      <value datm_mode="CLMCRUJRA2024b">
+        CLMCRUJRA2024b.Solar,CLMCRUJRA2024b.Precip,CLMCRUJRA2024b.TPQW
+      </value>
+      <value datm_mode="CLMCRUJRA2024(?!b)">
         CLMCRUJRA2024.Solar,CLMCRUJRA2024.Precip,CLMCRUJRA2024.TPQW
       </value>
       <value datm_mode="CLMCRUNCEPv7">
