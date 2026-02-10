@@ -3747,6 +3747,7 @@
 
   <!-- currently all co2 time series are single point and have no mesh -->
 
+  <!-- CMIP6 era for 20th Century historical -->
   <stream_entry name="co2tseries.cmip6_20tr">
     <stream_meshfile>
       <meshfile>none</meshfile>
