@@ -152,6 +152,8 @@
   ========================
   optional stream co2tseries (turned on and stream specified by xml variable DATM_CO2_TSERIES)
   - DATM_CO2_TSERIES is set by the 4 character time prefix in config_component.xml
+  - The historical series are labeled as either CMIP6 or CMIP6 era
+  - The SSP future scenarios are all CMIP6 era data
   ========================
   co2tseries.cmip6_20tr
   co2tseries.cmip7_20tr
