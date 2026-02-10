@@ -3872,6 +3872,7 @@
     <stream_readmode>single</stream_readmode>
   </stream_entry>
 
+  <!-- The future scenarios SSP (Shared Socio-economic Pathway) are CMIP6 era -->
   <stream_entry name="co2tseries.SSP1-1.9">
     <stream_meshfile>
       <meshfile>none</meshfile>
