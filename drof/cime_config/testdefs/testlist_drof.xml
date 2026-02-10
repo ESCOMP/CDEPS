@@ -10,5 +10,13 @@
       <option name="wallclock"> 00:10:00 </option>
     </options>
   </test>
+  <test compset="2000_SATM_SLND_SICE_SOCN_DROF%CPLHIST_SGLC_SWAV" grid="ne30pg3_tn14" name="SMS_D_Ld3" testmods="drof/cplhist_noresm">
+    <machines>
+      <machine name="betzy" compiler="intel" category="aux_cdeps_noresm"/>
+    </machines>
+    <options>
+      <option name="wallclock"> 00:10:00 </option>
+    </options>
+  </test>
 
 </testlist>

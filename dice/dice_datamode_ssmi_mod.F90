@@ -14,7 +14,7 @@ module dice_datamode_ssmi_mod
   use dshr_fldlist_mod     , only : fldlist_type, dshr_fldlist_add
 
   implicit none
-  private ! except
+  private
 
   public  :: dice_datamode_ssmi_advertise
   public  :: dice_datamode_ssmi_init_pointers
@@ -25,10 +25,12 @@ module dice_datamode_ssmi_mod
   ! restart fields
   real(r8), pointer, public :: water(:) => null()
 
+  ! stream pointer
+  real(r8), pointer :: strm_Si_ifrac(:)  => null()
+
   ! internal fields
   real(r8), pointer :: yc(:)      => null() ! mesh lats (degrees)
   integer , pointer :: imask(:)   => null()
-  !real(r8), pointer:: ifrac0(:)  => null()
 
   ! export fields
   real(r8), pointer ::  Si_imask(:)      => null()
@@ -100,8 +102,8 @@ module dice_datamode_ssmi_mod
   real(r8) , parameter :: latice   = shr_const_latice ! latent heat of fusion
   real(r8) , parameter :: waterMax = 1000.0_r8        ! wrt iFrac comp & frazil ice (kg/m^2)
 
-  character(*) , parameter :: nullstr = 'null'
-  character(*) , parameter :: u_FILE_u = &
+  character(len=*) , parameter :: nullstr = 'null'
+  character(len=*) , parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -223,8 +225,13 @@ contains
 
     lsize = sdat%model_lsize
 
+    ! Set pointer to stream data (required)
+    call shr_strdata_get_stream_pointer( sdat, 'Si_ifrac', strm_Si_ifrac, requirePointer=.true., &
+         errmsg=subname//'ERROR: strm_Si_ifrac must be associated for ssmi datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
     ! Set Si_imask (this corresponds to the ocean mask)
-    call dshr_state_getfldptr(exportState, fldname='Si_imask'    , fldptr1=Si_imask    , rc=rc)
+    call dshr_state_getfldptr(exportState, fldname='Si_imask', fldptr1=Si_imask, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     allocate(imask(sdat%model_lsize))
     call ESMF_MeshGet(sdat%model_mesh, numOwnedElements=numOwnedElements, elementdistGrid=distGrid, rc=rc)
@@ -395,6 +402,8 @@ contains
 
     rc = ESMF_SUCCESS
 
+    Si_ifrac(:) = strm_Si_ifrac(:)
+
     lsize = size(Si_ifrac)
 
     if (first_time) then
@@ -411,7 +420,6 @@ contains
                 water(n) = 0.0_r8
              end if
           end do
-          ! iFrac0 = iFrac  ! previous step's ice fraction
        endif
 
        ! reset first time
@@ -537,8 +545,6 @@ contains
           !--- salt flux ---
           Fioi_salt(n) = 0.0_r8
        end if
-       ! !--- save ifrac for next timestep
-       ! iFrac0(n) = Si_ifrac(n)
     end do
 
     ! Compute outgoing aerosol fluxes
@@ -566,7 +572,7 @@ contains
 
   !===============================================================================
   subroutine dice_datamode_ssmi_restart_write(rpfile, case_name, inst_suffix, ymd, tod, &
-       logunit, my_task, sdat)
+       logunit, my_task, sdat, rc)
 
     ! input/output variables
     character(len=*)            , intent(in)    :: rpfile
@@ -577,8 +583,11 @@ contains
     integer                     , intent(in)    :: logunit
     integer                     , intent(in)    :: my_task
     type(shr_strdata_type)      , intent(inout) :: sdat
+    integer                     , intent(out)   :: rc
     !-------------------------------------------------------------------------------
-    integer :: rc
+
+    rc = ESMF_SUCCESS
+
     call dshr_restart_write(rpfile, case_name, 'dice', inst_suffix, ymd, tod, &
          logunit, my_task, sdat, rc, fld=water, fldname='water')
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -586,7 +595,7 @@ contains
   end subroutine dice_datamode_ssmi_restart_write
 
   !===============================================================================
-  subroutine dice_datamode_ssmi_restart_read(rest_filem, rpfile, logunit, my_task, mpicom, sdat)
+  subroutine dice_datamode_ssmi_restart_read(rest_filem, rpfile, logunit, my_task, mpicom, sdat, rc)
 
     ! input/output arguments
     character(len=*)            , intent(inout) :: rest_filem
@@ -595,13 +604,16 @@ contains
     integer                     , intent(in)    :: my_task
     integer                     , intent(in)    :: mpicom
     type(shr_strdata_type)      , intent(inout) :: sdat
+    integer                     , intent(out)   :: rc
     !-------------------------------------------------------------------------------
-    integer :: rc
+
+    rc = ESMF_SUCCESS
+
     ! allocate module memory for restart fields that are read in
     allocate(water(sdat%model_lsize))
 
     ! read restart
-    call dshr_restart_read(rest_filem, rpfile, logunit, my_task, mpicom, sdat, rc,&
+    call dshr_restart_read(rest_filem, rpfile, logunit, my_task, mpicom, sdat, rc, &
          fld=water, fldname='water')
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 

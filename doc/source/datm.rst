@@ -11,7 +11,7 @@ referred to as its mode.
 In the case of CESM, the active model components would be: CTSM,
 POP2, MOM6, POP2, CICE5-6, WW3 and MOSART. As examples, CORE2_NYF
 (CORE2 normal year forcing) is the DATM mode used in driving
-POP2 and MOM6. On the other hand CLM_QIAN, CLMCRUJRA2024, CLMCRUNCEP, CLMGSWP3
+POP2 and MOM6. On the other hand CLM_QIAN, CLMCRUJRA2024, CLMCRUJRA2024b, CLMCRUNCEP, CLMGSWP3
 and CLM1PT are DATM modes using observational data for forcing CTSM.
 
 .. _datm-datamodes:
@@ -119,6 +119,12 @@ DATM%CLM_QIAN
    - QIAN atm input data (CESM I compsets)
    - datm_mode: CLMNCEP
    - streams: CLM_QIAN.Solar,CLM_QIAN.Precip,CLM_QIAN.TPQW
+   - datamode: CLMNCEP
+
+DATM%CLMCRUJRA2024b
+   - CRUJRA atm input data (CESM I compsets)
+   - datm_mode: CLMNCEP
+   - streams: CLMCRUJRA2024b.Solar,CLMCRUJRA2024b.Precip,CLMCRUJRA2024b.TPQW
    - datamode: CLMNCEP
 
 DATM%CLMCRUJRA2024

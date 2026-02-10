@@ -3,29 +3,36 @@ module docn_datamode_multilev_cplhist_mod
   use ESMF             , only : ESMF_State, ESMF_LOGMSG_INFO, ESMF_LogWrite, ESMF_SUCCESS
   use NUOPC            , only : NUOPC_Advertise
   use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
+  use shr_log_mod      , only : shr_log_error
   use shr_const_mod    , only : shr_const_TkFrz, shr_const_pi, shr_const_ocn_ref_sal, shr_const_spval
   use shr_sys_mod      , only : shr_sys_abort
   use dshr_methods_mod , only : dshr_state_getfldptr, dshr_fldbun_getfldptr, chkerr
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
   use dshr_strdata_mod , only : shr_strdata_get_stream_pointer, shr_strdata_type
-  use dshr_dfield_mod  , only : dfield_type, dshr_dfield_add
 
   implicit none
-  private ! except
+  private
 
   public :: docn_datamode_multilev_cplhist_advertise
   public :: docn_datamode_multilev_cplhist_init_pointers
   public :: docn_datamode_multilev_cplhist_advance
 
-  ! pointers to export fields
+  ! export state pointers
   real(r8), pointer :: So_omask(:)     => null()    ! real ocean fraction sent to mediator
+  real(r8), pointer :: So_t_depth(:,:) => null()
+  real(r8), pointer :: So_s_depth(:,:) => null()
 
+  ! stream field pointers
+  type, public :: stream_pointer_type
+     real(r8), pointer :: ptr(:)
+  end type stream_pointer_type
+  type(stream_pointer_type), allocatable :: strm_So_t_depth(:)
+  type(stream_pointer_type), allocatable :: strm_So_s_depth(:)
 
+  ! number of multi-level ocean fields
   integer, parameter :: nlev_export = 30
 
-  ! constants
-  character(*) , parameter :: nullstr = 'null'
-  character(*) , parameter :: u_FILE_u = &
+  character(len=*) , parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -63,54 +70,55 @@ contains
   end subroutine docn_datamode_multilev_cplhist_advertise
 
   !===============================================================================
-  subroutine docn_datamode_multilev_cplhist_init_pointers(dfields, &
-       exportState, sdat, ocn_fraction, logunit, mainproc, rc)
+  subroutine docn_datamode_multilev_cplhist_init_pointers(exportState, sdat, ocn_fraction, rc)
 
     ! input/output variables
-    type(dfield_type)      , pointer       :: dfields
     type(ESMF_State)       , intent(inout) :: exportState
     type(shr_strdata_type) , intent(in)    :: sdat
     real(r8)               , intent(in)    :: ocn_fraction(:)
-    integer                , intent(in)    :: logunit
-    logical                , intent(in)    :: mainproc
     integer                , intent(out)   :: rc
 
     ! local variables
-    integer                     :: n
-    character(len=2)            :: num_str
-    character(CS), allocatable  :: strm_flds_t_depth(:)
-    character(CS), allocatable  :: strm_flds_s_depth(:)
+    integer          :: ilev
+    character(len=2) :: num_str
+    character(CS)    :: strm_fld
     character(len=*), parameter :: subname='(docn_init_pointers): '
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
 
-    ! Note - docn_datamode_multilev_mod the assumption is that the stream files contain single
-    ! stream fields which contain the full set of levels in the stream data (i.e. 2d)
-    ! Whereas here we are assuming a different stream field for each vertical level
-    ! However, in both cases the export field contains an ungridded dimension for each vertical level
+    ! We are assuming a different stream field for each vertical level,
+    ! whereas export field contains an ungridded dimension for each vertical level
 
-    ! Create stream-> export state mapping
-    ! Note that strm_flds is the model name for the stream field
-    ! Note that state_fld is the model name for the export field
+    ! Set export state pointers
+    call dshr_state_getfldptr(exportState, fldname='So_omask', fldptr1=So_omask, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    call dshr_state_getfldptr(exportState, fldname='So_t_depth', fldptr2=So_t_depth, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    call dshr_state_getfldptr(exportState, fldname='So_s_depth', fldptr2=So_s_depth, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
 
-    allocate(strm_flds_t_depth(1:nlev_export))
-    allocate(strm_flds_s_depth(1:nlev_export))
-    do n = 1,nlev_export
-       write(num_str, '(i0)') n
-       strm_flds_t_depth(n) = 'So_t_depth' // trim(num_str)
-       strm_flds_s_depth(n) = 'So_s_depth' // trim(num_str)
+    ! Set stream field pointers
+    allocate(strm_So_t_depth(1:nlev_export))
+    allocate(strm_So_s_depth(1:nlev_export))
+    do ilev = 1,nlev_export
+       write(num_str, '(i0)') ilev
+       strm_fld = 'So_t_depth' // trim(num_str)
+       call shr_strdata_get_stream_pointer( sdat, trim(strm_fld), strm_So_t_depth(ilev)%ptr, &
+            requirePointer=.true., &
+            errmsg=subname//'ERROR: '//trim(strm_fld)//&
+            ' must be associated for docn multiplev_cplhist datamode', rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+       strm_fld = 'So_s_depth' // trim(num_str)
+       call shr_strdata_get_stream_pointer( sdat, trim(strm_fld), strm_So_s_depth(ilev)%ptr, &
+            requirePointer=.true., &
+            errmsg=subname//'ERROR: '//trim(strm_fld)//&
+            ' must be associated for docn multiplev_cplhist datamode', rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end do
 
-    ! The following maps stream input multiple fields to export field that has an ungridded dimension
-    call dshr_dfield_add(dfields, sdat, state_fld='So_t_depth', strm_flds=strm_flds_t_depth, state=exportState, &
-         logunit=logunit, mainproc=mainproc, rc=rc)
-    call dshr_dfield_add(dfields, sdat, state_fld='So_s_depth', strm_flds=strm_flds_s_depth, state=exportState, &
-         logunit=logunit, mainproc=mainproc, rc=rc)
-
     ! Set export state ocean fraction (So_omask)
-    call dshr_state_getfldptr(exportState, 'So_omask', fldptr1=So_omask   , rc=rc)
-    if (chkerr(rc,__LINE__,u_FILE_u)) return
     So_omask(:) = ocn_fraction(:)
 
   end subroutine docn_datamode_multilev_cplhist_init_pointers
@@ -118,36 +126,33 @@ contains
   !===============================================================================
   subroutine docn_datamode_multilev_cplhist_advance(exportState, rc)
 
-    use dshr_methods_mod , only : dshr_state_getfldptr
-
     ! input/output variables
-    type(ESMF_State)       , intent(inout) :: exportState
-    integer                , intent(out)   :: rc
+    type(ESMF_State) , intent(inout) :: exportState
+    integer          , intent(out)   :: rc
 
     ! local variables
-    integer           :: idim1,idim2
-    real(r8), pointer :: fldptr2(:,:)
+    integer :: ilev,ig
     character(len=*), parameter :: subname='(docn_datamode_multilev): '
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
 
-    call dshr_state_getfldptr(exportState, 'So_t_depth', fldptr2=fldptr2, rc=rc)
-    if (chkerr(rc,__LINE__,u_FILE_u)) return
-    do idim2 = 1,size(fldptr2,dim=2)
-       do idim1 = 1,size(fldptr2,dim=1)
-          if (fldptr2(idim1,idim2) == 0._r8) then
-             fldptr2(idim1,idim2) = 1.e30_r8
+    do ilev = 1,size(So_t_depth,dim=1)
+       do ig = 1,size(So_t_depth,dim=2)
+          if (strm_So_t_depth(ilev)%ptr(ig) == 0._r8) then
+             So_t_depth(ilev,ig) = 1.e30_r8
+          else
+             So_t_depth(ilev,ig) = strm_So_t_depth(ilev)%ptr(ig)
           end if
        end do
     end do
 
-    call dshr_state_getfldptr(exportState, 'So_s_depth', fldptr2=fldptr2, rc=rc)
-    if (chkerr(rc,__LINE__,u_FILE_u)) return
-    do idim2 = 1,size(fldptr2,dim=2)
-       do idim1 = 1,size(fldptr2,dim=1)
-          if (fldptr2(idim1,idim2) == 0._r8) then
-             fldptr2(idim1,idim2) = 1.e30_r8
+    do ilev = 1,size(So_s_depth,dim=1)
+       do ig = 1,size(So_s_depth,dim=2)
+          if (strm_So_s_depth(ilev)%ptr(ig) == 0._r8) then
+             So_s_depth(ilev,ig) = 1.e30_r8
+          else
+             So_s_depth(ilev,ig) = strm_So_s_depth(ilev)%ptr(ig)
           end if
        end do
     end do
