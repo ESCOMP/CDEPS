@@ -159,7 +159,6 @@
   co2tseries.cmip7_20tr
   co2tseries.omip.iaf
   co2tseries.omip.jra
- # CO2 time-series for SSP future scenarios are all CMIP6 era
   co2tseries.SSP1-1.9
   co2tseries.SSP1-2.6
   co2tseries.SSP2-4.5
