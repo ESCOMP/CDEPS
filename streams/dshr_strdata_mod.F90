@@ -1836,21 +1836,25 @@ contains
              end if
              if (handlefill) then
                 ! Single point streams are not allowed to have missing values
-                if (stream%mapalgo == 'none' .and. any(data_real2d == fillvalue_r4)) then
-                   write(errmsg,'(2a)')' ERROR: _Fillvalue found in stream input variable: ',&
-                        trim(per_stream%fldlist_stream(nf))
-                   if (sdat%mainproc) then
-                      write(sdat%logunit,'(2a)') subname,trim(errmsg)
+                if (stream%mapalgo == 'none') then
+                   if (any(data_real2d == fillvalue_r4)) then
+                      write(errmsg,'(2a)')' ERROR: _Fillvalue found in stream input variable: ',&
+                           trim(per_stream%fldlist_stream(nf))
+                      if (sdat%mainproc) then
+                         write(sdat%logunit,'(2a)') subname,trim(errmsg)
+                      end if
+                      call shr_log_error(errmsg, rc=rc)
+                      return
                    end if
-                   call shr_log_error(errmsg, rc=rc)
-                   return
                 endif
                 do lev = 1,stream_nlev
                    do n = 1,size(dataptr2d, dim=2)
-                      if (.not. shr_infnan_isnan(data_real2d(n,lev)) .and. data_real2d(n,lev) .ne. fillvalue_r4) then
-                         dataptr2d(lev,n) = real(data_real2d(n,lev), kind=r8) ! Note the order of indices
-                      else
+                      if (shr_infnan_isnan(data_real2d(n,lev))) then
                          dataptr2d(lev,n) = r8fill
+                      else if (data_real2d(n,lev) == fillvalue_r4) then
+                         dataptr2d(lev,n) = r8fill
+                      else
+                         dataptr2d(lev,n) = real(data_real2d(n,lev), kind=r8) ! Note the order of indices
                       endif
                    enddo
                 end do
@@ -1874,20 +1878,24 @@ contains
              end if
              if (handlefill) then
                 ! Single point streams are not allowed to have missing values
-                if (stream%mapalgo == 'none' .and. any(data_real1d == fillvalue_r4)) then
-                   write (errmsg,'(2a)')' ERROR: _Fillvalue found in stream input variable: ',trim(per_stream%fldlist_stream(nf))
-                   if (sdat%mainproc) then
-                      write(sdat%logunit,'(2a)') subname,trim(errmsg)
+                if (stream%mapalgo == 'none') then
+                   if (any(data_real1d == fillvalue_r4)) then
+                      write (errmsg,'(2a)')' ERROR: _Fillvalue found in stream input variable: ',trim(per_stream%fldlist_stream(nf))
+                      if (sdat%mainproc) then
+                         write(sdat%logunit,'(2a)') subname,trim(errmsg)
+                      end if
+                      call shr_log_error(errmsg, rc=rc)
+                      return
                    end if
-                   call shr_log_error(errmsg, rc=rc)
-                   return
                 endif
 
                 do n=1,size(dataptr1d)
-                   if(.not. shr_infnan_isnan(data_real1d(n)) .and. data_real1d(n) .ne. fillvalue_r4) then
-                      dataptr1d(n) = real(data_real1d(n), kind=r8)
-                   else
+                   if (shr_infnan_isnan(data_real1d(n))) then
                       dataptr1d(n) = r8fill
+                   else if (data_real1d(n) == fillvalue_r4) then
+                      dataptr1d(n) = r8fill
+                   else
+                      dataptr1d(n) = real(data_real1d(n), kind=r8)
                    endif
                 enddo
              else
@@ -1912,17 +1920,21 @@ contains
              end if
              if (handlefill) then
                 ! Single point streams are not allowed to have missing values
-                if (stream%mapalgo == 'none' .and. any(data_dbl2d == fillvalue_r8)) then
-                   write(errmsg,*) ' ERROR: _Fillvalue found in stream input variable: '// trim(per_stream%fldlist_stream(nf))
-                   call shr_log_error(errmsg, rc=rc)
-                   return
+                if (stream%mapalgo == 'none') then
+                   if (any(data_dbl2d == fillvalue_r8)) then
+                      write(errmsg,*) ' ERROR: _Fillvalue found in stream input variable: '// trim(per_stream%fldlist_stream(nf))
+                      call shr_log_error(errmsg, rc=rc)
+                      return
+                   end if
                 endif
                 do lev = 1,stream_nlev
                    do n = 1,size(dataptr2d, dim=2)
-                      if (.not. shr_infnan_isnan(data_dbl2d(n,lev)) .and. data_dbl2d(n,lev) .ne. fillvalue_r8) then
-                         dataptr2d(lev,n) = data_dbl2d(n,lev)
-                      else
+                      if (shr_infnan_isnan(data_dbl2d(n,lev))) then
                          dataptr2d(lev,n) = r8fill
+                      else if (data_dbl2d(n,lev) == fillvalue_r8) then
+                         dataptr2d(lev,n) = r8fill
+                      else
+                         dataptr2d(lev,n) = data_dbl2d(n,lev)
                       endif
                    enddo
                 end do
@@ -1946,16 +1958,20 @@ contains
              end if
              if (handlefill) then
                 ! Single point streams are not allowed to have missing values
-                if (stream%mapalgo == 'none' .and. any(data_dbl1d == fillvalue_r8)) then
-                   write(errmsg,*) ' ERROR: _Fillvalue found in stream input variable: '// trim(per_stream%fldlist_stream(nf))
-                   call shr_log_error(subname//trim(errmsg), rc=rc)
-                   return
+                if (stream%mapalgo == 'none') then
+                   if (any(data_dbl1d == fillvalue_r8)) then
+                      write(errmsg,*) ' ERROR: _Fillvalue found in stream input variable: '// trim(per_stream%fldlist_stream(nf))
+                      call shr_log_error(subname//trim(errmsg), rc=rc)
+                      return
+                   end if
                 endif
                 do n = 1,size(dataptr1d)
-                   if (.not. shr_infnan_isnan(data_dbl1d(n)) .and. data_dbl1d(n) .ne. fillvalue_r8) then
-                      dataptr1d(n) = data_dbl1d(n)
-                   else
+                   if (shr_infnan_isnan(data_dbl1d(n))) then
                       dataptr1d(n) = r8fill
+                   else if (data_dbl1d(n) == fillvalue_r8) then
+                      dataptr1d(n) = r8fill
+                   else
+                      dataptr1d(n) = data_dbl1d(n)
                    end if
                 enddo
              else
