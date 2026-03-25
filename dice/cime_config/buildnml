@@ -52,6 +52,9 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     atm_nx = case.get_value("ATM_NX")
     atm_ny = case.get_value("ATM_NY")
 
+    # DICE always uses a single ice thickness category
+    case.set_value("ICE_NCAT", 1)
+
     # Check for incompatible options.
     expect(ice_grid != "null",
            "ICE_GRID cannot be null")
