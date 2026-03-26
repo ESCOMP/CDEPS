@@ -140,6 +140,7 @@ module cdeps_datm_comp
   integer                      :: ny_global                           ! global ny
   logical                      :: skip_restart_read = .false.         ! true => skip restart read in continuation run
   logical                      :: export_all = .false.                ! true => export all fields, do not check connected or not
+  logical                      :: skip_field_check = .false.          ! true => no not check all fields are provided or not 
   logical                      :: first_call = .true.
 
   ! linked lists
@@ -249,7 +250,8 @@ contains
          skip_restart_read, &
          flds_presndep, &
          flds_preso3, &
-         export_all
+         export_all, &
+         skip_field_check
 
     rc = ESMF_SUCCESS
 
@@ -305,6 +307,7 @@ contains
        write(logunit,'(2a,l6)') subname,' flds_co2          = ',flds_co2
        write(logunit,'(2a,l6)') subname,' skip_restart_read = ',skip_restart_read
        write(logunit,'(2a,l6)') subname,' export_all        = ',export_all
+       write(logunit,'(2a,l6)') subname,' skip_field_check  = ',skip_field_check
 
        bcasttmp = 0
        bcasttmp(1) = nx_global
@@ -316,6 +319,7 @@ contains
        if(flds_co2)          bcasttmp(7) = 1
        if(skip_restart_read) bcasttmp(8) = 1
        if(export_all)        bcasttmp(9) = 1
+       if(skip_field_check)  bcasttmp(10) = 1
     end if
 
     ! Broadcast namelist input
@@ -351,6 +355,7 @@ contains
     flds_co2          = (bcasttmp(7) == 1)
     skip_restart_read = (bcasttmp(8) == 1)
     export_all        = (bcasttmp(9) == 1)
+    skip_field_check  = (bcasttmp(10) == 1)
 
     if (nextsw_cday_calc == 'cam7') then
        nextsw_cday_calc_cam7 = .true.
@@ -669,7 +674,7 @@ contains
           call datm_datamode_cplhist_init_pointers(importState, exportState, sdat, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('ERA5')
-          call datm_datamode_era5_init_pointers(exportState, sdat, rc)
+          call datm_datamode_era5_init_pointers(exportState, sdat, skip_field_check, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('GEFS')
           call datm_datamode_gefs_init_pointers(exportState, sdat, logunit, mainproc, rc)
@@ -747,7 +752,7 @@ contains
        call datm_datamode_cplhist_advance(rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('ERA5')
-       call datm_datamode_era5_advance(exportstate, mainproc, logunit, rc)
+       call datm_datamode_era5_advance(exportstate, mainproc, logunit, target_ymd, target_tod, sdat%model_calendar, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('GEFS')
        call datm_datamode_gefs_advance(exportstate, sdat, mainproc, logunit, rc)
