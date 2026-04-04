@@ -5238,7 +5238,7 @@
       <meshfile>$ATM_DOMAIN_MESH</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file first_year="$DATM_YR_START" last_year="$DATM_YR_END">$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.ha2x1d.%ym.nc</file>
+      <file first_year="$DATM_YR_START" last_year="$DATM_YR_END" filename_advance_days='1'>$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.hx.atm.24h.avrg.%ymd-00000.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>a2x1d_Faxa_ndep  Faxa_ndep</var>
