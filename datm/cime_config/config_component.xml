@@ -203,7 +203,7 @@
   <entry id="DATM_CPLHIST_DIR">
     <type>char</type>
     <valid_values></valid_values>
-    <default_value>UNSET</default_value>
+    <default_value>$CIME_OUTPUT_ROOT/archive/$DATM_CPLHIST_CASE/cpl/hist</default_value>
     <values match="last">
       <value compset="1850.*_DATM%CPLHIST_CLM">$DIN_LOC_ROOT/cplhist/cesm3_0/$DATM_CPLHIST_CASE/atm</value>
     </values>
