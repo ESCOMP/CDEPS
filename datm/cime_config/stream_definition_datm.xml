@@ -4891,6 +4891,46 @@
     <stream_readmode>single</stream_readmode>
   </stream_entry>
 
+  <stream_entry name="presndep.clim_1850_cesm3_for_cmip7">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/cam/chem/trop_strat_mam5_ts4_aero_spinup/ndep/fndep_clm_B1850C_MT4s.1850monthly.ne30_c251220.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <!-- the following stream fields are in units of g/m2/sec - need conversion to kg/m2/sec-->
+      <var>NDEP_NHx_month  Faxa_ndep_nhx</var>
+      <var>NDEP_NOy_month  Faxa_ndep_noy</var>
+      <!-- Alturnative form to use:
+      the following stream fields are in units of kg/m2/sec - so need no unit conversion
+      <var>dry_deposition_NHx_as_N Faxa_ndep_nhx_dry</var>
+      <var>wet_deposition_NHx_as_N Faxa_ndep_nhx_wet</var>
+      <var>dry_deposition_NOy_as_N Faxa_ndep_noy_dry</var>
+      <var>wet_deposition_NOy_as_N Faxa_ndep_noy_wet</var>
+      -->
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1850</stream_year_first>
+    <stream_year_last>1850</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
   <stream_entry name="presndep.clim_1850_cmip6">
     <stream_meshfile>
       <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
