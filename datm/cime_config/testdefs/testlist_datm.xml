@@ -63,11 +63,11 @@
   </test>
   <test compset="1850_DATM%CRUJRA2024b_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="f10_f10_mt232" name="ERS_Ld5" testmods="datm/cplhist_create">
     <machines>
-      <machine name="derecho" compiler="gnu" category="aux_cdeps"/>
+      <machine name="derecho" compiler="intel" category="aux_cdeps"/>
     </machines>
     <options>
       <option name="wallclock"> 00:10:00 </option>
-      <option name="comment">Make sure can run creating CPLHIST data to run DATM from with DEBUG off for gnu compiler</option>
+      <option name="comment">Make sure can run creating CPLHIST data to run DATM from with DEBUG off</option>
     </options>
   </test>
   <test compset="2010_DATM%GSWP3v1_SLND_SICE_SOCN_SROF_SGLC_SWAV_SESP" grid="f10_f10_mg37" name="SMS_Ld5">
