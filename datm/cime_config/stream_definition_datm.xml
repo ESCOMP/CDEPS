@@ -155,6 +155,7 @@
   - The historical series are labeled as either CMIP6 or CMIP7 era
   - The SSP future scenarios are all CMIP6 era data
   ========================
+  co2tseries.cplhist
   co2tseries.cmip6_20tr
   co2tseries.cmip7_20tr
   co2tseries.omip.iaf
@@ -3812,6 +3813,37 @@
     <stream_readmode>single</stream_readmode>
   </stream_entry>
 
+  <stream_entry name="co2tseries.cplhist">
+    <stream_meshfile>
+      <meshfile>$ATM_DOMAIN_MESH</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="$DATM_YR_START" last_year="$DATM_YR_END" filename_advance_days='1'>$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.hx.atm.24h.avrg.%ymd-00000.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>atmImp_Sa_co2diag   Sa_co2diag</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>$DATM_YR_ALIGN</stream_year_align>
+    <stream_year_first>$DATM_YR_START</stream_year_first>
+    <stream_year_last>$DATM_YR_END</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>3.0</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
   <stream_entry name="co2tseries.omip.iaf">
     <stream_meshfile>
       <meshfile>none</meshfile>
@@ -5348,7 +5380,6 @@
       <var>atmImp_Sa_pbot    Sa_pbot</var>
       <var>atmImp_Sa_dens    Sa_dens</var>
       <var>atmImp_Sa_pslv    Sa_pslv</var>
-      <var>atmImp_Sa_co2diag Sa_co2diag</var>
       <var>atmImp_Sa_co2prog Sa_co2prog</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
