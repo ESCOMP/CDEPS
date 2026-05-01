@@ -672,10 +672,10 @@
 
     <stream_entry name="rof.glofas">
     <stream_meshfile>
-      <meshfile>$DIN_LOC_ROOT/ocn/mom/croc/rof/glofas/dis24/GLOFAS_esmf_mesh_v4.nc</meshfile>
+      <meshfile>$DIN_LOC_ROOT/lnd/dlnd7/GLOFAS/GLOFAS.v4.dis24.ESMFmesh_20260501.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file first_year="1979" last_year="2024">$DIN_LOC_ROOT/ocn/mom/croc/rof/glofas/dis24/merged_yearly_nc3_files/GloFAS_%y.nc</file>
+      <file first_year="1979" last_year="2024">$DIN_LOC_ROOT/ocn/glofas/v4/GLOFAS.v4.dis24.%y.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>runoff  Forr_rofl</var>
