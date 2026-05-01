@@ -39,9 +39,9 @@ module cdeps_dglc_comp
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_advance, shr_strdata_init_from_config
   use dshr_mod         , only : dshr_model_initphase, dshr_init, dshr_mesh_init
   use dshr_mod         , only : dshr_state_setscalar, dshr_set_runclock, dshr_check_restart_alarm
-  use dshr_dfield_mod  , only : dfield_type, dshr_dfield_add, dshr_dfield_copy
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_realize
   use nuopc_shr_methods, only : shr_get_rpointer_name, alarmInit
+
   ! Datamode specialized modules
   use dglc_datamode_noevolve_mod, only : dglc_datamode_noevolve_advertise
   use dglc_datamode_noevolve_mod, only : dglc_datamode_noevolve_init_pointers
@@ -50,7 +50,7 @@ module cdeps_dglc_comp
   use dglc_datamode_noevolve_mod, only : dglc_datamode_noevolve_restart_write
 
   implicit none
-  private ! except
+  private
 
   public  :: SetServices
   public  :: SetVM
@@ -65,7 +65,7 @@ module cdeps_dglc_comp
   ! Private module data
   !--------------------------------------------------------------------------
 
-  character(*) , parameter :: nullstr = 'null'
+  character(len=*) , parameter :: nullstr = 'null'
   integer      , parameter :: max_icesheets = 10 ! maximum number of ice sheets for namelist input
   integer                  :: num_icesheets      ! actual number of ice sheets
 
@@ -102,26 +102,23 @@ module cdeps_dglc_comp
   character(CX) :: restfilm = nullstr          ! model restart file namelist
   logical       :: skip_restart_read = .false. ! true => skip restart read in continuation run
   logical       :: export_all = .false.        ! true => export all fields, do not check connected or not
+  logical       :: first_call = .true.
 
   ! linked lists
   type(fldList_type) , pointer :: fldsImport => null()
   type(fldList_type) , pointer :: fldsExport => null()
 
-  type dfields_icesheets_type
-     type(dfield_type), pointer :: dfields => null()
-  end type dfields_icesheets_type
-  type(dfields_icesheets_type), allocatable :: dfields_icesheets(:)
 
   ! constants
   logical                      :: diagnose_data = .true.
   integer      , parameter     :: main_task = 0                 ! task number of main task
 #ifdef CESMCOUPLED
-  character(*) , parameter     :: module_name = "(glc_comp_nuopc)"
+  character(len=*) , parameter     :: module_name = "(glc_comp_nuopc)"
 #else
-  character(*) , parameter     :: module_name = "(cdeps_dglc_comp)"
+  character(len=*) , parameter     :: module_name = "(cdeps_dglc_comp)"
 #endif
-  character(*) , parameter     :: modelname = 'dglc'
-  character(*) , parameter     :: u_FILE_u = &
+  character(len=*) , parameter     :: modelname = 'dglc'
+  character(len=*) , parameter     :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -340,7 +337,7 @@ contains
     rc = ESMF_SUCCESS
 
     ! Initialize model mesh, restart flag, logunit, model_mask and model_frac
-    call ESMF_VMLogMemInfo("Entering "//trim(subname))
+    call ESMF_VMLogMemInfo("Entering "//subname)
     call ESMF_TraceRegionEnter('dglc_strdata_init')
 
     ! Determine stream filename
@@ -392,7 +389,7 @@ contains
        if (my_task == main_task) then
           inquire(file=trim(model_meshfiles(ns)), exist=exists)
           if (.not.exists) then
-             call shr_log_error(trim(subname)//' ERROR: model_meshfile '//trim(model_meshfiles(ns))//' does not exist', rc=rc)
+             call shr_log_error(subname//' ERROR: model_meshfile '//trim(model_meshfiles(ns))//' does not exist', rc=rc)
              return
           end if
        endif
@@ -436,7 +433,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     call ESMF_TraceRegionExit('dglc_strdata_init')
-    call ESMF_VMLogMemInfo("Leaving "//trim(subname))
+    call ESMF_VMLogMemInfo("Leaving "//subname)
 
   end subroutine InitializeRealize
 
@@ -531,9 +528,8 @@ contains
     ! local variables
     character(len=CS) :: cnum
     integer           :: ns ! ice sheet index
-    logical           :: first_time = .true.
     character(len=CS) :: rpfile
-    character(*), parameter :: subName = "(dglc_comp_run) "
+    character(len=*), parameter :: subName = "(dglc_comp_run) "
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
@@ -544,13 +540,7 @@ contains
     ! First time initialization
     !--------------------
 
-    if (first_time) then
-      ! Initialize dfields for all ice sheets
-      if (trim(datamode) /= 'noevolve') then
-        call dglc_init_dfields(rc=rc)
-        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-      end if
-
+    if (first_call) then
       ! Initialize datamode module ponters
       select case (trim(datamode))
       case('noevolve')
@@ -568,8 +558,7 @@ contains
          if (ChkErr(rc,__LINE__,u_FILE_u)) return
       end if
 
-      ! Reset first_time
-      first_time = .false.
+      first_call = .false.
     end if
 
     !--------------------
@@ -577,10 +566,6 @@ contains
     !--------------------
 
     if (trim(datamode) /= 'noevolve') then
-      if (.not. allocated(dfields_icesheets)) then
-        allocate(dfields_icesheets(num_icesheets))
-      end if
-
       ! Loop over ice sheets
       do ns = 1,num_icesheets
         ! Advance data model streams - time and spatially interpolate to model time and grid
@@ -589,13 +574,6 @@ contains
         call shr_strdata_advance(sdat(ns), target_ymd, target_tod, logunit, 'dglc', rc=rc)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
         call ESMF_TraceRegionExit('dglc_strdata_advance')
-
-        ! Copy all fields from streams to export state as default
-        ! This automatically will update the fields in the export state
-        call ESMF_TraceRegionEnter('dglc_dfield_copy')
-        call dshr_dfield_copy(dfields_icesheets(ns)%dfields, sdat(ns), rc)
-        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-        call ESMF_TraceRegionExit('dglc_dfield_copy')
       end do
     end if
 
@@ -610,7 +588,6 @@ contains
     end select
 
     ! Write restarts if needed
-
     if (restart_write) then
       if (trim(datamode) == 'noevolve') then
          if (my_task == main_task) then
@@ -629,54 +606,12 @@ contains
     if (diagnose_data) then
       do ns = 1,num_icesheets
         write(cnum,'(i0)') ns
-        call dshr_state_diagnose(NStateExp(ns), flds_scalar_name, trim(subname)//':ES_'//trim(cnum), rc=rc)
+        call dshr_state_diagnose(NStateExp(ns), flds_scalar_name, subname//':ES_'//trim(cnum), rc=rc)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
       end do
     end if
 
     call ESMF_TraceRegionExit('DGLC_RUN')
-
-  contains
-
-    subroutine dglc_init_dfields(rc)
-      ! -----------------------------
-      ! Initialize dfields arrays
-      ! -----------------------------
-
-      ! input/output variables
-      integer, intent(out) :: rc
-
-      ! local variables
-      integer                         :: nf, ns
-      integer                         :: fieldcount
-      type(ESMF_Field)                :: lfield
-      character(ESMF_MAXSTR) ,pointer :: lfieldnamelist(:)
-      character(*), parameter         :: subName = "(dglc_init_dfields) "
-      !-------------------------------------------------------------------------------
-
-      rc = ESMF_SUCCESS
-
-      ! Loop over ice sheets
-      ! Initialize dfields data type (to map streams to export state fields)
-      ! Create dfields linked list - used for copying stream fields to export state fields
-      do ns = 1,num_icesheets
-        call ESMF_StateGet(NStateExp(ns), itemCount=fieldCount, rc=rc)
-        if (chkerr(rc,__LINE__,u_FILE_u)) return
-        allocate(lfieldnamelist(fieldCount))
-        call ESMF_StateGet(NStateExp(ns), itemNameList=lfieldnamelist, rc=rc)
-        if (chkerr(rc,__LINE__,u_FILE_u)) return
-        do nf = 1, fieldCount
-          call ESMF_StateGet(NStateExp(ns), itemName=trim(lfieldNameList(nf)), field=lfield, rc=rc)
-          if (chkerr(rc,__LINE__,u_FILE_u)) return
-          if (trim(lfieldnamelist(nf)) /= flds_scalar_name) then
-            call dshr_dfield_add( dfields_icesheets(ns)%dfields, sdat(ns), &
-                 trim(lfieldnamelist(nf)), trim(lfieldnamelist(nf)), NStateExp(ns), logunit, mainproc, rc)
-            if (chkerr(rc,__LINE__,u_FILE_u)) return
-          end if
-        end do
-        deallocate(lfieldnamelist)
-      end do
-    end subroutine dglc_init_dfields
 
   end subroutine dglc_comp_run
 
@@ -752,7 +687,7 @@ contains
           call alarmInit(mclock, valid_alarm, 'nseconds', opt_n=dtime, alarmname='alarm_valid_inputs', rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        else
-          call ESMF_LogWrite(trim(subname)// ": ERROR glc_avg_period = "//trim(glc_avg_period)//" not supported", &
+          call ESMF_LogWrite(subname// ": ERROR glc_avg_period = "//trim(glc_avg_period)//" not supported", &
                ESMF_LOGMSG_INFO, rc=rc)
           rc = ESMF_FAILURE
           RETURN

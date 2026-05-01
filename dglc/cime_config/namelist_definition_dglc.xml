@@ -1,7 +1,5 @@
 <?xml version="1.0"?>
 
-<?xml-stylesheet type="text/xsl" href="namelist_definition.xsl"?>
-
 <entry_id version="2.0">
 
   <!--
@@ -41,8 +39,8 @@
     <input_pathname>abs</input_pathname>
     <group>dglc_nml</group>
     <values>
-      <value glc_grid="ais8:gris4">$DIN_LOC_ROOT/glc/cism/Antarctica/ISMIP6_Antarctica_8km.init.c210908.nc:$DIN_LOC_ROOT/glc/cism/Greenland/greenland_4km_epsg3413_c171126.nc</value>
-      <value glc_grid="gris4" >$DIN_LOC_ROOT/glc/cism/Greenland/greenland_4km_epsg3413_c171126.nc</value>
+      <value glc_grid="ais8:gris4">$DIN_LOC_ROOT/glc/cism/Antarctica/ISMIP6_Antarctica_8km.init.c210908.nc:$DIN_LOC_ROOT/glc/cism/Greenland/greenland_4km_epsg3413_c251001.nc</value>
+      <value glc_grid="gris4" >$DIN_LOC_ROOT/glc/cism/Greenland/greenland_4km_epsg3413_c251001.nc</value>
       <value glc_grid="ais8"  >$DIN_LOC_ROOT/glc/cism/Antarctica/ISMIP6_Antarctica_8km.init.c210908.nc</value>
     </values>
     <desc>
@@ -85,9 +83,9 @@
     <category>streams</category>
     <group>dglc_nml</group>
     <values>
-      <value glc_grid="ais8:gris4">704,416</value>
+      <value glc_grid="ais8:gris4">704,421</value>
       <value glc_grid="ais8">704</value>
-      <value glc_grid="gris4">416</value>
+      <value glc_grid="gris4">421</value>
       <value glc_grid="gris20">76</value>
     </values>
     <desc>
@@ -101,9 +99,9 @@
     <category>streams</category>
     <group>dglc_nml</group>
     <values>
-      <value glc_grid="ais8:gris4">576,704</value>
+      <value glc_grid="ais8:gris4">576,721</value>
       <value glc_grid="ais8">576</value>
-      <value glc_grid="gris4">704</value>
+      <value glc_grid="gris4">721</value>
       <value glc_grid="gris20">141</value>
     </values>
     <desc>

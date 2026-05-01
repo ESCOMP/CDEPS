@@ -1,7 +1,5 @@
 <?xml version="1.0"?>
 
-<?xml-stylesheet type="text/xsl" href="namelist_definition.xsl"?>
-
 <stream_data version="2.0" xmlns:xi="http://www.w3.org/2001/XInclude">
 
   <stream_entry name="rof.diatren_ann_rx1">
@@ -507,6 +505,38 @@
     <stream_readmode>single</stream_readmode>
   </stream_entry>
 
+  <stream_entry name="rof.ryf6162_jra">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/lnd/dlnd7/JRA55/JRA.v1.4.runoff.1958_ESMFmesh_cdf5_20201020.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file first_year="1961" last_year="1961">$DIN_LOC_ROOT/lnd/dlnd7/JRA55/RAF_6162.JRA.v1.4.runoff.250427.nc</file>
+    </stream_datafiles>
+    <stream_datavars>
+      <var>rofl Forr_rofl</var>
+      <var>rofi Forr_rofi</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1961</stream_year_first>
+    <stream_year_last>1961</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>upper</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>3.0</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
   <stream_entry name="rof.ryf8485_jra">
     <stream_meshfile>
       <meshfile>$DIN_LOC_ROOT/lnd/dlnd7/JRA55/JRA.v1.4.runoff.1958_ESMFmesh_cdf5_20201020.nc</meshfile>
@@ -608,11 +638,16 @@
       <meshfile>$ROF_DOMAIN_MESH</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file>$DIN_LOC_ROOT/lnd/dlnd7/RX1/runoff.daitren.iaf.20120419.nc</file>
+      <file first_year="$DROF_CPLHIST_YR_START" last_year="$DROF_CPLHIST_YR_END">$DROF_CPLHIST_DIR/$DROF_CPLHIST_CASE.cpl.hx.rof.24h.avrg.%ymd-00000.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>rofImp_Forr_rofl  Forr_rofl</var>
-      <var>rofImp_Forr_rofi  Forr_rofi</var>
+      <var>rofImp_Forr_rofl     Forr_rofl</var>
+      <var>rofImp_Forr_rofl_glc Forr_rofl_glc</var>
+      <var>rofImp_Forr_rofi     Forr_rofi</var>
+      <var>rofImp_Forr_rofi_glc Forr_rofi_glc</var>
+      <var>rofImp_Flrr_flood    Flrr_flood</var>
+      <var>rofImp_Flrr_volr     Flrr_volr</var>
+      <var>rofImp_Flrr_volrmch  Flrr_volrmch</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>

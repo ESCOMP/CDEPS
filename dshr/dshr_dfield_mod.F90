@@ -40,7 +40,7 @@ module dshr_dfield_mod
   end type dfield_type
 
   integer     , parameter :: iunset = -999
-  character(*), parameter :: u_FILE_u = &
+  character(len=*), parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -85,9 +85,9 @@ contains
     dfield_new%stream_index = iunset
     dfield_new%fldbun_index = iunset
 
-    ! loop over all input streams and ! determine if the strm_fld is in the attribute vector of stream ns
+    ! loop over all input streams
     ! if strm_fld is in the field bundle of stream ns, set the field index of the field with the name strm_fld
-    ! and set the index of the stream
+    ! colon delimited string and set the index of the stream
 
     ! loop over all input streams and ! determine if the strm_fld is in the attribute vector of stream ns
     do ns = 1, shr_strdata_get_stream_count(sdat)
@@ -117,8 +117,7 @@ contains
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     dfield_new%state_data1d = 0.0_r8
     if (mainproc) then
-       write(logunit,110)'(dshr_addfield_add) setting pointer for export state '//trim(state_fld)
-110    format(a)
+       write(logunit,'(3a)') subname,' setting pointer for export state ',trim(state_fld)
     end if
 
   end subroutine dshr_dfield_add_1d
@@ -195,8 +194,7 @@ contains
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     dfield_new%state_data1d = 0.0_r8
     if (mainproc) then
-       write(logunit,110)'(dshr_addfield_add) setting pointer for export state '//trim(state_fld)
-110    format(a)
+       write(logunit,'(3a)') subname,' setting pointer for export state ',trim(state_fld)
     end if
 
     ! Return array pointer if argument is present
@@ -205,9 +203,9 @@ contains
     ! write output
     if (mainproc) then
        if (found) then
-          write(logunit,100)'(dshr_addfield_add) set pointer to stream field strm_'//trim(strm_fld)//&
+          write(logunit,'(4a,i0,a,i0)') subname,&
+               ' setting pointer to stream field strm_',trim(strm_fld), &
                ' stream index = ',ns,' field bundle index= ',nf
-100       format(a,i6,2x,a,i6)
        end if
        write(logunit,*)
     end if
@@ -299,8 +297,8 @@ contains
                 if (trim(strm_flds(nf)) == trim(lfieldnamelist(n))) then
                    dfield_new%fldbun_indices(nf) = n
                    if (mainproc) then
-                      write(logunit,*)'(dshr_addfield_add) using stream field strm_'//&
-                           trim(strm_flds(nf))//' for 2d '//trim(state_fld)
+                      write(logunit,'(5a)') subname, &
+                           ' using stream field strm_',trim(strm_flds(nf)),' for 2d ',trim(state_fld)
                    end if
                 end if
              end do
@@ -316,7 +314,7 @@ contains
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     dfield_new%state_data2d(:,:) = 0._r8
     if (mainproc) then
-       write(logunit,*)'(dshr_addfield_add) setting pointer for export state '//trim(state_fld)
+       write(logunit,'(3a)') subname,' setting pointer for export state ',trim(state_fld)
     end if
 
   end subroutine dshr_dfield_add_2d
@@ -406,8 +404,8 @@ contains
                 if (trim(strm_flds(nf)) == trim(lfieldnamelist(n))) then
                    dfield_new%fldbun_indices(nf) = n
                    if (mainproc) then
-                      write(logunit,*)'(dshr_addfield_add) using stream field strm_'//&
-                           trim(strm_flds(nf))//' for 2d '//trim(state_fld)
+                      write(logunit,'(5a)') subname, &
+                           ' using stream field strm_',trim(strm_flds(nf)),' for 2d ',trim(state_fld)
                    end if
                 end if
              end do
@@ -423,7 +421,7 @@ contains
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     dfield_new%state_data2d(:,:) = 0._r8
     if (mainproc) then
-       write(logunit,*)'(dshr_addfield_add) setting pointer for export state '//trim(state_fld)
+       write(logunit,'(3a)') subname,' setting pointer for export state ',trim(state_fld)
     end if
     state_ptr => dfield_new%state_data2d
 
@@ -485,7 +483,10 @@ contains
                 if (ungriddedCount > 0) then
                    call dshr_field_getfldptr(lfield, fldptr2=data2d, rc=rc)
                    if (chkerr(rc,__LINE__,u_FILE_u)) return
-                   dfield%state_data2d(:,:) = data2d(:,:)
+                   if (size(dfield%state_data2d,dim=1) == size(data2d,dim=1)) then
+                      ! Only do copy if the ungridded dimension size matches
+                      dfield%state_data2d(:,:) = data2d(:,:)
+                   end if
                 else
                    call dshr_field_getfldptr(lfield, fldptr1=data1d, rc=rc)
                    if (chkerr(rc,__LINE__,u_FILE_u)) return

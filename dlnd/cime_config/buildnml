@@ -87,13 +87,39 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     if type(streamlist) == type(str()):
         streamlist = []
 
+    # count the number of tracers
+    dlnd_nonh2o = case.get_value("DLND_LND2ROF_NONH2O")
+    if dlnd_nonh2o == "":
+        dlnd_nonh2o_count = 0
+    else:
+        dlnd_nonh2o_count = dlnd_nonh2o.count(':') + 1
+
     # Generate dlnd.streams.xml
     outfile = os.path.join(confdir, "dlnd.streams"+inst_string+".xml" )
     schema_file = os.path.join(_CDEPS_CONFIG,"stream_definition_v2.0.xsd")
     stream_file = os.path.join(_CDEPS_CONFIG,os.pardir, "dlnd","cime_config","stream_definition_dlnd.xml")
     streams = StreamCDEPS(stream_file, schema_file)
     streams.create_stream_xml(streamlist, case, outfile, data_list_path,
-                              os.path.join(caseroot,'user_nl_dlnd_streams'+inst_string))
+                              os.path.join(caseroot,'user_nl_dlnd_streams'+inst_string),
+                              lnd2rof_nonh2o_number=dlnd_nonh2o_count)
+
+####################################################################################
+def _create_drv_flds_in(case, confdir):
+####################################################################################
+
+    # for now we are hard-coding this file name and values because we
+    # only need it for non-water tracers from lnd to rof
+    # Generate drv_flds_in file
+    outfile = os.path.join(confdir, "drv_flds_in")
+    lnd2rof_nl_name = "&lnd2rof_tracers_inparm"
+    nl_fin = "/"
+
+    dlnd_nonh2o = case.get_value("DLND_LND2ROF_NONH2O")
+    with open(outfile, "w") as drv_fl:
+        drv_fl.write(f"{lnd2rof_nl_name}\n")
+        if dlnd_nonh2o != "none":
+            drv_fl.write(f"  lnd2rof_tracers = \"{dlnd_nonh2o}\"\n")
+        drv_fl.write(f"{nl_fin}\n")
 
 ###############################################################################
 def buildnml(case, caseroot, compname):
@@ -164,6 +190,9 @@ def buildnml(case, caseroot, compname):
         infile = os.path.join(confdir, "namelist_infile")
         create_namelist_infile(case, user_nl_file, infile)
         namelist_infile = [infile]
+
+        # first create drv_flds_in to determine number of tracer fields
+        _create_drv_flds_in(case, confdir)
 
         # create namelist and xml stream file(s)
         _create_namelists(case, confdir, inst_string, namelist_infile, nmlgen, data_list_path)

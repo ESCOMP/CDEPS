@@ -1,0 +1,6 @@
+./xmlchange DROF_CPLHIST_DIR=\$DIN_LOC_ROOT/cplhist/noresm3_0/n1850.ne16pg3_tn14.noresm3_0_beta03b.CPLHIST.2025-10-29/cplhist
+./xmlchange DROF_CPLHIST_CASE=n1850.ne16pg3_tn14.noresm3_0_beta03b.CPLHIST.2025-10-29
+./xmlchange DROF_CPLHIST_YR_START=350
+./xmlchange DROF_CPLHIST_YR_END=351
+./xmlchange DROF_CPLHIST_YR_ALIGN=1
+./xmlchange ROF_DOMAIN_MESH=\$DIN_LOC_ROOT/share/meshes/r05_nomask_c110308_ESMFmesh.nc

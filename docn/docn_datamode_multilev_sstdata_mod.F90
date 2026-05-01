@@ -1,4 +1,4 @@
-module docn_datamode_multilev_dom_mod
+module docn_datamode_multilev_sstdata_mod
 
   use ESMF             , only : ESMF_State, ESMF_LOGMSG_INFO, ESMF_LogWrite, ESMF_SUCCESS
   use NUOPC            , only : NUOPC_Advertise
@@ -10,11 +10,11 @@ module docn_datamode_multilev_dom_mod
   use dshr_strdata_mod , only : shr_strdata_get_stream_pointer, shr_strdata_type, shr_strdata_get_stream_count
 
   implicit none
-  private ! except
+  private
 
-  public :: docn_datamode_multilev_dom_advertise
-  public :: docn_datamode_multilev_dom_init_pointers
-  public :: docn_datamode_multilev_dom_advance
+  public :: docn_datamode_multilev_sstdata_advertise
+  public :: docn_datamode_multilev_sstdata_init_pointers
+  public :: docn_datamode_multilev_sstdata_advance
 
   ! pointers to export fields
   real(r8), pointer :: So_omask(:)     => null()    ! real ocean fraction sent to mediator
@@ -26,8 +26,9 @@ module docn_datamode_multilev_dom_mod
   real(r8), pointer :: So_s(:)         => null()
 
   ! pointers to stream fields
-  real(r8), pointer :: stream_So_t_depth(:,:) => null()
-  real(r8), pointer :: stream_So_s_depth(:,:) => null()
+  real(r8), pointer :: strm_So_t(:)
+  real(r8), pointer :: strm_So_t_depth(:,:) => null()
+  real(r8), pointer :: strm_So_s_depth(:,:) => null()
 
   integer, parameter :: nlev_export = 30
   real(r8) :: vertical_levels(nlev_export) = (/  &
@@ -38,16 +39,14 @@ module docn_datamode_multilev_dom_mod
   real(r8) , parameter :: tkfrz   = shr_const_tkfrz       ! freezing point, fresh water (kelvin)
   real(r8) , parameter :: ocnsalt = shr_const_ocn_ref_sal ! ocean reference salinity
 
-  ! constants
-  character(*) , parameter :: nullstr = 'null'
-  character(*) , parameter :: u_FILE_u = &
+  character(len=*) , parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
 contains
 !===============================================================================
 
-  subroutine docn_datamode_multilev_dom_advertise(exportState, fldsexport, flds_scalar_name, rc)
+  subroutine docn_datamode_multilev_sstdata_advertise(exportState, fldsexport, flds_scalar_name, rc)
 
     ! input/output variables
     type(esmf_State)   , intent(inout) :: exportState
@@ -66,10 +65,10 @@ contains
     call dshr_fldList_add(fldsExport, 'So_omask')
     call dshr_fldList_add(fldsExport, 'So_t_depth', ungridded_lbound=1, ungridded_ubound=nlev_export)
     call dshr_fldList_add(fldsExport, 'So_s_depth', ungridded_lbound=1, ungridded_ubound=nlev_export)
-    call dshr_fldList_add(fldsExport, 'So_t'                )
-    call dshr_fldList_add(fldsExport, 'So_s'                )
-    call dshr_fldList_add(fldsExport, 'So_u'                )
-    call dshr_fldList_add(fldsExport, 'So_v'                )
+    call dshr_fldList_add(fldsExport, 'So_t')
+    call dshr_fldList_add(fldsExport, 'So_s')
+    call dshr_fldList_add(fldsExport, 'So_u')
+    call dshr_fldList_add(fldsExport, 'So_v')
 
     fldlist => fldsExport ! the head of the linked list
     do while (associated(fldlist))
@@ -79,10 +78,10 @@ contains
        fldList => fldList%next
     enddo
 
-  end subroutine docn_datamode_multilev_dom_advertise
+  end subroutine docn_datamode_multilev_sstdata_advertise
 
   !===============================================================================
-  subroutine docn_datamode_multilev_dom_init_pointers(exportState, sdat, ocn_fraction, rc)
+  subroutine docn_datamode_multilev_sstdata_init_pointers(exportState, sdat, ocn_fraction, rc)
 
     ! input/output variables
     type(ESMF_State)       , intent(inout) :: exportState
@@ -96,13 +95,9 @@ contains
 
     rc = ESMF_SUCCESS
 
-    ! initialize pointers to stream fields
-    ! this has the full set of leveles in the stream data
-    call shr_strdata_get_stream_pointer( sdat, 'So_t_depth', stream_So_t_depth, rc=rc)
+    ! initialize pointers to export fields
+    call dshr_state_getfldptr(exportState, 'So_omask', fldptr1=So_omask   , rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'So_s_depth', stream_So_s_depth, rc=rc)
-    if (chkerr(rc,__LINE__,u_FILE_u)) return
-
     call dshr_state_getfldptr(exportState, 'So_t', fldptr1=So_t, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'So_s', fldptr1=So_s, rc=rc)
@@ -111,15 +106,22 @@ contains
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'So_v', fldptr1=So_v, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
+    call dshr_state_getfldptr(exportState, 'So_t_depth', fldptr2=So_t_depth , rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    call dshr_state_getfldptr(exportState, 'So_s_depth', fldptr2=So_s_depth , rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
 
-    ! initialize pointers to export fields
-    ! the export state has only nlev_export levels
-    call dshr_state_getfldptr(exportState, 'So_omask'   , fldptr1=So_omask   , rc=rc)
-    if (chkerr(rc,__LINE__,u_FILE_u)) return
-    call dshr_state_getfldptr(exportState, 'So_t_depth' , fldptr2=So_t_depth , rc=rc)
-    if (chkerr(rc,__LINE__,u_FILE_u)) return
-    call dshr_state_getfldptr(exportState, 'So_s_depth' , fldptr2=So_s_depth , rc=rc)
-    if (chkerr(rc,__LINE__,u_FILE_u)) return
+    ! initialize pointers to stream fields
+    ! this has the full set of leveles in the stream data
+    call shr_strdata_get_stream_pointer( sdat, 'So_t', strm_So_t, &
+         errmsg=subname//'ERROR: strm_So_t must be associated for docn multilev_sstdata datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'So_t_depth', strm_So_t_depth, &
+         errmsg=subname//'ERROR: strm_So_t_depth must be associated for docn multilev_sstdata datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'So_s_depth', strm_So_s_depth, &
+         errmsg=subname//'ERROR: strm_So_t_depth must be associated for docn multilev_sstdata datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Initialize export state pointers to non-zero
     So_t_depth(:,:) = shr_const_TkFrz
@@ -133,10 +135,10 @@ contains
     ! Set export state ocean fraction (So_omask)
     So_omask(:) = ocn_fraction(:)
 
-  end subroutine docn_datamode_multilev_dom_init_pointers
+  end subroutine docn_datamode_multilev_sstdata_init_pointers
 
   !===============================================================================
-  subroutine docn_datamode_multilev_dom_advance(sdat, logunit, mainproc, rc)
+  subroutine docn_datamode_multilev_sstdata_advance(sdat, logunit, mainproc, rc)
 
     ! input/output variables
     type(shr_strdata_type) , intent(in) :: sdat
@@ -153,12 +155,13 @@ contains
     real(r8) :: factor
     real(r8), allocatable :: stream_vlevs(:)
     logical :: first_time = .true.
-    character(len=*), parameter :: subname='(docn_datamode_multilev_dom): '
+    character(len=*), parameter :: subname='(docn_datamode_multilev_sstdata): '
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
 
-    So_t(:) = So_t(:) + TkFrz
+    ! Set ocean sst
+    So_t(:) = strm_So_t(:) + TkFrz
 
     ! Determine number of vertical levels for multi level stream
     nstreams = shr_strdata_get_stream_count(sdat)
@@ -168,7 +171,7 @@ contains
        if (nlev_stream > 1) exit
     end do
     if (nlev_stream == 0) then
-       call shr_log_error(trim(subname)//" could not find vertical levels greater than 0", rc=rc)
+       call shr_log_error(subname//" could not find vertical levels greater than 0", rc=rc)
        return
     end if
     allocate(stream_vlevs(nlev_stream))
@@ -190,34 +193,34 @@ contains
                    So_s_depth(ko,i) = shr_const_spval
                 else
                    ! Assume input T forcing is in degrees C
-                   if (stream_So_t_depth(ki+1,i) > 1.e10) then
-                      if (stream_So_t_depth(ki,i) > 1.e10) then
+                   if (strm_So_t_depth(ki+1,i) > 1.e10) then
+                      if (strm_So_t_depth(ki,i) > 1.e10) then
                          So_t_depth(ko,i) = shr_const_spval
                          So_s_depth(ko,i) = shr_const_spval
                       else
-                         So_t_depth(ko,i) = stream_So_t_depth(ki,i) + shr_const_tkfrz
-                         So_s_depth(ko,i) = stream_So_s_depth(ki,i)
+                         So_t_depth(ko,i) = strm_So_t_depth(ki,i) + shr_const_tkfrz
+                         So_s_depth(ko,i) = strm_So_s_depth(ki,i)
                       end if
                    else
-                      factor = (stream_So_t_depth(ki+1,i)-stream_So_t_depth(ki,i))/(stream_vlevs(ki+1)-stream_vlevs(ki))
-                      So_t_depth(ko,i) = stream_So_t_depth(ki,i) + (vertical_levels(ko)-stream_vlevs(ki))*factor
+                      factor = (strm_So_t_depth(ki+1,i)-strm_So_t_depth(ki,i))/(stream_vlevs(ki+1)-stream_vlevs(ki))
+                      So_t_depth(ko,i) = strm_So_t_depth(ki,i) + (vertical_levels(ko)-stream_vlevs(ki))*factor
                       So_t_depth(ko,i) = So_t_depth(ko,i) + shr_const_tkfrz
 
-                      factor = (stream_So_s_depth(ki+1,i)-stream_So_s_depth(ki,i))/(stream_vlevs(ki+1)-stream_vlevs(ki))
-                      So_s_depth(ko,i) = stream_So_s_depth(ki,i) + (vertical_levels(ko)-stream_vlevs(ki))*factor
+                      factor = (strm_So_s_depth(ki+1,i)-strm_So_s_depth(ki,i))/(stream_vlevs(ki+1)-stream_vlevs(ki))
+                      So_s_depth(ko,i) = strm_So_s_depth(ki,i) + (vertical_levels(ko)-stream_vlevs(ki))*factor
                    end if
                 end if
              end do
           end if
        end do
        if (.not. level_found) then
-          call shr_log_error(trim(subname)//" could not find level bounds for vertical interpolation", rc=rc)
+          call shr_log_error(subname//" could not find level bounds for vertical interpolation", rc=rc)
           return
        end if
     end do
 
     first_time = .false.
 
-  end subroutine docn_datamode_multilev_dom_advance
+  end subroutine docn_datamode_multilev_sstdata_advance
 
-end module docn_datamode_multilev_dom_mod
+end module docn_datamode_multilev_sstdata_mod
