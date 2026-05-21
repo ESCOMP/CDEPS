@@ -47,7 +47,9 @@ module datm_datamode_jra_mod
   real(r8), pointer :: strm_Sa_u(:)      => null()
   real(r8), pointer :: strm_Sa_v(:)      => null()
   real(r8), pointer :: strm_Sa_shum(:)   => null()
-  real(r8), pointer :: strm_Faxa_prec(:) => null()
+  real(r8), pointer :: strm_Faxa_prec(:) => null()   ! Jra provides one precip flux
+  real(r8), pointer :: strm_Faxa_prrn(:) => null()   ! Jra55do provides rainfall flux
+  real(r8), pointer :: strm_Faxa_prsn(:) => null()   ! and Snowfall flux seperately
   real(r8), pointer :: strm_Faxa_lwdn(:) => null()
   real(r8), pointer :: strm_Faxa_swdn(:) => null()
 
@@ -119,6 +121,8 @@ contains
 
   !===============================================================================
   subroutine datm_datamode_jra_init_pointers(exportState, sdat, rc)
+
+    use shr_log_mod      , only : shr_log_error
 
     ! input/output variables
     type(ESMF_State)       , intent(inout) :: exportState
@@ -193,9 +197,19 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! initialize stream pointers
-    call shr_strdata_get_stream_pointer( sdat, 'Faxa_prec' , strm_Faxa_prec  , requirePointer=.true., &
-         errmsg=subname//'ERROR: strm_Faxa_prec must be associated for jra datamode', rc=rc)
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_prec' , strm_Faxa_prec  , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_prrn' , strm_Faxa_prrn  , rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_prsn' , strm_Faxa_prsn  , rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    if ( .not. ((associated(strm_Faxa_prec) & !jra 55
+          .or. (associated(strm_Faxa_prrn) .and. associated(strm_Faxa_prsn))))) & !jra55do
+          call shr_log_error(subName//"ERROR: strm_Faxa_prec or (strm_Faxa_prrn and strm_Faxa_prsn) "//&
+               "must be associated for jra datamode", rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
     call shr_strdata_get_stream_pointer( sdat, 'Faxa_swdn' , strm_Faxa_swdn  , requirePointer=.true., &
          errmsg=subname//'ERROR: strm_Faxa_swdn must be associated for jra datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -233,6 +247,7 @@ contains
     ! local variables
     integer           :: n
     integer           :: lsize
+    logical           :: jra55do
     real(R8)          :: avg_alb            ! average albedo
     real(R8)          :: rday               ! elapsed day
     real(R8)          :: cosFactor          ! cosine factor
@@ -242,6 +257,12 @@ contains
     rc = ESMF_SUCCESS
 
     lsize = size(Sa_z)
+
+    if (associated(strm_Faxa_prrn) .and. associated(strm_Faxa_prsn)) then
+      jra55do = .true.
+    else
+      jra55do = .false.
+    endif
 
     call shr_cal_date2julian(target_ymd, target_tod, rday, model_calendar)
     rday = mod((rday - 1.0_R8),365.0_R8)
@@ -273,12 +294,17 @@ contains
        ! precipitation data
        Faxa_rainc(n) = 0.0_R8               ! default zero
        Faxa_snowc(n) = 0.0_R8
-       if (Sa_tbot(n) < tKFrz ) then        ! assign precip to rain/snow components
-          Faxa_rainl(n) = 0.0_R8
-          Faxa_snowl(n) = strm_Faxa_prec(n)
+       if (jra55do) then
+          Faxa_snowl(n) = strm_Faxa_prsn(n)         ! Snowfall flux
+          Faxa_rainl(n) = strm_Faxa_prrn(n)         ! Rainfall flux
        else
-          Faxa_rainl(n) = strm_Faxa_prec(n)
-          Faxa_snowl(n) = 0.0_R8
+          if (Sa_tbot(n) < tKFrz ) then        ! assign precip to rain/snow components
+               Faxa_rainl(n) = 0.0_R8
+               Faxa_snowl(n) = strm_Faxa_prec(n)
+          else
+               Faxa_rainl(n) = strm_Faxa_prec(n)
+               Faxa_snowl(n) = 0.0_R8
+          endif
        endif
 
        ! radiation data - fabricate required swdn components from net swdn
