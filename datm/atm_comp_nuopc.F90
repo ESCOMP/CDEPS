@@ -83,6 +83,9 @@ module cdeps_datm_comp
   use datm_pres_co2_mod         , only : datm_pres_co2_init_pointers
   use datm_pres_co2_mod         , only : datm_pres_co2_advance
 
+  use shr_generic_mod           , only : datamode_generic_advertise
+  use shr_generic_mod           , only : datamode_generic_advance
+
   implicit none
   private
 
@@ -410,6 +413,9 @@ contains
     case ('SIMPLE')
        call datm_datamode_simple_advertise(exportState, fldsExport, flds_scalar_name, &
             nlfilename, my_task, vm, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    case ('GENERIC')
+       call datamode_generic_advertise(exportState, sdat, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end select
 
@@ -754,6 +760,9 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('SIMPLE')
        call datm_datamode_simple_advance(target_ymd, target_tod, target_mon, sdat%model_calendar, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    case('GENERIC')
+       call datamode_generic_advance(exportState, sdat, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end select
 
