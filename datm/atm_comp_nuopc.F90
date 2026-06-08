@@ -85,6 +85,7 @@ module cdeps_datm_comp
   use datm_pres_co2_mod         , only : datm_pres_co2_advance
 
   use shr_generic_mod           , only : datamode_generic_advertise
+  use shr_generic_mod           , only : datamode_generic_init_pointers
   use shr_generic_mod           , only : datamode_generic_advance
 
   implicit none
@@ -370,7 +371,7 @@ contains
     select case (trim(datamode))
        case ('CORE2_NYF','CORE2_IAF','CORE_IAF_JRA', &
              'CORE_RYF6162_JRA','CORE_RYF8485_JRA','CORE_RYF9091_JRA','CORE_RYF0304_JRA', &
-             'CLMNCEP','CPLHIST','GEFS','ERA5','SIMPLE')
+             'CLMNCEP','CPLHIST','GEFS','ERA5','SIMPLE','GENERIC')
        if (mainproc) write(logunit,'(3a)') subname,'datm datamode = ',trim(datamode)
     case default
        call shr_log_error(' ERROR illegal datm datamode = '//trim(datamode), rc=rc)
@@ -424,7 +425,7 @@ contains
             nlfilename, my_task, vm, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('GENERIC')
-       call datamode_generic_advertise(exportState, sdat, rc)
+       call datamode_generic_advertise(fldsExport, sdat, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end select
 
@@ -687,6 +688,9 @@ contains
        case('SIMPLE')
           call datm_datamode_simple_init_pointers(exportState, sdat, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       case('GENERIC')
+          call datamode_generic_init_pointers(exportState, sdat, rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end select
 
        ! Read restart if needed
@@ -697,7 +701,7 @@ contains
           case('CORE2_NYF','CORE2_IAF','CORE_IAF_JRA',&
                'CORE_RYF6162_JRA','CORE_RYF8485_JRA' ,&
                'CORE_RYF9091_JRA','CORE_RYF0304_JRA' ,&
-               'CLMNCEP','CPLHIST','ERA5','GEFS','SIMPLE')
+               'CLMNCEP','CPLHIST','ERA5','GEFS','SIMPLE','GENERIC')
              call dshr_restart_read(restfilm, rpfile, logunit, my_task, mpicom, sdat, rc)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
           case default
@@ -766,7 +770,7 @@ contains
        call datm_datamode_simple_advance(target_ymd, target_tod, target_mon, sdat%model_calendar, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('GENERIC')
-       call datamode_generic_advance(exportState, sdat, rc)
+       call datamode_generic_advance(rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end select
 
