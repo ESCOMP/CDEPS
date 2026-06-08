@@ -1,7 +1,8 @@
 module shr_generic_mod
 
-  use ESMF
-  use NUOPC
+  use ESMF            , only : ESMF_SUCCESS, ESMF_State, &
+                               ESMF_LogWrite, ESMF_LOGMSG_INFO, ESMF_LOGMSG_WARNING
+  use shr_kind_mod    , only : r8=>shr_kind_r8, cl=>shr_kind_cl
   use dshr_fldlist_mod, only : fldlist_type, dshr_fldlist_add
   use dshr_strdata_mod, only : shr_strdata_type, shr_strdata_get_stream_pointer
   use dshr_state_mod,   only : dshr_state_getfldptr
@@ -17,8 +18,8 @@ module shr_generic_mod
   ! Derived type to cache the pointer pairs dynamically for the Advance loop
   ! -----------------------------------------------------------------------
   type :: ptr_map_type
-     real(ESMF_KIND_R8), pointer :: strm_ptr(:)  => null()
-     real(ESMF_KIND_R8), pointer :: state_ptr(:) => null()
+     real(r8), pointer :: strm_ptr(:)  => null()
+     real(r8), pointer :: state_ptr(:) => null()
   end type ptr_map_type
 
   ! Module-level cache array
@@ -30,10 +31,10 @@ contains
   subroutine datamode_generic_advertise(fldsExport, sdat, rc)
     type(fldList_type),     pointer       :: fldsExport
     type(shr_strdata_type), intent(in)    :: sdat
-    integer,                intent(out), optional :: rc
+    integer,        intent(out), optional :: rc
 
     integer :: i, n
-    character(len=ESMF_MAXSTR) :: fieldName
+    character(len=CL) :: fieldName
 
     if (present(rc)) rc = ESMF_SUCCESS
 
@@ -48,7 +49,6 @@ contains
                 
                 ! Add to the CDEPS list (which handles the NUOPC advertise)
                 call dshr_fldlist_add(fldsExport, trim(fieldName))
-                if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU)) return
              end do
              
           endif
@@ -57,7 +57,6 @@ contains
 
   end subroutine datamode_generic_advertise
 
-
   ! =======================================================================
   subroutine datamode_generic_init_pointers(exportState, sdat, rc)
     type(ESMF_State),       intent(inout) :: exportState
@@ -65,8 +64,8 @@ contains
     integer,                intent(out), optional :: rc
 
     integer :: i, n, total_vars, cache_idx
-    character(len=ESMF_MAXSTR) :: fieldName
-    character(len=ESMF_MAXSTR) :: logMsg
+    character(len=CL) :: fieldName
+    character(len=CL) :: logMsg
 
     if (present(rc)) rc = ESMF_SUCCESS
 
