@@ -47,7 +47,7 @@ contains
                 fieldName = trim(sdat%stream(i)%varlist(n)%nameinmodel)
                 
                 ! Add to the CDEPS list (which handles the NUOPC advertise)
-                call dshr_fldlist_add(fldsExport, trim(fieldName), 'scalar', rc=rc)
+                call dshr_fldlist_add(fldsExport, trim(fieldName))
                 if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU)) return
              end do
              
