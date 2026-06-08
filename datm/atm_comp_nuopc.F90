@@ -782,7 +782,7 @@ contains
        case('CORE2_NYF','CORE2_IAF','CORE_IAF_JRA',&
             'CORE_RYF6162_JRA','CORE_RYF8485_JRA' ,&
             'CORE_RYF9091_JRA','CORE_RYF0304_JRA' ,&
-            'CLMNCEP','CPLHIST','ERA5','GEFS','SIMPLE')
+            'CLMNCEP','CPLHIST','ERA5','GEFS','SIMPLE','GENERIC')
           call dshr_restart_write(rpfile, case_name, 'datm', inst_suffix, &
                target_ymd, target_tod, logunit, my_task, sdat, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
