@@ -1,20 +1,17 @@
 module datm_datamode_jra_mod
 
-  use ESMF             , only : ESMF_State, ESMF_StateGet, ESMF_SUCCESS, ESMF_LogWrite, ESMF_LOGMSG_INFO
-  use ESMF             , only : ESMF_MeshGet
-  use ESMF             , only : ESMF_StateItem_Flag, ESMF_STATEITEM_NOTFOUND, operator(/=)
+  use ESMF             , only : ESMF_SUCCESS, ESMF_LogWrite, ESMF_LOGMSG_INFO
+  use ESMF             , only : ESMF_State, ESMF_StateGet, ESMF_MeshGet
   use NUOPC            , only : NUOPC_Advertise
-  use shr_kind_mod     , only : r8=>shr_kind_r8, i8=>shr_kind_i8, cl=>shr_kind_cl, cs=>shr_kind_cs
-  use shr_log_mod      , only : shr_log_error
+  use shr_kind_mod     , only : r8=>shr_kind_r8
   use shr_cal_mod      , only : shr_cal_date2julian
   use shr_const_mod    , only : shr_const_tkfrz, shr_const_pi, shr_const_rdair
   use dshr_strdata_mod , only : shr_strdata_get_stream_pointer, shr_strdata_type
-  use dshr_methods_mod , only : dshr_state_getfldptr, dshr_fldbun_getfldptr, dshr_fldbun_regrid, chkerr
-  use dshr_strdata_mod , only : shr_strdata_type
+  use dshr_methods_mod , only : dshr_state_getfldptr, chkerr
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
 
   implicit none
-  private ! except
+  private
 
   public  :: datm_datamode_jra_advertise
   public  :: datm_datamode_jra_init_pointers
@@ -41,14 +38,21 @@ module datm_datamode_jra_mod
   real(r8), pointer :: Faxa_swvdr(:) => null()
   real(r8), pointer :: Faxa_swvdf(:) => null()
   real(r8), pointer :: Faxa_swnet(:) => null()
-  real(r8), pointer :: Faxa_ndep(:,:) => null()
+  real(r8), pointer :: Faxa_swdn(:)  => null()
+  real(r8), pointer :: Faxa_lwdn(:)  => null()
 
-  ! stream data
-  real(r8), pointer :: strm_prec(:)  => null()
-  real(r8), pointer :: strm_swdn(:)  => null()
+  ! stream data pointers
+  real(r8), pointer :: strm_Sa_tbot(:)   => null()
+  real(r8), pointer :: strm_Sa_pslv(:)   => null()
+  real(r8), pointer :: strm_Sa_u(:)      => null()
+  real(r8), pointer :: strm_Sa_v(:)      => null()
+  real(r8), pointer :: strm_Sa_shum(:)   => null()
+  real(r8), pointer :: strm_Faxa_prec(:) => null()
+  real(r8), pointer :: strm_Faxa_lwdn(:) => null()
+  real(r8), pointer :: strm_Faxa_swdn(:) => null()
 
-  ! othe module arrays
-  real(R8), pointer :: yc(:)                 ! array of model latitudes
+  ! other module arrays
+  real(R8), pointer :: yc(:) ! array of model latitudes
 
   ! constants
   real(R8) , parameter :: tKFrz    = SHR_CONST_TKFRZ
@@ -57,25 +61,20 @@ module datm_datamode_jra_mod
   real(R8) , parameter :: phs_c0   =   0.298_R8
   real(R8) , parameter :: dLWarc   =  -5.000_R8
 
-  character(*), parameter :: nullstr = 'null'
-  character(*), parameter :: u_FILE_u = &
+  character(len=*), parameter :: nullstr = 'null'
+  character(len=*), parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
 contains
 !===============================================================================
 
-  subroutine datm_datamode_jra_advertise(exportState, fldsexport, flds_scalar_name, &
-       flds_co2, flds_wiso, flds_presaero, flds_presndep, rc)
+  subroutine datm_datamode_jra_advertise(exportState, fldsexport, flds_scalar_name, rc)
 
     ! input/output variables
     type(esmf_State)   , intent(inout) :: exportState
     type(fldlist_type) , pointer       :: fldsexport
     character(len=*)   , intent(in)    :: flds_scalar_name
-    logical            , intent(in)    :: flds_co2
-    logical            , intent(in)    :: flds_wiso
-    logical            , intent(in)    :: flds_presaero
-    logical            , intent(in)    :: flds_presndep
     integer            , intent(out)   :: rc
 
     ! local variables
@@ -108,27 +107,6 @@ contains
     call dshr_fldList_add(fldsExport, 'Faxa_lwdn'  )
     call dshr_fldList_add(fldsExport, 'Faxa_swdn'  )
 
-    if (flds_co2) then
-       call dshr_fldList_add(fldsExport, 'Sa_co2prog')
-       call dshr_fldList_add(fldsExport, 'Sa_co2diag')
-    end if
-    if (flds_presaero) then
-       call dshr_fldList_add(fldsExport, 'Faxa_bcph'   , ungridded_lbound=1, ungridded_ubound=3)
-       call dshr_fldList_add(fldsExport, 'Faxa_ocph'   , ungridded_lbound=1, ungridded_ubound=3)
-       call dshr_fldList_add(fldsExport, 'Faxa_dstwet' , ungridded_lbound=1, ungridded_ubound=4)
-       call dshr_fldList_add(fldsExport, 'Faxa_dstdry' , ungridded_lbound=1, ungridded_ubound=4)
-    end if
-    if (flds_presndep) then
-       call dshr_fldList_add(fldsExport, 'Faxa_ndep', ungridded_lbound=1, ungridded_ubound=2)
-    end if
-    if (flds_wiso) then
-       call dshr_fldList_add(fldsExport, 'Faxa_rainc_wiso', ungridded_lbound=1, ungridded_ubound=3)
-       call dshr_fldList_add(fldsExport, 'Faxa_rainl_wiso', ungridded_lbound=1, ungridded_ubound=3)
-       call dshr_fldList_add(fldsExport, 'Faxa_snowc_wiso', ungridded_lbound=1, ungridded_ubound=3)
-       call dshr_fldList_add(fldsExport, 'Faxa_snowl_wiso', ungridded_lbound=1, ungridded_ubound=3)
-       call dshr_fldList_add(fldsExport, 'Faxa_shum_wiso' , ungridded_lbound=1, ungridded_ubound=3)
-    end if
-
     fldlist => fldsExport ! the head of the linked list
     do while (associated(fldlist))
        call NUOPC_Advertise(exportState, standardName=fldlist%stdname, rc=rc)
@@ -149,18 +127,15 @@ contains
 
     ! local variables
     integer           :: n
-    integer           :: lsize
     integer           :: spatialDim         ! number of dimension in mesh
     integer           :: numOwnedElements   ! size of mesh
     real(r8), pointer :: ownedElemCoords(:) ! mesh lat and lons
-    type(ESMF_StateItem_Flag) :: itemFlag
     character(len=*), parameter :: subname='(datm_init_pointers): '
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
 
-    lsize = sdat%model_lsize
-
+    ! determine yc
     call ESMF_MeshGet(sdat%model_mesh, spatialDim=spatialDim, numOwnedElements=numOwnedElements, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     allocate(ownedElemCoords(spatialDim*numOwnedElements))
@@ -171,11 +146,7 @@ contains
        yc(n) = ownedElemCoords(2*n)
     end do
 
-    call shr_strdata_get_stream_pointer( sdat, 'Faxa_prec'  , strm_prec  , rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call shr_strdata_get_stream_pointer( sdat, 'Faxa_swdn'  , strm_swdn  , rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
+    ! initialize export state pointers
     call dshr_state_getfldptr(exportState, 'Sa_u'       , fldptr1=Sa_u       , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Sa_v'       , fldptr1=Sa_v       , rc=rc)
@@ -216,19 +187,36 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Faxa_swnet' , fldptr1=Faxa_swnet , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    call ESMF_StateGet(exportState, 'Faxa_ndep', itemFlag, rc=rc)
+    call dshr_state_getfldptr(exportState, 'Faxa_swdn' , fldptr1=Faxa_swdn  , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    if (itemflag /= ESMF_STATEITEM_NOTFOUND) then
-       call dshr_state_getfldptr(exportState, 'Faxa_ndep', fldptr2=Faxa_ndep, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    end if
+    call dshr_state_getfldptr(exportState, 'Faxa_lwdn' , fldptr1=Faxa_lwdn  , rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    ! erro check
-    if (.not. associated(strm_prec) .or. .not. associated(strm_swdn)) then
-       call shr_log_error(trim(subname)//'ERROR: prec and swdn must be in streams for CORE_IAF_JRA', rc=rc)
-       return
-    endif
+    ! initialize stream pointers
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_prec' , strm_Faxa_prec  , requirePointer=.true., &
+         errmsg=subname//'ERROR: strm_Faxa_prec must be associated for jra datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_swdn' , strm_Faxa_swdn  , requirePointer=.true., &
+         errmsg=subname//'ERROR: strm_Faxa_swdn must be associated for jra datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Faxa_lwdn' , strm_Faxa_lwdn  , requirePointer=.true., &
+         errmsg=subname//'ERROR: strm_Faxa_lwdn must be associated for jra datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_pslv'   , strm_Sa_pslv    , requirePointer=.true., &
+         errmsg=subname//'ERROR: strm_Sa_pslv must be associated for jra datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_tbot'   , strm_Sa_tbot    , requirePointer=.true., &
+         errmsg=subname//'ERROR: strm_Sa_tbot must be associated for jra datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_u'      , strm_Sa_u       , requirePointer=.true., &
+         errmsg=subname//'ERROR: strm_Sa_u must be associated for jra datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_v'      , strm_Sa_v       , requirePointer=.true., &
+         errmsg=subname//'ERROR: strm_Sa_v must be associated for jra datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call shr_strdata_get_stream_pointer( sdat, 'Sa_shum'   , strm_Sa_shum    , requirePointer=.true., &
+         errmsg=subname//'ERROR: strm_Sa_shum must be associated for jra datamode', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine datm_datamode_jra_init_pointers
 
@@ -260,9 +248,20 @@ contains
     cosfactor = cos((2.0_R8*SHR_CONST_PI*rday)/365 - phs_c0)
 
     do n = 1,lsize
+
+       ! Set export fields as copies directly from streams
+       Sa_pslv(n)   = strm_Sa_pslv(n)
+       Sa_pbot(n)   = strm_Sa_pslv(n)
+       Sa_tbot(n)   = strm_Sa_tbot(n)
+       Sa_ptem(n)   = strm_Sa_tbot(n)
+       Sa_u(n)      = strm_Sa_u(n)
+       Sa_v(n)      = strm_Sa_v(n)
+       Sa_shum(n)   = strm_Sa_shum(n)
+       Faxa_swdn(n) = strm_Faxa_swdn(n)
+       Faxa_lwdn(n) = strm_Faxa_lwdn(n)
+
+       ! Set Sa_z to a constant
        Sa_z(n) = 10.0_R8
-       Sa_pbot(n) = Sa_pslv(n)
-       Sa_ptem(n) = Sa_tbot(n)
 
        ! Set Sa_u10m and Sa_v10m to Sa_u and Sa_v
        Sa_u10m(n) = Sa_u(n)
@@ -276,27 +275,22 @@ contains
        Faxa_snowc(n) = 0.0_R8
        if (Sa_tbot(n) < tKFrz ) then        ! assign precip to rain/snow components
           Faxa_rainl(n) = 0.0_R8
-          Faxa_snowl(n) = strm_prec(n)
+          Faxa_snowl(n) = strm_Faxa_prec(n)
        else
-          Faxa_rainl(n) = strm_prec(n)
+          Faxa_rainl(n) = strm_Faxa_prec(n)
           Faxa_snowl(n) = 0.0_R8
        endif
 
        ! radiation data - fabricate required swdn components from net swdn
-       Faxa_swvdr(n) = strm_swdn(n)*(0.28_R8)
-       Faxa_swndr(n) = strm_swdn(n)*(0.31_R8)
-       Faxa_swvdf(n) = strm_swdn(n)*(0.24_R8)
-       Faxa_swndf(n) = strm_swdn(n)*(0.17_R8)
+       Faxa_swvdr(n) = strm_Faxa_swdn(n)*(0.28_R8)
+       Faxa_swndr(n) = strm_Faxa_swdn(n)*(0.31_R8)
+       Faxa_swvdf(n) = strm_Faxa_swdn(n)*(0.24_R8)
+       Faxa_swndf(n) = strm_Faxa_swdn(n)*(0.17_R8)
 
        ! radiation data - compute net short-wave based on LY08 latitudinally-varying albedo
        avg_alb = ( 0.069 - 0.011*cos(2.0_R8*yc(n)*degtorad ) )
-       Faxa_swnet(n) = strm_swdn(n)*(1.0_R8 - avg_alb)
+       Faxa_swnet(n) = strm_Faxa_swdn(n)*(1.0_R8 - avg_alb)
     enddo   ! lsize
-
-    if (associated(Faxa_ndep)) then
-       ! convert ndep flux to units of kgN/m2/s (input is in gN/m2/s)
-       Faxa_ndep(:,:) = Faxa_ndep(:,:) / 1000._r8
-    end if
 
   end subroutine datm_datamode_jra_advance
 

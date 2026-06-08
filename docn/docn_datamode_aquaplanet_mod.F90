@@ -9,7 +9,7 @@ module docn_datamode_aquaplanet_mod
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
 
   implicit none
-  private ! except
+  private
 
   public :: docn_datamode_aquaplanet_advertise
   public :: docn_datamode_aquaplanet_init_pointers
@@ -46,7 +46,7 @@ module docn_datamode_aquaplanet_mod
   real(r8) , parameter :: latrad8    = 30._r8*pio180
   real(r8) , parameter :: lonrad     = 30._r8*pio180
 
-  character(*) , parameter :: u_FILE_u = &
+  character(len=*) , parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================

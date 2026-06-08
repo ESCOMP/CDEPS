@@ -25,9 +25,9 @@ module datm_datamode_simple_mod
   use dshr_strdata_mod , only : shr_strdata_type
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add
   use shr_log_mod      , only : shr_log_error
-  
+
   implicit none
-  private ! except
+  private
 
   public  :: datm_datamode_simple_advertise
   public  :: datm_datamode_simple_init_pointers
@@ -53,7 +53,6 @@ module datm_datamode_simple_mod
   real(r8), pointer :: Faxa_swvdr(:) => null()
   real(r8), pointer :: Faxa_swvdf(:) => null()
   real(r8), pointer :: Faxa_swnet(:) => null()
-  real(r8), pointer :: Faxa_ndep(:,:) => null()
 
   ! othe module arrays
   real(R8), pointer :: yc(:)                 ! array of model latitudes
@@ -75,8 +74,8 @@ module datm_datamode_simple_mod
   real(R8) , parameter :: phs_c0   =   0.298_R8
   real(R8) , parameter :: dLWarc   =  -5.000_R8
 
-  character(*), parameter :: nullstr = 'null'
-  character(*), parameter :: u_FILE_u = &
+  character(len=*), parameter :: nullstr = 'null'
+  character(len=*), parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -85,6 +84,7 @@ contains
 
   subroutine datm_datamode_simple_advertise(exportState, fldsexport, flds_scalar_name, &
     nlfilename, my_task, vm, rc)
+
     use shr_nl_mod, only:  shr_nl_find_group_name
 
     ! input/output variables
@@ -191,7 +191,6 @@ contains
     integer           :: spatialDim         ! number of dimension in mesh
     integer           :: numOwnedElements   ! size of mesh
     real(r8), pointer :: ownedElemCoords(:) ! mesh lat and lons
-    type(ESMF_StateItem_Flag) :: itemFlag
     character(len=*), parameter :: subname='(datm_init_pointers): '
     !-------------------------------------------------------------------------------
 
@@ -250,13 +249,6 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call dshr_state_getfldptr(exportState, 'Faxa_lwdn'  , fldptr1=Faxa_lwdn  , rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-
-    call ESMF_StateGet(exportstate, 'Faxa_ndep', itemFlag, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    if (itemflag /= ESMF_STATEITEM_NOTFOUND) then
-       call dshr_state_getfldptr(exportState, 'Faxa_ndep', fldptr2=Faxa_ndep, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    end if
 
   end subroutine datm_datamode_simple_init_pointers
 
@@ -319,7 +311,7 @@ contains
       ! long wave
       solar_decl = (epsilon_deg * degtorad) * sin( 2.0_R8 * shr_const_pi * (int(rday) + 284.0_R8) / 365.0_R8)
       zenith_angle = acos(sin(yc(n) * degtorad ) * sin(solar_decl) + cos(yc(n) * degtorad) * cos(solar_decl) )
-      Faxa_lwdn(n) = max(0.0_R8, peak_lwdn * cos(zenith_angle)) 
+      Faxa_lwdn(n) = max(0.0_R8, peak_lwdn * cos(zenith_angle))
 
       ! short wave
       hour_angle = (15.0_R8 * (target_tod/3600.0_R8 - 12.0_R8) + xc(n) ) * degtorad
@@ -331,11 +323,6 @@ contains
       Faxa_swndf(n) = Faxa_swnet(n)*(0.17_R8)
 
     enddo   ! lsize
-
-    if (associated(Faxa_ndep)) then
-       ! convert ndep flux to units of kgN/m2/s (input is in gN/m2/s)
-       Faxa_ndep(:,:) = Faxa_ndep(:,:) / 1000._r8
-    end if
 
   end subroutine datm_datamode_simple_advance
 

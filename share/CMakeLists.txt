@@ -16,6 +16,7 @@ add_library(cdeps_share  ${GenF90_SRCS}
                          shr_const_mod.F90
                          shr_orb_mod.F90
                          shr_log_mod.F90
+                         shr_lnd2rof_tracers_mod.F90
                          shr_strconvert_mod.F90
                          shr_precip_mod.F90
                          shr_string_mod.F90
@@ -23,6 +24,12 @@ add_library(cdeps_share  ${GenF90_SRCS}
                          nuopc_shr_methods.F90)
 
 target_include_directories (cdeps_share PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${ESMF_F90COMPILEPATHS} ${PIO_Fortran_INCLUDE_DIRS})
+
+if(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
+  target_compile_definitions(cdeps_share PRIVATE "CPRGNU")
+elseif(CMAKE_Fortran_COMPILER_ID MATCHES "Intel")
+  target_compile_definitions(cdeps_share PRIVATE "CPRINTEL")
+endif()
 
 install(TARGETS cdeps_share
         LIBRARY DESTINATION lib)

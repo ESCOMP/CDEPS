@@ -113,8 +113,8 @@ contains
     psixhu(xd)  =  2.0_R8 * log((1.0_R8 + xd*xd)/2.0_R8)
 
     !--- formats ----------------------------------------
-    character(*),parameter ::    F01 = "('(dice_flux_atmIce) ',a, i7,2x,d21.14)"
-    character(*),parameter :: subName =  "(dice_flux_atmIce) "
+    character(len=*),parameter ::    F01 = "('(dice_flux_atmIce) ',a, i7,2x,d21.14)"
+    character(len=*),parameter :: subName =  "(dice_flux_atmIce) "
     !-------------------------------------------------------------------------------
 
     lsize = size(tbot)

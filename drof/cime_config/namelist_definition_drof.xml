@@ -1,14 +1,12 @@
 <?xml version="1.0"?>
 
-<?xml-stylesheet type="text/xsl" href="namelist_definition.xsl"?>
-
 <entry_id version="2.0">
 
   <entry id="streamslist">
     <type>char(100)</type>
     <category>streams</category>
     <group>streams_file</group>
-    <desc>List of streams used for the given drof_mode.</desc>
+    <desc>List of streams used for the given drof_mode (determined by the xml variable $DROF_MODE)</desc>
     <values>
       <value drof_mode="CPLHIST"              >rof.cplhist</value>
       <value drof_mode="DIATREN_ANN_RX1"      >rof.diatren_ann_rx1</value>
@@ -22,6 +20,7 @@
       <value drof_mode="IAF_JRA_1p4_2018"     >rof.iaf_jra_1p4_2018</value>
       <value drof_mode="IAF_JRA_1p5_2023"     >rof.iaf_jra_1p5_2023</value>
       <value drof_mode="IAF_JRA"              >rof.iaf_jra</value>
+      <value drof_mode="RYF6162_JRA"          >rof.ryf6162_jra</value>
       <value drof_mode="RYF8485_JRA"          >rof.ryf8485_jra</value>
       <value drof_mode="RYF9091_JRA"          >rof.ryf9091_jra</value>
       <value drof_mode="RYF0304_JRA"          >rof.ryf0304_jra</value>
@@ -32,20 +31,23 @@
     <type>char</type>
     <category>drof</category>
     <group>drof_nml</group>
-    <valid_values>copyall</valid_values>
+    <valid_values>copyall,cplhist</valid_values>
     <desc>
       The runoff data is associated with the river model.
       Copies all fields directly from the input data streams Any required
       fields not found on an input stream will be set to zero.
-      The only datamode is copyall - the streams are determined by the xml variable $DROF_MODE
-      dataMode = "copyall"
+      The two modes are copyall and cplhist. In cplhist mode, more fields are advertised
+      to the mediator than in copyall mode.
+      The streams are determined by the xml variable $DROF_MODE
+      dataMode = "copyall,cplhist"
     </desc>
     <values>
       <value>copyall</value>
+      <value drof_mode="CPLHIST">cplhist</value>
     </values>
   </entry>
 
-  <entry id="model_meshfile"> 
+  <entry id="model_meshfile">
     <type>char</type>
     <category>streams</category>
     <input_pathname>abs</input_pathname>

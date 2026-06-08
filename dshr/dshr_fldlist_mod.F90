@@ -22,7 +22,7 @@ module dshr_fldlist_mod
     type(fldlist_type), pointer :: next => null()
   end type fldlist_type
 
-  character(*), parameter :: u_FILE_u = &
+  character(len=*), parameter :: u_FILE_u = &
        __FILE__
 
 !===============================================================================
@@ -87,7 +87,7 @@ contains
           end if
 
           if (stdname == trim(flds_scalar_name)) then
-             call ESMF_LogWrite(trim(subname)//trim(tag)//" Field = "//trim(stdname)//" is connected on root pe", &
+             call ESMF_LogWrite(subname//trim(tag)//" Field = "//trim(stdname)//" is connected on root pe", &
                   ESMF_LOGMSG_INFO)
              ! Create the scalar field
              call SetScalarField(field, flds_scalar_name, flds_scalar_num, rc=rc)
@@ -103,7 +103,7 @@ contains
                 field = ESMF_FieldCreate(mesh, ESMF_TYPEKIND_R8, name=stdname, meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
                 if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, line=__LINE__, file=u_FILE_u)) return
              end if
-             call ESMF_LogWrite(trim(subname)//trim(tag)//" Field = "//trim(stdname)//" is connected using mesh", &
+             call ESMF_LogWrite(subname//trim(tag)//" Field = "//trim(stdname)//" is connected using mesh", &
                   ESMF_LOGMSG_INFO)
           endif
 
