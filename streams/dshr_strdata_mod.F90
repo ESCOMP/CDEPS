@@ -63,6 +63,8 @@ module dshr_strdata_mod
 
   ! Public routines
   public  :: shr_strdata_init_from_config
+  public  :: shr_strdata_init_advertise
+  public  :: shr_strdata_init_realize
   public  :: shr_strdata_init_from_inline
   public  :: shr_strdata_setOrbs
   public  :: shr_strdata_advance
