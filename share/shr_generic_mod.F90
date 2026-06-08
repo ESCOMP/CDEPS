@@ -2,113 +2,142 @@ module shr_generic_mod
 
   use ESMF
   use NUOPC
-  use shr_strdata_mod, only : shr_strdata_type, shr_strdata_perstream, &
-                               shr_strdata_get_stream_count, shr_strdata_get_stream, &
-                               shr_strdata_advance, shr_strdata_get_stream_pointer
-  use dshr_state_mod,  only : dshr_state_getfldptr
+  use dshr_fldlist_mod, only : fldlist_type, dshr_fldlist_add
+  use dshr_strdata_mod, only : shr_strdata_type, shr_strdata_get_stream_pointer
+  use dshr_state_mod,   only : dshr_state_getfldptr
 
   implicit none
   private
 
   public :: datamode_generic_advertise
+  public :: datamode_generic_init_pointers
   public :: datamode_generic_advance
+
+  ! -----------------------------------------------------------------------
+  ! Derived type to cache the pointer pairs dynamically for the Advance loop
+  ! -----------------------------------------------------------------------
+  type :: ptr_map_type
+     real(ESMF_KIND_R8), pointer :: strm_ptr(:)  => null()
+     real(ESMF_KIND_R8), pointer :: state_ptr(:) => null()
+  end type ptr_map_type
+
+  ! Module-level cache array
+  type(ptr_map_type), allocatable :: ptr_cache(:)
 
 contains
 
   ! =======================================================================
-  ! ROUTINE: datamode_generic_advertise
-  ! PURPOSE: Dynamically loop through the stream configuration (XML or ESMF)
-  !          and advertise exactly the fields the user explicitly requested.
-  ! =======================================================================
-  subroutine datamode_generic_advertise(exportState, sdat, rc)
-    type(ESMF_State),       intent(inout) :: exportState
-    type(shr_strdata_type), intent(inout) :: sdat
-    integer,                intent(out), optional  :: rc
+  subroutine datamode_generic_advertise(fldsExport, sdat, rc)
+    type(fldList_type),     pointer       :: fldsExport
+    type(shr_strdata_type), intent(in)    :: sdat
+    integer,                intent(out), optional :: rc
 
-    integer :: n, i, num_streams
+    integer :: i, n
     character(len=ESMF_MAXSTR) :: fieldName
-    type(shr_strdata_perstream), pointer :: stream_ptr
 
     if (present(rc)) rc = ESMF_SUCCESS
 
-    ! Retrieve the total number of streams defined in the user's config
-    num_streams = shr_strdata_get_stream_count(sdat)
-
-    do n = 1, num_streams
-       ! Get the pointer to the specific stream object
-       stream_ptr => shr_strdata_get_stream(sdat, n)
-       
-       ! Loop over the array of model field names parsed from the stream config
-       if (associated(stream_ptr%fldlist_model)) then
-          do i = 1, size(stream_ptr%fldlist_model)
-             fieldName = trim(stream_ptr%fldlist_model(i))
+    ! Natively access the array of stream objects inside sdat
+    if (allocated(sdat%stream)) then
+       do i = 1, size(sdat%stream)
+          if (sdat%stream(i)%nvars > 0 .and. allocated(sdat%stream(i)%varlist)) then
              
-             call NUOPC_StateAdvertise(exportState, StandardName=trim(fieldName), rc=rc)
-             if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU)) return
-          end do
-       endif
-    end do
+             ! Extract the 'nameinmodel' string directly from the varlist
+             do n = 1, sdat%stream(i)%nvars
+                fieldName = trim(sdat%stream(i)%varlist(n)%nameinmodel)
+                
+                ! Add to the CDEPS list (which handles the NUOPC advertise)
+                call dshr_fldlist_add(fldsExport, trim(fieldName), 'scalar', rc=rc)
+                if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU)) return
+             end do
+             
+          endif
+       end do
+    endif
 
   end subroutine datamode_generic_advertise
 
-  ! =======================================================================
-  ! ROUTINE: datamode_generic_advance
-  ! PURPOSE: Advances the stream reader, interpolates data in time, and 
-  !          dynamically copies data from the internal stream buffers 
-  !          directly to the NUOPC export state with ZERO math or physics.
-  ! =======================================================================
-  subroutine datamode_generic_advance(exportState, sdat, year, month, day, sec, rc)
-    type(ESMF_State),       intent(inout) :: exportState
-    type(shr_strdata_type), intent(inout) :: sdat
-    integer,                intent(in)    :: year, month, day, sec
-    integer,                intent(out), optional  :: rc
 
-    integer :: n, i, num_streams
+  ! =======================================================================
+  subroutine datamode_generic_init_pointers(exportState, sdat, rc)
+    type(ESMF_State),       intent(inout) :: exportState
+    type(shr_strdata_type), intent(in)    :: sdat
+    integer,                intent(out), optional :: rc
+
+    integer :: i, n, total_vars, cache_idx
     character(len=ESMF_MAXSTR) :: fieldName
-    type(shr_strdata_perstream), pointer :: stream_ptr
-    
-    ! Pointers for the explicit pass-through copy
-    real(ESMF_KIND_R8), pointer :: strm_ptr(:)
-    real(ESMF_KIND_R8), pointer :: state_ptr(:)
+    character(len=ESMF_MAXSTR) :: logMsg
 
     if (present(rc)) rc = ESMF_SUCCESS
 
-    ! 1. Advance the stream (Handles NetCDF I/O and time interpolation)
-    call shr_strdata_advance(sdat, year, month, day, sec, rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU)) return
+    ! 1. Count the total number of fields to allocate the cache
+    total_vars = 0
+    if (allocated(sdat%stream)) then
+       do i = 1, size(sdat%stream)
+          if (allocated(sdat%stream(i)%varlist)) then
+             total_vars = total_vars + sdat%stream(i)%nvars
+          endif
+       end do
+    endif
 
-    ! 2. Dynamically fetch pointers and copy data to the NUOPC Export State
-    num_streams = shr_strdata_get_stream_count(sdat)
+    ! Allocate the module-level pointer cache
+    if (allocated(ptr_cache)) deallocate(ptr_cache)
+    if (total_vars > 0) allocate(ptr_cache(total_vars))
 
-    do n = 1, num_streams
-       stream_ptr => shr_strdata_get_stream(sdat, n)
-       
-       if (associated(stream_ptr%fldlist_model)) then
-          do i = 1, size(stream_ptr%fldlist_model)
-             fieldName = trim(stream_ptr%fldlist_model(i))
-             
-             ! Nullify pointers to ensure clean association
-             strm_ptr => null()
-             state_ptr => null()
+    ! Populate the cache and log fieldName diagnostics
+    cache_idx = 1
+    if (allocated(sdat%stream)) then
+       do i = 1, size(sdat%stream)
+          if (allocated(sdat%stream(i)%varlist)) then
+             do n = 1, sdat%stream(i)%nvars
+                fieldName = trim(sdat%stream(i)%varlist(n)%nameinmodel)
+                
+                ! Look up stream array pointer
+                call shr_strdata_get_stream_pointer(sdat, fieldName, &
+                                                    ptr_cache(cache_idx)%strm_ptr, rc=rc)
+                
+                ! Look up NUOPC export array pointer (allow null if CMEPS didn't connect it)
+                call dshr_state_getfldptr(exportState, fieldName, &
+                                          fldptr1=ptr_cache(cache_idx)%state_ptr, &
+                                          allowNullReturn=.true., rc=rc)
+                
+                ! Diagnostic Logging
+                if (.not. associated(ptr_cache(cache_idx)%state_ptr)) then
+                   write(logMsg, '(A,A,A)') "GENERIC Datamode INFO: field '", trim(fieldName), &
+                                            "' ignored. Not requested by CMEPS mediator."
+                   call ESMF_LogWrite(trim(logMsg), ESMF_LOGMSG_INFO)
+                endif
+                
+                if (.not. associated(ptr_cache(cache_idx)%strm_ptr)) then
+                   write(logMsg, '(A,A,A)') "GENERIC Datamode WARNING: field '", trim(fieldName), &
+                                            "' missing from internal stream buffer."
+                   call ESMF_LogWrite(trim(logMsg), ESMF_LOGMSG_WARNING)
+                endif
 
-             ! Fetch pointer to the internal shr_strdata memory buffer
-             call shr_strdata_get_stream_pointer(sdat, fieldName, strm_ptr, rc=rc)
-             if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU)) return
+                cache_idx = cache_idx + 1
+             end do
+          endif
+       end do
+    endif
 
-             ! Fetch pointer to the NUOPC Export State ESMF_Field memory
-             call dshr_state_getfldptr(exportState, fieldName, fldptr1=state_ptr, &
-                                       allowNullReturn=.true., rc=rc)
-             if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU)) return
+  end subroutine datamode_generic_init_pointers
 
-             ! 3. The Core Pass-Through Logic: Direct Copy
-             ! If CMEPS accepted the field, the state pointer will be associated.
-             if (associated(strm_ptr) .and. associated(state_ptr)) then
-                state_ptr(:) = strm_ptr(:)
-             endif
-             
-          end do
-       endif
-    end do
+
+  ! =======================================================================
+  subroutine datamode_generic_advance(rc)
+    integer, intent(out), optional :: rc
+
+    integer :: i
+
+    if (present(rc)) rc = ESMF_SUCCESS
+
+    if (allocated(ptr_cache)) then
+       do i = 1, size(ptr_cache)
+          if (associated(ptr_cache(i)%strm_ptr) .and. associated(ptr_cache(i)%state_ptr)) then
+             ptr_cache(i)%state_ptr(:) = ptr_cache(i)%strm_ptr(:)
+          endif
+       end do
+    endif
 
   end subroutine datamode_generic_advance
 
