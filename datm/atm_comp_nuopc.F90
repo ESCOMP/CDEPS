@@ -376,6 +376,14 @@ contains
        return
     end select
 
+    ! Initialize stream data type
+    streamfilename = 'datm.streams'//trim(inst_suffix)
+#ifndef DISABLE_FoX
+    streamfilename = trim(streamfilename)//'.xml'
+#endif
+    call shr_strdata_init_advertise(sdat, streamfilename, 'ATM', logunit, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
     ! Advertise fields that ARE NOT datamode specific
     if (flds_co2) then
        call datm_pres_co2_advertise(fldsExport, datamode)
@@ -460,12 +468,7 @@ contains
          model_meshfile, model_maskfile, model_mesh, model_mask, model_frac, restart_read, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    ! Initialize stream data type
-    streamfilename = 'datm.streams'//trim(inst_suffix)
-#ifndef DISABLE_FoX
-    streamfilename = trim(streamfilename)//'.xml'
-#endif
-    call shr_strdata_init_from_config(sdat, streamfilename, model_mesh, clock, 'ATM', logunit, rc=rc)
+    call shr_strdata_init_realize(sdat, model_mesh, clock, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_TraceRegionExit('datm_strdata_init')
 
