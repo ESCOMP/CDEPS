@@ -40,7 +40,7 @@ contains
     if (present(rc)) rc = ESMF_SUCCESS
 
     ! Natively access the array of stream objects inside sdat
-    if (allocated(sdat%stream)) then
+    if (associated(sdat%stream)) then
        do i = 1, size(sdat%stream)
           if (sdat%stream(i)%nvars > 0 .and. allocated(sdat%stream(i)%varlist)) then
              
@@ -72,7 +72,7 @@ contains
 
     ! 1. Count the total number of fields to allocate the cache
     total_vars = 0
-    if (allocated(sdat%stream)) then
+    if (associated(sdat%stream)) then
        do i = 1, size(sdat%stream)
           if (allocated(sdat%stream(i)%varlist)) then
              total_vars = total_vars + sdat%stream(i)%nvars
@@ -86,7 +86,7 @@ contains
 
     ! Populate the cache and log fieldName diagnostics
     cache_idx = 1
-    if (allocated(sdat%stream)) then
+    if (associated(sdat%stream)) then
        do i = 1, size(sdat%stream)
           if (allocated(sdat%stream(i)%varlist)) then
              do n = 1, sdat%stream(i)%nvars
