@@ -49,7 +49,7 @@ module datm_datamode_jra_mod
   real(r8), pointer :: strm_Sa_shum(:)   => null()
   real(r8), pointer :: strm_Faxa_prec(:) => null()   ! Jra provides one precip flux
   real(r8), pointer :: strm_Faxa_prrn(:) => null()   ! Jra55do provides rainfall flux
-  real(r8), pointer :: strm_Faxa_prsn(:) => null()   ! and Snowfall flux seperately
+  real(r8), pointer :: strm_Faxa_prsn(:) => null()   ! and Snowfall flux separately
   real(r8), pointer :: strm_Faxa_lwdn(:) => null()
   real(r8), pointer :: strm_Faxa_swdn(:) => null()
 
@@ -247,7 +247,7 @@ contains
     ! local variables
     integer           :: n
     integer           :: lsize
-    logical           :: strm_seperates_rain_snow
+    logical           :: strm_separates_rain_snow
     real(R8)          :: avg_alb            ! average albedo
     real(R8)          :: rday               ! elapsed day
     real(R8)          :: cosFactor          ! cosine factor
@@ -259,9 +259,9 @@ contains
     lsize = size(Sa_z)
 
     if (associated(strm_Faxa_prrn) .and. associated(strm_Faxa_prsn)) then
-      strm_seperates_rain_snow = .true.
+      strm_separates_rain_snow = .true.
     else
-      strm_seperates_rain_snow = .false.
+      strm_separates_rain_snow = .false.
     endif
 
     call shr_cal_date2julian(target_ymd, target_tod, rday, model_calendar)
@@ -294,7 +294,7 @@ contains
        ! precipitation data
        Faxa_rainc(n) = 0.0_R8               ! default zero
        Faxa_snowc(n) = 0.0_R8
-       if (strm_seperates_rain_snow) then
+       if (strm_separates_rain_snow) then
           Faxa_snowl(n) = strm_Faxa_prsn(n)         ! Snowfall flux
           Faxa_rainl(n) = strm_Faxa_prrn(n)         ! Rainfall flux
        else
