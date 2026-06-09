@@ -1,4 +1,4 @@
-module shr_generic_mod
+module dshr_generic_mod
 
   use ESMF            , only : ESMF_SUCCESS, ESMF_State, &
                                ESMF_LogWrite, ESMF_LOGMSG_INFO, ESMF_LOGMSG_WARNING
@@ -153,4 +153,4 @@ contains
 
   end subroutine datamode_generic_clean
 
-end module shr_generic_mod
+end module dshr_generic_mod

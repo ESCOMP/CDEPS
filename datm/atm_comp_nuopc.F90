@@ -84,9 +84,9 @@ module cdeps_datm_comp
   use datm_pres_co2_mod         , only : datm_pres_co2_init_pointers
   use datm_pres_co2_mod         , only : datm_pres_co2_advance
 
-  use shr_generic_mod           , only : datamode_generic_advertise
-  use shr_generic_mod           , only : datamode_generic_init_pointers
-  use shr_generic_mod           , only : datamode_generic_advance
+  use dshr_generic_mod          , only : datamode_generic_advertise
+  use dshr_generic_mod          , only : datamode_generic_init_pointers
+  use dshr_generic_mod          , only : datamode_generic_advance
 
   implicit none
   private
