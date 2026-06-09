@@ -5,7 +5,7 @@ module dshr_generic_mod
   use shr_kind_mod    , only : r8=>shr_kind_r8, cl=>shr_kind_cl
   use dshr_fldlist_mod, only : fldlist_type, dshr_fldlist_add
   use dshr_strdata_mod, only : shr_strdata_type, shr_strdata_get_stream_pointer
-  use dshr_state_mod,   only : dshr_state_getfldptr
+  use dshr_methods_mod, only : dshr_state_getfldptr
 
   implicit none
   private
