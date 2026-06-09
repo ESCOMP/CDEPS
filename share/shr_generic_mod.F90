@@ -13,6 +13,7 @@ module shr_generic_mod
   public :: datamode_generic_advertise
   public :: datamode_generic_init_pointers
   public :: datamode_generic_advance
+  public :: datamode_generic_clean
 
   ! -----------------------------------------------------------------------
   ! Derived type to cache the pointer pairs dynamically for the Advance loop
@@ -139,5 +140,17 @@ contains
     endif
 
   end subroutine datamode_generic_advance
+
+  ! =======================================================================
+  subroutine datamode_generic_clean(rc)
+    integer, intent(out), optional :: rc
+
+    if (present(rc)) rc = ESMF_SUCCESS
+
+    if (allocated(ptr_cache)) then
+       deallocate(ptr_cache)
+    endif
+
+  end subroutine datamode_generic_clean
 
 end module shr_generic_mod
