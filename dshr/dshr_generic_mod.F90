@@ -65,7 +65,7 @@ contains
   subroutine datamode_generic_init_pointers(exportState, sdat, rc)
     type(ESMF_State),       intent(inout) :: exportState
     type(shr_strdata_type), intent(in)    :: sdat
-    integer,                intent(out),  :: rc
+    integer,                intent(out)   :: rc
 
     integer :: i, n, total_vars, cache_idx
     character(len=CL) :: fieldName
