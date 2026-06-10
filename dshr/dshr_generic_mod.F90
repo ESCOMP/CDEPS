@@ -65,13 +65,13 @@ contains
   subroutine datamode_generic_init_pointers(exportState, sdat, rc)
     type(ESMF_State),       intent(inout) :: exportState
     type(shr_strdata_type), intent(in)    :: sdat
-    integer,                intent(out), optional :: rc
+    integer,                intent(out),  :: rc
 
     integer :: i, n, total_vars, cache_idx
     character(len=CL) :: fieldName
     character(len=CL) :: logMsg
 
-    if (present(rc)) rc = ESMF_SUCCESS
+    rc = ESMF_SUCCESS
 
     ! 1. Count the total number of fields to allocate the cache
     total_vars = 0
