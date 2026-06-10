@@ -5,7 +5,7 @@ module dshr_generic_mod
   use shr_kind_mod    , only : r8=>shr_kind_r8, cl=>shr_kind_cl
   use dshr_fldlist_mod, only : fldlist_type, dshr_fldlist_add
   use dshr_strdata_mod, only : shr_strdata_type, shr_strdata_get_stream_pointer
-  use dshr_methods_mod, only : dshr_state_getfldptr
+  use dshr_methods_mod, only : dshr_state_getfldptr, chkerr
 
   implicit none
   private
@@ -25,6 +25,9 @@ module dshr_generic_mod
 
   ! Module-level cache array
   type(ptr_map_type), allocatable :: ptr_cache(:)
+
+  character(len=*) , parameter :: u_FILE_u = &
+       __FILE__
 
 contains
 
@@ -95,12 +98,14 @@ contains
                 ! Look up stream array pointer
                 call shr_strdata_get_stream_pointer(sdat, fieldName, &
                                                     ptr_cache(cache_idx)%strm_ptr, rc=rc)
-                
+                if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
                 ! Look up NUOPC export array pointer (allow null if CMEPS didn't connect it)
                 call dshr_state_getfldptr(exportState, fieldName, &
                                           fldptr1=ptr_cache(cache_idx)%state_ptr, &
                                           allowNullReturn=.true., rc=rc)
-                
+                if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
                 ! Diagnostic Logging
                 if (.not. associated(ptr_cache(cache_idx)%state_ptr)) then
                    write(logMsg, '(A,A,A)') "GENERIC Datamode INFO: field '", trim(fieldName), &
