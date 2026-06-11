@@ -2,6 +2,7 @@ module dshr_generic_mod
 
   use ESMF            , only : ESMF_SUCCESS, ESMF_State, &
                                ESMF_LogWrite, ESMF_LOGMSG_INFO, ESMF_LOGMSG_WARNING
+  use NUOPC           , only : NUOPC_Advertise
   use shr_kind_mod    , only : r8=>shr_kind_r8, cl=>shr_kind_cl
   use dshr_fldlist_mod, only : fldlist_type, dshr_fldlist_add
   use dshr_strdata_mod, only : shr_strdata_type, shr_strdata_get_stream_pointer
@@ -32,13 +33,15 @@ module dshr_generic_mod
 contains
 
   ! =======================================================================
-  subroutine datamode_generic_advertise(fldsExport, sdat, rc)
+  subroutine datamode_generic_advertise(exportState, fldsExport, sdat, rc)
+    type(ESMF_State)      , intent(inout) :: exportState
     type(fldList_type),     pointer       :: fldsExport
     type(shr_strdata_type), intent(in)    :: sdat
     integer,        intent(out), optional :: rc
 
     integer :: i, n
     character(len=CL) :: fieldName
+    type(fldlist_type), pointer :: fldList
 
     if (present(rc)) rc = ESMF_SUCCESS
 
@@ -58,6 +61,14 @@ contains
           endif
        end do
     endif
+
+    fldlist => fldsExport ! the head of the linked list
+    do while (associated(fldlist))
+       call NUOPC_Advertise(exportState, standardName=fldlist%stdname, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call ESMF_LogWrite('(datm_comp_advertise): Fr_atm'//trim(fldList%stdname), ESMF_LOGMSG_INFO)
+       fldList => fldList%next
+    enddo
 
   end subroutine datamode_generic_advertise
 

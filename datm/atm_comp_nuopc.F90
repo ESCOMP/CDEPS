@@ -266,7 +266,7 @@ contains
 
     ! Obtain flds_scalar values, mpi values, multi-instance values and
     ! set logunit and set shr logging to my log file
-    call dshr_init(gcomp, 'ATM', mpicom, my_task, inst_index, inst_suffix, &
+    call dshr_init(gcomp, sdat, 'ATM', mpicom, my_task, inst_index, inst_suffix, &
          flds_scalar_name, flds_scalar_num, flds_scalar_index_nx, flds_scalar_index_ny, &
          logunit, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -425,7 +425,7 @@ contains
             nlfilename, my_task, vm, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('GENERIC')
-       call datamode_generic_advertise(fldsExport, sdat, rc)
+       call datamode_generic_advertise(exportState, fldsExport, sdat, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end select
 
@@ -466,7 +466,7 @@ contains
 
     ! Initialize mesh, restart flag, compid, and logunit
     call ESMF_TraceRegionEnter('datm_strdata_init')
-    call dshr_mesh_init(gcomp, sdat, nullstr, logunit, 'ATM', nx_global, ny_global, &
+    call dshr_mesh_init(gcomp, nullstr, logunit, 'ATM', nx_global, ny_global, &
          model_meshfile, model_maskfile, model_mesh, model_mask, model_frac, restart_read, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
