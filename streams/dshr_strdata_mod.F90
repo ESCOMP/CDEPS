@@ -63,6 +63,8 @@ module dshr_strdata_mod
 
   ! Public routines
   public  :: shr_strdata_init_from_config
+  public  :: shr_strdata_init_advertise
+  public  :: shr_strdata_init_realize
   public  :: shr_strdata_init_from_inline
   public  :: shr_strdata_setOrbs
   public  :: shr_strdata_advance
@@ -188,13 +190,10 @@ contains
   end function shr_strdata_get_stream_fieldbundle
 
   !===============================================================================
-  subroutine shr_strdata_init_from_config(sdat, streamfilename, model_mesh, clock, compname, logunit, rc)
-
+  subroutine shr_strdata_init_advertise(sdat, streamfilename, compname, logunit, rc)
     ! input/output variables
     type(shr_strdata_type)     , intent(inout) :: sdat
     character(len=*)           , intent(in)    :: streamfilename
-    type(ESMF_Mesh)            , intent(in)    :: model_mesh
-    type(ESMF_Clock)           , intent(in)    :: clock
     character(len=*)           , intent(in)    :: compname
     integer                    , intent(in)    :: logunit
     integer                    , intent(out)   :: rc
@@ -204,8 +203,8 @@ contains
     type(ESMF_VM) :: vm
     integer       :: stream_count
     integer       :: istat
-    character(len=*), parameter  :: subname='(shr_strdata_init_from_config)'
-    ! ----------------------------------------------
+    character(len=*), parameter  :: subname='(shr_strdata_init_advertise)'
+
     rc = ESMF_SUCCESS
 
 #ifdef CESMCOUPLED
@@ -244,6 +243,16 @@ contains
             ': allocation error for sdat%pstrm with stream_count '//toString(stream_count), rc=rc)
        return
     end if
+  end subroutine shr_strdata_init_advertise
+
+  !===============================================================================
+  subroutine shr_strdata_init_realize(sdat, model_mesh, clock, rc)
+
+    ! input/output variables
+    type(shr_strdata_type)     , intent(inout) :: sdat
+    type(ESMF_Mesh)            , intent(in)    :: model_mesh
+    type(ESMF_Clock)           , intent(in)    :: clock
+    integer                    , intent(out)   :: rc
 
     ! Initialize sdat model domain
     sdat%model_mesh = model_mesh
@@ -252,6 +261,30 @@ contains
 
     ! Now finish initializing sdat
     call shr_strdata_init(sdat, clock, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+  end subroutine shr_strdata_init_realize
+
+  !===============================================================================
+  subroutine shr_strdata_init_from_config(sdat, streamfilename, model_mesh, clock, compname, logunit, rc)
+
+    ! input/output variables
+    type(shr_strdata_type)     , intent(inout) :: sdat
+    character(len=*)           , intent(in)    :: streamfilename
+    type(ESMF_Mesh)            , intent(in)    :: model_mesh
+    type(ESMF_Clock)           , intent(in)    :: clock
+    character(len=*)           , intent(in)    :: compname
+    integer                    , intent(in)    :: logunit
+    integer                    , intent(out)   :: rc
+
+    ! local variables
+    character(len=*), parameter  :: subname='(shr_strdata_init_from_config)'
+    ! ----------------------------------------------
+
+    call shr_strdata_init_advertise(sdat, streamfilename, compname, logunit, rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    call shr_strdata_init_realize(sdat, model_mesh, clock, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine shr_strdata_init_from_config

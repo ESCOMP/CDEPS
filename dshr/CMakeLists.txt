@@ -2,7 +2,8 @@ project(dshr Fortran)
 
 set(SRCFILES  dshr_dfield_mod.F90
               dshr_fldlist_mod.F90
-              dshr_mod.F90)
+              dshr_mod.F90
+              dshr_generic_mod.F90)
 
 foreach(FILE ${SRCFILES})
   if(EXISTS "${CASEROOT}/SourceMods/src.cdeps/${FILE}")
