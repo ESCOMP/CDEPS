@@ -38,7 +38,7 @@ contains
     type(fldList_type),     pointer       :: fldsExport
     type(shr_strdata_type), intent(in)    :: sdat
     character(len=*)      , intent(in)    :: flds_scalar_name
-    integer,        intent(out), optional :: rc
+    integer               , intent(out)   :: rc
 
     integer :: i, n
     character(len=CL) :: fieldName
@@ -69,7 +69,7 @@ contains
     do while (associated(fldlist))
        call NUOPC_Advertise(exportState, standardName=fldlist%stdname, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       call ESMF_LogWrite('(datm_comp_advertise): Fr_atm'//trim(fldList%stdname), ESMF_LOGMSG_INFO)
+       call ESMF_LogWrite('(datm_generic_advertise): '//trim(fldList%stdname), ESMF_LOGMSG_INFO)
        fldList => fldList%next
     enddo
 
