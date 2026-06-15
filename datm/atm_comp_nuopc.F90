@@ -425,7 +425,7 @@ contains
             nlfilename, my_task, vm, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('GENERIC')
-       call datamode_generic_advertise(exportState, fldsExport, sdat, rc)
+       call datamode_generic_advertise(exportState, fldsExport, sdat, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end select
 

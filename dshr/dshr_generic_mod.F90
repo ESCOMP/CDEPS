@@ -33,10 +33,11 @@ module dshr_generic_mod
 contains
 
   ! =======================================================================
-  subroutine datamode_generic_advertise(exportState, fldsExport, sdat, rc)
+  subroutine datamode_generic_advertise(exportState, fldsExport, sdat, flds_scalar_name, rc)
     type(ESMF_State)      , intent(inout) :: exportState
     type(fldList_type),     pointer       :: fldsExport
     type(shr_strdata_type), intent(in)    :: sdat
+    character(len=*)      , intent(in)    :: flds_scalar_name
     integer,        intent(out), optional :: rc
 
     integer :: i, n
@@ -61,6 +62,8 @@ contains
           endif
        end do
     endif
+    ! Handle cpl_scalars
+    call dshr_fldList_add(fldsExport, trim(flds_scalar_name))
 
     fldlist => fldsExport ! the head of the linked list
     do while (associated(fldlist))
