@@ -44,7 +44,7 @@ contains
     character(len=CL) :: fieldName
     type(fldlist_type), pointer :: fldList
 
-    if (present(rc)) rc = ESMF_SUCCESS
+    rc = ESMF_SUCCESS
 
     ! Natively access the array of stream objects inside sdat
     if (associated(sdat%stream)) then
