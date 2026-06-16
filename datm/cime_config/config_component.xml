@@ -104,7 +104,7 @@
 
   <entry id="DATM_PRESNDEP">
     <type>char</type>
-    <valid_values>none,clim_1850_cmip7,clim_2000_cmip7,clim_2010_cmip7,hist_cmip7,clim_1850_cmip6,clim_2000_cmip6,clim_2010_cmip6,hist_cmip6,SSP1-2.6,SSP2-4.5,SSP3-7.0,SSP5-3.4,SSP5-8.5,cplhist</valid_values>
+    <valid_values>none,clim_1850_cesm3_for_cmip7,clim_1850_cmip7,clim_2000_cmip7,clim_2010_cmip7,hist_cmip7,clim_1850_cmip6,clim_2000_cmip6,clim_2010_cmip6,hist_cmip6,SSP1-2.6,SSP2-4.5,SSP3-7.0,SSP5-3.4,SSP5-8.5,cplhist</valid_values>
     <default_value>clim_2000</default_value>
     <values match="last">
       <value compset="^1850[CE]?_"  >clim_1850_cmip6</value>
@@ -174,6 +174,7 @@
       <value compset="^SSP460_">SSP4-6.0</value>
       <value compset="^SSP534_">SSP5-3.4</value>
       <value compset="^SSP585_">SSP5-8.5</value>
+      <value compset="^1850.*_DATM%CPLHIST_CLM60">cmip7_20tr</value>
       <value compset="^HIST[CE]?_">cmip6_20tr</value>
       <value compset="^20TR"   >cmip6_20tr</value>
       <value compset="^OMIP_DATM%IAF.*_POP2%[^_]*ECO">omip.iaf</value>
@@ -204,7 +205,10 @@
   <entry id="DATM_CPLHIST_DIR">
     <type>char</type>
     <valid_values></valid_values>
-    <default_value>UNSET</default_value>
+    <default_value>$CIME_OUTPUT_ROOT/archive/$DATM_CPLHIST_CASE/cpl/hist</default_value>
+    <values match="last">
+      <value compset="1850.*_DATM%CPLHIST_CLM60">$DIN_LOC_ROOT/cplhist/cesm3_0/$DATM_CPLHIST_CASE/atm</value>
+    </values>
     <group>run_component_datm</group>
     <file>env_run.xml</file>
     <desc>directory for coupler history data mode (only used for when DATM_MODE is CPLHIST)</desc>
@@ -214,6 +218,9 @@
     <type>char</type>
     <valid_values></valid_values>
     <default_value>UNSET</default_value>
+    <values match="last">
+      <value compset="1850.*_DATM%CPLHIST_CLM60">CAM7CLM6_cesm30alpha08c_ne30pg3_1850</value>
+    </values>
     <group>run_component_datm</group>
     <file>env_run.xml</file>
     <desc>case name used to determine stream filenames when DATM_MODE is CPLHIST</desc>
@@ -229,6 +236,7 @@
       <value compset="1850.*_DATM%CRUJRA2024[b]*">1</value>
       <value compset="1850.*_DATM%CRUv7">1</value>
       <value compset="1850.*_DATM%GSW">1</value>
+      <value compset="1850.*_DATM%CPLHIST_CLM60">1</value>
       <value compset="HIST.*_DATM%QIA">1895</value>
       <value compset="HIST.*_DATM%CRUJRA2024[b]*">1901</value>
       <value compset="HIST.*_DATM%CRUv7">1901</value>
@@ -278,6 +286,7 @@
       <value compset="1850.*_DATM%CRUv7">1901</value>
       <value compset="1850.*_DATM%GSW">1901</value>
       <value compset="1850.*_DATM%NLDAS2">0</value>  <!-- Unsupported -->
+      <value compset="1850.*_DATM%CPLHIST_CLM60">1</value>
       <value compset="2000.*_DATM%WISOQIA">2000</value>
       <value compset="2000.*_DATM%QIA">1972</value>
       <value compset="HIST.*_DATM%QIA">1948</value>
@@ -340,6 +349,7 @@
       <value   compset="1850.*_DATM%CRUv7">1920</value>
       <value   compset="1850.*_DATM%GSW">1920</value>
       <value   compset="1850.*_DATM%NLDAS2">-1</value>  <!-- Unsupported -->
+      <value   compset="1850.*_DATM%CPLHIST_CLM60">3</value>
       <value   compset="2000.*_DATM%WISOQIA">2004</value>
       <value   compset="2000.*_DATM%QIA">2004</value>
       <value   compset="HIST.*_DATM%QIA">1972</value>
