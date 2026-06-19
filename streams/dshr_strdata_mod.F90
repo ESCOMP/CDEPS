@@ -263,7 +263,7 @@ contains
        stream_filenames, stream_fldlistFile, stream_fldListModel, &
        stream_yearFirst, stream_yearLast, stream_yearAlign, &
        stream_offset, stream_taxmode, stream_dtlimit, stream_tintalgo, &
-       stream_src_mask, stream_dst_mask, stream_name, rc)
+       stream_src_mask, stream_dst_mask, stream_name, rc, stream_mesh_in)
 
     ! input/output variables
     type(shr_strdata_type)      , intent(inout) :: sdat                   ! stream data type
@@ -289,6 +289,9 @@ contains
     integer          , optional , intent(in)    :: stream_dst_mask        ! destination mask value
     character(len=*) , optional , intent(in)    :: stream_name            ! name of stream
     integer          , optional , intent(out)   :: rc                     ! error code
+    type(ESMF_Mesh)  , optional , intent(in)    :: stream_mesh_in         ! reuse this mesh instead of reading
+                                                                          ! stream_meshfile (e.g. model_mesh for a
+                                                                          ! same-grid 'redist' stream)
 
     ! local variables
     integer       :: src_mask = 0
@@ -344,7 +347,7 @@ contains
          sdat%logunit, trim(compname), sdat%mainproc, src_mask, dst_mask)
 
     ! Now finish initializing sdat
-    call shr_strdata_init(sdat, model_clock, stream_name, rc)
+    call shr_strdata_init(sdat, model_clock, stream_name, rc, stream_mesh_in=stream_mesh_in)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine shr_strdata_init_from_inline
@@ -446,13 +449,15 @@ contains
   end subroutine shr_strdata_init_model_domain
 
   !===============================================================================
-  subroutine shr_strdata_init(sdat, model_clock, stream_name, rc)
+  subroutine shr_strdata_init(sdat, model_clock, stream_name, rc, stream_mesh_in)
 
     ! input/output variables
     type(shr_strdata_type)     , intent(inout), target :: sdat
     type(ESMF_Clock)           , intent(in)            :: model_clock
     character(len=*), optional , intent(in)            :: stream_name
     integer                    , intent(out)           :: rc
+    type(ESMF_Mesh) , optional , intent(in)            :: stream_mesh_in  ! reuse this mesh instead of reading the
+                                                                          ! stream mesh file (same-grid 'redist' streams)
 
     ! local variables
     type(ESMF_Mesh), pointer     :: stream_mesh
@@ -500,7 +505,14 @@ contains
        endif
 
        ! We do not yet have mask information, but we are required to set it here and change it later.
-       if (filename /= 'none') then
+       if (present(stream_mesh_in)) then
+          ! Reuse a caller-provided mesh (e.g. the model mesh for a same-grid
+          ! 'redist' stream) instead of building a duplicate full ESMF mesh from
+          ! file. Avoids the mesh-create cost (file read + mesh build) at high
+          ! resolution. Safe: this routine only reads stream_mesh (no MeshSet/
+          ! MeshDestroy), so the shared handle is never mutated or freed here.
+          stream_mesh = stream_mesh_in
+       else if (filename /= 'none') then
           stream_mesh = ESMF_MeshCreate(trim(filename), fileformat=ESMF_FILEFORMAT_ESMFMESH, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        endif
