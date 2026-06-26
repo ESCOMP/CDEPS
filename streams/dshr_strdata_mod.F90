@@ -263,7 +263,7 @@ contains
        stream_filenames, stream_fldlistFile, stream_fldListModel, &
        stream_yearFirst, stream_yearLast, stream_yearAlign, &
        stream_offset, stream_taxmode, stream_dtlimit, stream_tintalgo, &
-       stream_src_mask, stream_dst_mask, stream_name, rc, stream_mesh_in)
+       stream_src_mask, stream_dst_mask, stream_name, stream_mesh_in, rc)
 
     ! input/output variables
     type(shr_strdata_type)      , intent(inout) :: sdat                   ! stream data type
@@ -288,10 +288,10 @@ contains
     integer          , optional , intent(in)    :: stream_src_mask        ! source mask value
     integer          , optional , intent(in)    :: stream_dst_mask        ! destination mask value
     character(len=*) , optional , intent(in)    :: stream_name            ! name of stream
-    integer          , optional , intent(out)   :: rc                     ! error code
     type(ESMF_Mesh)  , optional , intent(in)    :: stream_mesh_in         ! reuse this mesh instead of reading
                                                                           ! stream_meshfile (e.g. model_mesh for a
                                                                           ! same-grid 'redist' stream)
+    integer          , optional , intent(out)   :: rc                     ! error code
 
     ! local variables
     integer       :: src_mask = 0
@@ -347,7 +347,7 @@ contains
          sdat%logunit, trim(compname), sdat%mainproc, src_mask, dst_mask)
 
     ! Now finish initializing sdat
-    call shr_strdata_init(sdat, model_clock, stream_name, rc, stream_mesh_in=stream_mesh_in)
+    call shr_strdata_init(sdat, model_clock, stream_name, stream_mesh_in=stream_mesh_in, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine shr_strdata_init_from_inline
@@ -449,15 +449,15 @@ contains
   end subroutine shr_strdata_init_model_domain
 
   !===============================================================================
-  subroutine shr_strdata_init(sdat, model_clock, stream_name, rc, stream_mesh_in)
+  subroutine shr_strdata_init(sdat, model_clock, stream_name, stream_mesh_in, rc)
 
     ! input/output variables
     type(shr_strdata_type)     , intent(inout), target :: sdat
     type(ESMF_Clock)           , intent(in)            :: model_clock
     character(len=*), optional , intent(in)            :: stream_name
-    integer                    , intent(out)           :: rc
     type(ESMF_Mesh) , optional , intent(in)            :: stream_mesh_in  ! reuse this mesh instead of reading the
                                                                           ! stream mesh file (same-grid 'redist' streams)
+    integer                    , intent(out)           :: rc
 
     ! local variables
     type(ESMF_Mesh), pointer     :: stream_mesh
