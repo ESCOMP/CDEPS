@@ -394,7 +394,8 @@
       <taxmode compset="HIST">limit</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
-      <dtlimit>1.5</dtlimit>
+      <dtlimit compset="2000">50.0</dtlimit>
+      <dtlimit compset="HIST">1.5</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
