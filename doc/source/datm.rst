@@ -53,6 +53,13 @@ CORE_IAF_JRA (``datm_datamode_jra_mod.F90``)
     forcing. This mode and associated data sets implement the JRA-55
     v1.3 forcing data.
 
+JRA55do (``datm_datamode_jra_mod.F90``)
+  - Provides the JRA55-do forcing developed for driving ocean - sea ice models, 
+    when coupling an active ocean model with reanalysis surface
+    forcing. This mode and associated data sets implement the JRA-55do v1.4 to 
+    v1.6 forcing data. Note that `CORE_IAF_JRA` and `JRA55do` work exactly the
+    same way.
+
 ERA5 (``datm_datamode_era5_mod.F90``)
   - Fifth generation ECMWF atmospheric reanalysis of the global climate.
     This mode is mainly used by NOAA's UFS Weather model to support
