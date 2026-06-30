@@ -501,11 +501,17 @@ contains
 
        ! We do not yet have mask information, but we are required to set it here and change it later.
        if (trim(sdat%stream(ns)%mapalgo) == 'redist' .and. filename /= 'none') then
-          ! A 'redist' stream is on the same grid as the model: the stream->model mapping is a 1-to-1 index copy,
-          ! so the stream mesh and the model mesh are identical. Reuse the already-built model mesh instead of reading
-          ! the stream mesh file and constructing a duplicate full ESMF mesh -- that duplicate is a large init memory
-          ! and time cost at high resolution.
-          ! Only stream_mesh is read below (no MeshSet/MeshDestroy), so sharing the model-mesh handle is safe.
+          ! A 'redist' stream is on the same grid as the model, so reuse the already-built model mesh here
+          ! instead of reading the stream mesh file and constructing a duplicate full ESMF mesh -- that
+          ! duplicate is a large init-time memory and time cost at high resolution.
+          !
+          ! Why this is safe (subtle): we call the stream->model mapping a 'redist', but in fact the stream
+          ! decomposition is the same as the model decomposition, so the redist ends up simply being a copy.
+          ! That is what makes it safe to set the stream mesh equal to the model mesh -- both the underlying
+          ! grids/meshes and their decompositions are the same, so the result is identical to building a
+          ! separate stream mesh from the file. (Only stream_mesh is read below -- no MeshSet/MeshDestroy --
+          ! so sharing the model-mesh handle is also safe.)
+          !
           ! First verify the grids really match (redist requires identical global sizes) and error clearly if not.
           call shr_strdata_check_redist_size(sdat, ns, trim(filename), rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
