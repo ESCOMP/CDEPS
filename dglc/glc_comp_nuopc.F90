@@ -192,6 +192,7 @@ contains
     character(len=CS) :: cnum
     character(len=ESMF_MAXSTR) :: model_datafiles_list ! colon separated string containing input datafiles
     character(len=ESMF_MAXSTR) :: model_meshfiles_list ! colon separated string containing model meshfiles
+    type(shr_strdata_type)     :: sdat_dummy
     character(len=*),parameter :: subname=trim(module_name)//':(InitializeAdvertise) '
     !-------------------------------------------------------------------------------
 
@@ -210,7 +211,7 @@ contains
 
     ! Obtain flds_scalar values, mpi values, multi-instance values and
     ! set logunit and set shr logging to my log file
-    call dshr_init(gcomp, 'GLC', mpicom, my_task, inst_index, inst_suffix, &
+    call dshr_init(gcomp, sdat_dummy, 'GLC', mpicom, my_task, inst_index, inst_suffix, &
          flds_scalar_name, flds_scalar_num, flds_scalar_index_nx, flds_scalar_index_ny, logunit, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
