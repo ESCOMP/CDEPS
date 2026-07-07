@@ -391,11 +391,11 @@
     </stream_tintalgo>
     <stream_taxmode>
       <taxmode               >cycle</taxmode>
-      <taxmode compset="HIST">limit</taxmode>
+      <taxmode compset="HIST">extend</taxmode>
     </stream_taxmode>
     <stream_dtlimit>
       <dtlimit compset="2000">50.0</dtlimit>
-      <dtlimit compset="HIST">1.5</dtlimit>
+      <dtlimit compset="HIST">1.e30</dtlimit>
     </stream_dtlimit>
     <stream_readmode>single</stream_readmode>
   </stream_entry>
