@@ -287,7 +287,7 @@ contains
 
     ! Initialize mesh, restart flag, logunit
     call ESMF_TraceRegionEnter('drof_strdata_init')
-    call dshr_mesh_init(gcomp, sdat, nullstr, logunit, 'ROF', nx_global, ny_global, &
+    call dshr_mesh_init(gcomp, sdat, nullstr, logunit, 'ROF', &
          model_meshfile, model_maskfile, model_mesh, model_mask, model_frac, restart_read, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
@@ -296,7 +296,7 @@ contains
 #ifndef DISABLE_FOX
     streamfilename = trim(streamfilename)//'.xml'
 #endif
-    call shr_strdata_init_from_config(sdat, streamfilename, model_mesh, clock, 'ROF', logunit, rc=rc)
+    call shr_strdata_init_from_config(sdat, streamfilename, model_mesh, nx_global, ny_global, clock, 'ROF', logunit, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_TraceRegionExit('drof_strdata_init')
 

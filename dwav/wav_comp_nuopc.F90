@@ -279,7 +279,7 @@ contains
 
     ! Initialize sdat - create the model domain mesh and intialize the sdat clock
     call ESMF_TraceRegionEnter('dwav_strdata_init')
-    call dshr_mesh_init(gcomp, sdat, nullstr, logunit, 'WAV', nx_global, ny_global, &
+    call dshr_mesh_init(gcomp, sdat, nullstr, logunit, 'WAV', &
          model_meshfile, model_maskfile, model_mesh, model_mask, model_frac, restart_read, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
@@ -288,7 +288,7 @@ contains
 #ifndef DISABLE_FoX
     streamfilename = trim(streamfilename)//'.xml'
 #endif
-    call shr_strdata_init_from_config(sdat, streamfilename, model_mesh, clock, 'WAV', logunit, rc=rc)
+    call shr_strdata_init_from_config(sdat, streamfilename, model_mesh, nx_global, ny_global, clock, 'WAV', logunit, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_TraceRegionExit('dwav_strdata_init')
 
