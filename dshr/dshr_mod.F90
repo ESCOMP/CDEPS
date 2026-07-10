@@ -236,7 +236,7 @@ contains
 
   !===============================================================================
   subroutine dshr_mesh_init(gcomp, sdat, nullstr, logunit, compname, &
-       model_meshfile, model_maskfile, model_mesh, model_mask, model_frac, read_restart, rc)
+       model_meshfile, model_maskfile, model_mesh, model_mask, model_frac, read_restart, is_scol, rc)
 
     ! ----------------------------------------------
     ! Initialize model mesh
@@ -254,6 +254,7 @@ contains
     integer , pointer          , intent(out)   :: model_mask(:)
     real(r8), pointer          , intent(out)   :: model_frac(:)
     logical                    , intent(out)   :: read_restart
+    logical                    , intent(out)   :: is_scol   ! true if this is a single-column run
     integer                    , intent(out)   :: rc
 
     ! local variables
@@ -320,10 +321,13 @@ contains
     if (scol_lon > scol_spval .and. scol_lat > scol_spval) then
 
        ! This is simply a single point run
+       is_scol = .true.
        call dshr_mesh_create_scol(gcomp, compname, scol_lon, scol_lat, model_mesh, model_mask, model_frac, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     else
+
+       is_scol = .false.
 
        ! check that model_meshfile and model_maskfile exists
        if (my_task == main_task) then

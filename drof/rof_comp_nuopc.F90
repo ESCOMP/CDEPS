@@ -280,6 +280,7 @@ contains
     integer         :: current_mon  ! model month
     integer         :: current_day  ! model day
     integer         :: current_tod  ! model sec into model date
+    logical         :: is_scol      ! true if this is a single-column run
     character(len=*), parameter :: subname=trim(modName)//':(InitializeRealize) '
     !--------------------------------
 
@@ -288,7 +289,7 @@ contains
     ! Initialize mesh, restart flag, logunit
     call ESMF_TraceRegionEnter('drof_strdata_init')
     call dshr_mesh_init(gcomp, sdat, nullstr, logunit, 'ROF', &
-         model_meshfile, model_maskfile, model_mesh, model_mask, model_frac, restart_read, rc=rc)
+         model_meshfile, model_maskfile, model_mesh, model_mask, model_frac, restart_read, is_scol, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Initialize stream data type
@@ -296,7 +297,8 @@ contains
 #ifndef DISABLE_FOX
     streamfilename = trim(streamfilename)//'.xml'
 #endif
-    call shr_strdata_init_from_config(sdat, streamfilename, model_mesh, nx_global, ny_global, clock, 'ROF', logunit, rc=rc)
+    call shr_strdata_init_from_config(sdat, streamfilename, model_mesh, nx_global, ny_global, is_scol, &
+         clock, 'ROF', logunit, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_TraceRegionExit('drof_strdata_init')
 

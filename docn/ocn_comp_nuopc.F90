@@ -370,6 +370,7 @@ contains
     integer                :: current_mon  ! model month
     integer                :: current_day  ! model day
     integer                :: current_tod  ! model sec into model date
+    logical                :: is_scol      ! true if this is a single-column run
     type(ESMF_Field)       :: lfield
     character(CL) ,pointer :: lfieldnamelist(:) => null()
     integer                :: fieldcount
@@ -399,7 +400,7 @@ contains
     end if
 
     call dshr_mesh_init(gcomp, sdat, nullstr, logunit, 'OCN', &
-         model_meshfile, model_maskfile, model_mesh, model_mask, model_frac, restart_read, rc=rc)
+         model_meshfile, model_maskfile, model_mesh, model_mask, model_frac, restart_read, is_scol, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Initialize stream data type if not aqua planet
@@ -408,7 +409,8 @@ contains
 #ifndef DISABLE_FoX
        streamfilename = trim(streamfilename)//'.xml'
 #endif
-       call shr_strdata_init_from_config(sdat, streamfilename, model_mesh, nx_global, ny_global, clock, 'OCN', logunit, rc=rc)
+       call shr_strdata_init_from_config(sdat, streamfilename, model_mesh, nx_global, ny_global, is_scol, &
+            clock, 'OCN', logunit, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
     call ESMF_TraceRegionExit('docn_strdata_init')

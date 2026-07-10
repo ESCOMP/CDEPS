@@ -310,6 +310,7 @@ contains
     integer                     :: current_mon   ! model month
     integer                     :: current_day   ! model day
     integer                     :: current_tod   ! model sec into model date
+    logical                     :: is_scol       ! true if this is a single-column run
     real(R8)                    :: cosarg        ! for setting ice temp pattern
     real(R8)                    :: jday, jday0   ! elapsed day counters
     integer                     :: model_dt      ! integer model timestep
@@ -327,7 +328,7 @@ contains
     ! Initialize mesh, restart flag, logunit
     call ESMF_TraceRegionEnter('dice_strdata_init')
     call dshr_mesh_init(gcomp, sdat, nullstr, logunit, 'ICE', &
-         model_meshfile, model_maskfile, model_mesh, model_mask, model_frac, restart_read, rc=rc)
+         model_meshfile, model_maskfile, model_mesh, model_mask, model_frac, restart_read, is_scol, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! Initialize stream data type
@@ -335,7 +336,8 @@ contains
 #ifndef DISABLE_FoX
     streamfilename = trim(streamfilename)//'.xml'
 #endif
-    call shr_strdata_init_from_config(sdat, streamfilename, model_mesh, nx_global, ny_global, clock, 'ICE', logunit, rc=rc)
+    call shr_strdata_init_from_config(sdat, streamfilename, model_mesh, nx_global, ny_global, is_scol, &
+         clock, 'ICE', logunit, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_TraceRegionExit('dice_strdata_init')
 
