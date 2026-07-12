@@ -17,7 +17,8 @@ module datm_datamode_era5_mod
   public  :: datm_datamode_era5_init_pointers
   public  :: datm_datamode_era5_advance
 
-  private :: datm_eSat  ! determine saturation vapor pressure
+  private :: datm_eSat        ! determine saturation vapor pressure
+  private :: datm_qSat_Gill82 ! 
 
   ! export state data
   real(r8), pointer :: Sa_z(:)              => null()
@@ -426,7 +427,8 @@ contains
   end subroutine datm_datamode_era5_init_pointers
 
   !===============================================================================
-  subroutine datm_datamode_era5_advance(exportstate, mainproc, logunit, target_ymd, target_tod, model_calendar, rc)
+  subroutine datm_datamode_era5_advance(exportstate, mainproc, logunit, target_ymd, target_tod, &
+                model_calendar, qsat_algorithm, rc)
 
     use ESMF, only: ESMF_VMGetCurrent, ESMF_VMAllReduce, ESMF_REDUCE_MAX, ESMF_VM
 
@@ -437,6 +439,7 @@ contains
     integer                , intent(in)    :: target_ymd
     integer                , intent(in)    :: target_tod
     character(len=*)       , intent(in)    :: model_calendar
+    integer                , intent(in)    :: qsat_algorithm
     integer                , intent(out)   :: rc
 
     ! local variables
@@ -590,8 +593,8 @@ contains
           Sa_wspd(n) = sqrt(strm_Sa_u(n)*strm_Sa_u(n) + strm_Sa_v(n)*strm_Sa_v(n))
        end if
 
-       !--- calculate specific humidity from dew point temperature ---
-       if (associated(strm_Sa_tdew)) then
+       !--- calculate specific humidity ---
+       if (associated(Sa_q2m) .or. associated(Sa_shum)) then
           if (associated(strm_Sa_t2m)) then
              tbot = strm_Sa_t2m(n)
           else if (associated(strm_Sa_tbot)) then
@@ -604,9 +607,24 @@ contains
              pbot = strm_Sa_pbot(n)
           end if
 
-          if (td2max < 50.0_r8) strm_Sa_tdew(n) = strm_Sa_tdew(n) + tkFrz
-          e = datm_eSat(strm_Sa_tdew(n), tbot)
-          qsat = (0.622_r8 * e)/(pbot - 0.378_r8 * e)
+          if (qsat_algorithm == 0) then ! from dew point temperature
+             if (associated(strm_Sa_tdew)) then     
+                if (td2max < 50.0_r8) strm_Sa_tdew(n) = strm_Sa_tdew(n) + tkFrz
+                e = datm_eSat(strm_Sa_tdew(n), tbot)
+                qsat = (0.622_r8 * e)/(pbot - 0.378_r8 * e)
+             else
+                if (mainproc) write(logunit,*) subname,' Sa_tdew needs to be provided. Exiting!'
+                call shr_log_error(subname//'ERROR: Sa_tdew must be to calculate specific humidity with qsat_algorithm = 1', rc=rc)
+                return
+             end if
+          elseif (qsat_algorithm == 1) then ! from temperature and pressure
+             qsat = datm_qSat_Gill82(tbot, pbot)
+          else
+             if (mainproc) write(logunit,*) subname,' qsat_algorithm can be only 0 and 1. Exiting!'
+             call shr_log_error(subname//'ERROR: qsat_algorithm can be only 0 and 1. Please correct datm_in.', rc=rc)
+             return
+          end if
+
           if (associated(Sa_q2m)) Sa_q2m(n) = qsat
           if (associated(Sa_shum)) Sa_shum(n) = qsat
        end if
@@ -721,5 +739,33 @@ contains
     end if
 
   end function datm_eSat
+
+  !===============================================================================
+  real(r8) function datm_qSat_Gill82(t,p)
+
+    !----------------------------------------------------------------------------
+    ! use Gill (1981) to calculate saturation specific humidity
+    !----------------------------------------------------------------------------
+
+    ! input/output variables
+    real(r8),intent(in) :: t  ! temperature, K
+    real(r8),intent(in) :: p  ! pressure, Pa
+
+    ! local variables
+    real(r8) :: e_sw, f_w, e_sw_prime, tc, pmb
+
+    !--- coefficients ---
+    ! not used in Gill but used in Tsujino et al (2018)
+    real(r8),parameter :: correction_factor_salt_water = 0.98_r8
+    real(r8),parameter :: omega = 0.62197_r8
+
+    tc = t-273.15d0
+    pmb = p/100.0d0
+    e_sw = 10.0_r8 ** ((0.7859_r8 + 0.03477_r8 * tc) / (1.0_r8 + 0.00412_r8 * tc))
+    f_w = 1.0_r8 + 1.0d-6 * pmb * (4.5_r8 + 0.0006_r8 * tc**2)
+    e_sw_prime = f_w * e_sw * correction_factor_salt_water
+    datm_qSat_Gill82 = (omega * e_sw_prime) / (pmb - (1.0_r8 - omega) * e_sw_prime)
+
+  end function datm_qSat_Gill82
 
 end module datm_datamode_era5_mod

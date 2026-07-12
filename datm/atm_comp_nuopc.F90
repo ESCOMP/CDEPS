@@ -141,6 +141,7 @@ module cdeps_datm_comp
   logical                      :: skip_restart_read = .false.         ! true => skip restart read in continuation run
   logical                      :: export_all = .false.                ! true => export all fields, do not check connected or not
   logical                      :: skip_field_check = .false.          ! true => no not check all fields are provided or not 
+  integer                      :: qsat_algorithm = 0                  ! qsat algoritm 0: previous impl., 1: Gill, 82
   logical                      :: first_call = .true.
 
   ! linked lists
@@ -226,7 +227,7 @@ contains
     ! local variables
     integer           :: nu         ! unit number
     integer           :: ierr       ! error code
-    integer           :: bcasttmp(10)
+    integer           :: bcasttmp(11)
     character(CL)     :: nextsw_cday_calc
     type(ESMF_VM)     :: vm
     character(len=*),parameter :: subname=trim(modName) // ':(InitializeAdvertise) '
@@ -251,7 +252,8 @@ contains
          flds_presndep, &
          flds_preso3, &
          export_all, &
-         skip_field_check
+         skip_field_check, &
+         qsat_algorithm
 
     rc = ESMF_SUCCESS
 
@@ -308,6 +310,7 @@ contains
        write(logunit,'(2a,l6)') subname,' skip_restart_read = ',skip_restart_read
        write(logunit,'(2a,l6)') subname,' export_all        = ',export_all
        write(logunit,'(2a,l6)') subname,' skip_field_check  = ',skip_field_check
+       write(logunit,'(2a,i0)') subname,' qsat_algorithm    = ',qsat_algorithm
 
        bcasttmp = 0
        bcasttmp(1) = nx_global
@@ -320,6 +323,7 @@ contains
        if(skip_restart_read) bcasttmp(8) = 1
        if(export_all)        bcasttmp(9) = 1
        if(skip_field_check)  bcasttmp(10) = 1
+       bcasttmp(11) = qsat_algorithm
     end if
 
     ! Broadcast namelist input
@@ -343,7 +347,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_VMBroadcast(vm, nextsw_cday_calc, CL, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_VMBroadcast(vm, bcasttmp, 10, main_task, rc=rc)
+    call ESMF_VMBroadcast(vm, bcasttmp, 11, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     nx_global         = bcasttmp(1)
@@ -356,6 +360,9 @@ contains
     skip_restart_read = (bcasttmp(8) == 1)
     export_all        = (bcasttmp(9) == 1)
     skip_field_check  = (bcasttmp(10) == 1)
+    qsat_algorithm    = bcasttmp(11)
+
+    print*, "datm - qsat_algorithm = ", qsat_algorithm
 
     if (nextsw_cday_calc == 'cam7') then
        nextsw_cday_calc_cam7 = .true.
@@ -752,7 +759,8 @@ contains
        call datm_datamode_cplhist_advance(rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('ERA5')
-       call datm_datamode_era5_advance(exportstate, mainproc, logunit, target_ymd, target_tod, sdat%model_calendar, rc)
+       call datm_datamode_era5_advance(exportstate, mainproc, logunit, target_ymd, target_tod, &
+            sdat%model_calendar, qsat_algorithm, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('GEFS')
        call datm_datamode_gefs_advance(exportstate, sdat, mainproc, logunit, rc)
