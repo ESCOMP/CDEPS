@@ -607,26 +607,29 @@ contains
              pbot = strm_Sa_pbot(n)
           end if
 
-          if (qsat_algorithm == 0) then ! from dew point temperature
-             if (associated(strm_Sa_tdew)) then     
-                if (td2max < 50.0_r8) strm_Sa_tdew(n) = strm_Sa_tdew(n) + tkFrz
-                e = datm_eSat(strm_Sa_tdew(n), tbot)
-                qsat = (0.622_r8 * e)/(pbot - 0.378_r8 * e)
+          !--- Sa_shum not provided, calculate indirectly ---
+          if (.not. associated(strm_Sa_shum)) then
+             if (qsat_algorithm == 0) then ! from dew point temperature
+                if (associated(strm_Sa_tdew)) then
+                   if (td2max < 50.0_r8) strm_Sa_tdew(n) = strm_Sa_tdew(n) + tkFrz
+                   e = datm_eSat(strm_Sa_tdew(n), tbot)
+                   qsat = (0.622_r8 * e)/(pbot - 0.378_r8 * e)
+                else
+                   if (mainproc) write(logunit,*) subname,' Sa_tdew needs to be provided. Exiting!'
+                   call shr_log_error(subname//'ERROR: Sa_tdew must be to calculate specific humidity with qsat_algorithm = 0', rc=rc)
+                   return
+                end if
+             elseif (qsat_algorithm == 1) then ! from temperature and pressure
+                qsat = datm_qSat_Gill82(tbot, pbot)
              else
-                if (mainproc) write(logunit,*) subname,' Sa_tdew needs to be provided. Exiting!'
-                call shr_log_error(subname//'ERROR: Sa_tdew must be to calculate specific humidity with qsat_algorithm = 1', rc=rc)
+                if (mainproc) write(logunit,*) subname,' qsat_algorithm can be only 0 and 1. Exiting!'
+                call shr_log_error(subname//'ERROR: qsat_algorithm can be only 0 and 1. Please correct datm_in.', rc=rc)
                 return
              end if
-          elseif (qsat_algorithm == 1) then ! from temperature and pressure
-             qsat = datm_qSat_Gill82(tbot, pbot)
-          else
-             if (mainproc) write(logunit,*) subname,' qsat_algorithm can be only 0 and 1. Exiting!'
-             call shr_log_error(subname//'ERROR: qsat_algorithm can be only 0 and 1. Please correct datm_in.', rc=rc)
-             return
-          end if
 
-          if (associated(Sa_q2m)) Sa_q2m(n) = qsat
-          if (associated(Sa_shum)) Sa_shum(n) = qsat
+             if (associated(Sa_q2m)) Sa_q2m(n) = qsat
+             if (associated(Sa_shum)) Sa_shum(n) = qsat
+          end if
        end if
 
        !--- calculate density --
