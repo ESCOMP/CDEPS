@@ -344,7 +344,7 @@ contains
          sdat%logunit, trim(compname), sdat%mainproc, src_mask, dst_mask)
 
     ! Now finish initializing sdat
-    call shr_strdata_init(sdat, model_clock, stream_name, rc)
+    call shr_strdata_init(sdat, model_clock, stream_name, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine shr_strdata_init_from_inline
@@ -500,7 +500,23 @@ contains
        endif
 
        ! We do not yet have mask information, but we are required to set it here and change it later.
-       if (filename /= 'none') then
+       if (trim(sdat%stream(ns)%mapalgo) == 'redist' .and. filename /= 'none') then
+          ! A 'redist' stream is on the same grid as the model, so reuse the already-built model mesh here
+          ! instead of reading the stream mesh file and constructing a duplicate full ESMF mesh -- that
+          ! duplicate is a large init-time memory and time cost at high resolution.
+          !
+          ! Why this is safe (subtle): we call the stream->model mapping a 'redist', but in fact the stream
+          ! decomposition is the same as the model decomposition, so the redist ends up simply being a copy.
+          ! That is what makes it safe to set the stream mesh equal to the model mesh -- both the underlying
+          ! grids/meshes and their decompositions are the same, so the result is identical to building a
+          ! separate stream mesh from the file. (Only stream_mesh is read below -- no MeshSet/MeshDestroy --
+          ! so sharing the model-mesh handle is also safe.)
+          !
+          ! First verify the grids really match (redist requires identical global sizes) and error clearly if not.
+          call shr_strdata_check_redist_size(sdat, ns, trim(filename), rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          stream_mesh = sdat%model_mesh
+       else if (filename /= 'none') then
           stream_mesh = ESMF_MeshCreate(trim(filename), fileformat=ESMF_FILEFORMAT_ESMFMESH, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        endif
@@ -753,6 +769,63 @@ contains
        write(sdat%logunit,'(2a)') subname,' successfully initialized sdat'
     endif
   end subroutine shr_strdata_init
+
+  !===============================================================================
+  subroutine shr_strdata_check_redist_size(sdat, ns, meshfile, rc)
+
+    ! Verify that a 'redist' stream really is on the model grid before reusing the
+    ! model mesh in place of the stream mesh file. 'redist' is a 1-to-1 index copy,
+    ! so the stream mesh file and the model mesh must have the same global element
+    ! count; otherwise the redistribution is invalid. Only the elementCount
+    ! dimension of the (ESMF-format) mesh file is read here -- cheap metadata, not
+    ! the full mesh, so the memory/time saving of reusing the model mesh is kept.
+
+    ! input/output variables
+    type(shr_strdata_type) , intent(in)  :: sdat
+    integer                , intent(in)  :: ns         ! stream index
+    character(len=*)       , intent(in)  :: meshfile   ! stream mesh filename
+    integer                , intent(out) :: rc
+
+    ! local variables
+    type(file_desc_t) :: pioid
+    integer           :: rcode
+    integer           :: dimid
+    integer           :: stream_gsize
+    integer           :: old_handle    ! previous setting of pio error handling
+    character(len=*), parameter :: subname = '(shr_strdata_check_redist_size) '
+    ! ----------------------------------------------
+
+    rc = ESMF_SUCCESS
+
+    ! Nothing to verify against if there is no mesh file.
+    if (len_trim(meshfile) == 0 .or. trim(meshfile) == 'none') return
+
+    ! Read the global element count from the mesh file (collective over the pio
+    ! subsystem; all ranks already hold the same meshfile and model_gsize, so the
+    ! comparison below is identical on every rank).
+    rcode = pio_openfile(sdat%pio_subsystem, pioid, sdat%io_type, trim(meshfile), pio_nowrite)
+    call pio_seterrorhandling(pioid, PIO_BCAST_ERROR, old_handle)
+    rcode = pio_inq_dimid(pioid, 'elementCount', dimid)
+    if (rcode == PIO_NOERR) then
+       rcode = pio_inq_dimlen(pioid, dimid, stream_gsize)
+    end if
+    call pio_seterrorhandling(pioid, old_handle)
+    call pio_closefile(pioid)
+
+    ! If the mesh file is not in ESMF format (no elementCount dimension) we cannot
+    ! verify the size here; leave any problem for the downstream data read to catch.
+    if (rcode /= PIO_NOERR) return
+
+    if (stream_gsize /= sdat%model_gsize) then
+       call shr_log_error(subname//"ERROR: mapalgo='redist' for stream "//toString(ns)// &
+            " requires the model grid and the stream mesh file to be the same size, but the model"// &
+            " grid has "//toString(sdat%model_gsize)//" elements while the stream mesh file '"// &
+            trim(meshfile)//"' has elementCount = "//toString(stream_gsize)//". Use a non-redist"// &
+            " mapalgo (e.g. consf, consd, nn or bilinear) when the stream is on a different grid.", rc=rc)
+       return
+    end if
+
+  end subroutine shr_strdata_check_redist_size
 
   !===============================================================================
   subroutine shr_strdata_get_stream_nlev(sdat, stream_index, rc)

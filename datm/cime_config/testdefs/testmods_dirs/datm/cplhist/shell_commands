@@ -1,0 +1,6 @@
+./xmlchange DATM_CPLHIST_DIR='$DIN_LOC_ROOT/cplhist/cesm3_0/$DATM_CPLHIST_CASE/atm'
+./xmlchange DATM_CPLHIST_CASE="b.e30_alpha08o.B1850C_MTso.ne30_t232_wgx3.330"
+./xmlchange DATM_YR_START="101"
+./xmlchange DATM_YR_END="101"
+./xmlchange RUN_STARTDATE="0101-01-01"
+./xmlchange DATM_PRESNDEP="clim_1850_cmip6"
