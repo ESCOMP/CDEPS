@@ -141,7 +141,7 @@ module cdeps_datm_comp
   logical                      :: skip_restart_read = .false.         ! true => skip restart read in continuation run
   logical                      :: export_all = .false.                ! true => export all fields, do not check connected or not
   logical                      :: skip_field_check = .false.          ! true => no not check all fields are provided or not 
-  integer                      :: qsat_algorithm = 0                  ! qsat algoritm 0: previous impl., 1: Gill, 82
+  integer                      :: qsat_algorithm = 0                  ! qsat algorithm 0: previous impl., 1: Gill, 82
   logical                      :: first_call = .true.
 
   ! linked lists
@@ -361,8 +361,6 @@ contains
     export_all        = (bcasttmp(9) == 1)
     skip_field_check  = (bcasttmp(10) == 1)
     qsat_algorithm    = bcasttmp(11)
-
-    print*, "datm - qsat_algorithm = ", qsat_algorithm
 
     if (nextsw_cday_calc == 'cam7') then
        nextsw_cday_calc_cam7 = .true.
