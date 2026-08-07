@@ -127,8 +127,6 @@ module dshr_strdata_mod
      type(ESMF_Mesh)                :: model_mesh                      ! model mesh
      real(r8), pointer              :: model_lon(:) => null()          ! model longitudes
      real(r8), pointer              :: model_lat(:) => null()          ! model latitudes
-     integer                        :: model_nxg                       ! model global domain lon size
-     integer                        :: model_nyg                       ! model global domain lat size
      integer                        :: model_nzg                       ! model global domain vertical size
      integer                        :: model_lsize                     ! model local domain size
      integer, pointer               :: model_gindex(:)                 ! model global index spzce
@@ -188,12 +186,16 @@ contains
   end function shr_strdata_get_stream_fieldbundle
 
   !===============================================================================
-  subroutine shr_strdata_init_from_config(sdat, streamfilename, model_mesh, clock, compname, logunit, rc)
+  subroutine shr_strdata_init_from_config(sdat, streamfilename, model_mesh, model_nxg, model_nyg, is_scol, &
+       clock, compname, logunit, rc)
 
     ! input/output variables
     type(shr_strdata_type)     , intent(inout) :: sdat
     character(len=*)           , intent(in)    :: streamfilename
     type(ESMF_Mesh)            , intent(in)    :: model_mesh
+    integer                    , intent(in)    :: model_nxg           ! model global domain lon size
+    integer                    , intent(in)    :: model_nyg           ! model global domain lat size
+    logical                    , intent(in)    :: is_scol             ! true if this is a single-column run
     type(ESMF_Clock)           , intent(in)    :: clock
     character(len=*)           , intent(in)    :: compname
     integer                    , intent(in)    :: logunit
@@ -249,6 +251,27 @@ contains
     sdat%model_mesh = model_mesh
     call shr_strdata_init_model_domain(sdat, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    ! Verify that the declared global grid dimensions are consistent with the total number
+    ! of points in the model mesh (model_gsize was just computed by
+    ! shr_strdata_init_model_domain).
+    !
+    ! This check is bypassed for single-column runs as a workaround for a bug in the
+    ! single-column logic (https://github.com/ESCOMP/CDEPS/issues/419): in single-column
+    ! runs, model_nxg and model_nyg incorrectly keep their full global grid sizes while
+    ! the single-column mesh has exactly 1 point.
+    !
+    ! TODO: remove the is_scol bypass (and possibly the is_scol argument) once
+    ! single-column runs set nx_global and ny_global correctly (i.e., to 1).
+    if (.not. is_scol) then
+       if (model_nxg * model_nyg /= sdat%model_gsize) then
+          call shr_log_error(subname//' ERROR: for component '//trim(compname)// &
+               ', nx*ny ('//toString(model_nxg*model_nyg)// &
+               ') does not equal the total number of points in the model mesh ('// &
+               toString(sdat%model_gsize)//')', rc=rc)
+          return
+       end if
+    end if
 
     ! Now finish initializing sdat
     call shr_strdata_init(sdat, clock, rc=rc)
