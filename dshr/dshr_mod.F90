@@ -110,13 +110,14 @@ contains
   end subroutine dshr_model_initphase
 
   !===============================================================================
-  subroutine dshr_init(gcomp, compname, mpicom, my_task, inst_index, inst_suffix, &
+  subroutine dshr_init(gcomp, sdat, compname, mpicom, my_task, inst_index, inst_suffix, &
        flds_scalar_name, flds_scalar_num, flds_scalar_index_nx, flds_scalar_index_ny, logunit, rc)
 #ifdef CESMCOUPLED
     use nuopc_shr_methods, only : set_component_logging
 #endif
     ! input/output variables
     type(ESMF_GridComp)                   :: gcomp
+    type(shr_strdata_type), intent(inout) :: sdat
     character(len=*)      , intent(in)    :: compname  !e.g. ATM, OCN, ...
     integer               , intent(inout) :: mpicom
     integer               , intent(out)   :: my_task
@@ -232,10 +233,18 @@ contains
        if (trim(cvalue) .eq. '.true.') write_restart_at_endofrun = .true.
     end if
 
+#ifdef CESMCOUPLED
+    sdat%pio_subsystem => shr_pio_getiosys(trim(compname))
+    sdat%io_type       =  shr_pio_getiotype(trim(compname))
+    sdat%io_format     =  shr_pio_getioformat(trim(compname))
+#else
+    call dshr_pio_init(gcomp, sdat, logunit, rc)
+#endif
+
   end subroutine dshr_init
 
   !===============================================================================
-  subroutine dshr_mesh_init(gcomp, sdat, nullstr, logunit, compname, model_nxg, model_nyg, &
+  subroutine dshr_mesh_init(gcomp, nullstr, logunit, compname, model_nxg, model_nyg, &
        model_meshfile, model_maskfile, model_mesh, model_mask, model_frac, read_restart, rc)
 
     ! ----------------------------------------------
@@ -244,7 +253,6 @@ contains
 
     ! input/output variables
     type(ESMF_GridComp)        , intent(inout) :: gcomp
-    type(shr_strdata_type)     , intent(inout) :: sdat
     integer                    , intent(in)    :: logunit
     character(len=*)           , intent(in)    :: compname  !e.g. ATM, OCN, ...
     character(len=*)           , intent(in)    :: nullstr
@@ -283,15 +291,6 @@ contains
     call ESMF_VMGet(vm, localPet=my_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     mainproc = (my_task == main_task)
-    call shr_log_setLogUnit(logunit)
-    ! Initialize pio subsystem
-#ifdef CESMCOUPLED
-    sdat%pio_subsystem => shr_pio_getiosys(trim(compname))
-    sdat%io_type       =  shr_pio_getiotype(trim(compname))
-    sdat%io_format     =  shr_pio_getioformat(trim(compname))
-#else
-    call dshr_pio_init(gcomp, sdat, logunit, rc)
-#endif
 
     ! Set restart flag
     call NUOPC_CompAttributeGet(gcomp, name='read_restart', value=cvalue, isPresent=isPresent, isSet=isSet, rc=rc)
