@@ -450,7 +450,6 @@ contains
     real(r8) :: rday                ! elapsed day
     real(r8) :: cosFactor           ! cosine factor
     real(r8) :: rtmp(2)
-    real(r8) :: t2, pslv
     real(r8) :: e, qsat
     real(r8) :: tbot, pbot
     type(ESMF_VM) :: vm
