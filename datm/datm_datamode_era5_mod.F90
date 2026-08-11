@@ -663,39 +663,27 @@ contains
     !----------------------------------------------------------
 
     ! convert J/m^2 to W/m^2
-    if (lwmax < 1.0e4_r8) then
-       if (mainproc) write(logunit,*) trim(subname),' flux related variables are already in W/m^2 unit!'
-    else
-       if (associated(Faxa_lwdn))  Faxa_lwdn(:)  = Faxa_lwdn(:) /3600.0_r8
-       if (associated(Faxa_lwnet)) Faxa_lwnet(:) = Faxa_lwnet(:)/3600.0_r8
-       if (associated(Faxa_swvdr)) Faxa_swvdr(:) = Faxa_swvdr(:)/3600.0_r8
-       if (associated(Faxa_swndr)) Faxa_swndr(:) = Faxa_swndr(:)/3600.0_r8
-       if (associated(Faxa_swvdf)) Faxa_swvdf(:) = Faxa_swvdf(:)/3600.0_r8
-       if (associated(Faxa_swndf)) Faxa_swndf(:) = Faxa_swndf(:)/3600.0_r8
-       if (associated(Faxa_swdn))  Faxa_swdn(:)  = Faxa_swdn(:) /3600.0_r8
-       if (associated(Faxa_swnet)) Faxa_swnet(:) = Faxa_swnet(:)/3600.0_r8
-       if (associated(Faxa_sen))   Faxa_sen(:)   = Faxa_sen(:)  /3600.0_r8
-       if (associated(Faxa_lat))   Faxa_lat(:)   = Faxa_lat(:)  /3600.0_r8
-    end if
+    if (associated(Faxa_lwdn))  Faxa_lwdn(:)  = Faxa_lwdn(:) /3600.0_r8
+    if (associated(Faxa_lwnet)) Faxa_lwnet(:) = Faxa_lwnet(:)/3600.0_r8
+    if (associated(Faxa_swvdr)) Faxa_swvdr(:) = Faxa_swvdr(:)/3600.0_r8
+    if (associated(Faxa_swndr)) Faxa_swndr(:) = Faxa_swndr(:)/3600.0_r8
+    if (associated(Faxa_swvdf)) Faxa_swvdf(:) = Faxa_swvdf(:)/3600.0_r8
+    if (associated(Faxa_swndf)) Faxa_swndf(:) = Faxa_swndf(:)/3600.0_r8
+    if (associated(Faxa_swdn))  Faxa_swdn(:)  = Faxa_swdn(:) /3600.0_r8
+    if (associated(Faxa_swnet)) Faxa_swnet(:) = Faxa_swnet(:)/3600.0_r8
+    if (associated(Faxa_sen))   Faxa_sen(:)   = Faxa_sen(:)  /3600.0_r8
+    if (associated(Faxa_lat))   Faxa_lat(:)   = Faxa_lat(:)  /3600.0_r8
 
     ! convert m to kg/m^2/s
-    if (precmax < 0.01_r8) then
-       if (mainproc) write(logunit,*) trim(subname),' precipitation related variables are already in kg/m^2/s unit!'
-    else
-       if (associated(Faxa_rain))  Faxa_rain(:)  = Faxa_rain(:)/3600.0_r8*rhofw
-       if (associated(Faxa_rainc)) Faxa_rainc(:) = Faxa_rainc(:)/3600.0_r8*rhofw
-       if (associated(Faxa_rainl)) Faxa_rainl(:) = Faxa_rainl(:)/3600.0_r8*rhofw
-       if (associated(Faxa_snowc)) Faxa_snowc(:) = Faxa_snowc(:)/3600.0_r8*rhofw
-       if (associated(Faxa_snowl)) Faxa_snowl(:) = Faxa_snowl(:)/3600.0_r8*rhofw
-    end if
+    if (associated(Faxa_rain))  Faxa_rain(:)  = Faxa_rain(:)/3600.0_r8*rhofw
+    if (associated(Faxa_rainc)) Faxa_rainc(:) = Faxa_rainc(:)/3600.0_r8*rhofw
+    if (associated(Faxa_rainl)) Faxa_rainl(:) = Faxa_rainl(:)/3600.0_r8*rhofw
+    if (associated(Faxa_snowc)) Faxa_snowc(:) = Faxa_snowc(:)/3600.0_r8*rhofw
+    if (associated(Faxa_snowl)) Faxa_snowl(:) = Faxa_snowl(:)/3600.0_r8*rhofw
 
     ! convert N/m^2 s to N/m^2
-    if (lwmax < 1.0e4_r8) then
-       if (mainproc) write(logunit,*) trim(subname),' momentum flux related variables are already in N/m^2 unit!'
-    else
-       if (associated(Faxa_taux)) Faxa_taux(:) = Faxa_taux(:)/3600.0_r8
-       if (associated(Faxa_tauy)) Faxa_tauy(:) = Faxa_tauy(:)/3600.0_r8
-    end if
+    if (associated(Faxa_taux)) Faxa_taux(:) = Faxa_taux(:)/3600.0_r8
+    if (associated(Faxa_tauy)) Faxa_tauy(:) = Faxa_tauy(:)/3600.0_r8
 
   end subroutine datm_datamode_era5_advance
 
