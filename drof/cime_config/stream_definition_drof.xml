@@ -638,7 +638,7 @@
       <meshfile>$ROF_DOMAIN_MESH</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file first_year="$DROF_CPLHIST_YR_START" last_year="$DROF_CPLHIST_YR_END">$DROF_CPLHIST_DIR/$DROF_CPLHIST_CASE.cpl.hx.rof.24h.avrg.%ymd-00000.nc</file>
+      <file first_year="$DROF_CPLHIST_YR_START" last_year="$DROF_CPLHIST_YR_END">$DROF_CPLHIST_DIR/$DROF_CPLHIST_CASE.cpl.hx.rof.24h.avrg.%ymd-10800.nc</file>
     </stream_datafiles>
     <stream_datavars>
       <var>rofImp_Forr_rofl     Forr_rofl</var>
