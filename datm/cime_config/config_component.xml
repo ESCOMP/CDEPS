@@ -232,7 +232,7 @@
             This allows the DATM_CPLHIST_DIR to be set for all your CPLHIST datafiles, and you only need to modify $DATM_CPLHIST_CASE to point to a different CASE.
             For example, to use the CPLHIST data generated from a case that you ran do this:
             ./xmlchange DATM_CPLHIST_DIR='$CIME_OUTPUT_ROOT/archive/$DATM_CPLHIST_CASE/cpl/hist'
-            Which will then use the CPL history files in your archive directory where the case that created the CPLHIST data you want to use is"
+            Which will then use the CPL history files in your archive directory for the case that created the desired CPLHIST data.
     </desc>
   </entry>
 
