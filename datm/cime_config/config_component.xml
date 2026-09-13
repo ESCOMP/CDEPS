@@ -303,8 +303,11 @@
       <value compset="1850.*_DATM%CRUv7">1901</value>
       <value compset="1850.*_DATM%GSW">1901</value>
       <value compset="1850.*_DATM%NLDAS2">0</value>  <!-- Unsupported -->
+      <!-- Year start for CPLHIST with CESM3 spinup: give default, and also years for CLM and MOM (which will be different) -->
+      <value compset="1850.*_DATM%CPLHIST-CESM3">101</value>
       <value compset="1850.*_DATM%CPLHIST-CESM3.*_CLM">101</value>
       <value compset="1850.*_DATM%CPLHIST-CESM3.*_MOM6">101</value>
+
       <value compset="2000.*_DATM%WISOQIA">2000</value>
       <value compset="2000.*_DATM%QIA">1972</value>
       <value compset="HIST.*_DATM%QIA">1948</value>
@@ -371,8 +374,11 @@
       <value   compset="1850.*_DATM%CRUv7">1920</value>
       <value   compset="1850.*_DATM%GSW">1920</value>
       <value   compset="1850.*_DATM%NLDAS2">-1</value>  <!-- Unsupported -->
+      <!-- Year end for CPLHIST with CESM3 spinup: give default, and also years for CLM and MOM (which will be different) -->
+      <value   compset="1850.*_DATM%CPLHIST-CESM3">101</value>
       <value   compset="1850.*_DATM%CPLHIST-CESM3.*_CLM">101</value>
       <value   compset="1850.*_DATM%CPLHIST-CESM3.*_MOM6">101</value>
+
       <value   compset="2000.*_DATM%WISOQIA">2004</value>
       <value   compset="2000.*_DATM%QIA">2004</value>
       <value   compset="HIST.*_DATM%QIA">1972</value>
