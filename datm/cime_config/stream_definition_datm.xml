@@ -3792,7 +3792,7 @@
       <file>$DIN_LOC_ROOT/atm/datm7/CO2/co2_input4MIPs_GHGConcentrations_CMIP_CR-CMIP-1-0-0_gm_1750-2022_CMIP7_c20260601.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>co2   Sa_co2diag</var>
+      <var>CO2   Sa_co2diag</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
