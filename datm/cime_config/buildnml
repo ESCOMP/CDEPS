@@ -218,7 +218,7 @@ def _error_check_cplhist_mode(case, config):
         cplhist_dir = case.get_value("DATM_CPLHIST_DIR")
         cplhist_case = case.get_value("DATM_CPLHIST_CASE")
         cplhist_domain = case.get_value("DATM_CPLHIST_DOMAIN_FILE")
-        expect(cplhist_case is not None or cplhist_case != UNSET, "DATM_CPLHIST_CASE must be set when using cplhist mode")
+        expect(cplhist_case is not None and cplhist_case != "UNSET", "DATM_CPLHIST_CASE must be set when using cplhist mode")
         expect(cplhist_dir is not None, "DATM_CPLHIST_DIR must be set when using cplhist mode")
         # Check that the CPLHIST directory exists
         # This is a little unusual in buildnml, as the check_input_data will make sure the files exist
