@@ -34,6 +34,7 @@ module dshr_strdata_mod
   use shr_string_mod   , only : shr_string_listgetname, shr_string_listisvalid, shr_string_listgetnum
 
   use dshr_stream_mod  , only : shr_stream_streamtype, shr_stream_getModelFieldList, shr_stream_getStreamFieldList
+  use dshr_stream_mod  , only : shr_stream_getFieldScaleFactors
   use dshr_stream_mod  , only : shr_stream_taxis_cycle, shr_stream_taxis_extend, shr_stream_findBounds
   use dshr_stream_mod  , only : shr_stream_getCurrFile, shr_stream_setCurrFile, shr_stream_getMeshFilename
   use dshr_stream_mod  , only : shr_stream_init_from_inline, shr_stream_init_from_esmfconfig
@@ -98,6 +99,7 @@ module dshr_strdata_mod
      type(ESMF_RouteHandle)              :: routehandle                     ! stream n -> model mesh mapping
      character(len=CL), allocatable      :: fldlist_stream(:)               ! names of stream file fields
      character(len=CL), allocatable      :: fldlist_model(:)                ! names of stream model fields
+     real(r8), allocatable               :: fldlist_scale(:)                ! per-field unit conversion applied on read
      integer                             :: stream_nlev                     ! number of vertical levels in stream
      real(r8), allocatable               :: stream_vlevs(:)                 ! values of vertical levels in stream
      integer                             :: stream_lb                       ! index of the Lowerbound (LB) in fldlist_stream
@@ -554,6 +556,13 @@ contains
           return
        end if
        call shr_stream_getStreamFieldList(sdat%stream(ns), sdat%pstrm(ns)%fldlist_stream)
+       allocate(sdat%pstrm(ns)%fldlist_scale(nvars), stat=istat)
+       if ( istat /= 0 ) then
+          call shr_log_error(subName//&
+               ': allocation error for sdat%pstrm('//toString(ns)//')%fldlist_scale with nvars '//toString(nvars), rc=rc)
+          return
+       end if
+       call shr_stream_getFieldScaleFactors(sdat%stream(ns), sdat%pstrm(ns)%fldlist_scale)
 
        ! Create field bundles on model mesh
        if (sdat%stream(ns)%readmode=='single') then
@@ -2130,6 +2139,22 @@ contains
           call shr_log_error(subName//"ERROR: only double, real and short types are supported for stream read", rc=rc)
           return
 
+       end if
+
+       ! Apply this field's unit conversion, if the stream definition gave one as
+       ! a third token on its <var> line.  Units belong to the field rather than
+       ! the stream, so each field carries its own factor and a stream may mix
+       ! converted and unconverted fields.
+       !
+       ! Fill values are left alone: they are markers, not measurements.  This is
+       ! separate from the CF scale_factor/add_offset unpacking above, which
+       ! undoes on-disk packing and has already been applied by this point.
+       if (per_stream%fldlist_scale(nf) /= 1.0_r8) then
+          if (stream_nlev > 1) then
+             where (dataptr2d /= r8fill) dataptr2d = dataptr2d * per_stream%fldlist_scale(nf)
+          else
+             where (dataptr1d /= r8fill) dataptr1d = dataptr1d * per_stream%fldlist_scale(nf)
+          end if
        end if
 
        if(associated(dataptr2d_src) .and. trim(per_stream%fldlist_model(nf)) .eq. uname) then
