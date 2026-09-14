@@ -226,7 +226,7 @@
     <file>env_run.xml</file>
     <desc>
       Directory for coupler history data mode (used when DATM_MODE is CPLHIST)
-      May also be used if and of these are set to cplhist: DATM_PRESAERO, DATM_NDEP, DATM_CO2_TSERIES, DATM_PRESO3, or DATM_TOPO
+      May also be used if any of these are set to cplhist: DATM_PRESAERO, DATM_NDEP, DATM_CO2_TSERIES, DATM_PRESO3, or DATM_TOPO
       NOTE: This needs to be the full directory path where the CPLHIST files are stored, including the subdirectory for the CASENAME (that can be set using $DATM_CPLHIST_CASE)
             We thus recommend that $DATM_CPLHIST_CASE be used in here to specify that case subdirectory.
             This allows the DATM_CPLHIST_DIR to be set for all your CPLHIST datafiles, and you only need to modify $DATM_CPLHIST_CASE to point to a different CASE.
