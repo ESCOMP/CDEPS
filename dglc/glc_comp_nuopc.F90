@@ -554,7 +554,7 @@ contains
          call shr_get_rpointer_name(gcomp, 'glc', target_ymd, target_tod, rpfile, 'read', rc)
          if (ChkErr(rc,__LINE__,u_FILE_u)) return
          call dglc_datamode_noevolve_restart_read(model_meshes, restfilm, rpfile, &
-              logunit, my_task, main_task, mpicom, &
+              logunit, my_task, main_task, &
               sdat(1)%pio_subsystem, sdat(1)%io_type, nx_global, ny_global, rc)
          if (ChkErr(rc,__LINE__,u_FILE_u)) return
       end if

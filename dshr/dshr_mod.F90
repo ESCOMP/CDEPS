@@ -616,7 +616,7 @@ contains
           close(nu)
           inquire(file=trim(rest_filem), exist=exists)
        endif
-       call ESMF_VMBroadCast(vm, rest_filem, CL, main_task, rc=rc)
+       call ESMF_VMBroadCast(vm, rest_filem, len(rest_filem), main_task, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     else
        ! use namelist already read
