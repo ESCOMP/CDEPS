@@ -166,7 +166,7 @@ def _handle_model_grid(case, config):
     # Check for expected settings when coupled to CLM for NEON and PLUMBER2 cases
     # (These should be moved to CLM where these things are defined)
     #
-    if comp_lnd == "clm":
+    if clm_usrdat_name is not None:
         if "NEON" in clm_usrdat_name:
             expect(config['neon'] == "True", "neon should have been set in this subroutine, since NEON is on")
             expect(config['model_grid'] == "CLM_USRDAT", "model_grid should have been set to CLM_USRDAT because NEON is on")
