@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-"""Namelist creator for CDEPS data atm model.
-"""
+"""Namelist creator for CDEPS data atm model."""
 
 # Typically ignore this.
 # pylint: disable=invalid-name
@@ -12,7 +11,9 @@
 import os, sys
 import re
 
-_CDEPS_CONFIG = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir,os.pardir,"cime_config")
+_CDEPS_CONFIG = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), os.pardir, os.pardir, "cime_config"
+)
 _CIMEROOT = os.environ.get("CIMEROOT")
 if _CIMEROOT is None:
     raise SystemExit("ERROR: must set CIMEROOT environment variable")
@@ -32,19 +33,30 @@ from stream_cdeps import StreamCDEPS
 
 logger = logging.getLogger(__name__)
 
+
 def _get_neon_data_availability(case, neonsite):
     """
     Read the NEON inventory file and check availablity of tower data for this case.
     Put available data in datavaliddate list and return it
     Currently the valid date information is not used
+
+    returns None if no data is available for the site, otherwise returns a list of available data files
     """
     rundir = case.get_value("RUNDIR")
-    fullpath = os.path.join(rundir,"listing.csv")
+    fullpath = os.path.join(rundir, "listing.csv")
     if not os.path.exists(fullpath):
         inputdata = Inputdata()
-        protocol, address, user, passwd, _, _, inventory = inputdata.get_next_server(attributes={'CLM_USRDAT_NAME':'NEON'})
-        success = case.check_input_data(protocol=protocol, address=address, download=True)
-        logger.debug("_get_neon_data_availablity: address {} inventory is {} success {}".format(address, inventory, success))
+        protocol, address, user, passwd, _, _, inventory = inputdata.get_next_server(
+            attributes={"CLM_USRDAT_NAME": "NEON"}
+        )
+        success = case.check_input_data(
+            protocol=protocol, address=address, download=True
+        )
+        logger.debug(
+            "_get_neon_data_availablity: address {} inventory is {} success {}".format(
+                address, inventory, success
+            )
+        )
 
         server = CIME.Servers.WGET.wget_login(address, user, passwd)
         if server:
@@ -52,7 +64,10 @@ def _get_neon_data_availability(case, neonsite):
                 success = server.getfile(inventory, fullpath)
                 expect(success, "Could not download NEON data listing file from server")
 
-    expect(os.path.exists(fullpath), "Could not download NEON data listing file from server")
+    expect(
+        os.path.exists(fullpath),
+        "Could not download NEON data listing file from server",
+    )
     datavaliddate = []
     oldestdate = None
     newestdate = None
@@ -72,28 +87,252 @@ def _get_neon_data_availability(case, neonsite):
             with open(fullpath, "r") as fd:
                 for line in fd.readlines():
                     fpath, fname = os.path.split(line)
-                    if fpath.endswith(f'cdeps/{version}/{neonsite}'):
-                        neonatm, date, _ = line.strip().split(',')
-                        if neonatm.endswith('.nc'):
-                            neonatm = neonatm.split('/')[-1]
-                            newestdate = datetime.strptime(neonatm[-10:],"%Y-%m.nc")
+                    if fpath.endswith(f"cdeps/{version}/{neonsite}"):
+                        neonatm, date, _ = line.strip().split(",")
+                        if neonatm.endswith(".nc"):
+                            neonatm = neonatm.split("/")[-1]
+                            newestdate = datetime.strptime(neonatm[-10:], "%Y-%m.nc")
                             if not oldestdate:
-                                oldestdate = datetime.strptime(neonatm[-10:],"%Y-%m.nc")
-                            neonatm = f'cdeps/{version}/{neonsite}/'+neonatm
+                                oldestdate = datetime.strptime(
+                                    neonatm[-10:], "%Y-%m.nc"
+                                )
+                            neonatm = f"cdeps/{version}/{neonsite}/" + neonatm
                             datavaliddate.append(neonatm)
             if newestdate:
-                logger.info("Found tower data version {} for {} through {}".format(version, oldestdate, newestdate))
+                logger.info(
+                    "Found tower data version {} for {} through {}".format(
+                        version, oldestdate, newestdate
+                    )
+                )
                 datavaliddate.sort()
                 return datavaliddate
 
-    expect(newestdate, "No tower data found on server for NEON site {}".format(neonsite))
+    expect(
+        newestdate, "No tower data found on server for NEON site {}".format(neonsite)
+    )
     return None
+
+
+####################################################################################
+def _handle_pts_mode(case, config):
+    ####################################################################################
+    """Handle PTS mode settings for single column runs.  If PTS_LON and PTS_LAT are set, then set config[single_column] to true."""
+    missing = -999.99
+    config["single_column"] = "false"   # Initialize to false always, but will set to true if PTS_DOMAINFILE, PTS_LAT/PTS_LON are all set
+    if case.get_value("PTS_LON"):
+        scol_lon = float(case.get_value("PTS_LON"))
+    else:
+        scol_lon = missing
+    if case.get_value("PTS_LAT"):
+        scol_lat = float(case.get_value("PTS_LAT"))
+    else:
+        scol_lat = missing
+    if case.get_value("PTS_DOMAINFILE"):
+        if (
+            scol_lon > missing
+            and scol_lat > missing
+            and case.get_value("PTS_DOMAINFILE") != "UNSET"
+        ):
+            config["single_column"] = "true"
+        else:
+            config["single_column"] = "false"
+
+    # Check that if either PTS_LON/PTS_LAT is set the other is as well
+    # TODO: NOTE: This should really be in CMEPS
+    if (scol_lon != missing and scol_lat == missing) or (
+        scol_lon == missing and scol_lat != missing
+    ):
+        expect(
+            False, "If either PTS_LON or PTS_LAT is set, the other must be set as well"
+        )
+
+    # Verify that the expected output setting was actually done
+    expect(
+        config["single_column"] is not None,
+        "single_column should have been set in this subroutine",
+    )
+
+
+####################################################################################
+def _handle_model_grid(case, config):
+    ####################################################################################
+    """Set config['model grid'] always
+    Also do some checking and set needed variables for a CLM user defined grid.
+    For a CLM single-point/regional case (CLM user defined grid)
+        Set config['model_grid'] to CLM_USRDAT to signify this
+        For a NEON case
+          set config['neonsite']
+          config['neon'] is True
+        For a PLUMBER2 case
+          set config['plumber2site']
+          config['plumber2'] is True
+
+    Will fail if settings aren't setup as expected
+
+    Returns None normally; otherwise for a NEON case it returns the list of available NEON data
+    """
+    available_neon_data = None
+    model_grid = case.get_value("GRID")
+    comp_lnd = case.get_value("COMP_LND")
+    clm_usrdat_name = case.get_value(
+        "CLM_USRDAT_NAME"
+    )  # NOTE: Will be None if not coupled to CLM
+    if "CLM_USRDAT" in model_grid:
+        config["model_grid"] = "CLM_USRDAT"
+        # If CLM_USRDAT is being used, CLM_USRDAT_NAME must be set
+        expect(
+            clm_usrdat_name is not None,
+            "CLM_USRDAT_NAME must be set when using CLM_USRDAT grid",
+        )
+        if "NEON" in clm_usrdat_name:
+            neonsite = case.get_value("NEONSITE")
+            config["neonsite"] = neonsite
+            if neonsite:
+                config["neon"] = "True"
+                # download and use the listing.csv file to determine data availablity
+                available_neon_data = _get_neon_data_availability(case, neonsite)
+        if "PLUMBER2" in clm_usrdat_name:
+            plumber2site = case.get_value("PLUMBER2SITE")
+            config["plumber2site"] = plumber2site
+            if plumber2site:
+                config["plumber"] = "True"
+    else:
+        config["model_grid"] = model_grid
+        # CLM_USRDAT_NAME can NOT be set, if the model grid is NOT CLM_USRDAT
+        expect(
+            clm_usrdat_name is None or clm_usrdat_name == "UNSET",
+            "CLM_USRDAT_NAME can NOT be set when GRID is NOT equal to 'CLM_USRDAT'",
+        )
+    #
+    # Ensure output settings are done as expected
+    #
+    expect(
+        config["model_grid"] is not None,
+        "model_grid should have been set in this subroutine",
+    )
+
+    #
+    # Check for expected settings for NEON and PLUMBER2 cases
+    #
+    if clm_usrdat_name is not None:
+        if "NEON" in clm_usrdat_name:
+            expect(
+                config["neon"] == "True",
+                "neon should have been set in this subroutine, since NEON is on",
+            )
+            expect(
+                config["model_grid"] == "CLM_USRDAT",
+                "model_grid should have been set to CLM_USRDAT because NEON is on",
+            )
+        else:
+            expect(
+                available_neon_data is None,
+                "available_neon_data should NOT be set if NEON is off",
+            )
+            expect(
+                not "neon" in config,
+                "neon should have NOT been set in this subroutine, since NEON is off",
+            )
+
+        missing_yr_filename = 9999
+        if "PLUMBER2" in clm_usrdat_name:
+            expect(
+                config["model_grid"] == "CLM_USRDAT",
+                "model_grid should have been set to CLM_USRDAT because PLUMBER2 is on",
+            )
+            datm_mode = case.get_value("DATM_MODE")
+            if datm_mode == "1PT":
+                expect(
+                    case.get_value("DATM_YR_START_FILENAME") != missing_yr_filename,
+                    "DATM_YR_START_FILENAME should have been set, since PLUMBER2 on",
+                )
+                expect(
+                    case.get_value("DATM_YR_END_FILENAME") != missing_yr_filename,
+                    "DATM_YR_END_FILENAME should have been set, since PLUMBER2 on",
+                )
+            else:
+                expect(
+                    case.get_value("DATM_YR_START_FILENAME") == missing_yr_filename,
+                    "DATM_YR_START_FILENAME should NOT have been set, since PLUMBER2 is off",
+                )
+                expect(
+                    case.get_value("DATM_YR_END_FILENAME") == missing_yr_filename,
+                    "DATM_YR_END_FILENAME should NOT have been set, since PLUMBER2 is off",
+                )
+
+        else:
+            expect(
+                case.get_value("PLUMBER2SITE") == "",
+                "PLUMBER2SITE should NOT have been set, since PLUMBER2 is off",
+            )
+
+    # Return the data available for NEON
+    return available_neon_data
+
+
+####################################################################################
+def _error_check_cplhist_mode(case, config):
+    ####################################################################################
+    """Error checks for cplhist mode.
+    Make sure needed settings are set when used.
+    Make sure directories expected exist
+    Make sure it works for all the different cplhist options
+    """
+
+    check_cplhist = False
+    if "cplhist" in config["datm_mode"]:
+        check_cplhist = True
+    if "cplhist" in case.get_value("DATM_CO2_TSERIES"):
+        check_cplhist = True
+    if "cplhist" in case.get_value("DATM_PRESAERO"):
+        check_cplhist = True
+    if "cplhist" in case.get_value("DATM_PRESNDEP"):
+        check_cplhist = True
+    if "cplhist" in case.get_value("DATM_PRESO3"):
+        check_cplhist = True
+    if "cplhist" in case.get_value("DATM_TOPO"):
+        check_cplhist = True
+
+    if check_cplhist:
+        cplhist_dir = case.get_value("DATM_CPLHIST_DIR")
+        cplhist_case = case.get_value("DATM_CPLHIST_CASE")
+        cplhist_domain = case.get_value("DATM_CPLHIST_DOMAIN_FILE")
+        expect(
+            cplhist_case is not None and cplhist_case != "UNSET",
+            "DATM_CPLHIST_CASE must be set when using cplhist mode",
+        )
+        expect(
+            cplhist_dir is not None,
+            "DATM_CPLHIST_DIR must be set when using cplhist mode",
+        )
+        # Check that the CPLHIST directory exists
+        # This is a little unusual in buildnml, as the check_input_data will make sure the files exist
+        # But, most often the problem is that I'm pointing to the wrong directory, so seeing that the directory
+        # doesn't exist is easier than showing all of the myriad of files that are missing later
+        unres_cplhist_dir = case.get_value("DATM_CPLHIST_DIR", resolved=False)
+        expect(
+            os.path.isdir(cplhist_dir),
+            "DATM_CPLHIST_DIR {} does not exist (directory with input variables is {})".format(
+                cplhist_dir, unres_cplhist_dir
+            ),
+        )
+    else:
+        cplhist_domain = case.get_value("DATM_CPLHIST_DOMAIN_FILE")
+        expect(
+            cplhist_domain == "null",
+            "DATM_CPLHIST_DOMAIN_FILE can only be set when using cplhist mode",
+        )
+        cplhist_case = case.get_value("DATM_CPLHIST_CASE")
+        expect(
+            cplhist_case == "UNSET",
+            "DATM_CPLHIST_CASE should only be set when using cplhist mode",
+        )
 
 
 # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements
 ####################################################################################
 def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path):
-####################################################################################
+    ####################################################################################
     """Write out the namelist for this component.
 
     Most arguments are the same as those for `NamelistGenerator`. The
@@ -102,9 +341,9 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     in which output files will be placed.
     """
 
-    #----------------------------------------------------
+    # ----------------------------------------------------
     # Write out datm_in and datm.streams.xml
-    #----------------------------------------------------
+    # ----------------------------------------------------
 
     caseroot = case.get_value("CASEROOT")
     datm_mode = case.get_value("DATM_MODE")
@@ -115,20 +354,27 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     clm_usrdat_name = case.get_value("CLM_USRDAT_NAME")
     datm_co2_tseries = case.get_value("DATM_CO2_TSERIES")
     atm_grid = case.get_value("ATM_GRID")
-    model_grid = case.get_value("GRID")
     comp_lnd = case.get_value("COMP_LND")
     compset = case.get_value("COMPSET")
 
     # Check for incompatible options.
     if "CLM" in datm_mode and comp_lnd == "clm":
-        expect(datm_presaero != "none",
-               "A DATM_MODE for CLM is incompatible with DATM_PRESAERO=none.")
-        expect(datm_presndep != "none",
-               "A DATM_MODE for CLM is incompatible with DATM_PRESNDEP=none.")
-        expect(datm_preso3 != "none",
-               "A DATM_MODE for CLM is incompatible with DATM_PRESO3=none.")
-        expect(datm_topo != "none",
-               "A DATM_MODE for CLM is incompatible with DATM_TOPO=none.")
+        expect(
+            datm_presaero != "none",
+            "A DATM_MODE for CLM is incompatible with DATM_PRESAERO=none.",
+        )
+        expect(
+            datm_presndep != "none",
+            "A DATM_MODE for CLM is incompatible with DATM_PRESNDEP=none.",
+        )
+        expect(
+            datm_preso3 != "none",
+            "A DATM_MODE for CLM is incompatible with DATM_PRESO3=none.",
+        )
+        expect(
+            datm_topo != "none",
+            "A DATM_MODE for CLM is incompatible with DATM_TOPO=none.",
+        )
 
     # Log some settings.
     logger.debug("DATM mode is {}".format(datm_mode))
@@ -137,47 +383,25 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     logger.debug("DATM presndep mode is {}".format(datm_presndep))
     logger.debug("DATM preso3 mode is {}".format(datm_preso3))
     logger.debug("DATM topo mode is {}".format(datm_topo))
-    logger.debug("CLM_USRDAT_NAME is {}".format(clm_usrdat_name))
+    if clm_usrdat_name is not None:
+        logger.debug("CLM_USRDAT_NAME is {}".format(clm_usrdat_name))
     logger.debug("COMPSET is {}".format(compset))
 
     # Initialize namelist defaults
     config = {}
-    available_neon_data = None
-    if 'CLM_USRDAT' in model_grid:
-        config['model_grid'] = 'CLM_USRDAT'
-        if 'NEON' in clm_usrdat_name:
-            neonsite = case.get_value("NEONSITE")
-            if neonsite:
-                config['neon'] = "True"
-                # download and use the listing.csv file to determine data availablity
-                available_neon_data = _get_neon_data_availability(case, neonsite)
-        if 'PLUMBER2' in clm_usrdat_name:
-            plumber2site = case.get_value('PLUMBER2SITE')
-            if plumber2site:
-                config['plumber'] = "True"
-    else:
-        config['model_grid'] = model_grid
 
-    config['datm_mode'] = datm_mode
-    config['datm_co2_tseries'] = datm_co2_tseries
-    config['datm_presaero'] = datm_presaero
-    config['datm_presndep'] = datm_presndep
-    config['datm_preso3'] = datm_preso3
-    config['clm_usrdat_name'] = clm_usrdat_name
+    available_neon_data = _handle_model_grid(case, config)
 
-    if case.get_value('PTS_LON'):
-        scol_lon = float(case.get_value('PTS_LON'))
-    else:
-        scol_lon = -999.
-    if case.get_value('PTS_LAT'):
-        scol_lat = float(case.get_value('PTS_LAT'))
-    else:
-        scol_lat = -999.
-    if case.get_value('PTS_DOMAINFILE'):
-        if scol_lon > -999. and scol_lat > -999. and case.get_value("PTS_DOMAINFILE") != "UNSET":
-            config['single_column'] = 'true'
-        else:
-            config['single_column'] = 'false'
+    config["datm_mode"] = datm_mode
+    config["datm_co2_tseries"] = datm_co2_tseries
+    config["datm_presaero"] = datm_presaero
+    config["datm_presndep"] = datm_presndep
+    config["datm_preso3"] = datm_preso3
+    config["clm_usrdat_name"] = clm_usrdat_name
+
+    _handle_pts_mode(case, config)
+
+    _error_check_cplhist_mode(case, config)
 
     nmlgen.init_defaults(infile, config)
 
@@ -194,7 +418,9 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
 
     # Generate datm_in
     namelist_file = os.path.join(confdir, "datm_in")
-    nmlgen.write_output_file(namelist_file, data_list_path, groups=['datm_nml','const_forcing_nml'])
+    nmlgen.write_output_file(
+        namelist_file, data_list_path, groups=["datm_nml", "const_forcing_nml"]
+    )
 
     # Determine streams
     streamlist = nmlgen.get_streams()
@@ -210,12 +436,12 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
         streamlist.append("topo.{}".format(datm_topo))
     if datm_co2_tseries != "none":
         streamlist.append("co2tseries.{}".format(datm_co2_tseries))
-    if  clm_usrdat_name == 'NEON.PRISM':
-        streamlist.append(clm_usrdat_name+"_PRECIP."+neonsite)
-    if  clm_usrdat_name == 'NEON':
-        streamlist.append(clm_usrdat_name+".NEON_PRECIP."+neonsite)   
-    if clm_usrdat_name == 'PLUMBER2':
-        streamlist.append(clm_usrdat_name+"."+plumber2site)
+    if clm_usrdat_name == "NEON.PRISM":
+        streamlist.append(clm_usrdat_name + "_PRECIP." + config["neonsite"])
+    if clm_usrdat_name == "NEON":
+        streamlist.append(clm_usrdat_name + ".NEON_PRECIP." + config["neonsite"])
+    if clm_usrdat_name == "PLUMBER2":
+        streamlist.append(clm_usrdat_name + "." + config["plumber2site"])
 
     bias_correct = nmlgen.get_value("bias_correct")
     if bias_correct is not None:
@@ -227,23 +453,30 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
         streamlist += anomaly_forcing
 
     # Generate datm.streams.xml
-    outfile = os.path.join(confdir, "datm.streams"+inst_string+".xml" )
-    schema_file = os.path.join(_CDEPS_CONFIG,"stream_definition_v2.0.xsd")
-    stream_file = os.path.join(_CDEPS_CONFIG,os.pardir, "datm","cime_config","stream_definition_datm.xml")
+    outfile = os.path.join(confdir, "datm.streams" + inst_string + ".xml")
+    schema_file = os.path.join(_CDEPS_CONFIG, "stream_definition_v2.0.xsd")
+    stream_file = os.path.join(
+        _CDEPS_CONFIG, os.pardir, "datm", "cime_config", "stream_definition_datm.xml"
+    )
     streams = StreamCDEPS(stream_file, schema_file)
-    streams.create_stream_xml(streamlist, case, outfile, data_list_path,
-                              os.path.join(caseroot,'user_nl_datm_streams'+inst_string),
-                              available_neon_data=available_neon_data)
+    streams.create_stream_xml(
+        streamlist,
+        case,
+        outfile,
+        data_list_path,
+        os.path.join(caseroot, "user_nl_datm_streams" + inst_string),
+        available_neon_data=available_neon_data,
+    )
 
 
 ####################################################################################
 def _create_drv_flds_in(case, confdir):
-####################################################################################
+    ####################################################################################
     datm_preso3 = case.get_value("DATM_PRESO3")
 
     # for now we are hard-coding this file name and values because we only need it for ozone
     if datm_preso3 != "none":
-        
+
         # Generate drv_flds_in file
         outfile = os.path.join(confdir, "drv_flds_in")
         ozone_nl_name = "&ozone_coupling_nl"
@@ -257,34 +490,39 @@ def _create_drv_flds_in(case, confdir):
             drv_fl.write("{}\n".format(nl_fin))
 
 
-
 ###############################################################################
 def buildnml(case, caseroot, compname):
-###############################################################################
+    ###############################################################################
     rundir = case.get_value("RUNDIR")
     inst_name = compname.upper()[1:]
-    ninst = case.get_value("NINST_"+inst_name)
+    ninst = case.get_value("NINST_" + inst_name)
     if ninst is None:
         ninst = case.get_value("NINST")
 
     # Determine configuration directory
-    confdir = os.path.join(caseroot,"Buildconf",compname + "conf")
+    confdir = os.path.join(caseroot, "Buildconf", compname + "conf")
     if not os.path.isdir(confdir):
         os.makedirs(confdir)
 
-    #----------------------------------------------------
+    # ----------------------------------------------------
     # Construct the namelist generator
-    #----------------------------------------------------
+    # ----------------------------------------------------
     # Determine directory for user modified namelist_definitions.xml and namelist_defaults.xml
     user_xml_dir = os.path.join(caseroot, "SourceMods", "src." + compname)
-    expect (os.path.isdir(user_xml_dir),
-            "user_xml_dir {} does not exist ".format(user_xml_dir))
+    expect(
+        os.path.isdir(user_xml_dir),
+        "user_xml_dir {} does not exist ".format(user_xml_dir),
+    )
 
     # NOTE: User definition *replaces* existing definition.
     files = Files(comp_interface="nuopc")
-    definition_file = [files.get_value("NAMELIST_DEFINITION_FILE", {"component":compname})]
+    definition_file = [
+        files.get_value("NAMELIST_DEFINITION_FILE", {"component": compname})
+    ]
 
-    user_definition = os.path.join(user_xml_dir, "namelist_definition_"+compname+".xml")
+    user_definition = os.path.join(
+        user_xml_dir, "namelist_definition_" + compname + ".xml"
+    )
     if os.path.isfile(user_definition):
         definition_file = [user_definition]
     for file_ in definition_file:
@@ -293,59 +531,68 @@ def buildnml(case, caseroot, compname):
     # Create the namelist generator object - independent of instance
     nmlgen = NamelistGenerator(case, definition_file, files=files)
 
-    #----------------------------------------------------
+    # ----------------------------------------------------
     # Clear out old data.
-    #----------------------------------------------------
-    data_list_path = os.path.join(caseroot, "Buildconf", compname+".input_data_list")
+    # ----------------------------------------------------
+    data_list_path = os.path.join(caseroot, "Buildconf", compname + ".input_data_list")
     if os.path.exists(data_list_path):
         os.remove(data_list_path)
 
-    #----------------------------------------------------
+    # ----------------------------------------------------
     # Loop over instances
-    #----------------------------------------------------
-    for inst_counter in range(1, ninst+1):
+    # ----------------------------------------------------
+    for inst_counter in range(1, ninst + 1):
         # determine instance string
         inst_string = ""
         if ninst > 1:
-            inst_string = '_' + '{:04d}'.format(inst_counter)
+            inst_string = "_" + "{:04d}".format(inst_counter)
 
         # If multi-instance case does not have restart file, use
         # single-case restart for each instance
         rpointer = "rpointer." + compname
-        if (os.path.isfile(os.path.join(rundir,rpointer)) and
-            (not os.path.isfile(os.path.join(rundir,rpointer + inst_string)))):
-            safe_copy(os.path.join(rundir, rpointer),
-                      os.path.join(rundir, rpointer + inst_string))
+        if os.path.isfile(os.path.join(rundir, rpointer)) and (
+            not os.path.isfile(os.path.join(rundir, rpointer + inst_string))
+        ):
+            safe_copy(
+                os.path.join(rundir, rpointer),
+                os.path.join(rundir, rpointer + inst_string),
+            )
 
         inst_string_label = inst_string
         if not inst_string_label:
-            inst_string_label = "\"\""
+            inst_string_label = '""'
 
         # create namelist output infile using user_nl_file as input
         user_nl_file = os.path.join(caseroot, "user_nl_" + compname + inst_string)
-        expect(os.path.isfile(user_nl_file),
-               "Missing required user_nl_file {} ".format(user_nl_file))
+        expect(
+            os.path.isfile(user_nl_file),
+            "Missing required user_nl_file {} ".format(user_nl_file),
+        )
         infile = os.path.join(confdir, "namelist_infile")
         create_namelist_infile(case, user_nl_file, infile)
         namelist_infile = [infile]
 
         # create namelist and stream file(s) data component
-        _create_namelists(case, confdir, inst_string, namelist_infile, nmlgen, data_list_path)
+        _create_namelists(
+            case, confdir, inst_string, namelist_infile, nmlgen, data_list_path
+        )
 
         _create_drv_flds_in(case, confdir)
 
         # copy namelist files and stream text files, to rundir
         copy_inputs_to_rundir(caseroot, compname, confdir, rundir, inst_string)
 
+
 ###############################################################################
 def get_user_nl_list(case):
-###############################################################################
+    ###############################################################################
     """Returns a list of user_nl_datm* files needed in this case
     This function is called by CIME to stage the user_nl_datm* files in the case
     directory.
     """
     user_nl_list = ["user_nl_datm", "user_nl_datm_streams"]
     return user_nl_list
+
 
 ###############################################################################
 def _main_func():

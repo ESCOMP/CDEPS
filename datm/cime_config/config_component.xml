@@ -8,9 +8,12 @@
        '+' 1 or more modifiers
 
        This file may have atm desc entries.
+
+       Attributes that can be used for entry tags defined in cime:
+          grid, compset, cime_model
   -->
   <description modifier_mode="1">
-    <desc atm="DATM[%QIA][%WISOQIA][%CRUJRA2024][%CRUJRA2024b][%CRUv7][%GSWP3v1][%MOSARTTEST][%NLDAS2][%CPLHIST][%1PT][%NYF][%IAF][%JRA][%JRA-1p4-2018][%JRA-1p5-2023][%JRA-RYF6162][%JRA-RYF8485][%JRA-RYF9091][%JRA-RYF0304][%SIMPLE]"> Data driven ATM </desc>
+    <desc atm="DATM[%QIA][%WISOQIA][%CRUJRA2024][%CRUJRA2024b][%CRUv7][%GSWP3v1][%MOSARTTEST][%NLDAS2][%CPLHIST][%CPLHIST-CESM3][%1PT][%NYF][%IAF][%JRA][%JRA-1p4-2018][%JRA-1p5-2023][%JRA-RYF6162][%JRA-RYF8485][%JRA-RYF9091][%JRA-RYF0304][%SIMPLE]"> Data driven ATM </desc>
     <desc option="QIA"> QIAN data set </desc>
     <desc option="WISOQIA">QIAN with water isotopes</desc>
     <desc option="CRUJRA2024"> CRUJRA 2024 data set </desc>
@@ -19,6 +22,7 @@
     <desc option="GSWP3v1"> GSWP3v1 data set </desc>
     <desc option="NLDAS2"> NLDAS2 regional 0.125 degree data set over the U.S. (25-53N, 235-293E). WARNING: Garbage data will be produced for runs extending beyond this regional domain. </desc>
     <desc option="CPLHIST"> Coupler hist data set (in this mode, it is strongly recommended that the model domain and the coupler history forcing are on the same domain)</desc>
+    <desc option="CPLHIST-CESM3"> Coupler hist data set with CESM3.0 specific spinup datasets </desc>
     <desc option="1PT">single point tower site data set </desc>
     <desc option="NYF">COREv2 normal year forcing</desc>
     <desc option="IAF">COREv2 interannual forcing</desc>
@@ -44,7 +48,7 @@
 
   <entry id="DATM_MODE">
     <type>char</type>
-    <valid_values>CORE2_NYF,CORE2_IAF,CLM_QIAN,CLM_QIAN_WISO,1PT,CLMCRUJRA2024,CLMCRUJRA2024b,CLMCRUNCEPv7,CLMGSWP3v1,CLMNLDAS2,CPLHIST,CORE_IAF_JRA,CORE_IAF_JRA_1p4_2018,CORE_IAF_JRA_1p5_2023,CORE_RYF6162_JRA,CORE_RYF8485_JRA,CORE_RYF9091_JRA,CORE_RYF0304_JRA,ERA5,SIMPLE</valid_values>
+    <valid_values>CORE2_NYF,CORE2_IAF,CLM_QIAN,CLM_QIAN_WISO,1PT,CLMCRUJRA2024,CLMCRUJRA2024b,CLMCRUNCEPv7,CLMGSWP3v1,CLMNLDAS2,CPLHIST,CPLHIST-CESM3,CORE_IAF_JRA,CORE_IAF_JRA_1p4_2018,CORE_IAF_JRA_1p5_2023,CORE_RYF6162_JRA,CORE_RYF8485_JRA,CORE_RYF9091_JRA,CORE_RYF0304_JRA,ERA5,SIMPLE</valid_values>
     <default_value>CORE2_NYF</default_value>
     <group>run_component_datm</group>
     <file>env_run.xml</file>
@@ -71,6 +75,7 @@
       <value compset="DATM%NLDAS2">CLMNLDAS2</value>
       <value compset="DATM%1PT">1PT</value>
       <value compset="DATM%ERA5">ERA5</value>
+      <!-- NOTE: This match captures both a simple DATM%CPLHIST and qualified variants like DATM%CPLHIST-CESM3, using the same mode for all of them -->
       <value compset="DATM%CPLHIST">CPLHIST</value>
       <value compset="DATM%SIMPLE">SIMPLE</value>
     </values>
@@ -93,7 +98,7 @@
       <value compset="^SSP534_" >SSP5-3.4</value>
       <value compset="^SSP585_" >SSP5-8.5</value>
       <value compset="^HIST_"   >hist</value>
-      <value compset="^20TR_"   >hist</value>
+      <!-- NOTE: This match captures both a simple DATM%CPLHIST and qualified variants like DATM%CPLHIST-CESM3, using the same mode for all of them -->
       <value compset="_DATM%CPLHIST">cplhist</value>
       <value compset="_DATM.*_DICE.*_DOCN.*_DROF">none</value>
     </values>
@@ -104,19 +109,29 @@
 
   <entry id="DATM_PRESNDEP">
     <type>char</type>
-    <valid_values>none,clim_1850_cmip7,clim_2000_cmip7,clim_2010_cmip7,hist_cmip7,clim_1850_cmip6,clim_2000_cmip6,clim_2010_cmip6,hist_cmip6,SSP1-2.6,SSP2-4.5,SSP3-7.0,SSP5-3.4,SSP5-8.5,cplhist</valid_values>
+    <!-- NOTE: Here clim_1850_cesm3 means the 1850 climatological dataset that CESM3.0 will use for CMIP7 that is from it's spinup simulation -->
+    <!--       In contrast clim_1850_cmip7 is the 1850 data provided by CMIP7 -->
+    <valid_values>none,clim_1850_cesm3,clim_1850_cmip7,clim_2000_cmip7,clim_2010_cmip7,hist_cmip7,clim_1850_cmip6,clim_2000_cmip6,clim_2010_cmip6,hist_cmip6,SSP1-2.6,SSP2-4.5,SSP3-7.0,SSP5-3.4,SSP5-8.5,cplhist</valid_values>
     <default_value>clim_2000</default_value>
     <values match="last">
-      <value compset="^1850_"       >clim_1850_cmip6</value>
-      <value compset="^2000_"       >clim_2000_cmip6</value>
-      <value compset="^2010_"       >clim_2010_cmip6</value>
-      <value compset="^HIST_"       >hist_cmip6</value>
-      <value compset="^20TR_"       >hist_cmip6</value>
-      <value compset="^SSP126_"     >SSP1-2.6</value>
-      <value compset="^SSP245_"     >SSP2-4.5</value>
-      <value compset="^SSP370_"     >SSP3-7.0</value>
-      <value compset="^SSP585_"     >SSP5-8.5</value>
-      <value compset="_DATM%CPLHIST">cplhist</value>
+      <!-- NorESM will use the CMIP7 dataset
+           Commented out as we don't currently have a way to distinguish between CESM3 and NorESM3 right now
+      <value compset="^1850_"                    >clim_1850_cmip7</value>
+      -->
+      <!-- CESM3 uses the CESM3 spinup dataset -->
+      <value compset="^1850_"                    >clim_1850_cesm3</value>
+      <!-- Use cmip6 when using CLM5 physics -->
+      <value compset="^1850_.*_CLM50"            >clim_1850_cmip6</value>
+
+      <value compset="^2000_"                    >clim_2000_cmip6</value>
+      <value compset="^2010_"                    >clim_2010_cmip6</value>
+      <value compset="^HIST_"                    >hist_cmip6</value>
+      <value compset="^SSP126_"                  >SSP1-2.6</value>
+      <value compset="^SSP245_"                  >SSP2-4.5</value>
+      <value compset="^SSP370_"                  >SSP3-7.0</value>
+      <value compset="^SSP585_"                  >SSP5-8.5</value>
+      <!-- NOTE: This match captures both a simple DATM%CPLHIST and qualified variants like DATM%CPLHIST-CESM3, using the same mode for all of them -->
+      <value compset="_DATM%CPLHIST"             >cplhist</value>
       <value compset="_DATM.*_DICE.*_DOCN.*_DROF">none</value>
     </values>
     <group>run_component_datm</group>
@@ -136,7 +151,6 @@
       <value compset="^SSP370_" >SSP3-7.0</value>
       <value compset="^SSP585_" >SSP5-8.5</value>
       <value compset="^HIST_"   >hist</value>
-      <value compset="^20TR_"   >hist</value>
       <!-- Only needed for compsets with active land; only in DATM CLMNCEP mode -->
       <value compset="_SLND">none</value>
       <value compset="_DLND">none</value>
@@ -154,6 +168,7 @@
       <!-- Only needed for compsets with active land; for other compsets, turn it off -->
       <value compset="_SLND">none</value>
       <value compset="_DLND">none</value>
+      <!-- NOTE: This match captures both a simple DATM%CPLHIST and qualified variants like DATM%CPLHIST-CESM3, using the same mode for all of them -->
       <value compset="_DATM%CPLHIST">cplhist</value>
     </values>
     <group>run_component_datm</group>
@@ -175,14 +190,18 @@
       <value compset="^SSP534_">SSP5-3.4</value>
       <value compset="^SSP585_">SSP5-8.5</value>
       <value compset="^HIST_"  >cmip6_20tr</value>
-      <value compset="^20TR"   >cmip6_20tr</value>
       <value compset="^OMIP_DATM%IAF.*_POP2%[^_]*ECO">omip.iaf</value>
       <value compset="^OMIP_DATM%JRA.*_POP2%[^_]*ECO">omip.jra</value>
+      <!-- NOTE: This match captures both a simple DATM%CPLHIST and qualified variants like DATM%CPLHIST-CESM3, using the same mode for all of them -->
       <value compset="_DATM%CPLHIST">cplhist</value>
     </values>
     <group>run_component_datm</group>
     <file>env_run.xml</file>
-    <desc>DATM CO2 time series</desc>
+    <desc>DATM CO2 time series
+          NOTE: This needs to be coordinated with CCSM_BGC in CMEPS, and with either the ocean or land model
+            For CLM coordinate it with the CLM_CO2_TYPE variable
+            For MOM coordinate it with the OCN_CO2_TYPE variable
+    </desc>
   </entry>
 
   <entry id="DATM_CPLHIST_DOMAIN_FILE">
@@ -205,15 +224,30 @@
     <type>char</type>
     <valid_values></valid_values>
     <default_value>UNSET</default_value>
+    <values match="last">
+      <value compset="1850.*_DATM%CPLHIST-CESM3">$DIN_LOC_ROOT/cplhist/cesm3_0/$DATM_CPLHIST_CASE/cpl/hist</value>
+    </values>
     <group>run_component_datm</group>
     <file>env_run.xml</file>
-    <desc>directory for coupler history data mode (only used for when DATM_MODE is CPLHIST)</desc>
+    <desc>
+      Directory for coupler history data mode (used when DATM_MODE is CPLHIST)
+      May also be used if any of these are set to cplhist: DATM_PRESAERO, DATM_NDEP, DATM_CO2_TSERIES, DATM_PRESO3, or DATM_TOPO
+      NOTE: This needs to be the full directory path where the CPLHIST files are stored, including the subdirectory for the CASENAME (that can be set using $DATM_CPLHIST_CASE)
+            We thus recommend that $DATM_CPLHIST_CASE be used in here to specify that case subdirectory.
+            This allows the DATM_CPLHIST_DIR to be set for all your CPLHIST datafiles, and you only need to modify $DATM_CPLHIST_CASE to point to a different CASE.
+            For example, to use the CPLHIST data generated from a case that you ran do this:
+            ./xmlchange DATM_CPLHIST_DIR='$CIME_OUTPUT_ROOT/archive/$DATM_CPLHIST_CASE/cpl/hist'
+            Which will then use the CPL history files in your archive directory for the case that created the desired CPLHIST data.
+    </desc>
   </entry>
 
   <entry id="DATM_CPLHIST_CASE">
     <type>char</type>
     <valid_values></valid_values>
     <default_value>UNSET</default_value>
+    <values match="last">
+      <value compset="1850.*_DATM%CPLHIST-CESM3">b.e30_alpha08o.B1850C_MTso.ne30_t232_wgx3.330</value>
+    </values>
     <group>run_component_datm</group>
     <file>env_run.xml</file>
     <desc>case name used to determine stream filenames when DATM_MODE is CPLHIST</desc>
@@ -234,10 +268,6 @@
       <value compset="HIST.*_DATM%CRUv7">1901</value>
       <value compset="HIST.*_DATM%GSW">1901</value>
       <value compset="HIST.*_DATM%NLDAS2">$DATM_YR_START</value>
-      <value compset="20TR.*_DATM%QIA">1895</value>
-      <value compset="20TR.*_DATM%CRUJRA2024[b]*">1901</value>
-      <value compset="20TR.*_DATM%CRUv7">1901</value>
-      <value compset="20TR.*_DATM%GSW">1901</value>
       <value compset="SSP.*_DATM%QIA">$DATM_YR_START</value>
       <value compset="SSP.*_DATM%CRUJRA2024[b]*">$DATM_YR_START</value>
       <value compset="SSP.*_DATM%CRUv7">$DATM_YR_START</value>
@@ -278,6 +308,11 @@
       <value compset="1850.*_DATM%CRUv7">1901</value>
       <value compset="1850.*_DATM%GSW">1901</value>
       <value compset="1850.*_DATM%NLDAS2">0</value>  <!-- Unsupported -->
+      <!-- Year start for CPLHIST with CESM3 spinup: give default, and also years for CLM and MOM (which will be different) -->
+      <value compset="1850.*_DATM%CPLHIST-CESM3">101</value>
+      <value compset="1850.*_DATM%CPLHIST-CESM3.*_CLM">101</value>
+      <value compset="1850.*_DATM%CPLHIST-CESM3.*_MOM6">101</value>
+
       <value compset="2000.*_DATM%WISOQIA">2000</value>
       <value compset="2000.*_DATM%QIA">1972</value>
       <value compset="HIST.*_DATM%QIA">1948</value>
@@ -285,11 +320,6 @@
       <value compset="HIST.*_DATM%CRUv7">1901</value>
       <value compset="HIST.*_DATM%GSW">1901</value>
       <value compset="HIST.*_DATM%NLDAS2">0</value>  <!-- Unsupported -->
-      <value compset="20TR.*_DATM%QIA">1948</value>
-      <value compset="20TR.*_DATM%CRUJRA2024[b]*">1901</value>
-      <value compset="20TR.*_DATM%CRUv7">1901</value>
-      <value compset="20TR.*_DATM%GSW">1901</value>
-      <value compset="20TR.*_DATM%NLDAS2">0</value>  <!-- Unsupported -->
       <value compset="4804.*_DATM%QIA">1948</value>
       <value compset="SSP.*_DATM%QIA" >1995</value>
       <value compset="SSP.*_DATM%CRUJRA2024[b]*" >2001</value>
@@ -349,6 +379,11 @@
       <value   compset="1850.*_DATM%CRUv7">1920</value>
       <value   compset="1850.*_DATM%GSW">1920</value>
       <value   compset="1850.*_DATM%NLDAS2">-1</value>  <!-- Unsupported -->
+      <!-- Year end for CPLHIST with CESM3 spinup: give default, and also years for CLM and MOM (which will be different) -->
+      <value   compset="1850.*_DATM%CPLHIST-CESM3">101</value>
+      <value   compset="1850.*_DATM%CPLHIST-CESM3.*_CLM">101</value>
+      <value   compset="1850.*_DATM%CPLHIST-CESM3.*_MOM6">101</value>
+
       <value   compset="2000.*_DATM%WISOQIA">2004</value>
       <value   compset="2000.*_DATM%QIA">2004</value>
       <value   compset="HIST.*_DATM%QIA">1972</value>
@@ -356,11 +391,6 @@
       <value   compset="HIST.*_DATM%CRUv7">1920</value>
       <value   compset="HIST.*_DATM%GSW">1920</value>
       <value   compset="HIST.*_DATM%NLDAS2">-1</value>  <!-- Unsupported -->
-      <value   compset="20TR.*_DATM%QIA">1972</value>
-      <value   compset="20TR.*_DATM%CRUJRA2024[b]*">1920</value>
-      <value   compset="20TR.*_DATM%CRUv7">1920</value>
-      <value   compset="20TR.*_DATM%GSW">1920</value>
-      <value   compset="20TR.*_DATM%NLDAS2">-1</value>  <!-- Unsupported -->
       <value   compset="4804.*_DATM%QIA">2004</value>
       <value   compset="SSP.*_DATM%QIA">2004</value>
       <value   compset="SSP.*_DATM%CRUJRA2024[b]*">2023</value>
