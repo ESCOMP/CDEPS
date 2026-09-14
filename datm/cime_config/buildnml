@@ -37,6 +37,8 @@ def _get_neon_data_availability(case, neonsite):
     Read the NEON inventory file and check availablity of tower data for this case.
     Put available data in datavaliddate list and return it
     Currently the valid date information is not used
+
+    returns None if no data is available for the site, otherwise returns a list of available data files
     """
     rundir = case.get_value("RUNDIR")
     fullpath = os.path.join(rundir,"listing.csv")
@@ -133,7 +135,7 @@ def _handle_model_grid(case, config):
 
     Will fail if settings aren't setup as expected
 
-    Returns an empty list normally; for a NEON case it returns the list of available NEON data
+    Returns None normally; otherwise for a NEON case it returns the list of available NEON data
     """
     available_neon_data = None
     model_grid = case.get_value("GRID")
@@ -278,7 +280,8 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     logger.debug("DATM presndep mode is {}".format(datm_presndep))
     logger.debug("DATM preso3 mode is {}".format(datm_preso3))
     logger.debug("DATM topo mode is {}".format(datm_topo))
-    logger.debug("CLM_USRDAT_NAME is {}".format(clm_usrdat_name))
+    if ( clm_usrdat_name is not None:
+        logger.debug("CLM_USRDAT_NAME is {}".format(clm_usrdat_name))
     logger.debug("COMPSET is {}".format(compset))
 
     # Initialize namelist defaults
