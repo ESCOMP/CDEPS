@@ -114,12 +114,12 @@
     <values match="last">
       <!-- NorESM will use the CMIP7 dataset
            Commented out as we don't currently have a way to distinguish between CESM3 and NorESM3 right now
-      <value compset="^1850.*DATM"               >clim_1850_cmip7</value>
+      <value compset="^1850_"                    >clim_1850_cmip7</value>
       -->
       <!-- CESM3 uses the CESM3 spinup dataset -->
-      <value compset="^1850.*DATM"               >clim_1850_cesm3</value>
+      <value compset="^1850_"                    >clim_1850_cesm3</value>
       <!-- Use cmip6 when using CLM5 physics -->
-      <value compset="^1850.*DATM.*_CLM50"       >clim_1850_cmip6</value>
+      <value compset="^1850_.*_CLM50"            >clim_1850_cmip6</value>
 
       <value compset="^2000_"                    >clim_2000_cmip6</value>
       <value compset="^2010_"                    >clim_2010_cmip6</value>
