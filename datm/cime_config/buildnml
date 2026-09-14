@@ -118,6 +118,7 @@ def _handle_pts_mode(case, config):
     ####################################################################################
     """Handle PTS mode settings for single column runs.  If PTS_LON and PTS_LAT are set, then set config[single_column] to true."""
     missing = -999.99
+    config["single_column"] = "false"   # Initialize to false always, but will set to true if PTS_DOMAINFILE, PTS_LAT/PTS_LON are all set
     if case.get_value("PTS_LON"):
         scol_lon = float(case.get_value("PTS_LON"))
     else:
@@ -199,7 +200,7 @@ def _handle_model_grid(case, config):
         config["model_grid"] = model_grid
         # CLM_USRDAT_NAME can NOT be set, if the model grid is NOT CLM_USRDAT
         expect(
-            clm_usrdat_name is None,
+            clm_usrdat_name is None or clm_usrdat_name == "UNSET",
             "CLM_USRDAT_NAME can NOT be set when GRID is NOT equal to 'CLM_USRDAT'",
         )
     #
