@@ -159,14 +159,15 @@ def _handle_model_grid(case, config):
                 config['plumber'] = "True"
     else:
         config['model_grid'] = model_grid
+        # CLM_USRDAT_NAME can NOT be set, if the model grid is NOT CLM_USRDAT
+        expect(clm_usrdat_name is None, "CLM_USRDAT_NAME can NOT be set when GRID is NOT equal to 'CLM_USRDAT'")
     #
     # Ensure output settings are done as expected
     #
     expect(config['model_grid'] is not None, "model_grid should have been set in this subroutine")
 
     #
-    # Check for expected settings when coupled to CLM for NEON and PLUMBER2 cases
-    # (These should be moved to CLM where these things are defined)
+    # Check for expected settings for NEON and PLUMBER2 cases
     #
     if clm_usrdat_name is not None:
         if "NEON" in clm_usrdat_name:
@@ -280,7 +281,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     logger.debug("DATM presndep mode is {}".format(datm_presndep))
     logger.debug("DATM preso3 mode is {}".format(datm_preso3))
     logger.debug("DATM topo mode is {}".format(datm_topo))
-    if ( clm_usrdat_name is not None:
+    if clm_usrdat_name is not None:
         logger.debug("CLM_USRDAT_NAME is {}".format(clm_usrdat_name))
     logger.debug("COMPSET is {}".format(compset))
 
