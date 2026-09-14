@@ -75,6 +75,7 @@
       <value compset="DATM%NLDAS2">CLMNLDAS2</value>
       <value compset="DATM%1PT">1PT</value>
       <value compset="DATM%ERA5">ERA5</value>
+      <!-- NOTE: This match captures both a simple DATM%CPLHIST and qualified variants like DATM%CPLHIST-CESM3, using the same mode for all of them -->
       <value compset="DATM%CPLHIST">CPLHIST</value>
       <value compset="DATM%SIMPLE">SIMPLE</value>
     </values>
@@ -97,6 +98,7 @@
       <value compset="^SSP534_" >SSP5-3.4</value>
       <value compset="^SSP585_" >SSP5-8.5</value>
       <value compset="^HIST_"   >hist</value>
+      <!-- NOTE: This match captures both a simple DATM%CPLHIST and qualified variants like DATM%CPLHIST-CESM3, using the same mode for all of them -->
       <value compset="_DATM%CPLHIST">cplhist</value>
       <value compset="_DATM.*_DICE.*_DOCN.*_DROF">none</value>
     </values>
@@ -128,6 +130,7 @@
       <value compset="^SSP245_"                  >SSP2-4.5</value>
       <value compset="^SSP370_"                  >SSP3-7.0</value>
       <value compset="^SSP585_"                  >SSP5-8.5</value>
+      <!-- NOTE: This match captures both a simple DATM%CPLHIST and qualified variants like DATM%CPLHIST-CESM3, using the same mode for all of them -->
       <value compset="_DATM%CPLHIST"             >cplhist</value>
       <value compset="_DATM.*_DICE.*_DOCN.*_DROF">none</value>
     </values>
@@ -165,6 +168,7 @@
       <!-- Only needed for compsets with active land; for other compsets, turn it off -->
       <value compset="_SLND">none</value>
       <value compset="_DLND">none</value>
+      <!-- NOTE: This match captures both a simple DATM%CPLHIST and qualified variants like DATM%CPLHIST-CESM3, using the same mode for all of them -->
       <value compset="_DATM%CPLHIST">cplhist</value>
     </values>
     <group>run_component_datm</group>
@@ -188,6 +192,7 @@
       <value compset="^HIST_"  >cmip6_20tr</value>
       <value compset="^OMIP_DATM%IAF.*_POP2%[^_]*ECO">omip.iaf</value>
       <value compset="^OMIP_DATM%JRA.*_POP2%[^_]*ECO">omip.jra</value>
+      <!-- NOTE: This match captures both a simple DATM%CPLHIST and qualified variants like DATM%CPLHIST-CESM3, using the same mode for all of them -->
       <value compset="_DATM%CPLHIST">cplhist</value>
     </values>
     <group>run_component_datm</group>
