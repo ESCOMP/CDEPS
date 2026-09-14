@@ -188,7 +188,7 @@ def _handle_model_grid(case, config):
                 expect(case.get_value('DATM_YR_END_FILENAME') == missing_yr_filename, "DATM_YR_END_FILENAME should NOT have been set, since PLUMBER2 is off")
 
         else:
-            expect(case.get_value('PLUMBER2SITE') == "", "PLUMBER2SITE should NOT have been set in this subroutine, since PLUMBER2 is off")
+            expect(case.get_value('PLUMBER2SITE') == "", "PLUMBER2SITE should NOT have been set, since PLUMBER2 is off")
 
     # Return the data available for NEON
     return available_neon_data
