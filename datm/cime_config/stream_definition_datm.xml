@@ -4933,8 +4933,8 @@
     </stream_datafiles>
     <stream_datavars>
       <!-- the following stream fields are in units of g/m2/sec - need conversion to kg/m2/sec-->
-      <var>NDEP_NHx_month  Faxa_ndep_nhx</var>
-      <var>NDEP_NOy_month  Faxa_ndep_noy</var>
+      <var>NDEP_NHx_month  Faxa_ndep_nhx  1.0d-3</var>
+      <var>NDEP_NOy_month  Faxa_ndep_noy  1.0d-3</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -4966,8 +4966,8 @@
     </stream_datafiles>
     <stream_datavars>
       <!-- the following stream fields are in units of g/m2/sec - need conversion to kg/m2/sec-->
-      <var>NDEP_NHx_month  Faxa_ndep_nhx</var>
-      <var>NDEP_NOy_month  Faxa_ndep_noy</var>
+      <var>NDEP_NHx_month  Faxa_ndep_nhx  1.0d-3</var>
+      <var>NDEP_NOy_month  Faxa_ndep_noy  1.0d-3</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -4998,8 +4998,9 @@
       <file>$DIN_LOC_ROOT/lnd/clm2/ndepdata/fndep_clm_hist_b.e21.BWHIST.f09_g17.CMIP6-historical-WACCM.ensmean_1849-2015_monthly_0.9x1.25_c180926.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>NDEP_NHx_month  Faxa_ndep_nhx</var>
-      <var>NDEP_NOy_month  Faxa_ndep_noy</var>
+      <!-- the following stream fields are in units of g/m2/sec - need conversion to kg/m2/sec-->
+      <var>NDEP_NHx_month  Faxa_ndep_nhx  1.0d-3</var>
+      <var>NDEP_NOy_month  Faxa_ndep_noy  1.0d-3</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -5031,8 +5032,8 @@
     </stream_datafiles>
     <stream_datavars>
       <!-- the following stream fields are in units of g/m2/sec - need conversion to kg/m2/sec-->
-      <var>NDEP_NHx_month  Faxa_ndep_nhx</var>
-      <var>NDEP_NOy_month  Faxa_ndep_noy</var>
+      <var>NDEP_NHx_month  Faxa_ndep_nhx  1.0d-3</var>
+      <var>NDEP_NOy_month  Faxa_ndep_noy  1.0d-3</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -5064,8 +5065,8 @@
     </stream_datafiles>
     <stream_datavars>
       <!-- the following stream fields are in units of g/m2/sec - need conversion to kg/m2/sec-->
-      <var>NDEP_NHx_month  Faxa_ndep_nhx</var>
-      <var>NDEP_NOy_month  Faxa_ndep_noy</var>
+      <var>NDEP_NHx_month  Faxa_ndep_nhx  1.0d-3</var>
+      <var>NDEP_NOy_month  Faxa_ndep_noy  1.0d-3</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -5097,8 +5098,8 @@
     </stream_datafiles>
     <stream_datavars>
       <!-- the following stream fields are in units of g/m2/sec - need conversion to kg/m2/sec-->
-      <var>NDEP_NHx_month  Faxa_ndep_nhx</var>
-      <var>NDEP_NOy_month  Faxa_ndep_noy</var>
+      <var>NDEP_NHx_month  Faxa_ndep_nhx  1.0d-3</var>
+      <var>NDEP_NOy_month  Faxa_ndep_noy  1.0d-3</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -5130,8 +5131,8 @@
     </stream_datafiles>
     <stream_datavars>
       <!-- the following stream fields are in units of g/m2/sec - need conversion to kg/m2/sec-->
-      <var>NDEP_NHx_month  Faxa_ndep_nhx</var>
-      <var>NDEP_NOy_month  Faxa_ndep_noy</var>
+      <var>NDEP_NHx_month  Faxa_ndep_nhx  1.0d-3</var>
+      <var>NDEP_NOy_month  Faxa_ndep_noy  1.0d-3</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -5164,8 +5165,8 @@
     </stream_datafiles>
     <stream_datavars>
       <!-- the following stream fields are in units of g/m2/sec - need conversion to kg/m2/sec-->
-      <var>NDEP_NHx_month  Faxa_ndep_nhx</var>
-      <var>NDEP_NOy_month  Faxa_ndep_noy</var>
+      <var>NDEP_NHx_month  Faxa_ndep_nhx  1.0d-3</var>
+      <var>NDEP_NOy_month  Faxa_ndep_noy  1.0d-3</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
@@ -5271,10 +5272,14 @@
       <meshfile>$ATM_DOMAIN_MESH</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file first_year="$DATM_YR_START" last_year="$DATM_YR_END">$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.ha2x1d.%ym.nc</file>
+      <file first_year="$DATM_YR_START" last_year="$DATM_YR_END">$DATM_CPLHIST_DIR/$DATM_CPLHIST_CASE.cpl.hx.atm.24h.avrg.%ymd.nc</file>
     </stream_datafiles>
     <stream_datavars>
-      <var>a2x1d_Faxa_ndep  Faxa_ndep</var>
+      <!-- the mediator writes the two ungridded elements of Faxa_ndep as
+           separate variables, index 1 being NHx and index 2 NOy.
+           These are already in kgN/m2/s, so no conversion factor is given. -->
+      <var>atmImp_Faxa_ndep1  Faxa_ndep_nhx</var>
+      <var>atmImp_Faxa_ndep2  Faxa_ndep_noy</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>

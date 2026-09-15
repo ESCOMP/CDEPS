@@ -597,7 +597,7 @@ contains
 
   !===============================================================================
   subroutine dglc_datamode_noevolve_restart_read(model_meshes, restfilem, rpfile, &
-       logunit, my_task, main_task, mpicom, &
+       logunit, my_task, main_task, &
        pio_subsystem, io_type, nx_global, ny_global, rc)
 
     ! input/output arguments
@@ -607,7 +607,6 @@ contains
     integer                , intent(in)    :: logunit
     integer                , intent(in)    :: my_task
     integer                , intent(in)    :: main_task
-    integer                , intent(in)    :: mpicom
     type(iosystem_desc_t)  , pointer       :: pio_subsystem   ! pio info
     integer                , intent(in)    :: io_type         ! pio info
     integer                , intent(in)    :: nx_global(:)
@@ -632,13 +631,16 @@ contains
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
+
+    call ESMF_VMGetCurrent(vm, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
     ! Determine restart file
-
-
+    !
+    ! Note that we first determine existence only on the main task, then broadcast this to
+    ! other tasks.
+    exists = .false.
     if (trim(restfilem) == trim(nullstr)) then
-       exists = .false.
-       call ESMF_VMGetCurrent(vm, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
        if (my_task == main_task) then
           write(logunit,'(a)') subname//' restart filename from rpointer '//trim(rpfile)
           open(newunit=nu, file=trim(rpfile), form='formatted')
@@ -646,7 +648,7 @@ contains
           close(nu)
           inquire(file=trim(restfilem), exist=exists)
        endif
-       call ESMF_VMBroadCast(vm, restfilem, CL, main_task, rc=rc)
+       call ESMF_VMBroadCast(vm, restfilem, len(restfilem), main_task, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     else
        ! use namelist already read
@@ -657,9 +659,13 @@ contains
     endif
     tmp = 0
     if(exists) tmp=1
+    call ESMF_VMBroadCast(vm, tmp, 1, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
     exists = (tmp(1) == 1)
-    if (.not. exists .and. my_task == main_task) then
-       write(logunit, '(a)') subname//' file not found, skipping '//trim(restfilem)
+    if (.not. exists) then
+       if (my_task == main_task) then
+          write(logunit, '(a)') subname//' file not found, skipping '//trim(restfilem)
+       end if
        return
     end if
 

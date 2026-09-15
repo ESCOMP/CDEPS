@@ -23,10 +23,9 @@ module datm_pres_ndep_mod
   real(r8), pointer :: strm_Faxa_ndep_noy_dry(:) => null() ! stream cmip7 ndep data
   real(r8), pointer :: strm_Faxa_ndep_noy_wet(:) => null() ! stream cmip7 ndep data
 
-  real(r8), pointer :: strm_Faxa_ndep_nhx(:)     => null() ! pre-cmip7 ndep data
-  real(r8), pointer :: strm_Faxa_ndep_noy(:)     => null() ! pre-cmip7 ndep data
+  real(r8), pointer :: strm_Faxa_ndep_nhx(:)     => null() ! pre-cmip7 ndep data and cplhist
+  real(r8), pointer :: strm_Faxa_ndep_noy(:)     => null() ! pre-cmip7 ndep data and cplhist
 
-  logical :: use_cmip7_ndep
 
   character(len=*), parameter :: u_FILE_u = &
        __FILE__
@@ -76,20 +75,17 @@ contains
     call shr_strdata_get_stream_pointer(sdat, 'Faxa_ndep_noy_wet', strm_Faxa_ndep_noy_wet, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    ! cmip6 ndep forcing
+    ! cmip6 ndep forcing and cplhist
     call shr_strdata_get_stream_pointer( sdat, 'Faxa_ndep_nhx', strm_Faxa_ndep_nhx, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'Faxa_ndep_noy', strm_Faxa_ndep_noy, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    ! determine use_cmip_ndep module variable
-    if (associated(strm_Faxa_ndep_nhx_dry) .and. associated(strm_Faxa_ndep_nhx_wet) .and. &
-        associated(strm_Faxa_ndep_noy_dry) .and. associated(strm_Faxa_ndep_noy_wet)) then
-       use_cmip7_ndep = .true.
-    else if (associated(strm_Faxa_ndep_nhx) .and. associated(strm_Faxa_ndep_noy)) then
-       use_cmip7_ndep = .false.
-    else
-       call shr_log_error('datm_ndep_advance: ERROR: no associated stream pointers for ndep forcing', rc=rc)
+    ! Check that one of the two supported field sets was found.
+    if (.not. ((associated(strm_Faxa_ndep_nhx_dry) .and. associated(strm_Faxa_ndep_nhx_wet) .and.  &
+                associated(strm_Faxa_ndep_noy_dry) .and. associated(strm_Faxa_ndep_noy_wet)) .or. &
+               (associated(strm_Faxa_ndep_nhx)     .and. associated(strm_Faxa_ndep_noy)))) then
+       call shr_log_error('datm_pres_ndep: ERROR: no associated stream pointers for ndep forcing', rc=rc)
        return
     end if
 
@@ -98,14 +94,14 @@ contains
   !===============================================================================
   subroutine datm_pres_ndep_advance()
 
-    if (use_cmip7_ndep) then
-       ! assume data is in kgN/m2/s
+    ! Separate dry and wet deposition fields are summed where the stream provides
+    ! them; otherwise the combined fields are used.
+    if (associated(strm_Faxa_ndep_nhx_dry)) then
        Faxa_ndep(1,:) = strm_Faxa_ndep_nhx_dry(:) + strm_Faxa_ndep_nhx_wet(:)
        Faxa_ndep(2,:) = strm_Faxa_ndep_noy_dry(:) + strm_Faxa_ndep_noy_wet(:)
     else
-       ! convert ndep flux to units of kgN/m2/s (input is in gN/m2/s)
-       Faxa_ndep(1,:) = strm_Faxa_ndep_nhx(:) / 1000._r8
-       Faxa_ndep(2,:) = strm_Faxa_ndep_noy(:) / 1000._r8
+       Faxa_ndep(1,:) = strm_Faxa_ndep_nhx(:)
+       Faxa_ndep(2,:) = strm_Faxa_ndep_noy(:)
     end if
 
   end subroutine datm_pres_ndep_advance
