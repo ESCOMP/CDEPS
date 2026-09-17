@@ -258,8 +258,8 @@ contains
       real(r8)               :: eus       ! eustatic sea level
       real(r8)               :: lsrf      ! lower surface elevation (m) on ice grid
       real(r8)               :: usrf      ! upper surface elevation (m) on ice grid
-      real(r8)               :: Tot_pos_smb(1) ! Sum of positive smb values on each ice sheet for hole-filling
-      real(r8)               :: Tot_neg_smb(1) ! Sum of negative smb values on each ice sheet for hole-filling
+      real(r8)               :: Tot_pos_smb ! Sum of positive smb values on each ice sheet for hole-filling
+      real(r8)               :: Tot_neg_smb ! Sum of negative smb values on each ice sheet for hole-filling
       ! Per-grid-cell contributions to the above sums. These are kept per grid cell, rather than
       ! being summed up locally here, so that the global sums can be computed in a manner that is
       ! independent of processor count if bfbflag is set.
@@ -403,9 +403,9 @@ contains
             allocate(loc_pos_smb(lsize))
             allocate(loc_neg_smb(lsize))
             loc_pos_smb(:) = 0.d0
-            Tot_pos_smb(1) = 0.d0
+            Tot_pos_smb = 0.d0
             loc_neg_smb(:) = 0.d0
-            Tot_neg_smb(1) = 0.d0
+            Tot_neg_smb = 0.d0
             rat = 0.d0
 
             ! For No Evolve to reduce negative ice fluxes from DGLC, we will
@@ -423,9 +423,9 @@ contains
             end do
             ! Now do two global sums to get the ice sheet total positive
             ! and negative ice fluxes
-            call dshr_global_sums(gcomp, loc_pos_smb, Tot_pos_smb(1), rc)
+            call dshr_global_sums(gcomp, loc_pos_smb, Tot_pos_smb, rc)
             if (ChkErr(rc,__LINE__,u_FILE_u)) return
-            call dshr_global_sums(gcomp, loc_neg_smb, Tot_neg_smb(1), rc)
+            call dshr_global_sums(gcomp, loc_neg_smb, Tot_neg_smb, rc)
             if (ChkErr(rc,__LINE__,u_FILE_u)) return
             deallocate(loc_pos_smb)
             deallocate(loc_neg_smb)
@@ -436,12 +436,12 @@ contains
             ! positive value. This section also applies to any chunks
             ! where there is no negative smb. In that case the ice
             ! runoff is exactly equal to the input smb.
-            if(abs(Tot_pos_smb(1)) >= abs(Tot_neg_smb(1))) then
+            if(abs(Tot_pos_smb) >= abs(Tot_neg_smb)) then
                do ng = 1,lsize
                   if (Sg_icemask_coupled_fluxes(ns)%ptr(ng) > 0.d0) then
                      if(Flgl_qice(ns)%ptr(ng) > 0.d0) then
-                        rat = Flgl_qice(ns)%ptr(ng)/Tot_pos_smb(1)
-                        Fgrg_rofi(ns)%ptr(ng) = Flgl_qice(ns)%ptr(ng) + rat*Tot_neg_smb(1)
+                        rat = Flgl_qice(ns)%ptr(ng)/Tot_pos_smb
+                        Fgrg_rofi(ns)%ptr(ng) = Flgl_qice(ns)%ptr(ng) + rat*Tot_neg_smb
                      else
                         Fgrg_rofi(ns)%ptr(ng) = 0.d0
                      end if
@@ -457,8 +457,8 @@ contains
                do ng = 1,lsize
                   if (Sg_icemask_coupled_fluxes(ns)%ptr(ng) > 0.d0) then
                      if(Flgl_qice(ns)%ptr(ng) < 0.d0) then
-                        rat = Flgl_qice(ns)%ptr(ng)/Tot_neg_smb(1)
-                        Fgrg_rofi(ns)%ptr(ng) = Flgl_qice(ns)%ptr(ng) + rat*Tot_pos_smb(1)
+                        rat = Flgl_qice(ns)%ptr(ng)/Tot_neg_smb
+                        Fgrg_rofi(ns)%ptr(ng) = Flgl_qice(ns)%ptr(ng) + rat*Tot_pos_smb
                      else
                         Fgrg_rofi(ns)%ptr(ng) = 0.d0
                      end if
