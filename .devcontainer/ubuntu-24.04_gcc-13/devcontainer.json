@@ -1,0 +1,24 @@
+{
+    "name": "cdepsdev_ubuntu-24.04_gcc-13",
+    "build": { "dockerfile": "Dockerfile" },
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "terminal.integrated.defaultProfile.linux": "bash",
+                "terminal.integrated.profiles.linux": {
+                    "bash": {
+                        "path": "bash",
+                        "args": ["-l"]
+                    }
+                }
+            },
+            "extensions": [
+                "ms-vscode.cmake-tools",
+                "ms-vscode.cpptools",
+                "fortran-lang.modern-fortran"
+            ]
+        }
+    },
+	"workspaceMount": "source=${localWorkspaceFolder},target=/home/cdepsdev/CDEPS,type=bind,consistency=cached",
+	"workspaceFolder": "/home/cdepsdev/CDEPS"
+}
