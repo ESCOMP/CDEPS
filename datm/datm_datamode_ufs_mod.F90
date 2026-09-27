@@ -48,6 +48,73 @@ module datm_datamode_ufs_mod
 
 contains
 
+  subroutine add_stream_variables_to_export(streamfilename, fldsExport, ufs_state, rc)
+    character(len=*),         intent(in)    :: streamfilename
+    type(dshr_fldList_type),  intent(inout) :: fldsExport
+    type(ufs_datamode_state), intent(inout) :: ufs_state
+    integer,                  intent(out)   :: rc
+
+    rc = ESMF_SUCCESS
+
+    ! allocate streamdat instance on all tasks
+    nstrms = 0
+
+    ! set ESMF config
+    cf =  ESMF_ConfigCreate(rc=RC)
+    call ESMF_ConfigLoadFile(config=CF ,filename=trim(streamfilename), rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    ! get number of streams
+    nstrms = ESMF_ConfigGetLen(config=CF, label='stream_info:', rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    ! allocate an array of shr_stream_streamtype objects
+    if (nstrms > 0) then
+      allocate(streamdat(nstrms), stat=istat)
+      if ( istat /= 0 ) then
+         call shr_log_error(subName//': allocation error for streamdat with size '//toString(nstrms),rc=rc)
+         return
+      end if
+    else
+      call shr_log_error("no stream_info in config file "//trim(streamfilename), rc=rc)
+      return
+    endif
+
+    do i=1, nstrms
+      ! Get name of stream variables in file and model
+      streamdat(i)%nvars = ESMF_ConfigGetLen(config=CF, label="stream_data_variables"//mystrm//':', rc=rc)
+      if( streamdat(i)%nvars > 0) then
+        allocate(streamdat(i)%varlist(streamdat(i)%nvars), stat=istat)
+        if ( istat /= 0 ) then
+           call shr_log_error(subName//&
+                ': allocation error for streamdat('//toString(i)//')%varlist'//&
+                ' with size '//toString(streamdat(i)%nvars), rc=rc)
+           return
+        end if
+        allocate(strm_tmpstrings(streamdat(i)%nvars), stat=istat)
+        if ( istat /= 0 ) then
+           call shr_log_error(subName//&
+                ': allocation error for strm_tmpstrings('//toString(i)//')%varlist'//&
+                ' with size '//toString(streamdat(i)%nvars), rc=rc)
+           return
+        end if
+        call ESMF_ConfigGetAttribute(CF,valueList=strm_tmpstrings,label="stream_data_variables"//mystrm//':', rc=rc)
+        do n=1, streamdat(i)%nvars
+          streamdat(i)%varlist(n)%nameinfile = strm_tmpstrings(n)(1:index(trim(strm_tmpstrings(n)), " "))
+          streamdat(i)%varlist(n)%nameinmodel = strm_tmpstrings(n)(index(trim(strm_tmpstrings(n)), " ", .true.)+1:)
+
+          call append_var_map(ufs_state%var_maps, trim(streamdat(i)%varlist(n)%nameinmodel))
+          call dshr_fldList_add(fldsExport, trim(streamdat(i)%varlist(n)%nameinmodel))
+        enddo
+        deallocate(strm_tmpstrings)
+      else
+         call shr_log_error("stream data variables must be provided", rc=rc)
+         return
+      endif
+    end do ! i nstrms
+
+  end subroutine add_stream_variables_to_export
+
   !=============================================================================
   ! \brief Reads config streams and advertises to CDEPS field list
   !=============================================================================
@@ -67,17 +134,8 @@ contains
     
     rc = ESMF_SUCCESS
 
-    ! TODO - parse datm.streams stream_variables to fldsExport
-    Error
-
-    call dshr_fldList_add(fldsExport, trim(flds_scalar_name))
-    do istrm = 1, size(streamdat)
-      ! Loop over stream nvars and fetch nameinmodel per CDEPS structs
-      do ivar = 1, streamdat(istrm)%nvars
-        call append_var_map(ufs_state%var_maps, streamdat(istrm)%varlist(ivar)%nameinmodel)
-        call dshr_fldList_add(fldsExport, trim(streamdat(istrm)%varlist(ivar)%nameinmodel))
-      end do
-    end do
+    ! parse datm.streams stream_variables to fldsExport and ufs_state
+    call add_stream_variables_to_export(streamfilename, fldsExport, ufs_state, rc)
     ! deallocate(streamdat)
 
     fldlist => fldsExport ! the head of the linked list
