@@ -420,7 +420,7 @@ contains
        call datm_datamode_gefs_advertise(exportState, fldsExport, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('UFS')
-       call datm_datamode_ufs_advertise(fldsExport, ufs_state, rc)
+       call datm_datamode_ufs_advertise(exportState, fldsExport, ufs_state, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('SIMPLE')
        call datm_datamode_simple_advertise(exportState, fldsExport, flds_scalar_name, &

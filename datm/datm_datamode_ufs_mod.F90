@@ -51,32 +51,26 @@ contains
   !=============================================================================
   ! \brief Reads config streams and advertises to CDEPS field list
   !=============================================================================
-  subroutine datm_datamode_ufs_advertise(fldsExport, ufs_state, rc)
-    use pio, only : iosystem_desc_t
+  subroutine datm_datamode_ufs_advertise(exportState, fldsExport, ufs_state, flds_scalar_name, rc)
 
+    type(esmf_State)        , intent(inout) :: exportState
     type(fldList_type),       pointer       :: fldsExport
     type(ufs_datamode_state), intent(inout) :: ufs_state
+    character(len=*)        , intent(in)    :: flds_scalar_name
     integer,                  intent(out)   :: rc
     
     type(shr_stream_streamType), pointer    :: streamdat(:)
     integer :: istrm, ivar
     
     character(len=18) :: streamfilename = 'datm.streams'
+    type(fldlist_type), pointer :: fldList
     
-    ! Dummy IO variables for parsing stage. 
-    ! The actual IO handles will be set up by sdat during Realize.
-    integer :: logunit       = 6
-    type(iosystem_desc_t), pointer :: pio_subsystem
-    integer :: io_type       = 0
-    integer :: io_format     = 0
-
     rc = ESMF_SUCCESS
 
-    ! Parse stream file for 1-to-1 variables using dummy IO handles
-    call shr_stream_init_from_esmfconfig(streamfilename, streamdat, logunit, &
-                                         pio_subsystem, io_type, io_format, rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    ! TODO - parse datm.streams stream_variables to fldsExport
+    Error
 
+    call dshr_fldList_add(fldsExport, trim(flds_scalar_name))
     do istrm = 1, size(streamdat)
       ! Loop over stream nvars and fetch nameinmodel per CDEPS structs
       do ivar = 1, streamdat(istrm)%nvars
@@ -85,6 +79,14 @@ contains
       end do
     end do
     ! deallocate(streamdat)
+
+    fldlist => fldsExport ! the head of the linked list
+    do while (associated(fldlist))
+       call NUOPC_Advertise(exportState, standardName=fldlist%stdname, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       call ESMF_LogWrite('(datm_comp_advertise): Fr_atm '//trim(fldList%stdname), ESMF_LOGMSG_INFO)
+       fldList => fldList%next
+    enddo
 
   end subroutine datm_datamode_ufs_advertise
 
@@ -112,7 +114,7 @@ contains
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
         
         call dshr_state_getfldptr(exportState, trim(ufs_state%var_maps(i)%var_name), &
-             fldptr1=ufs_state%var_maps(i)%ptr_exp, rc=rc)
+             fldptr1=ufs_state%var_maps(i)%ptr_exp, allowNullReturn=.true., rc=rc)
         if (ChkErr(rc,__LINE__,u_FILE_u)) return
       end do
     end if
