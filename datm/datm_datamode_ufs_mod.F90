@@ -50,8 +50,10 @@ contains
 
   subroutine add_stream_variables_to_export(streamfilename, fldsExport, ufs_state, rc)
     
+    use shr_strconvert_mod, only : toString
+
     character(len=*),         intent(in)    :: streamfilename
-    type(dshr_fldList_type),  intent(inout) :: fldsExport
+    type(fldList_type),       pointer       :: fldsExport
     type(ufs_datamode_state), intent(inout) :: ufs_state
     integer,                  intent(out)   :: rc
 
@@ -62,8 +64,8 @@ contains
     integer                  :: myid
     character(2)             :: mystrm
     integer                  :: istat
-    character(len=ESMF_MAXSTR), allocatable :: strm_tmpstrings(:)
-    type(shr_stream_streamType), pointer    :: streamdat(:)
+    character(len=ESMF_MAXSTR), allocatable   :: strm_tmpstrings(:)
+    type(shr_stream_streamType), allocatable  :: streamdat(:)
 
     character(len=*), parameter  :: u_FILE_u = __FILE__
     character(len=*), parameter  :: subName = '(add_stream_variables_to_export)'
@@ -96,6 +98,7 @@ contains
 
     do i=1, nstrms
       ! Get name of stream variables in file and model
+      write(mystrm,"(I2.2)") i
       streamdat(i)%nvars = ESMF_ConfigGetLen(config=CF, label="stream_data_variables"//mystrm//':', rc=rc)
       if( streamdat(i)%nvars > 0) then
         allocate(streamdat(i)%varlist(streamdat(i)%nvars), stat=istat)
@@ -134,6 +137,8 @@ contains
       end do
       deallocate(streamdat)
     end if
+    call ESMF_ConfigDestroy(config=CF, rc=RC)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine add_stream_variables_to_export
 
@@ -155,6 +160,7 @@ contains
 
     ! parse datm.streams stream_variables to fldsExport and ufs_state
     call add_stream_variables_to_export(streamfilename, fldsExport, ufs_state, rc)
+    call dshr_fldList_add(fldsExport, trim(flds_scalar_name))
 
     fldlist => fldsExport ! the head of the linked list
     do while (associated(fldlist))

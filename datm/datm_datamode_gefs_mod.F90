@@ -39,7 +39,6 @@ module datm_datamode_gefs_mod
   real(r8), pointer :: Faxa_swvdf(:)      => null()
 
   ! stream data
-  real(r8), pointer :: strm_Sa_mask(:)    => null()
   real(r8), pointer :: strm_Sa_z(:)       => null()
   real(r8), pointer :: strm_Sa_u(:)       => null()
   real(r8), pointer :: strm_Sa_v(:)       => null()
@@ -135,9 +134,6 @@ contains
     rc = ESMF_SUCCESS
 
     ! initialize pointers for module level stream arrays
-    call shr_strdata_get_stream_pointer( sdat, 'Sa_mask', strm_Sa_mask , requirePointer=.true., &
-         errmsg=subname//'ERROR: strm_Sa_mask must be associated for gefs datamode', rc=rc)
-    if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call shr_strdata_get_stream_pointer( sdat, 'Sa_z', strm_Sa_z , requirePointer=.true., &
          errmsg=subname//'ERROR: strm_Sa_z must be associated for gefs datamode', rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -256,7 +252,7 @@ contains
 
     rc = ESMF_SUCCESS
 
-    lsize = size(strm_Sa_mask)
+    lsize = size(strm_Sa_tbot)
 
     if (first_time) then
        call ESMF_VMGetCurrent(vm, rc=rc)
@@ -269,13 +265,6 @@ contains
        tbotmax = rtmp(2)
 
        if (mainproc) write(logunit,*) subname,' tbotmax = ',tbotmax
-
-       ! determine maskmax (see below for use)
-       rtmp(1) = maxval(strm_Sa_mask(:))
-       call ESMF_VMAllReduce(vm, rtmp, rtmp(2:), 1, ESMF_REDUCE_MAX, rc=rc)
-       if (ChkErr(rc,__LINE__,u_FILE_u)) return
-       maskmax = rtmp(2)
-       if (mainproc) write(logunit,*) subname,' maskmax = ',maskmax
 
        ! reset first_time
        first_time = .false.
