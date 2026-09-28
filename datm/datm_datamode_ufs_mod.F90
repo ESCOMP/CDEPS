@@ -21,7 +21,7 @@ module datm_datamode_ufs_mod
   use dshr_strdata_mod, only: shr_strdata_type, shr_strdata_get_stream_pointer
   use dshr_methods_mod, only: dshr_state_getfldptr, chkerr
   use shr_log_mod,      only: shr_log_error
-  use dshr_stream_mod,  only: shr_stream_streamType, shr_stream_init_from_esmfconfig
+  use dshr_stream_mod,  only: shr_stream_streamType
   use dshr_fldList_mod, only: fldList_type, dshr_fldList_add
 
   implicit none
@@ -49,10 +49,24 @@ module datm_datamode_ufs_mod
 contains
 
   subroutine add_stream_variables_to_export(streamfilename, fldsExport, ufs_state, rc)
+    
     character(len=*),         intent(in)    :: streamfilename
     type(dshr_fldList_type),  intent(inout) :: fldsExport
     type(ufs_datamode_state), intent(inout) :: ufs_state
     integer,                  intent(out)   :: rc
+
+    ! local variables
+    type(ESMF_VM)            :: vm
+    type(ESMF_Config)        :: cf
+    integer                  :: i, n, nstrms
+    integer                  :: myid
+    character(2)             :: mystrm
+    integer                  :: istat
+    character(len=ESMF_MAXSTR), allocatable :: strm_tmpstrings(:)
+    type(shr_stream_streamType), pointer    :: streamdat(:)
+
+    character(len=*), parameter  :: u_FILE_u = __FILE__
+    character(len=*), parameter  :: subName = '(add_stream_variables_to_export)'
 
     rc = ESMF_SUCCESS
 
@@ -113,6 +127,14 @@ contains
       endif
     end do ! i nstrms
 
+    ! Clean up local memory
+    if (allocated(streamdat)) then
+      do i=1, nstrms
+        if (allocated(streamdat(i)%varlist)) deallocate(streamdat(i)%varlist)
+      end do
+      deallocate(streamdat)
+    end if
+
   end subroutine add_stream_variables_to_export
 
   !=============================================================================
@@ -126,9 +148,6 @@ contains
     character(len=*)        , intent(in)    :: flds_scalar_name
     integer,                  intent(out)   :: rc
     
-    type(shr_stream_streamType), pointer    :: streamdat(:)
-    integer :: istrm, ivar
-    
     character(len=18) :: streamfilename = 'datm.streams'
     type(fldlist_type), pointer :: fldList
     
@@ -136,7 +155,6 @@ contains
 
     ! parse datm.streams stream_variables to fldsExport and ufs_state
     call add_stream_variables_to_export(streamfilename, fldsExport, ufs_state, rc)
-    ! deallocate(streamdat)
 
     fldlist => fldsExport ! the head of the linked list
     do while (associated(fldlist))
