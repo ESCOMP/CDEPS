@@ -59,10 +59,8 @@ contains
     integer,                  intent(out)   :: rc
 
     ! local variables
-    type(ESMF_VM)            :: vm
     type(ESMF_Config)        :: cf
     integer                  :: i, n, nstrms
-    integer                  :: myid
     character(2)             :: mystrm
     integer                  :: istat
     character(len=ESMF_MAXSTR), allocatable   :: strm_tmpstrings(:)
