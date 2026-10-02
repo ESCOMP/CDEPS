@@ -288,7 +288,7 @@ contains
 
     ! Initialize sdat
     call ESMF_TraceRegionEnter('dlnd_strdata_init')
-    call dshr_mesh_init(gcomp, sdat, nullstr, logunit, 'LND', nx_global, ny_global, &
+    call dshr_mesh_init(gcomp, sdat, nullstr, logunit, 'LND', &
          model_meshfile, model_maskfile, model_mesh, model_mask, model_frac, restart_read, rc=rc)
 
     ! Initialize stream data type
@@ -296,7 +296,7 @@ contains
 #ifndef DISABLE_FoX
     streamfilename = trim(streamfilename)//'.xml'
 #endif
-    call shr_strdata_init_from_config(sdat, streamfilename, model_mesh, clock, 'LND', logunit, rc=rc)
+    call shr_strdata_init_from_config(sdat, streamfilename, model_mesh, nx_global, ny_global, clock, 'LND', logunit, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_TraceRegionExit('dlnd_strdata_init')
 

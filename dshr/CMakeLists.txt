@@ -2,6 +2,7 @@ project(dshr Fortran)
 
 set(SRCFILES  dshr_dfield_mod.F90
               dshr_fldlist_mod.F90
+              dshr_global_sums_mod.F90
               dshr_mod.F90)
 
 foreach(FILE ${SRCFILES})

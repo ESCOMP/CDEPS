@@ -1,0 +1,3 @@
+./xmlchange DATM_PRESNDEP=hist_cmip7
+./xmlchange DATM_CO2_TSERIES=cmip7_20tr
+

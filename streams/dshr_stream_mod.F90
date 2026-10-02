@@ -52,7 +52,8 @@ module dshr_stream_mod
   public :: shr_stream_findBounds        ! return lower/upper bounding date info
   public :: shr_stream_getMeshFileName   ! return stream filename
   public :: shr_stream_getModelFieldList ! return model field name list
-  public :: shr_stream_getStreamFieldList! return stream file field name list
+  public :: shr_stream_getStreamFieldList ! return stream file field name list
+  public :: shr_stream_getFieldScaleFactors ! return per-field unit conversion factors
   public :: shr_stream_getPrevFileName   ! return previous file in sequence
   public :: shr_stream_getNextFileName   ! return next file in sequence
   public :: shr_stream_getNFiles         ! get the number of files in a stream
@@ -99,6 +100,11 @@ module dshr_stream_mod
   type shr_stream_data_variable
      character(len=CS) :: nameinfile
      character(len=CS) :: nameinmodel
+     ! Optional unit conversion, applied to this field as it is read.  Given as
+     ! a third token on the <var> line in the stream definition xml; absent
+     ! means 1.0.  Units are a property of the field, not of the stream, so a
+     ! stream may mix converted and unconverted fields.
+     real(r8)          :: scale_factor = 1.0_r8
   end type shr_stream_data_variable
 
   type shr_stream_streamType
@@ -350,8 +356,7 @@ contains
           do n = 1, streamdat(i)%nvars
              p => item(varlist, n-1)
              call extractDataContent(p, tmpstr)
-             streamdat(i)%varlist(n)%nameinfile = tmpstr(1:index(tmpstr, " "))
-             streamdat(i)%varlist(n)%nameinmodel = tmpstr(index(trim(tmpstr), " ", .true.)+1:)
+             call parse_var_entry(tmpstr, streamdat(i)%varlist(n))
           enddo
 
        enddo
@@ -413,6 +418,10 @@ contains
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           call ESMF_VMBroadCast(vm, streamdat(i)%varlist(n)%nameinmodel, CS, 0, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          rtmp(1) = streamdat(i)%varlist(n)%scale_factor
+          call ESMF_VMBroadCast(vm, rtmp, 1, 0, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          streamdat(i)%varlist(n)%scale_factor = rtmp(1)
        enddo
        call ESMF_VMBroadCast(vm, streamdat(i)%meshfile,     CL, 0, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -1612,6 +1621,72 @@ contains
     enddo
 
   end subroutine shr_stream_getModelFieldList
+
+  !===============================================================================
+  subroutine parse_var_entry(entry, var)
+
+    ! Parse one <var> line into its two or three whitespace-separated tokens:
+    !
+    !     <var>drynhx  Faxa_ndep_nhx_dry</var>
+    !     <var>NDEP_NHx_month  Faxa_ndep_nhx  1.0e-3</var>
+    !
+    ! The optional third token is a unit-conversion factor applied to this field
+    ! as it is read.  Absent leaves the default of 1.0.
+
+    ! input/output parameters:
+    character(len=*)                ,intent(in)    :: entry
+    type(shr_stream_data_variable)  ,intent(inout) :: var
+
+    integer           :: pos, next, ios
+    character(len=CX) :: rest, third
+    character(len=*),parameter :: subName = '(parse_var_entry) '
+    !-------------------------------------------------------------------------------
+
+    rest = adjustl(entry)
+
+    pos = index(trim(rest), " ")
+    if (pos == 0) then
+       call shr_sys_abort(subName//" stream var entry needs at least two fields: "//trim(entry), &
+            file=u_FILE_u, line=__LINE__)
+    end if
+    var%nameinfile = rest(1:pos-1)
+
+    rest = adjustl(rest(pos+1:))
+    next = index(trim(rest), " ")
+    if (next == 0) then
+       ! two tokens: no conversion
+       var%nameinmodel  = trim(rest)
+       var%scale_factor = 1.0_r8
+       return
+    end if
+    var%nameinmodel = rest(1:next-1)
+
+    third = adjustl(rest(next+1:))
+    read(third, *, iostat=ios) var%scale_factor
+    if (ios /= 0) then
+       call shr_sys_abort(subName//" could not read scale factor from stream var entry: "//trim(entry), &
+            file=u_FILE_u, line=__LINE__)
+    end if
+
+  end subroutine parse_var_entry
+
+  !===============================================================================
+  subroutine shr_stream_getFieldScaleFactors(stream, factors)
+
+    ! Get the per-field unit-conversion factors, in the same order as
+    ! shr_stream_getStreamFieldList and shr_stream_getModelFieldList.
+
+    !input/output parameters:
+    type(shr_stream_streamType) ,intent(in)  :: stream
+    real(r8)                    ,intent(out) :: factors(:)
+    !-------------------------------------------------------------------------------
+    integer :: i
+
+    do i=1,stream%nvars
+       factors(i) = stream%varlist(i)%scale_factor
+    enddo
+
+  end subroutine shr_stream_getFieldScaleFactors
 
   !===============================================================================
   subroutine shr_stream_getStreamFieldList(stream, list)

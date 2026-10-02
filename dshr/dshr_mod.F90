@@ -235,7 +235,7 @@ contains
   end subroutine dshr_init
 
   !===============================================================================
-  subroutine dshr_mesh_init(gcomp, sdat, nullstr, logunit, compname, model_nxg, model_nyg, &
+  subroutine dshr_mesh_init(gcomp, sdat, nullstr, logunit, compname, &
        model_meshfile, model_maskfile, model_mesh, model_mask, model_frac, read_restart, rc)
 
     ! ----------------------------------------------
@@ -248,8 +248,6 @@ contains
     integer                    , intent(in)    :: logunit
     character(len=*)           , intent(in)    :: compname  !e.g. ATM, OCN, ...
     character(len=*)           , intent(in)    :: nullstr
-    integer                    , intent(in)    :: model_nxg
-    integer                    , intent(in)    :: model_nyg
     character(len=*)           , intent(in)    :: model_meshfile
     character(len=*)           , intent(in)    :: model_maskfile
     type(ESMF_Mesh)            , intent(out)   :: model_mesh
@@ -618,7 +616,7 @@ contains
           close(nu)
           inquire(file=trim(rest_filem), exist=exists)
        endif
-       call ESMF_VMBroadCast(vm, rest_filem, CL, main_task, rc=rc)
+       call ESMF_VMBroadCast(vm, rest_filem, len(rest_filem), main_task, rc=rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     else
        ! use namelist already read

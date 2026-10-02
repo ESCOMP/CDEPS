@@ -34,6 +34,7 @@ module dshr_strdata_mod
   use shr_string_mod   , only : shr_string_listgetname, shr_string_listisvalid, shr_string_listgetnum
 
   use dshr_stream_mod  , only : shr_stream_streamtype, shr_stream_getModelFieldList, shr_stream_getStreamFieldList
+  use dshr_stream_mod  , only : shr_stream_getFieldScaleFactors
   use dshr_stream_mod  , only : shr_stream_taxis_cycle, shr_stream_taxis_extend, shr_stream_findBounds
   use dshr_stream_mod  , only : shr_stream_getCurrFile, shr_stream_setCurrFile, shr_stream_getMeshFilename
   use dshr_stream_mod  , only : shr_stream_init_from_inline, shr_stream_init_from_esmfconfig
@@ -98,6 +99,7 @@ module dshr_strdata_mod
      type(ESMF_RouteHandle)              :: routehandle                     ! stream n -> model mesh mapping
      character(len=CL), allocatable      :: fldlist_stream(:)               ! names of stream file fields
      character(len=CL), allocatable      :: fldlist_model(:)                ! names of stream model fields
+     real(r8), allocatable               :: fldlist_scale(:)                ! per-field unit conversion applied on read
      integer                             :: stream_nlev                     ! number of vertical levels in stream
      real(r8), allocatable               :: stream_vlevs(:)                 ! values of vertical levels in stream
      integer                             :: stream_lb                       ! index of the Lowerbound (LB) in fldlist_stream
@@ -127,8 +129,6 @@ module dshr_strdata_mod
      type(ESMF_Mesh)                :: model_mesh                      ! model mesh
      real(r8), pointer              :: model_lon(:) => null()          ! model longitudes
      real(r8), pointer              :: model_lat(:) => null()          ! model latitudes
-     integer                        :: model_nxg                       ! model global domain lon size
-     integer                        :: model_nyg                       ! model global domain lat size
      integer                        :: model_nzg                       ! model global domain vertical size
      integer                        :: model_lsize                     ! model local domain size
      integer, pointer               :: model_gindex(:)                 ! model global index spzce
@@ -188,12 +188,15 @@ contains
   end function shr_strdata_get_stream_fieldbundle
 
   !===============================================================================
-  subroutine shr_strdata_init_from_config(sdat, streamfilename, model_mesh, clock, compname, logunit, rc)
+  subroutine shr_strdata_init_from_config(sdat, streamfilename, model_mesh, model_nxg, model_nyg, &
+       clock, compname, logunit, rc)
 
     ! input/output variables
     type(shr_strdata_type)     , intent(inout) :: sdat
     character(len=*)           , intent(in)    :: streamfilename
     type(ESMF_Mesh)            , intent(in)    :: model_mesh
+    integer                    , intent(in)    :: model_nxg           ! model global domain lon size
+    integer                    , intent(in)    :: model_nyg           ! model global domain lat size
     type(ESMF_Clock)           , intent(in)    :: clock
     character(len=*)           , intent(in)    :: compname
     integer                    , intent(in)    :: logunit
@@ -249,6 +252,16 @@ contains
     sdat%model_mesh = model_mesh
     call shr_strdata_init_model_domain(sdat, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    ! Verify that the declared global grid dimensions are consistent with the total number of points
+    ! in the model mesh (model_gsize was just computed by shr_strdata_init_model_domain).
+    if (model_nxg * model_nyg /= sdat%model_gsize) then
+       call shr_log_error(subname//' ERROR: for component '//trim(compname)// &
+            ', nx*ny ('//toString(model_nxg*model_nyg)// &
+            ') does not equal the total number of points in the model mesh ('// &
+            toString(sdat%model_gsize)//')', rc=rc)
+       return
+    end if
 
     ! Now finish initializing sdat
     call shr_strdata_init(sdat, clock, rc=rc)
@@ -344,7 +357,7 @@ contains
          sdat%logunit, trim(compname), sdat%mainproc, src_mask, dst_mask)
 
     ! Now finish initializing sdat
-    call shr_strdata_init(sdat, model_clock, stream_name, rc)
+    call shr_strdata_init(sdat, model_clock, stream_name, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine shr_strdata_init_from_inline
@@ -500,7 +513,23 @@ contains
        endif
 
        ! We do not yet have mask information, but we are required to set it here and change it later.
-       if (filename /= 'none') then
+       if (trim(sdat%stream(ns)%mapalgo) == 'redist' .and. filename /= 'none') then
+          ! A 'redist' stream is on the same grid as the model, so reuse the already-built model mesh here
+          ! instead of reading the stream mesh file and constructing a duplicate full ESMF mesh -- that
+          ! duplicate is a large init-time memory and time cost at high resolution.
+          !
+          ! Why this is safe (subtle): we call the stream->model mapping a 'redist', but in fact the stream
+          ! decomposition is the same as the model decomposition, so the redist ends up simply being a copy.
+          ! That is what makes it safe to set the stream mesh equal to the model mesh -- both the underlying
+          ! grids/meshes and their decompositions are the same, so the result is identical to building a
+          ! separate stream mesh from the file. (Only stream_mesh is read below -- no MeshSet/MeshDestroy --
+          ! so sharing the model-mesh handle is also safe.)
+          !
+          ! First verify the grids really match (redist requires identical global sizes) and error clearly if not.
+          call shr_strdata_check_redist_size(sdat, ns, trim(filename), rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          stream_mesh = sdat%model_mesh
+       else if (filename /= 'none') then
           stream_mesh = ESMF_MeshCreate(trim(filename), fileformat=ESMF_FILEFORMAT_ESMFMESH, rc=rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        endif
@@ -527,6 +556,13 @@ contains
           return
        end if
        call shr_stream_getStreamFieldList(sdat%stream(ns), sdat%pstrm(ns)%fldlist_stream)
+       allocate(sdat%pstrm(ns)%fldlist_scale(nvars), stat=istat)
+       if ( istat /= 0 ) then
+          call shr_log_error(subName//&
+               ': allocation error for sdat%pstrm('//toString(ns)//')%fldlist_scale with nvars '//toString(nvars), rc=rc)
+          return
+       end if
+       call shr_stream_getFieldScaleFactors(sdat%stream(ns), sdat%pstrm(ns)%fldlist_scale)
 
        ! Create field bundles on model mesh
        if (sdat%stream(ns)%readmode=='single') then
@@ -753,6 +789,63 @@ contains
        write(sdat%logunit,'(2a)') subname,' successfully initialized sdat'
     endif
   end subroutine shr_strdata_init
+
+  !===============================================================================
+  subroutine shr_strdata_check_redist_size(sdat, ns, meshfile, rc)
+
+    ! Verify that a 'redist' stream really is on the model grid before reusing the
+    ! model mesh in place of the stream mesh file. 'redist' is a 1-to-1 index copy,
+    ! so the stream mesh file and the model mesh must have the same global element
+    ! count; otherwise the redistribution is invalid. Only the elementCount
+    ! dimension of the (ESMF-format) mesh file is read here -- cheap metadata, not
+    ! the full mesh, so the memory/time saving of reusing the model mesh is kept.
+
+    ! input/output variables
+    type(shr_strdata_type) , intent(in)  :: sdat
+    integer                , intent(in)  :: ns         ! stream index
+    character(len=*)       , intent(in)  :: meshfile   ! stream mesh filename
+    integer                , intent(out) :: rc
+
+    ! local variables
+    type(file_desc_t) :: pioid
+    integer           :: rcode
+    integer           :: dimid
+    integer           :: stream_gsize
+    integer           :: old_handle    ! previous setting of pio error handling
+    character(len=*), parameter :: subname = '(shr_strdata_check_redist_size) '
+    ! ----------------------------------------------
+
+    rc = ESMF_SUCCESS
+
+    ! Nothing to verify against if there is no mesh file.
+    if (len_trim(meshfile) == 0 .or. trim(meshfile) == 'none') return
+
+    ! Read the global element count from the mesh file (collective over the pio
+    ! subsystem; all ranks already hold the same meshfile and model_gsize, so the
+    ! comparison below is identical on every rank).
+    rcode = pio_openfile(sdat%pio_subsystem, pioid, sdat%io_type, trim(meshfile), pio_nowrite)
+    call pio_seterrorhandling(pioid, PIO_BCAST_ERROR, old_handle)
+    rcode = pio_inq_dimid(pioid, 'elementCount', dimid)
+    if (rcode == PIO_NOERR) then
+       rcode = pio_inq_dimlen(pioid, dimid, stream_gsize)
+    end if
+    call pio_seterrorhandling(pioid, old_handle)
+    call pio_closefile(pioid)
+
+    ! If the mesh file is not in ESMF format (no elementCount dimension) we cannot
+    ! verify the size here; leave any problem for the downstream data read to catch.
+    if (rcode /= PIO_NOERR) return
+
+    if (stream_gsize /= sdat%model_gsize) then
+       call shr_log_error(subname//"ERROR: mapalgo='redist' for stream "//toString(ns)// &
+            " requires the model grid and the stream mesh file to be the same size, but the model"// &
+            " grid has "//toString(sdat%model_gsize)//" elements while the stream mesh file '"// &
+            trim(meshfile)//"' has elementCount = "//toString(stream_gsize)//". Use a non-redist"// &
+            " mapalgo (e.g. consf, consd, nn or bilinear) when the stream is on a different grid.", rc=rc)
+       return
+    end if
+
+  end subroutine shr_strdata_check_redist_size
 
   !===============================================================================
   subroutine shr_strdata_get_stream_nlev(sdat, stream_index, rc)
@@ -2046,6 +2139,22 @@ contains
           call shr_log_error(subName//"ERROR: only double, real and short types are supported for stream read", rc=rc)
           return
 
+       end if
+
+       ! Apply this field's unit conversion, if the stream definition gave one as
+       ! a third token on its <var> line.  Units belong to the field rather than
+       ! the stream, so each field carries its own factor and a stream may mix
+       ! converted and unconverted fields.
+       !
+       ! Fill values are left alone: they are markers, not measurements.  This is
+       ! separate from the CF scale_factor/add_offset unpacking above, which
+       ! undoes on-disk packing and has already been applied by this point.
+       if (per_stream%fldlist_scale(nf) /= 1.0_r8) then
+          if (stream_nlev > 1) then
+             where (dataptr2d /= r8fill) dataptr2d = dataptr2d * per_stream%fldlist_scale(nf)
+          else
+             where (dataptr1d /= r8fill) dataptr1d = dataptr1d * per_stream%fldlist_scale(nf)
+          end if
        end if
 
        if(associated(dataptr2d_src) .and. trim(per_stream%fldlist_model(nf)) .eq. uname) then
