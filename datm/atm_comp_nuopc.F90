@@ -63,6 +63,11 @@ module cdeps_datm_comp
   use datm_datamode_gefs_mod    , only : datm_datamode_gefs_init_pointers
   use datm_datamode_gefs_mod    , only : datm_datamode_gefs_advance
 
+  use datm_datamode_ufs_mod    , only : datm_datamode_ufs_advertise
+  use datm_datamode_ufs_mod    , only : datm_datamode_ufs_init_pointers
+  use datm_datamode_ufs_mod    , only : datm_datamode_ufs_advance
+  use datm_datamode_ufs_mod    , only : ufs_datamode_state
+
   use datm_datamode_simple_mod  , only : datm_datamode_simple_advertise
   use datm_datamode_simple_mod  , only : datm_datamode_simple_init_pointers
   use datm_datamode_simple_mod  , only : datm_datamode_simple_advance
@@ -115,6 +120,7 @@ module cdeps_datm_comp
   logical                      :: restart_read              ! start from restart
   character(CL)                :: case_name                 ! case name
   character(len=*) , parameter :: nullstr = 'null'
+  type(ufs_datamode_state)     :: ufs_state
 
   ! datm_in namelist input
   character(CX)                :: nlfilename = nullstr                ! filename to obtain namelist info from
@@ -141,6 +147,8 @@ module cdeps_datm_comp
   logical                      :: skip_restart_read = .false.         ! true => skip restart read in continuation run
   logical                      :: export_all = .false.                ! true => export all fields, do not check connected or not
   logical                      :: first_call = .true.
+  
+  character(CX)                :: calc_opts = nullstr                 ! derived variable calculation options
 
   ! linked lists
   type(fldList_type) , pointer :: fldsImport => null()
@@ -249,7 +257,8 @@ contains
          skip_restart_read, &
          flds_presndep, &
          flds_preso3, &
-         export_all
+         export_all, &
+         calc_opts
 
     rc = ESMF_SUCCESS
 
@@ -305,6 +314,7 @@ contains
        write(logunit,'(2a,l6)') subname,' flds_co2          = ',flds_co2
        write(logunit,'(2a,l6)') subname,' skip_restart_read = ',skip_restart_read
        write(logunit,'(2a,l6)') subname,' export_all        = ',export_all
+       write(logunit,'(3a)')    subname,' calc_opts         = ',trim(calc_opts)
 
        bcasttmp = 0
        bcasttmp(1) = nx_global
@@ -341,6 +351,8 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_VMBroadcast(vm, bcasttmp, 10, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMBroadcast(vm, calc_opts, CX, main_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     nx_global         = bcasttmp(1)
     ny_global         = bcasttmp(2)
@@ -366,7 +378,7 @@ contains
     select case (trim(datamode))
        case ('CORE2_NYF','CORE2_IAF','CORE_IAF_JRA', 'JRA55do', &
              'CORE_RYF6162_JRA','CORE_RYF8485_JRA','CORE_RYF9091_JRA','CORE_RYF0304_JRA', &
-             'CLMNCEP','CPLHIST','GEFS','ERA5','SIMPLE')
+             'CLMNCEP','CPLHIST','GEFS','UFS','ERA5','SIMPLE')
        if (mainproc) write(logunit,'(3a)') subname,'datm datamode = ',trim(datamode)
     case default
        call shr_log_error(' ERROR illegal datm datamode = '//trim(datamode), rc=rc)
@@ -406,6 +418,9 @@ contains
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('GEFS')
        call datm_datamode_gefs_advertise(exportState, fldsExport, flds_scalar_name, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    case ('UFS')
+       call datm_datamode_ufs_advertise(exportState, fldsExport, ufs_state, flds_scalar_name, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case ('SIMPLE')
        call datm_datamode_simple_advertise(exportState, fldsExport, flds_scalar_name, &
@@ -532,7 +547,7 @@ contains
     type(ESMF_Time)         :: nextTime
     type(ESMF_TimeInterval) :: timeStep
     real(r8)                :: nextsw_cday
-    logical                 :: restart_write         ! restart alarm is ringing
+    logical                 :: restart_write ! restart alarm is ringing
     integer                 :: next_ymd      ! model date
     integer                 :: next_tod      ! model sec into model date
     integer                 :: yr, mon, day  ! year, month, day
@@ -674,6 +689,9 @@ contains
        case('GEFS')
           call datm_datamode_gefs_init_pointers(exportState, sdat, logunit, mainproc, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       case('UFS')
+          call datm_datamode_ufs_init_pointers(exportState, sdat, ufs_state, rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
        case('SIMPLE')
           call datm_datamode_simple_init_pointers(exportState, sdat, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -687,7 +705,7 @@ contains
           case('CORE2_NYF','CORE2_IAF','CORE_IAF_JRA',&
                'CORE_RYF6162_JRA','CORE_RYF8485_JRA' ,&
                'CORE_RYF9091_JRA','CORE_RYF0304_JRA' , 'JRA55do', &
-               'CLMNCEP','CPLHIST','ERA5','GEFS','SIMPLE')
+               'CLMNCEP','CPLHIST','ERA5','GEFS','UFS','SIMPLE')
              call dshr_restart_read(restfilm, rpfile, logunit, my_task, mpicom, sdat, rc)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
           case default
@@ -752,6 +770,9 @@ contains
     case('GEFS')
        call datm_datamode_gefs_advance(exportstate, sdat, mainproc, logunit, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    case('UFS')
+       call datm_datamode_ufs_advance(exportState, ufs_state, calc_opts, rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
     case('SIMPLE')
        call datm_datamode_simple_advance(target_ymd, target_tod, target_mon, sdat%model_calendar, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
@@ -765,7 +786,7 @@ contains
        case('CORE2_NYF','CORE2_IAF','CORE_IAF_JRA',&
             'CORE_RYF6162_JRA','CORE_RYF8485_JRA' ,&
             'CORE_RYF9091_JRA','CORE_RYF0304_JRA','JRA55do' ,&
-            'CLMNCEP','CPLHIST','ERA5','GEFS','SIMPLE')
+            'CLMNCEP','CPLHIST','ERA5','GEFS','UFS','SIMPLE')
           call dshr_restart_write(rpfile, case_name, 'datm', inst_suffix, &
                target_ymd, target_tod, logunit, my_task, sdat, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
