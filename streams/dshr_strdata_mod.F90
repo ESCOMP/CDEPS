@@ -4,6 +4,11 @@ module dshr_strdata_mod
   ! Obtain the model domain and the stream domain for each stream
 
   use ESMF             , only : ESMF_Mesh, ESMF_RouteHandle, ESMF_Field, ESMF_FieldBundle
+  use ESMF             , only : ESMF_FieldBundleGet
+  use ESMF             , only : ESMF_MeshIsCreated, ESMF_RouteHandleIsCreated
+  use ESMF             , only : ESMF_FieldIsCreated, ESMF_FieldBundleIsCreated
+  use ESMF             , only : ESMF_MeshDestroy, ESMF_RouteHandleDestroy
+  use ESMF             , only : ESMF_FieldDestroy, ESMF_FieldBundleDestroy
   use ESMF             , only : ESMF_Clock, ESMF_VM, ESMF_VMGet, ESMF_VMGetCurrent
   use ESMF             , only : ESMF_DistGrid, ESMF_SUCCESS, ESMF_MeshGet, ESMF_DistGridGet
   use ESMF             , only : ESMF_VMBroadCast, ESMF_MeshIsCreated, ESMF_MeshCreate
@@ -65,6 +70,7 @@ module dshr_strdata_mod
   ! Public routines
   public  :: shr_strdata_init_from_config
   public  :: shr_strdata_init_from_inline
+  public  :: shr_strdata_finalize
   public  :: shr_strdata_setOrbs
   public  :: shr_strdata_advance
   public  :: shr_strdata_get_stream_domain  ! public since needed by dshr_mod
@@ -361,6 +367,148 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine shr_strdata_init_from_inline
+
+  !===============================================================================
+  subroutine shr_strdata_finalize(sdat, rc)
+    ! input/output variables
+    type(shr_strdata_type)     , intent(inout) :: sdat
+    integer                    , intent(out)   :: rc
+
+    ! local variables
+    integer :: str_i
+    integer :: fbd_i
+    integer :: fld_i
+    integer :: fieldCount
+    logical :: fbd_allocated
+    logical :: msh_created
+    logical :: rhl_created
+    logical :: fbd_created
+    logical :: fld_created
+    type(ESMF_Field), allocatable :: fldlist(:)
+    integer :: istat
+    character(len=*), parameter  :: subname='(shr_strdata_finalize)'
+    !----------------------------------------------
+
+    rc = ESMF_SUCCESS
+
+    ! destroy ESMF objects created in each sdat%pstrm
+    do str_i = 1, shr_strdata_get_stream_count(sdat)
+
+      ! destroy sdat%pstrm(str_i)%stream_mesh
+       msh_created = ESMF_MeshIsCreated(sdat%pstrm(str_i)%stream_mesh, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       if (msh_created) then
+          call ESMF_MeshDestroy(sdat%pstrm(str_i)%stream_mesh, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       end if
+
+       ! destroy sdat%pstrm(str_i)%routehandle
+       rhl_created = ESMF_RouteHandleIsCreated(sdat%pstrm(str_i)%routehandle, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       if (rhl_created) then
+          call ESMF_RouteHandleDestroy(sdat%pstrm(str_i)%routehandle, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       end if
+
+       ! destroy sdat%pstrm(str_i)%field_stream
+       fld_created = ESMF_FieldIsCreated(sdat%pstrm(str_i)%field_stream, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       if (fld_created) then
+          call ESMF_FieldDestroy(sdat%pstrm(str_i)%field_stream, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       end if
+
+       ! destroy sdat%pstrm(str_i)%field_stream_vector
+       fld_created = ESMF_FieldIsCreated(sdat%pstrm(str_i)%field_stream_vector, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       if (fld_created) then
+          call ESMF_FieldDestroy(sdat%pstrm(str_i)%field_stream_vector, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       end if
+
+       ! destroy all sdat%pstrm(ns)%fldbun_data field bundles and their fields
+       if (allocated(sdat%pstrm(str_i)%fldbun_data)) then
+          fbd_allocated = .true.
+       else
+          fbd_allocated = .false.
+       end if
+       if (fbd_allocated) then
+          do fbd_i=1,size(sdat%pstrm(str_i)%fldbun_data)
+             fbd_created = ESMF_FieldBundleIsCreated(sdat%pstrm(str_i)%fldbun_data(fbd_i), rc=rc)
+             if (ChkErr(rc,__LINE__,u_FILE_u)) return
+             if (.not. fbd_created) cycle
+             call ESMF_FieldBundleGet(sdat%pstrm(str_i)%fldbun_data(fbd_i), fieldCount=fieldCount, rc=rc)
+             if (ChkErr(rc,__LINE__,u_FILE_u)) return
+             if (fieldCount > 0) then
+                allocate(fldlist(fieldCount), stat=istat)
+                if (istat /= 0) then
+                   call shr_log_error(subname//': allocation error for fldlist', rc=rc)
+                   return
+                end if
+                call ESMF_FieldBundleGet(sdat%pstrm(str_i)%fldbun_data(fbd_i), fieldList=fldlist, rc=rc)
+                if (ChkErr(rc,__LINE__,u_FILE_u)) return
+             end if
+             call ESMF_FieldBundleDestroy(sdat%pstrm(str_i)%fldbun_data(fbd_i), rc=rc)
+             if (ChkErr(rc,__LINE__,u_FILE_u)) return
+             if (allocated(fldlist)) then
+                do fld_i = 1, fieldCount
+                   fld_created = ESMF_FieldIsCreated(fldlist(fld_i), rc=rc)
+                   if (ChkErr(rc,__LINE__,u_FILE_u)) return
+                   if (.not. fld_created) cycle
+                   call ESMF_FieldDestroy(fldlist(fld_i), rc=rc)
+                   if (ChkErr(rc,__LINE__,u_FILE_u)) return
+                end do
+                deallocate(fldlist)
+             end if
+          end do
+       end if
+
+       ! destroy sdat%pstrm(str_i)%fldbun_model and its fields
+       fbd_created = ESMF_FieldBundleIsCreated(sdat%pstrm(str_i)%fldbun_model, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       if (fbd_created) then
+          call ESMF_FieldBundleGet(sdat%pstrm(str_i)%fldbun_model, fieldCount=fieldCount, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          if (fieldCount > 0) then
+             allocate(fldlist(fieldCount), stat=istat)
+             if (istat /= 0) then
+                call shr_log_error(subname//': allocation error for fldlist', rc=rc)
+                return
+             end if
+             call ESMF_FieldBundleGet(sdat%pstrm(str_i)%fldbun_model, fieldList=fldlist, rc=rc)
+             if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          end if
+          call ESMF_FieldBundleDestroy(sdat%pstrm(str_i)%fldbun_model, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+          if (allocated(fldlist)) then
+             do fld_i = 1, fieldCount
+                fld_created = ESMF_FieldIsCreated(fldlist(fld_i), rc=rc)
+                if (ChkErr(rc,__LINE__,u_FILE_u)) return
+                if (.not. fld_created) cycle
+                call ESMF_FieldDestroy(fldlist(fld_i), rc=rc)
+                if (ChkErr(rc,__LINE__,u_FILE_u)) return
+             end do
+             deallocate(fldlist)
+          end if
+       end if
+
+       ! destroy sdat%pstrm(str_i)%field_coszen
+       fld_created = ESMF_FieldIsCreated(sdat%pstrm(str_i)%field_coszen, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       if (fld_created) then
+          call ESMF_FieldDestroy(sdat%pstrm(str_i)%field_coszen, rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       end if
+
+    end do
+
+    ! destroy ESMF objects associated with the sdat
+
+    ! sdat%model_mesh is an alias and should not be destroyed here
+
+    ! sdat%model_clock is an alias and should not be destroyed here
+
+  end subroutine shr_strdata_finalize
 
   !===============================================================================
   subroutine shr_strdata_init_model_domain( sdat, rc)
@@ -2245,6 +2393,10 @@ contains
           data_v_dst(i) = -sinlon * dataptr2d_dst(1,i) + coslon * dataptr2d_dst(2,i)
        enddo
        deallocate(dataptr)
+       if (ESMF_FieldIsCreated(field_vector_dst)) then
+          call ESMF_FieldDestroy(field_vector_dst, rc=rc)
+          if (chkerr(rc,__LINE__,u_FILE_u)) return
+       end if
     endif
 
     if (pio_iovartype == PIO_REAL) then

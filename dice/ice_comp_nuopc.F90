@@ -30,9 +30,11 @@ module cdeps_dice_comp
   use shr_log_mod          , only : shr_log_setLogUnit, shr_log_error
   use shr_cal_mod          , only : shr_cal_ymd2date, shr_cal_ymd2julian
   use dshr_mod             , only : dshr_model_initphase, dshr_init, dshr_mesh_init, dshr_check_restart_alarm
+  use dshr_mod             , only : dshr_mesh_finalize, dshr_destroy_clock_alarms
   use dshr_mod             , only : dshr_state_setscalar, dshr_set_runclock, dshr_log_clock_advance
   use dshr_methods_mod     , only : dshr_state_diagnose, chkerr, memcheck
   use dshr_strdata_mod     , only : shr_strdata_type, shr_strdata_init_from_config, shr_strdata_advance
+  use dshr_strdata_mod     , only : shr_strdata_finalize
   use dshr_fldlist_mod     , only : fldlist_type, dshr_fldlist_add, dshr_fldlist_realize
 
   use dice_datamode_ssmi_mod , only : dice_datamode_ssmi_advertise
@@ -581,9 +583,24 @@ contains
   subroutine ModelFinalize(gcomp, rc)
     type(ESMF_GridComp)  :: gcomp
     integer, intent(out) :: rc
+
+    ! local variables
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
+
+    ! finalize sdat
+    call shr_strdata_finalize(sdat, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    ! destroy model mesh using dshr_mesh_finalize routine
+    call dshr_mesh_finalize(gcomp, logunit, 'ICE', model_mesh, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    ! destroy alarms associated with model's clock
+    call dshr_destroy_clock_alarms(gcomp, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
     if (mainproc) then
        write(logunit,*)
        write(logunit,*) 'dice : end of main integration loop'

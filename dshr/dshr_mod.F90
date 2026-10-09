@@ -15,12 +15,13 @@ module dshr_mod
   use ESMF             , only : ESMF_GridComp, ESMF_GridCompGet, ESMF_GridCompSet
   use ESMF             , only : ESMF_GeomType_Flag, ESMF_FieldStatus_Flag
   use ESMF             , only : ESMF_Mesh, ESMF_MeshGet, ESMF_MeshSet, ESMF_MeshCreate, ESMF_MeshDestroy
+  use ESMF             , only : ESMF_MeshIsCreated
   use ESMF             , only : ESMF_STAGGERLOC_CENTER, ESMF_STAGGERLOC_CORNER, ESMF_GRIDCREATENOPERIDIMUFRM
   use ESMF             , only : ESMF_FILEFORMAT_ESMFMESH, ESMF_Grid
   use ESMF             , only : ESMF_GEOMTYPE_MESH, ESMF_GEOMTYPE_GRID, ESMF_FIELDSTATUS_COMPLETE
   use ESMF             , only : ESMF_Clock, ESMF_ClockCreate, ESMF_ClockGet, ESMF_ClockSet
   use ESMF             , only : ESMF_ClockPrint, ESMF_ClockAdvance, ESMF_ClockGetAlarmList
-  use ESMF             , only : ESMF_Alarm, ESMF_AlarmCreate, ESMF_AlarmGet, ESMF_AlarmSet
+  use ESMF             , only : ESMF_Alarm, ESMF_AlarmCreate, ESMF_AlarmGet, ESMF_AlarmSet, ESMF_AlarmDestroy
   use ESMF             , only : ESMF_ALARMLIST_ALL
   use ESMF             , only : ESMF_Calendar
   use ESMF             , only : ESMF_CALKIND_NOLEAP, ESMF_CALKIND_GREGORIAN, ESMF_CALKIND_FLAG
@@ -29,6 +30,7 @@ module dshr_mod
   use ESMF             , only : ESMF_VM, ESMF_VMGet, ESMF_VMBroadcast, ESMF_VMGetCurrent
   use ESMF             , only : ESMF_RouteHandle, ESMF_FieldRegrid
   use ESMF             , only : ESMF_TERMORDER_SRCSEQ, ESMF_FieldRegridStore, ESMF_SparseMatrixWrite
+  use ESMF             , only : ESMF_FieldRegridRelease
   use ESMF             , only : ESMF_Region_Flag, ESMF_REGION_TOTAL, ESMF_MAXSTR, ESMF_RC_NOT_VALID
   use ESMF             , only : ESMF_UtilStringUpperCase
   use shr_kind_mod     , only : r8=>shr_kind_r8, cs=>shr_kind_cs, cl=>shr_kind_cl, cx=>shr_kind_cx, cxx=>shr_kind_cxx, i8=>shr_kind_i8
@@ -52,10 +54,12 @@ module dshr_mod
   public  :: dshr_model_initphase
   public  :: dshr_init
   public  :: dshr_mesh_init
+  public  :: dshr_mesh_finalize
   public  :: dshr_set_runclock
   public  :: dshr_restart_read
   public  :: dshr_restart_write
   public  :: dshr_log_clock_advance
+  public  :: dshr_destroy_clock_alarms
   public  :: dshr_state_getscalar
   public  :: dshr_state_setscalar
   public  :: dshr_orbital_update
@@ -389,6 +393,51 @@ contains
     end if
 
   end subroutine dshr_mesh_init
+
+  !===============================================================================
+  subroutine dshr_mesh_finalize(gcomp, logunit, compname, &
+       model_mesh, rc)
+
+    ! ----------------------------------------------
+    ! Initialize model mesh
+    ! ----------------------------------------------
+
+    ! input/output variables
+    type(ESMF_GridComp)        , intent(inout) :: gcomp
+    integer                    , intent(in)    :: logunit
+    character(len=*)           , intent(in)    :: compname  !e.g. ATM, OCN, ...
+    type(ESMF_Mesh)            , intent(inout) :: model_mesh
+    integer                    , intent(out)   :: rc
+
+    ! local variables
+    type(ESMF_VM)                  :: vm
+    logical                        :: mainproc
+    integer                        :: my_task
+    logical :: isCreated
+    character(len=*), parameter    :: F00 ="('(dshr_mesh_finalize) ',a)"
+    character(len=*), parameter    :: subname='(dshr_mod:dshr_mesh_finalize)'
+    ! ----------------------------------------------
+
+    rc = ESMF_SUCCESS
+
+    ! generate local mpi comm
+    call ESMF_GridCompGet(gcomp, vm=vm, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_VMGet(vm, localPet=my_task, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    mainproc = (my_task == main_task)
+
+    isCreated = ESMF_MeshIsCreated(model_mesh, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (isCreated) then
+       call ESMF_MeshDestroy(model_mesh, rc=rc)
+       if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       if (mainproc) then
+          write(logunit,F00) subname// " destroyed "//trim(compname)//" mesh"
+       end if
+    end if
+
+  end subroutine dshr_mesh_finalize
 
   !===============================================================================
   subroutine dshr_mesh_create_scol(gcomp, compname, scol_lon, scol_lat, &
@@ -748,6 +797,47 @@ contains
   end subroutine dshr_log_clock_advance
 
   !===============================================================================
+  subroutine dshr_destroy_clock_alarms(gcomp, rc)
+    type(ESMF_GridComp)  :: gcomp
+    integer, intent(out) :: rc
+
+    ! local variables
+    type(ESMF_Clock)              :: clock
+    integer                       :: alarmCount
+    type(ESMF_Alarm), allocatable :: alarmlist(:)
+    integer                       :: i
+    !-------------------------------------------------------------------------------
+
+    rc = ESMF_SUCCESS
+
+    ! query the Component for its clock
+    call NUOPC_ModelGet(gcomp, modelClock=clock, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    ! get the list of alarms associated with the clock
+    call ESMF_ClockGetAlarmList(clock, &
+      alarmlistflag=ESMF_ALARMLIST_ALL, &
+      alarmCount=alarmCount, &
+      rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    if (alarmCount > 0) then
+      allocate(alarmlist(alarmCount))
+      call ESMF_ClockGetAlarmList(clock, &
+        alarmlistflag=ESMF_ALARMLIST_ALL, &
+        alarmlist=alarmlist, &
+        rc=rc)
+      if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      ! destroy each alarm in the list
+      do i = 1, alarmCount
+        call ESMF_AlarmDestroy(alarmlist(i), rc=rc)
+        if (ChkErr(rc,__LINE__,u_FILE_u)) return
+      end do
+      deallocate(alarmlist)
+    end if
+
+  end subroutine dshr_destroy_clock_alarms
+
+  !===============================================================================
   subroutine dshr_state_getscalar(state, scalar_id, scalar_value, flds_scalar_name, flds_scalar_num, rc)
 
     ! ----------------------------------------------
@@ -1069,6 +1159,8 @@ contains
     ! The following call fills in the values of field_mask
     call ESMF_FieldGet(field_mask, farrayptr=dataptr1d, rc=rc)
     dataptr1d(:) = mask_src(:)
+    call ESMF_ArrayDestroy(elemMaskArray, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! map source mask to destination mesh - to obtain destination mask and frac
     call ESMF_FieldRegrid(field_mask, field_dst, routehandle=rhandle, &
@@ -1117,6 +1209,8 @@ contains
     call ESMF_FieldDestroy(field_dst, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
     deallocate(mask_src)
+    call ESMF_MeshDestroy(mesh_mask, rc=rc)
+    if (chkerr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine dshr_set_modelmask
 

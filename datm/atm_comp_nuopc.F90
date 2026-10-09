@@ -33,9 +33,11 @@ module cdeps_datm_comp
   use dshr_methods_mod , only : dshr_state_diagnose, chkerr, memcheck
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_init_from_config, shr_strdata_advance
   use dshr_strdata_mod , only : shr_strdata_get_stream_pointer, shr_strdata_setOrbs
+  use dshr_strdata_mod , only : shr_strdata_finalize
   use dshr_mod         , only : dshr_model_initphase, dshr_init, dshr_restart_write
   use dshr_mod         , only : dshr_state_setscalar, dshr_set_runclock, dshr_log_clock_advance
   use dshr_mod         , only : dshr_mesh_init, dshr_check_restart_alarm, dshr_restart_read
+  use dshr_mod         , only : dshr_mesh_finalize, dshr_destroy_clock_alarms
   use dshr_mod         , only : dshr_orbital_init, dshr_orbital_update
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add, dshr_fldlist_realize
 
@@ -858,9 +860,24 @@ contains
   subroutine ModelFinalize(gcomp, rc)
     type(ESMF_GridComp)  :: gcomp
     integer, intent(out) :: rc
+
+    ! local variables
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
+
+    ! finalize sdat
+    call shr_strdata_finalize(sdat, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    ! destroy model mesh using dshr_mesh_finalize routine
+    call dshr_mesh_finalize(gcomp, logunit, 'ATM', model_mesh, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    ! destroy alarms associated with model's clock
+    call dshr_destroy_clock_alarms(gcomp, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
     if (my_task == main_task) then
        write(logunit,*)
        write(logunit,*) 'datm : end of main integration loop'
