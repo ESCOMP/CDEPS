@@ -83,12 +83,12 @@
 
   <entry id="DATM_PRESAERO">
     <type>char</type>
-    <valid_values>none,clim_1850,clim_2000,clim_2010,hist,SSP1-1.9,SSP1-2.6,SSP2-4.5,SSP3-7.0,SSP4-3.4,SSP4-6.0,SSP5-3.4,SSP5-8.5,cplhist</valid_values>
+    <valid_values>none,clim_1850_cesm3,clim_1850_cmip6,clim_2000_cmip6,clim_2010_cmip6,hist_cmip6,SSP1-1.9,SSP1-2.6,SSP2-4.5,SSP3-7.0,SSP4-3.4,SSP4-6.0,SSP5-3.4,SSP5-8.5,cplhist</valid_values>
     <default_value>clim_2000</default_value>
     <values match="last">
-      <value compset="^1850_"   >clim_1850</value>
-      <value compset="^2000_"   >clim_2000</value>
-      <value compset="^2010_"   >clim_2010</value>
+      <value compset="^1850_"   >clim_1850_cesm3</value>
+      <value compset="^2000_"   >clim_2000_cmip6</value>
+      <value compset="^2010_"   >clim_2010_cmip6</value>
       <value compset="^SSP119_" >SSP1-1.9</value>
       <value compset="^SSP126_" >SSP1-2.6</value>
       <value compset="^SSP245_" >SSP2-4.5</value>
@@ -97,7 +97,7 @@
       <value compset="^SSP460_" >SSP4-6.0</value>
       <value compset="^SSP534_" >SSP5-3.4</value>
       <value compset="^SSP585_" >SSP5-8.5</value>
-      <value compset="^HIST_"   >hist</value>
+      <value compset="^HIST_"   >hist_cmip6</value>
       <!-- NOTE: This match captures both a simple DATM%CPLHIST and qualified variants like DATM%CPLHIST-CESM3, using the same mode for all of them -->
       <value compset="_DATM%CPLHIST">cplhist</value>
       <value compset="_DATM.*_DICE.*_DOCN.*_DROF">none</value>
