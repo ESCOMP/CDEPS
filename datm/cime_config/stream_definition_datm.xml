@@ -4171,20 +4171,20 @@
     </stream_datafiles>
     <!-- NOTE: One place that defines the difference between the numbers is in lnd_import_export.F90 -->
     <stream_datavars>
-      <var>atmImp_Faxa_bcph3   Faxa_bcphiwet</var>
-      <var>atmImp_Faxa_bcph2   Faxa_bcphodry</var>
-      <var>atmImp_Faxa_bcph1   Faxa_bcphidry</var>
-      <var>atmImp_Faxa_ocph3   Faxa_ocphiwet</var>
-      <var>atmImp_Faxa_ocph1   Faxa_ocphidry</var>
-      <var>atmImp_Faxa_ocph2   Faxa_ocphodry</var>
-      <var>atmImp_Faxa_dstwet1   Faxa_dstwet1</var>
-      <var>atmImp_Faxa_dstdry1   Faxa_dstdry1</var>
-      <var>atmImp_Faxa_dstwet2   Faxa_dstwet2</var>
-      <var>atmImp_Faxa_dstdry2   Faxa_dstdry2</var>
-      <var>atmImp_Faxa_dstwet3   Faxa_dstwet3</var>
-      <var>atmImp_Faxa_dstdry3   Faxa_dstdry3</var>
-      <var>atmImp_Faxa_dstwet4   Faxa_dstwet4</var>
-      <var>atmImp_Faxa_dstdry4   Faxa_dstdry4</var>
+      <var>atmImp_Faxa_bcph1 Faxa_bcphidry</var>
+      <var>atmImp_Faxa_bcph2 Faxa_bcphodry</var>
+      <var>atmImp_Faxa_bcph3 Faxa_bcphiwet</var>
+      <var>atmImp_Faxa_ocph1 Faxa_ocphidry</var>
+      <var>atmImp_Faxa_ocph2 Faxa_ocphodry</var>
+      <var>atmImp_Faxa_ocph3 Faxa_ocphiwet</var>
+      <var>atmImp_Faxa_dstwet1 Faxa_dstwet1</var>
+      <var>atmImp_Faxa_dstdry1 Faxa_dstdry1</var>
+      <var>atmImp_Faxa_dstwet2 Faxa_dstwet2</var>
+      <var>atmImp_Faxa_dstdry2 Faxa_dstdry2</var>
+      <var>atmImp_Faxa_dstwet3 Faxa_dstwet3</var>
+      <var>atmImp_Faxa_dstdry3 Faxa_dstdry3</var>
+      <var>atmImp_Faxa_dstwet4 Faxa_dstwet4</var>
+      <var>atmImp_Faxa_dstdry4 Faxa_dstdry4</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
