@@ -272,7 +272,7 @@ contains
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     call ESMF_VMBroadcast(vm, ny_global, max_icesheets, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_VMBroadcast(vm, bcasttmp, 3, main_task, rc=rc)
+    call ESMF_VMBroadcast(vm, bcasttmp, 2, main_task, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     skip_restart_read = (bcasttmp(1) == 1)
     num_icesheets = bcasttmp(2)
