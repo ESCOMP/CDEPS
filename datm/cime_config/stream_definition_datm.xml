@@ -4164,26 +4164,27 @@
 
   <stream_entry name="presaero.clim_1850_cesm3">
     <stream_meshfile>
-      <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/ne30pg3_ESMFmesh_cdf5_c20211018.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file>$DIN_LOC_ROOT/atm/cam/chem/trop_mozart_aero/aero/aerosoldep_WACCM.ensmean_monthly_hist_1849-2015_0.9x1.25_CMIP6_c180926.nc</file>
+      <file>/glade/derecho/scratch/erik/archive/b.e30_alpha09e_m.B1850C_MTso_Gris_Marbl.ne30_t233_wgx3.397/proc/b.e30_alpha09e_m.B1850C_MTso_Gris_Marbl.ne30_t233_wgx3.397.cpl.hx.atm.monclim.0100-0130_c20261016.nc</file>
     </stream_datafiles>
+    <!-- NOTE: One place that defines the difference between the numbers is in lnd_import_export.F90 -->
     <stream_datavars>
-      <var>BCDEPWET   Faxa_bcphiwet</var>
-      <var>BCPHODRY   Faxa_bcphodry</var>
-      <var>BCPHIDRY   Faxa_bcphidry</var>
-      <var>OCDEPWET   Faxa_ocphiwet</var>
-      <var>OCPHIDRY   Faxa_ocphidry</var>
-      <var>OCPHODRY   Faxa_ocphodry</var>
-      <var>DSTX01WD   Faxa_dstwet1</var>
-      <var>DSTX01DD   Faxa_dstdry1</var>
-      <var>DSTX02WD   Faxa_dstwet2</var>
-      <var>DSTX02DD   Faxa_dstdry2</var>
-      <var>DSTX03WD   Faxa_dstwet3</var>
-      <var>DSTX03DD   Faxa_dstdry3</var>
-      <var>DSTX04WD   Faxa_dstwet4</var>
-      <var>DSTX04DD   Faxa_dstdry4</var>
+      <var>atmImp_Faxa_bcph3   Faxa_bcphiwet</var>
+      <var>atmImp_Faxa_bcph2   Faxa_bcphodry</var>
+      <var>atmImp_Faxa_bcph1   Faxa_bcphidry</var>
+      <var>atmImp_Faxa_ocph3   Faxa_ocphiwet</var>
+      <var>atmImp_Faxa_ocph1   Faxa_ocphidry</var>
+      <var>atmImp_Faxa_ocph2   Faxa_ocphodry</var>
+      <var>atmImp_Faxa_dstwet1   Faxa_dstwet1</var>
+      <var>atmImp_Faxa_dstdry1   Faxa_dstdry1</var>
+      <var>atmImp_Faxa_dstwet2   Faxa_dstwet2</var>
+      <var>atmImp_Faxa_dstdry2   Faxa_dstdry2</var>
+      <var>atmImp_Faxa_dstwet3   Faxa_dstwet3</var>
+      <var>atmImp_Faxa_dstdry3   Faxa_dstdry3</var>
+      <var>atmImp_Faxa_dstwet4   Faxa_dstwet4</var>
+      <var>atmImp_Faxa_dstdry4   Faxa_dstdry4</var>
     </stream_datavars>
     <stream_lev_dimname>null</stream_lev_dimname>
     <stream_mapalgo>
