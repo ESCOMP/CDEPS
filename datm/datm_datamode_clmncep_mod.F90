@@ -326,7 +326,6 @@ contains
 
     ! Direct copies of stream fields
     Sa_tbot(:) = strm_Sa_tbot(:)
-    Faxa_swdn(:) = strm_Faxa_swdn(:)
     if (associated(strm_Sa_topo)) then
        Sa_topo(:) = strm_Sa_topo(:)
     else
@@ -439,11 +438,13 @@ contains
 
        !--- shortwave radiation ---
        if (associated(strm_Faxa_swdndf) .and. associated(strm_Faxa_swdndr)) then
+          Faxa_swdn(n) = strm_Faxa_swdndr(n) + strm_Faxa_swdndf(n)
           Faxa_swndr(n) = strm_Faxa_swdndr(n) * 0.50_r8
           Faxa_swvdr(n) = strm_Faxa_swdndr(n) * 0.50_r8
           Faxa_swndf(n) = strm_Faxa_swdndf(n) * 0.50_r8
           Faxa_swvdf(n) = strm_Faxa_swdndf(n) * 0.50_r8
        elseif (associated(strm_Faxa_swdn)) then
+          Faxa_swdn(n) = strm_Faxa_swdn(n)
           ! relationship between incoming NIR or VIS radiation and ratio of
           ! direct to diffuse radiation calculated based on one year's worth of
           ! hourly CAM output from CAM version cam3_5_55
