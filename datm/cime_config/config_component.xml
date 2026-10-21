@@ -189,7 +189,7 @@
       <value compset="^SSP460_">SSP4-6.0</value>
       <value compset="^SSP534_">SSP5-3.4</value>
       <value compset="^SSP585_">SSP5-8.5</value>
-      <value compset="^HIST_"  >cmip6_20tr</value>
+      <value compset="^HIST_"  >cmip7_20tr</value>
       <value compset="^OMIP_DATM%IAF.*_POP2%[^_]*ECO">omip.iaf</value>
       <value compset="^OMIP_DATM%JRA.*_POP2%[^_]*ECO">omip.jra</value>
       <!-- NOTE: This match captures both a simple DATM%CPLHIST and qualified variants like DATM%CPLHIST-CESM3, using the same mode for all of them -->
