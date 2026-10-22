@@ -158,6 +158,7 @@
   co2tseries.cplhist
   co2tseries.cmip6_20tr
   co2tseries.cmip7_20tr
+  co2tseries.cmip7_clim_1850
   co2tseries.omip.iaf
   co2tseries.omip.jra
   co2tseries.SSP1-1.9
