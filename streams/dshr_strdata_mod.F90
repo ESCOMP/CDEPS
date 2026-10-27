@@ -1606,7 +1606,7 @@ contains
             'Stream: ',ns,&
             ' oDateLB, OSecLb, oDateUB, OsecUB =  ',&
             oDateLB, OSecLb, oDateUB, OsecUB
-       write(sdat%logunit,'(2a,i0,a,2x,3(f13.6,2x))') subname, &
+       write(sdat%logunit,'(2a,i0,a,2x,3(f20.6,2x))') subname, &
             'Stream: ',ns,&
             ' rdateLB,rdateM,rdateUB = ',&
             rdateLB, rdateM, rdateUB

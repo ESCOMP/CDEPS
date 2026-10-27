@@ -1114,7 +1114,7 @@ contains
     else if (strm%found_gvd .and. rDateIn >= rDategvd) then
        if (limit) then
           if (strm%mainproc) then
-             write(strm%logunit,'(2a,2(f13.5,2x))') subname,&
+             write(strm%logunit,'(2a,2(f20.4,2x))') subname,&
                   " ERROR: limit on and rDateIn >= rDategvd",rDateIn,rDategvd
           end if
           call shr_sys_abort(subname//" ERROR: rDateIn >= rDategvd limit true")
@@ -1217,7 +1217,7 @@ contains
           if (strm%found_gvd .and. rDateIn >= rDategvd) then
              if (limit) then
                 if (strm%mainproc) then
-                   write(strm%logunit,'(2a,2(f13.5,2x))') subname,&
+                   write(strm%logunit,'(2a,2(f20.4,2x))') subname,&
                         " ERROR: limit on and rDateIn >= rDategvd",rDateIn,rDategvd
                 end if
                 call shr_sys_abort(subname//" ERROR: rDateIn >= rDategvd limit true")
