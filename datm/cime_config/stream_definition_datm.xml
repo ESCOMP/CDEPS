@@ -4168,7 +4168,7 @@
       <meshfile>$DIN_LOC_ROOT/share/meshes/ne30pg3_ESMFmesh_cdf5_c20211018.nc</meshfile>
     </stream_meshfile>
     <stream_datafiles>
-      <file>/glade/derecho/scratch/erik/archive/b.e30_alpha09e_m.B1850C_MTso_Gris_Marbl.ne30_t233_wgx3.397/proc/b.e30_alpha09e_m.B1850C_MTso_Gris_Marbl.ne30_t233_wgx3.397.cpl.hx.atm.monclim.0100-0130_c20261016.nc</file>
+      <file>$DIN_LOC_ROOT/atm/cam/ozone_strataero/aerosol_dep_MTso.monthly_clim_1850_ne30pg3_CMIP7_CESM3_c20261028.nc</file>
     </stream_datafiles>
     <!-- NOTE: One place that defines the difference between the numbers is in lnd_import_export.F90 -->
     <stream_datavars>
