@@ -158,6 +158,7 @@
   co2tseries.cplhist
   co2tseries.cmip6_20tr
   co2tseries.cmip7_20tr
+  co2tseries.cmip7_clim_1850
   co2tseries.omip.iaf
   co2tseries.omip.jra
   co2tseries.SSP1-1.9
@@ -173,10 +174,11 @@
   optional stream presaero (turned on and stream specified by xml variable DATM_PRESAERO)
   - DATM_PRESAERO is set by the 4 character time prefix in config_component.xml
   ========================
-  presaero.clim_1850
-  presaero.clim_2000
-  presaero.clim_2010
-  presaero.hist
+  presaero.clim_1850_cesm3
+  presaero.clim_1850_cmip6
+  presaero.clim_2000_cmip6
+  presaero.clim_2010_cmip6
+  presaero.hist_cmip6
   presaero.SSP1-1.9
   presaero.SSP1-2.6
   presaero.SSP2-4.5
@@ -4161,7 +4163,52 @@
   <!--  presaero streams  -->
   <!-- ===================-->
 
-  <stream_entry name="presaero.clim_1850">
+  <stream_entry name="presaero.clim_1850_cesm3">
+    <stream_meshfile>
+      <meshfile>$DIN_LOC_ROOT/share/meshes/ne30pg3_ESMFmesh_cdf5_c20211018.nc</meshfile>
+    </stream_meshfile>
+    <stream_datafiles>
+      <file>$DIN_LOC_ROOT/atm/cam/ozone_strataero/aerosol_dep_MTso.monthly_clim_1850_ne30pg3_CMIP7_CESM3_c20261028.nc</file>
+    </stream_datafiles>
+    <!-- NOTE: One place that defines the difference between the numbers is in lnd_import_export.F90 -->
+    <stream_datavars>
+      <var>atmImp_Faxa_bcph1 Faxa_bcphidry</var>
+      <var>atmImp_Faxa_bcph2 Faxa_bcphodry</var>
+      <var>atmImp_Faxa_bcph3 Faxa_bcphiwet</var>
+      <var>atmImp_Faxa_ocph1 Faxa_ocphidry</var>
+      <var>atmImp_Faxa_ocph2 Faxa_ocphodry</var>
+      <var>atmImp_Faxa_ocph3 Faxa_ocphiwet</var>
+      <var>atmImp_Faxa_dstwet1 Faxa_dstwet1</var>
+      <var>atmImp_Faxa_dstdry1 Faxa_dstdry1</var>
+      <var>atmImp_Faxa_dstwet2 Faxa_dstwet2</var>
+      <var>atmImp_Faxa_dstdry2 Faxa_dstdry2</var>
+      <var>atmImp_Faxa_dstwet3 Faxa_dstwet3</var>
+      <var>atmImp_Faxa_dstdry3 Faxa_dstdry3</var>
+      <var>atmImp_Faxa_dstwet4 Faxa_dstwet4</var>
+      <var>atmImp_Faxa_dstdry4 Faxa_dstdry4</var>
+    </stream_datavars>
+    <stream_lev_dimname>null</stream_lev_dimname>
+    <stream_mapalgo>
+      <mapalgo>bilinear</mapalgo>
+    </stream_mapalgo>
+    <stream_vectors>null</stream_vectors>
+    <stream_year_align>1</stream_year_align>
+    <stream_year_first>1850</stream_year_first>
+    <stream_year_last>1850</stream_year_last>
+    <stream_offset>0</stream_offset>
+    <stream_tintalgo>
+      <tintalgo>linear</tintalgo>
+    </stream_tintalgo>
+    <stream_taxmode>
+      <taxmode>cycle</taxmode>
+    </stream_taxmode>
+    <stream_dtlimit>
+      <dtlimit>1.5</dtlimit>
+    </stream_dtlimit>
+    <stream_readmode>single</stream_readmode>
+  </stream_entry>
+
+  <stream_entry name="presaero.clim_1850_cmip6">
     <stream_meshfile>
       <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
     </stream_meshfile>
@@ -4205,7 +4252,7 @@
     <stream_readmode>single</stream_readmode>
   </stream_entry>
 
-  <stream_entry name="presaero.clim_2000">
+  <stream_entry name="presaero.clim_2000_cmip6">
     <stream_meshfile>
       <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
     </stream_meshfile>
@@ -4249,7 +4296,7 @@
     <stream_readmode>single</stream_readmode>
   </stream_entry>
 
-  <stream_entry name="presaero.clim_2010">
+  <stream_entry name="presaero.clim_2010_cmip6">
     <stream_meshfile>
       <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
     </stream_meshfile>
@@ -4293,7 +4340,7 @@
     <stream_readmode>single</stream_readmode>
   </stream_entry>
 
-  <stream_entry name="presaero.hist">
+  <stream_entry name="presaero.hist_cmip6">
     <stream_meshfile>
       <meshfile>$DIN_LOC_ROOT/share/meshes/fv0.9x1.25_141008_polemod_ESMFmesh.nc</meshfile>
     </stream_meshfile>

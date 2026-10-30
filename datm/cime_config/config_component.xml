@@ -83,12 +83,16 @@
 
   <entry id="DATM_PRESAERO">
     <type>char</type>
-    <valid_values>none,clim_1850,clim_2000,clim_2010,hist,SSP1-1.9,SSP1-2.6,SSP2-4.5,SSP3-7.0,SSP4-3.4,SSP4-6.0,SSP5-3.4,SSP5-8.5,cplhist</valid_values>
+    <valid_values>none,clim_1850_cesm3,clim_1850_cmip6,clim_2000_cmip6,clim_2010_cmip6,hist_cmip6,SSP1-1.9,SSP1-2.6,SSP2-4.5,SSP3-7.0,SSP4-3.4,SSP4-6.0,SSP5-3.4,SSP5-8.5,cplhist</valid_values>
     <default_value>clim_2000</default_value>
     <values match="last">
-      <value compset="^1850_"   >clim_1850</value>
-      <value compset="^2000_"   >clim_2000</value>
-      <value compset="^2010_"   >clim_2010</value>
+      <!-- 1850 default and norESM will use the CMIP6 version -->
+      <value compset="^1850_"                      >clim_1850_cmip6</value>
+      <value compset="^1850_"   cime_model="noresm">clim_1850_cmip6</value>
+      <!-- CESM3 will use 1850 CESM3 spinup case -->
+      <value compset="^1850_"   cime_model="cesm"  >clim_1850_cesm3</value>
+      <value compset="^2000_"   >clim_2000_cmip6</value>
+      <value compset="^2010_"   >clim_2010_cmip6</value>
       <value compset="^SSP119_" >SSP1-1.9</value>
       <value compset="^SSP126_" >SSP1-2.6</value>
       <value compset="^SSP245_" >SSP2-4.5</value>
@@ -97,7 +101,7 @@
       <value compset="^SSP460_" >SSP4-6.0</value>
       <value compset="^SSP534_" >SSP5-3.4</value>
       <value compset="^SSP585_" >SSP5-8.5</value>
-      <value compset="^HIST_"   >hist</value>
+      <value compset="^HIST_"   >hist_cmip6</value>
       <!-- NOTE: This match captures both a simple DATM%CPLHIST and qualified variants like DATM%CPLHIST-CESM3, using the same mode for all of them -->
       <value compset="_DATM%CPLHIST">cplhist</value>
       <value compset="_DATM.*_DICE.*_DOCN.*_DROF">none</value>
@@ -114,14 +118,12 @@
     <valid_values>none,clim_1850_cesm3,clim_1850_cmip7,clim_2000_cmip7,clim_2010_cmip7,hist_cmip7,clim_1850_cmip6,clim_2000_cmip6,clim_2010_cmip6,hist_cmip6,SSP1-2.6,SSP2-4.5,SSP3-7.0,SSP5-3.4,SSP5-8.5,cplhist</valid_values>
     <default_value>clim_2000</default_value>
     <values match="last">
-      <!-- NorESM will use the CMIP7 dataset
-           Commented out as we don't currently have a way to distinguish between CESM3 and NorESM3 right now
-      <value compset="^1850_"                    >clim_1850_cmip7</value>
-      -->
+      <!-- 1850 default will be CMIP6 -->
+      <value compset="^1850_"                    >clim_1850_cmip6</value>
+      <!-- NorESM will use the CMIP7 dataset -->
+      <value compset="^1850_" cime_model="noresm">clim_1850_cmip7</value>
       <!-- CESM3 uses the CESM3 spinup dataset -->
-      <value compset="^1850_"                    >clim_1850_cesm3</value>
-      <!-- Use cmip6 when using CLM5 physics -->
-      <value compset="^1850_.*_CLM50"            >clim_1850_cmip6</value>
+      <value compset="^1850_" cime_model="cesm"  >clim_1850_cesm3</value>
 
       <value compset="^2000_"                    >clim_2000_cmip6</value>
       <value compset="^2010_"                    >clim_2010_cmip6</value>
@@ -189,7 +191,11 @@
       <value compset="^SSP460_">SSP4-6.0</value>
       <value compset="^SSP534_">SSP5-3.4</value>
       <value compset="^SSP585_">SSP5-8.5</value>
-      <value compset="^HIST_"  >cmip6_20tr</value>
+      <!-- Historical default and noresm will be CMIP6 -->
+      <value compset="^HIST_"                     >cmip6_20tr</value>
+      <value compset="^HIST_"  cime_model="noresm">cmip6_20tr</value>
+      <!-- for CESM will be CMIP7 -->
+      <value compset="^HIST_"  cime_model="cesm"  >cmip7_20tr</value>
       <value compset="^OMIP_DATM%IAF.*_POP2%[^_]*ECO">omip.iaf</value>
       <value compset="^OMIP_DATM%JRA.*_POP2%[^_]*ECO">omip.jra</value>
       <!-- NOTE: This match captures both a simple DATM%CPLHIST and qualified variants like DATM%CPLHIST-CESM3, using the same mode for all of them -->
