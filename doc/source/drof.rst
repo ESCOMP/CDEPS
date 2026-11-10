@@ -157,5 +157,19 @@ DROF_CPLHIST_YR_ALIGN
      would be appropriate in transient runs where the model calendar is
      setup to span the same year range as the forcing data.
 
+DROF_YR_START
+   - starting year to loop data over (used by the interannual IAF, JRA and GLOFAS modes)
+
+DROF_YR_END
+   - ending year to loop data over (used by the interannual IAF, JRA and GLOFAS modes)
+
+DROF_YR_ALIGN
+   - Simulation year corresponding to DROF_YR_START (used by the
+     interannual IAF, JRA and GLOFAS modes). A common usage is to set
+     this to RUN_STARTDATE. With this setting, the forcing in the first
+     year of the run will be the forcing of year DROF_YR_START. Setting
+     DROF_YR_ALIGN=DROF_YR_START makes the forcing calendar the same as
+     the model calendar.
+
 DROF_SKIP_RESTART_READ     
    - If set to true, than drof restarts will not be read on a continuation run

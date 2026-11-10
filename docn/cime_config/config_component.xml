@@ -209,6 +209,7 @@
     <default_value>1</default_value>
     <values match="last">
       <value compset="(AMIP_|20TR_|HIST_|5505_|PIPD_|%TSCH)">1850</value>
+      <value compset="_DOCN%IAF_">1</value>
     </values>
     <group>run_component_cam_sstice</group>
     <file>env_run.xml</file>
@@ -222,7 +223,7 @@
     default behavior is to assume that the data from SSTICE_YEAR_START to
     SSTICE_YEAR_END cyclically repeats. This behavior is controlled by the
     &quot;taxmode&quot; stream option; see the data model documentation for more details.
-    This is only used when DOCN_MODE=prescribed.</desc>
+    This is only used when DOCN_MODE is prescribed or interannual.</desc>
   </entry>
 
   <entry id="SSTICE_YEAR_START">
@@ -231,6 +232,7 @@
     <default_value>0</default_value>
     <values match="last">
       <value compset="(AMIP_|HIST_|20TR_|5505_|PIPD_|%TSCH)">1850</value>
+      <value compset="_DOCN%IAF_">1850</value>
     </values>
     <group>run_component_cam_sstice</group>
     <file>env_run.xml</file>
@@ -238,7 +240,7 @@
     This is the first year of prescribed SST and ice coverage data to use. For
     example, if a data file has data for years 0-99, and SSTICE_YEAR_START is 10,
     years 0-9 in the file will not be used.
-    This is only used when DOCN_MODE=prescribed.</desc>
+    This is only used when DOCN_MODE is prescribed or interannual.</desc>
   </entry>
 
   <entry id="SSTICE_YEAR_END">
@@ -247,6 +249,7 @@
     <default_value>0</default_value>
     <values match="last">
       <value compset="(AMIP_|HIST_|20TR_|5505_|PIPD_|%TSCH)">2021</value>
+      <value compset="_DOCN%IAF_">2014</value>
     </values>
     <group>run_component_cam_sstice</group>
     <file>env_run.xml</file>
@@ -254,7 +257,7 @@
     This is the last year of prescribed SST and ice coverage data to use. For
     example, if a data file has data for years 0-99, and value is 49,
     years 50-99 in the file will not be used.
-    This is only used when DOCN_MODE=prescribed.</desc>
+    This is only used when DOCN_MODE is prescribed or interannual.</desc>
   </entry>
 
   <entry id="DOCN_CPLHIST_DIR">

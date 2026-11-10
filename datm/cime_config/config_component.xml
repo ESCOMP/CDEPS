@@ -276,6 +276,11 @@
       <value compset="2003.*_DATM">$DATM_YR_START</value>
       <value compset="2010.*_DATM">$DATM_YR_START</value>
       <value compset="4804.*_DATM">$DATM_YR_START</value>
+      <!-- Interannual ocean forcing: cycle the full data span from model year 1 -->
+      <value compset="DATM%IAF">1</value>
+      <value compset="DATM%JRA_">1</value>
+      <value compset="DATM%JRA-1p4-2018">1</value>
+      <value compset="DATM%JRA-1p5-2023">1</value>
     </values>
     <group>run_component_datm</group>
     <file>env_run.xml</file>
@@ -341,6 +346,11 @@
       <value compset="2000.*_DATM%NLDAS2">1980</value>
       <value compset="2010.*_DATM%NLDAS2">2005</value>
       <value compset="2003.*_DATM%NLDAS2">2002</value>
+      <!-- Interannual ocean forcing: the first year of data -->
+      <value compset="DATM%IAF">1948</value>
+      <value compset="DATM%JRA_">1958</value>
+      <value compset="DATM%JRA-1p4-2018">1958</value>
+      <value compset="DATM%JRA-1p5-2023">1958</value>
     </values>
     <group>run_component_datm</group>
     <file>env_run.xml</file>
@@ -412,6 +422,11 @@
       <value   compset="2000.*_DATM%NLDAS2">2018</value>
       <value   compset="2010.*_DATM%NLDAS2">2014</value>
       <value   compset="2003.*_DATM%NLDAS2">2003</value>
+      <!-- Interannual ocean forcing: the last year of data -->
+      <value   compset="DATM%IAF">2009</value>
+      <value   compset="DATM%JRA_">2016</value>
+      <value   compset="DATM%JRA-1p4-2018">2018</value>
+      <value   compset="DATM%JRA-1p5-2023">2023</value>
     </values>
     <group>run_component_datm</group>
     <file>env_run.xml</file>

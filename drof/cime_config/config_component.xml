@@ -140,6 +140,61 @@
     <desc>ending year to loop data over (only used when DROF_MODE is CPLHIST)</desc>
   </entry>
 
+  <entry id="DROF_YR_ALIGN">
+    <type>integer</type>
+    <valid_values></valid_values>
+    <default_value>-999</default_value>
+    <values match="last">
+      <value compset="_DROF%IAF"          >1</value>
+      <value compset="_DROF%JRA_"         >1</value>
+      <value compset="_DROF%JRA-1p4-2018" >1</value>
+      <value compset="_DROF%JRA-1p5-2023" >1</value>
+      <value compset="_DROF%GLOFAS"       >1979</value>
+    </values>
+    <group>run_component_drof</group>
+    <file>env_run.xml</file>
+    <desc>
+      Simulation year corresponding to DROF_YR_START (used by the
+      interannual IAF, JRA and GLOFAS modes). A common usage is to set
+      this to RUN_STARTDATE. With this setting, the forcing in the first
+      year of the run will be the forcing of year DROF_YR_START. Setting
+      DROF_YR_ALIGN=DROF_YR_START makes the forcing calendar the same as
+      the model calendar.
+    </desc>
+  </entry>
+
+  <entry id="DROF_YR_START">
+    <type>integer</type>
+    <valid_values></valid_values>
+    <default_value>-999</default_value>
+    <values match="last">
+      <value compset="_DROF%IAF"          >1948</value>
+      <value compset="_DROF%JRA_"         >1958</value>
+      <value compset="_DROF%JRA-1p4-2018" >1958</value>
+      <value compset="_DROF%JRA-1p5-2023" >1958</value>
+      <value compset="_DROF%GLOFAS"       >1979</value>
+    </values>
+    <group>run_component_drof</group>
+    <file>env_run.xml</file>
+    <desc>starting year to loop data over (used by the interannual IAF, JRA and GLOFAS modes)</desc>
+  </entry>
+
+  <entry id="DROF_YR_END">
+    <type>integer</type>
+    <valid_values></valid_values>
+    <default_value>-999</default_value>
+    <values match="last">
+      <value compset="_DROF%IAF"          >2009</value>
+      <value compset="_DROF%JRA_"         >2016</value>
+      <value compset="_DROF%JRA-1p4-2018" >2018</value>
+      <value compset="_DROF%JRA-1p5-2023" >2023</value>
+      <value compset="_DROF%GLOFAS"       >2024</value>
+    </values>
+    <group>run_component_drof</group>
+    <file>env_run.xml</file>
+    <desc>ending year to loop data over (used by the interannual IAF, JRA and GLOFAS modes)</desc>
+  </entry>
+
   <entry id="DROF_SKIP_RESTART_READ">
     <type>logical</type>
     <valid_values>TRUE,FALSE</valid_values>

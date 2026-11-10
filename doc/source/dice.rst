@@ -60,4 +60,18 @@ DICE%IAF
    - streams: ssmi_iaf
    - datamode: ssmi_iaf
 
-There are currently no DICE other specific xml variables in ``$CASEROOT/env_run.xml``.
+In addition, the following DICE specific CIME-CCS xml variables will appear in ``$CASEROOT/env_run.xml``:
+
+DICE_YR_START
+   - starting year to loop data over (only used when DICE_MODE is ssmi_iaf)
+
+DICE_YR_END
+   - ending year to loop data over (only used when DICE_MODE is ssmi_iaf)
+
+DICE_YR_ALIGN
+   - Simulation year corresponding to DICE_YR_START (only used when
+     DICE_MODE is ssmi_iaf). A common usage is to set this to
+     RUN_STARTDATE. With this setting, the ice coverage in the first
+     year of the run will be the data of year DICE_YR_START. Setting
+     DICE_YR_ALIGN=DICE_YR_START makes the data calendar the same as the
+     model calendar.
