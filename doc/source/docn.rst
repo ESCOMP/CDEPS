@@ -159,15 +159,15 @@ SSTICE_MESH_FILENAME
      This is only used when DOCN%DOM or DOCN%IAF is present in the compset.
      (used by both DOCN and CICE running in prescribed mode)
 
-SSTICE_YR_START
+SSTICE_YEAR_START
    - Starting year to loop data over
-     (only used by both DOCN runing in prescribed mode and CICE running in prescribed mode)
+     (used by DOCN in prescribed or interannual mode, and by CICE in prescribed mode)
 
-SSTICE_YR_END
+SSTICE_YEAR_END
    - Ending year to loop data over
-     (only used by both DOCN runing in prescribed mode and CICE running in prescribed mode)
+     (used by DOCN in prescribed or interannual mode, and by CICE in prescribed mode)
 
-SSTICE_YR_ALIGN
+SSTICE_YEAR_ALIGN
    - The model year that corresponds to SSTICE_YEAR_START on the data file.
      Prescribed SST and ice coverage data will be aligned so that the first year of
      data corresponds to SSTICE_YEAR_ALIGN in the model. For instance, if the first
@@ -177,8 +177,8 @@ SSTICE_YR_ALIGN
      run after the prescribed data ends (as determined by SSTICE_YEAR_END), the
      default behavior is to assume that the data from SSTICE_YEAR_START to
      SSTICE_YEAR_END cyclically repeats. This behavior is controlled by the
-     &quot;taxmode&quot; stream option; see the data model documentation for more details.
-     (only used by both DOCN runing in prescribed mode and CICE running in prescribed mode)
+     "taxmode" stream option; see the data model documentation for more details.
+     (used by DOCN in prescribed or interannual mode, and by CICE in prescribed mode)
 
 DOCN_AQPCONST_VALUE
    - Sets globally constant SST value and is only used when DOCN%AQPCONST is present in the compset.
