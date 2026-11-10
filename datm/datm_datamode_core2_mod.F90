@@ -3,6 +3,7 @@ module datm_datamode_core2_mod
   use ESMF             , only : ESMF_State, ESMF_StateGet, ESMF_Field, ESMF_FieldBundle
   use ESMF             , only : ESMF_DistGrid, ESMF_RouteHandle, ESMF_MeshCreate
   use ESMF             , only : ESMF_Mesh, ESMF_MeshGet, ESMF_MeshCreate
+  use ESMF             , only : ESMF_FieldDestroy, ESMF_FieldBundleDestroy, ESMF_MeshDestroy
   use ESMF             , only : ESMF_SUCCESS, ESMF_LogWrite, ESMF_FILEFORMAT_ESMFMESH
   use ESMF             , only : ESMF_StateItem_Flag, ESMF_STATEITEM_NOTFOUND, operator(/=)
   use ESMF             , only : ESMF_FieldBundleCreate, ESMF_FieldCreate, ESMF_MESHLOC_ELEMENT
@@ -10,6 +11,7 @@ module datm_datamode_core2_mod
   use ESMF             , only : ESMF_RouteHandleDestroy, ESMF_EXTRAPMETHOD_NEAREST_STOD
   use ESMF             , only : ESMF_POLEMETHOD_ALLAVG, ESMF_REGRIDMETHOD_BILINEAR
   use ESMF             , only : ESMF_DistGridGet, ESMF_FieldRegridStore, ESMF_FieldRedistStore
+  use ESMF             , only : ESMF_FieldRegridRelease, ESMF_FieldRedistRelease
   use pio              , only : Var_Desc_t, file_desc_t, io_desc_t, pio_read_darray, pio_freedecomp
   use pio              , only : pio_openfile, PIO_NOWRITE, pio_seterrorhandling, PIO_BCAST_ERROR
   use pio              , only : pio_initdecomp, pio_inq_dimlen, pio_inq_varid
@@ -422,8 +424,8 @@ contains
     type(ESMF_FieldBundle) :: fldbun_src
     type(ESMF_FieldBundle) :: fldbun_dst
     type(ESMF_RouteHandle) :: route_handle
-    type(ESMF_Field)       :: field_src
-    type(ESMF_Field)       :: field_dst
+    type(ESMF_Field)       :: field_src_1, field_src_2, field_src_3
+    type(ESMF_Field)       :: field_dst_1, field_dst_2, field_dst_3
     integer                :: lsize
     integer, pointer       :: gindex(:) ! domain decomposition of data
     integer                :: ndims     ! number of dims
@@ -446,37 +448,37 @@ contains
 
     ! Create input and output field bundles
     fldbun_src = ESMF_FieldBundleCreate(rc=rc) ! input field bundle
-    field_src = ESMF_FieldCreate(mesh, ESMF_TYPEKIND_R8, name='windFactor', &
+    field_src_1 = ESMF_FieldCreate(mesh, ESMF_TYPEKIND_R8, name='windFactor', &
          meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_FieldBundleAdd(fldbun_src, (/field_src/), rc=rc)
+    call ESMF_FieldBundleAdd(fldbun_src, (/field_src_1/), rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
-    field_src = ESMF_FieldCreate(mesh, ESMF_TYPEKIND_R8, name='winddFactor', &
+    field_src_2 = ESMF_FieldCreate(mesh, ESMF_TYPEKIND_R8, name='winddFactor', &
          meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_FieldBundleAdd(fldbun_src, (/field_src/), rc=rc)
+    call ESMF_FieldBundleAdd(fldbun_src, (/field_src_2/), rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
-    field_src = ESMF_FieldCreate(mesh, ESMF_TYPEKIND_R8, name='qsatFactor', &
+    field_src_3 = ESMF_FieldCreate(mesh, ESMF_TYPEKIND_R8, name='qsatFactor', &
          meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_FieldBundleAdd(fldbun_src, (/field_src/), rc=rc)
+    call ESMF_FieldBundleAdd(fldbun_src, (/field_src_3/), rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
 
     fldbun_dst = ESMF_FieldBundleCreate(rc=rc) ! output field bundle
-    field_dst = ESMF_FieldCreate(sdat%model_mesh, ESMF_TYPEKIND_R8, name='windFactor', &
+    field_dst_1 = ESMF_FieldCreate(sdat%model_mesh, ESMF_TYPEKIND_R8, name='windFactor', &
          meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_FieldBundleAdd(fldbun_dst, (/field_dst/), rc=rc)
+    call ESMF_FieldBundleAdd(fldbun_dst, (/field_dst_1/), rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
-    field_dst = ESMF_FieldCreate(sdat%model_mesh, ESMF_TYPEKIND_R8, name='winddFactor', &
+    field_dst_2 = ESMF_FieldCreate(sdat%model_mesh, ESMF_TYPEKIND_R8, name='winddFactor', &
          meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_FieldBundleAdd(fldbun_dst, (/field_dst/), rc=rc)
+    call ESMF_FieldBundleAdd(fldbun_dst, (/field_dst_2/), rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
-    field_dst = ESMF_FieldCreate(sdat%model_mesh, ESMF_TYPEKIND_R8, name='qsatFactor', &
+    field_dst_3 = ESMF_FieldCreate(sdat%model_mesh, ESMF_TYPEKIND_R8, name='qsatFactor', &
          meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
-    call ESMF_FieldBundleAdd(fldbun_dst, (/field_dst/), rc=rc)
+    call ESMF_FieldBundleAdd(fldbun_dst, (/field_dst_3/), rc=rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
 
     ! Get mesh info
@@ -520,7 +522,7 @@ contains
     if (nxg*nyg /= sdat%model_gsize) then
        ! TODO: this needs a mask that needs to be read in to have the mapping be accurate
        ! create bilinear route handle -
-       call ESMF_FieldRegridStore(field_src, field_dst, routehandle=route_handle, &
+       call ESMF_FieldRegridStore(field_src_3, field_dst_3, routehandle=route_handle, &
             regridmethod=ESMF_REGRIDMETHOD_BILINEAR, &
             polemethod=ESMF_POLEMETHOD_ALLAVG, &
             extrapMethod=ESMF_EXTRAPMETHOD_NEAREST_STOD, &
@@ -528,7 +530,7 @@ contains
             ignoreDegenerate=.true., rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
     else
-       call ESMF_FieldRedistStore(field_src, field_dst, routehandle=route_handle, &
+       call ESMF_FieldRedistStore(field_src_3, field_dst_3, routehandle=route_handle, &
             ignoreUnmatchedIndices=.true., rc=rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
     end if
@@ -548,6 +550,24 @@ contains
     call pio_closefile(pioid)
     call pio_freedecomp(sdat%pio_subsystem, pio_iodesc)
     call ESMF_RouteHandleDestroy(route_handle, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_FieldBundleDestroy(fldbun_dst, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_FieldBundleDestroy(fldbun_src, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_FieldDestroy(field_dst_1, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_FieldDestroy(field_dst_2, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_FieldDestroy(field_dst_3, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_FieldDestroy(field_src_1, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_FieldDestroy(field_src_2, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_FieldDestroy(field_src_3, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+    call ESMF_MeshDestroy(mesh, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine datm_get_adjustment_factors

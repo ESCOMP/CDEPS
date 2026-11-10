@@ -28,9 +28,11 @@ module cdeps_dwav_comp
   use shr_log_mod      , only : shr_log_setLogUnit, shr_log_error
   use dshr_methods_mod , only : dshr_state_diagnose, chkerr, memcheck
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_advance, shr_strdata_init_from_config
+  use dshr_strdata_mod , only : shr_strdata_finalize
   use dshr_mod         , only : dshr_model_initphase, dshr_init
   use dshr_mod         , only : dshr_state_setscalar, dshr_set_runclock, dshr_check_restart_alarm
   use dshr_mod         , only : dshr_restart_read, dshr_restart_write, dshr_mesh_init
+  use dshr_mod         , only : dshr_mesh_finalize, dshr_destroy_clock_alarms
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_add, dshr_fldlist_realize
   use nuopc_shr_methods, only : shr_get_rpointer_name
 
@@ -463,9 +465,24 @@ contains
 
     type(ESMF_GridComp)  :: gcomp
     integer, intent(out) :: rc
+
+    ! local variables
     !-------------------------------------------------------------------------------
 
     rc = ESMF_SUCCESS
+
+    ! finalize sdat
+    call shr_strdata_finalize(sdat, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    ! destroy model mesh using dshr_mesh_finalize routine
+    call dshr_mesh_finalize(gcomp, logunit, 'DWAV', model_mesh, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
+    ! destroy alarms associated with model's clock
+    call dshr_destroy_clock_alarms(gcomp, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
     if (my_task == main_task) then
        write(logunit,*)
        write(logunit,*) ' dwav : end of main integration loop'

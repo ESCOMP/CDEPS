@@ -37,7 +37,9 @@ module cdeps_dglc_comp
 #endif
   use dshr_methods_mod , only : dshr_state_diagnose, chkerr, memcheck
   use dshr_strdata_mod , only : shr_strdata_type, shr_strdata_advance, shr_strdata_init_from_config
+  use dshr_strdata_mod , only : shr_strdata_finalize
   use dshr_mod         , only : dshr_model_initphase, dshr_init, dshr_mesh_init
+  use dshr_mod         , only : dshr_mesh_finalize, dshr_destroy_clock_alarms
   use dshr_mod         , only : dshr_state_setscalar, dshr_set_runclock, dshr_check_restart_alarm
   use dshr_fldlist_mod , only : fldlist_type, dshr_fldlist_realize
   use nuopc_shr_methods, only : shr_get_rpointer_name, alarmInit
@@ -764,8 +766,33 @@ contains
   subroutine ModelFinalize(gcomp, rc)
     type(ESMF_GridComp)  :: gcomp
     integer, intent(out) :: rc
+
+    ! local variables
+    integer :: i
     !-------------------------------------------------------------------------------
+
     rc = ESMF_SUCCESS
+
+    ! finalize sdat
+    if (allocated(sdat)) then
+       do i=1, size(sdat)
+          call shr_strdata_finalize(sdat(i), rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       end do
+    end if
+
+    ! destroy model meshes using dshr_mesh_finalize routine
+    if (allocated(model_meshes)) then
+       do i=1, size(model_meshes)
+          call dshr_mesh_finalize(gcomp, logunit, 'GLC', model_meshes(i), rc=rc)
+          if (ChkErr(rc,__LINE__,u_FILE_u)) return
+       end do
+    end if
+
+    ! destroy alarms associated with model's clock
+    call dshr_destroy_clock_alarms(gcomp, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
+
     if (my_task == main_task) then
       write(logunit,*)
       write(logunit,*) 'dglc : end of main integration loop'

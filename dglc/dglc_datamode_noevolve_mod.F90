@@ -4,6 +4,7 @@ module dglc_datamode_noevolve_mod
    use ESMF             , only : ESMF_Mesh, ESMF_DistGrid, ESMF_FieldBundle, ESMF_Field
    use ESMF             , only : ESMF_FieldBundleCreate, ESMF_FieldCreate, ESMF_MeshLoc_Element
    use ESMF             , only : ESMF_FieldBundleAdd, ESMF_MeshGet, ESMF_DistGridGet, ESMF_Typekind_R8
+   use ESMF             , only : ESMF_FieldBundleDestroy, ESMF_FieldDestroy
    use ESMF             , only : ESMF_GridComp
    use ESMF             , only : ESMF_VM, ESMF_VMGetCurrent, ESMF_VMBroadCast
    use NUOPC            , only : NUOPC_Advertise, NUOPC_IsConnected
@@ -238,7 +239,8 @@ contains
       ! local variables
       type(ESMF_FieldBundle) :: fldbun_noevolve
       type(ESMF_DistGrid)    :: distgrid
-      type(ESMF_Field)       :: field_noevolve
+      type(ESMF_Field)       :: field_thk
+      type(ESMF_Field)       :: field_topg
       type(file_desc_t)      :: pioid
       type(io_desc_t)        :: pio_iodesc
       integer                :: ns        ! ice sheet index
@@ -296,17 +298,17 @@ contains
             fldbun_noevolve = ESMF_FieldBundleCreate(rc=rc) ! input field bundle
 
             ! "ice thickness" ;
-            field_noevolve = ESMF_FieldCreate(model_meshes(ns), ESMF_TYPEKIND_R8, &
+            field_thk = ESMF_FieldCreate(model_meshes(ns), ESMF_TYPEKIND_R8, &
                  name='thk', meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
             if (chkerr(rc,__LINE__,u_FILE_u)) return
-            call ESMF_FieldBundleAdd(fldbun_noevolve, (/field_noevolve/), rc=rc)
+            call ESMF_FieldBundleAdd(fldbun_noevolve, (/field_thk/), rc=rc)
             if (chkerr(rc,__LINE__,u_FILE_u)) return
 
             ! "bed topography" ;
-            field_noevolve = ESMF_FieldCreate(model_meshes(ns), ESMF_TYPEKIND_R8, &
+            field_topg = ESMF_FieldCreate(model_meshes(ns), ESMF_TYPEKIND_R8, &
                  name='topg', meshloc=ESMF_MESHLOC_ELEMENT, rc=rc)
             if (chkerr(rc,__LINE__,u_FILE_u)) return
-            call ESMF_FieldBundleAdd(fldbun_noevolve, (/field_noevolve/), rc=rc)
+            call ESMF_FieldBundleAdd(fldbun_noevolve, (/field_topg/), rc=rc)
             if (chkerr(rc,__LINE__,u_FILE_u)) return
 
             ! Create pioid and pio_iodesc at the module level
@@ -385,6 +387,14 @@ contains
 
             call pio_closefile(pioid)
             call pio_freedecomp(pio_subsystem, pio_iodesc)
+
+            nullify(topog, thck)
+            call ESMF_FieldBundleDestroy(fldbun_noevolve, rc=rc)
+            if (chkerr(rc,__LINE__,u_FILE_u)) return
+            call ESMF_FieldDestroy(field_thk, rc=rc)
+            if (chkerr(rc,__LINE__,u_FILE_u)) return
+            call ESMF_FieldDestroy(field_topg, rc=rc)
+            if (chkerr(rc,__LINE__,u_FILE_u)) return
 
          end do ! end loop over ice sheets
 

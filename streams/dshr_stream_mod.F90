@@ -612,6 +612,7 @@ contains
     use esmf , only : ESMF_SUCCESS, ESMF_ConfigCreate, ESMF_ConfigLoadFile
     use esmf , only : ESMF_ConfigGetLen, ESMF_ConfigGetAttribute
     use esmf , only : ESMF_Config, ESMF_MAXSTR
+    use esmf , only : ESMF_ConfigDestroy
 
     !!---------------------------------------------------------------------
     !! The configuration file is a text file that can have following entries
@@ -833,6 +834,9 @@ contains
       end if
 
     enddo ! end loop nstrm
+
+    call ESMF_ConfigDestroy(cf, rc=rc)
+    if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
     ! initialize flag that stream has been set
     streamdat(:)%init = .true.
